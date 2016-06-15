@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from .base import BMDModel
 from .. import constants
 
@@ -70,7 +72,7 @@ class Polynomial_216(Continuous):
 class Polynomial_217(Polynomial_216):
     version = 2.17
     date = '01/28/2013'
-    defaults = Polynomial_216.defaults.copy()
+    defaults = deepcopy(Polynomial_216.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -128,7 +130,7 @@ class Linear_216(Continuous):
 class Linear_217(Linear_216):
     version = 2.17
     date = '01/28/2013'
-    defaults = Linear_216.defaults.copy()
+    defaults = deepcopy(Linear_216.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -188,7 +190,7 @@ class Exponential_M2_17(Continuous):
 class Exponential_M2_19(Exponential_M2_17):
     version = 1.9
     date = '01/29/2013'
-    defaults = Exponential_M2_17.defaults.copy()
+    defaults = deepcopy(Exponential_M2_17.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -248,7 +250,7 @@ class Exponential_M3_17(Continuous):
 class Exponential_M3_19(Exponential_M3_17):
     version = 1.9
     ddate = '01/29/2013'
-    defaults = Exponential_M3_17.defaults.copy()
+    defaults = deepcopy(Exponential_M3_17.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -308,7 +310,7 @@ class Exponential_M4_17(Continuous):
 class Exponential_M4_19(Exponential_M4_17):
     version = 1.9
     date = '01/29/2013'
-    defaults = Exponential_M4_17.defaults.copy()
+    defaults = deepcopy(Exponential_M4_17.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -368,7 +370,7 @@ class Exponential_M5_17(Continuous):
 class Exponential_M5_19(Exponential_M5_17):
     version = 1.9
     date = '01/29/2013'
-    defaults = Exponential_M5_17.defaults.copy()
+    defaults = deepcopy(Exponential_M5_17.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -423,7 +425,7 @@ class Power_216(Continuous):
 class Power_217(Power_216):
     version = 2.17
     date = '01/28/2013'
-    defaults = Power_216.defaults.copy()
+    defaults = deepcopy(Power_216.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -479,5 +481,5 @@ class Hill_216(Continuous):
 class Hill_217(Hill_216):
     version = 2.17
     date = '01/28/2013'
-    defaults = Hill_216.defaults.copy()
+    defaults = deepcopy(Hill_216.defaults)
     defaults['max_iterations']['d'] = 500

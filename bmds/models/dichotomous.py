@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from .base import BMDModel
 from .. import constants
 
@@ -72,7 +74,7 @@ class Multistage_32(Dichotomous):
 class Multistage_33(Multistage_32):
     version = 3.3
     date = '02/28/2013'
-    defaults = Multistage_32.defaults.copy()
+    defaults = deepcopy(Multistage_32.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -136,7 +138,7 @@ class MultistageCancer_19(DichotomousCancer):
 class MultistageCancer_110(MultistageCancer_19):
     version = 1.10
     date = '02/28/2013'
-    defaults = MultistageCancer_19.defaults.copy()
+    defaults = deepcopy(MultistageCancer_19.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -189,7 +191,7 @@ class Weibull_215(Dichotomous):
 class Weibull_216(Weibull_215):
     version = 2.16
     date = '02/28/2013'
-    defaults = Weibull_215.defaults.copy()
+    defaults = deepcopy(Weibull_215.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -242,7 +244,7 @@ class LogProbit_32(Dichotomous):
 class LogProbit_33(LogProbit_32):
     version = 3.3
     date = '02/28/2013'
-    defaults = LogProbit_32.defaults.copy()
+    defaults = deepcopy(LogProbit_32.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -295,7 +297,7 @@ class Probit_32(Dichotomous):
 class Probit_33(Probit_32):
     version = 3.3
     date = '02/28/2013'
-    defaults = Probit_32.defaults.copy()
+    defaults = deepcopy(Probit_32.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -347,7 +349,7 @@ class Gamma_215(Dichotomous):
 class Gamma_216(Gamma_215):
     version = 2.16
     date = '02/28/2013'
-    defaults = Gamma_215.defaults.copy()
+    defaults = deepcopy(Gamma_215.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -400,7 +402,7 @@ class LogLogistic_213(Dichotomous):
 class LogLogistic_214(LogLogistic_213):
     version = 2.14
     date = '02/28/2013'
-    defaults = LogLogistic_213.defaults.copy()
+    defaults = deepcopy(LogLogistic_213.defaults)
     defaults['max_iterations']['d'] = 500
 
 
@@ -453,5 +455,5 @@ class Logistic_213(Dichotomous):
 class Logistic_214(Logistic_213):
     version = 2.14
     date = '02/28/2013'
-    defaults = Logistic_213.defaults.copy()
+    defaults = deepcopy(Logistic_213.defaults)
     defaults['max_iterations']['d'] = 500
