@@ -1,7 +1,12 @@
 from .base import BMDModel
 
 
-class Polynomial_216(BMDModel):
+class Continuous(BMDModel):
+    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
+    dtype = 'C'
+
+
+class Polynomial_216(Continuous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -26,7 +31,6 @@ class Polynomial_216(BMDModel):
     #todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
-    dtype = 'C'
     exe = 'poly'
     exe_plot = '00poly'
     js_formula = "{beta_0} + ({beta_1}*x) + ({beta_2}*Math.pow(x,2)) + ({beta_3}*Math.pow(x,3)) + ({beta_4}*Math.pow(x,4)) + ({beta_5}*Math.pow(x,5)) + ({beta_6}*Math.pow(x,6)) + ({beta_7}*Math.pow(x,7)) + ({beta_8}*Math.pow(x,8))"
@@ -60,7 +64,6 @@ class Polynomial_216(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
 
 
 class Polynomial_217(Polynomial_216):
@@ -70,7 +73,7 @@ class Polynomial_217(Polynomial_216):
     defaults['max_iterations']['d'] = 500
 
 
-class Linear_216(BMDModel):
+class Linear_216(Continuous):
     """ Overrides of Polynomial for Linear model. """
 
     def dfile_print(self, dataset):
@@ -93,7 +96,6 @@ class Linear_216(BMDModel):
     #todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
-    dtype = 'C'
     exe = 'poly'
     exe_plot = '00poly'
     js_formula = "{beta_0} + ({beta_1}*x)"
@@ -120,7 +122,6 @@ class Linear_216(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
 
 
 class Linear_217(Linear_216):
@@ -130,7 +131,7 @@ class Linear_217(Linear_216):
     defaults['max_iterations']['d'] = 500
 
 
-class Exponential_M2_17(BMDModel):
+class Exponential_M2_17(Continuous):
 
     def dfile_print(self, dataset):
         """
@@ -153,7 +154,6 @@ class Exponential_M2_17(BMDModel):
     minimum_DG = 2
     pretty_name = 'Exponential-M2'
     model_name = 'Exponential'
-    dtype = 'C'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
     js_formula = "{a} * Math.exp({sign}*{b}*x)"
@@ -181,7 +181,6 @@ class Exponential_M2_17(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
     output_prefix = 'M2'
 
 
@@ -192,7 +191,7 @@ class Exponential_M2_19(Exponential_M2_17):
     defaults['max_iterations']['d'] = 500
 
 
-class Exponential_M3_17(BMDModel):
+class Exponential_M3_17(Continuous):
 
     def dfile_print(self, dataset):
         """
@@ -215,7 +214,6 @@ class Exponential_M3_17(BMDModel):
     minimum_DG = 3
     pretty_name = 'Exponential-M3'
     model_name = 'Exponential'
-    dtype = 'C'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
     js_formula = "{a} * Math.exp({sign}*Math.pow({b}*x,{d}))"
@@ -243,7 +241,6 @@ class Exponential_M3_17(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
     output_prefix = 'M3'
 
 
@@ -254,7 +251,7 @@ class Exponential_M3_19(Exponential_M3_17):
     defaults['max_iterations']['d'] = 500
 
 
-class Exponential_M4_17(BMDModel):
+class Exponential_M4_17(Continuous):
 
     def dfile_print(self, dataset):
         """
@@ -277,7 +274,6 @@ class Exponential_M4_17(BMDModel):
     minimum_DG = 3
     pretty_name = 'Exponential-M4'
     model_name = 'Exponential'
-    dtype = 'C'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
     js_formula = "{a} * ({c}-({c}-1) * Math.exp(-1.*{b}*x))"
@@ -305,7 +301,6 @@ class Exponential_M4_17(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
     output_prefix = 'M4'
 
 
@@ -316,7 +311,7 @@ class Exponential_M4_19(Exponential_M4_17):
     defaults['max_iterations']['d'] = 500
 
 
-class Exponential_M5_17(BMDModel):
+class Exponential_M5_17(Continuous):
 
     def dfile_print(self, dataset):
         """
@@ -339,7 +334,6 @@ class Exponential_M5_17(BMDModel):
     minimum_DG = 4
     pretty_name = 'Exponential-M5'
     model_name = 'Exponential'
-    dtype = 'C'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
     js_formula = "{a} * ({c}-({c}-1) *  Math.exp(-1.*Math.pow({b}*x,{d})))"
@@ -367,7 +361,6 @@ class Exponential_M5_17(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
     output_prefix = 'M5'
 
 
@@ -378,7 +371,7 @@ class Exponential_M5_19(Exponential_M5_17):
     defaults['max_iterations']['d'] = 500
 
 
-class Power_216(BMDModel):
+class Power_216(Continuous):
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
         parent class."""
@@ -397,7 +390,6 @@ class Power_216(BMDModel):
 
     minimum_DG = 3
     model_name = 'Power'
-    dtype = 'C'
     exe = 'power'
     exe_plot = '00power'
     js_formula = "{control} + {slope} * Math.pow(x,{power})"
@@ -425,7 +417,6 @@ class Power_216(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
 
 
 class Power_217(Power_216):
@@ -435,7 +426,7 @@ class Power_217(Power_216):
     defaults['max_iterations']['d'] = 500
 
 
-class Hill_216(BMDModel):
+class Hill_216(Continuous):
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
         parent class."""
@@ -454,7 +445,6 @@ class Hill_216(BMDModel):
 
     minimum_DG = 4
     model_name = 'Hill'
-    dtype = 'C'
     exe = 'hill'
     exe_plot = '00Hill'
     js_formula = "{intercept} + ({v}*Math.pow(x,{n})) / (Math.pow({k},{n}) + Math.pow(x,{n}))"
@@ -483,7 +473,6 @@ class Hill_216(BMDModel):
         'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
         'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
-    possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
 
 
 class Hill_217(Hill_216):

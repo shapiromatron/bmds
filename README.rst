@@ -9,10 +9,10 @@ are shown below:
 
     import bmds
 
-    # return BMDS versions interface has been implemented for
+    # get available BMDS versions
     bmds.get_versions()
 
-    # get the available BMDS models for the specified version
+    # get BMDS models for the specified version
     bmds.get_models_for_version('2.40')
 
     # create example datasets

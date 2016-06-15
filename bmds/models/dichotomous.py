@@ -1,7 +1,17 @@
 from .base import BMDModel
 
 
-class Multistage_32(BMDModel):
+class Dichotomous(BMDModel):
+    dtype = 'D'
+    possible_bmr = ('Extra', 'Added')
+
+
+class DichotomousCancer(BMDModel):
+    dtype = 'DC'
+    possible_bmr = ('Extra', 'Added')
+
+
+class Multistage_32(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -26,7 +36,6 @@ class Multistage_32(BMDModel):
     #todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
-    dtype = 'D'
     exe = 'multistage'
     exe_plot = '10multista'
     js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"
@@ -57,7 +66,6 @@ class Multistage_32(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class Multistage_33(Multistage_32):
@@ -67,7 +75,7 @@ class Multistage_33(Multistage_32):
     defaults['max_iterations']['d'] = 500
 
 
-class MultistageCancer_19(BMDModel):
+class MultistageCancer_19(DichotomousCancer):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -92,7 +100,6 @@ class MultistageCancer_19(BMDModel):
     #todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
-    dtype = 'DC'
     exe = 'cancer'
     exe_plot = '10cancer'
     js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"
@@ -123,7 +130,6 @@ class MultistageCancer_19(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class MultistageCancer_110(MultistageCancer_19):
@@ -133,7 +139,7 @@ class MultistageCancer_110(MultistageCancer_19):
     defaults['max_iterations']['d'] = 500
 
 
-class Weibull_215(BMDModel):
+class Weibull_215(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -153,7 +159,6 @@ class Weibull_215(BMDModel):
 
     minimum_DG = 3
     model_name = 'Weibull'
-    dtype = 'D'
     exe = 'weibull'
     exe_plot = '10weibull'
     js_formula = "{Background} + (1-{Background}) * (1 - Math.exp( -1.*{Slope} * Math.pow(x,{Power}) ))"
@@ -178,7 +183,6 @@ class Weibull_215(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class Weibull_216(Weibull_215):
@@ -188,7 +192,7 @@ class Weibull_216(Weibull_215):
     defaults['max_iterations']['d'] = 500
 
 
-class LogProbit_32(BMDModel):
+class LogProbit_32(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -208,7 +212,6 @@ class LogProbit_32(BMDModel):
 
     minimum_DG = 3
     model_name = 'LogProbit'
-    dtype = 'D'
     exe = 'probit'
     exe_plot = '10probit'
     js_formula = "{background} + (1-{background}) * Math.normalcdf(0,1,{intercept} + {slope}*Math.log(x))"
@@ -233,7 +236,6 @@ class LogProbit_32(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class LogProbit_33(LogProbit_32):
@@ -243,7 +245,7 @@ class LogProbit_33(LogProbit_32):
     defaults['max_iterations']['d'] = 500
 
 
-class Probit_32(BMDModel):
+class Probit_32(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -263,7 +265,6 @@ class Probit_32(BMDModel):
 
     minimum_DG = 2
     model_name = 'Probit'
-    dtype = 'D'
     exe = 'probit'
     exe_plot = '10probit'
     js_formula = "Math.normalcdf(0,1,{intercept} + {slope}*x)"
@@ -288,7 +289,6 @@ class Probit_32(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class Probit_33(Probit_32):
@@ -298,7 +298,7 @@ class Probit_33(Probit_32):
     defaults['max_iterations']['d'] = 500
 
 
-class Gamma_215(BMDModel):
+class Gamma_215(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -318,7 +318,6 @@ class Gamma_215(BMDModel):
 
     minimum_DG = 3
     model_name = 'Gamma'
-    dtype = 'D'
     exe = 'gamma'
     exe_plot = '10gammhit'
     js_formula = "{Background} + (1 - {Background}) * Math.GammaCDF(x*{Slope},{Power})"
@@ -342,7 +341,6 @@ class Gamma_215(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class Gamma_216(Gamma_215):
@@ -352,7 +350,7 @@ class Gamma_216(Gamma_215):
     defaults['max_iterations']['d'] = 500
 
 
-class LogLogistic_213(BMDModel):
+class LogLogistic_213(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -372,7 +370,6 @@ class LogLogistic_213(BMDModel):
 
     minimum_DG = 3
     model_name = 'LogLogistic'
-    dtype = 'D'
     exe = 'logist'
     exe_plot = '10logist'
     js_formula = "{background} + (1-{background})/( 1 + Math.exp(-1.*{intercept}-1.*{slope}*Math.log(x) ) )"
@@ -397,7 +394,6 @@ class LogLogistic_213(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class LogLogistic_214(LogLogistic_213):
@@ -407,7 +403,7 @@ class LogLogistic_214(LogLogistic_213):
     defaults['max_iterations']['d'] = 500
 
 
-class Logistic_213(BMDModel):
+class Logistic_213(Dichotomous):
 
     def dfile_print(self, dataset):
         """Custom file for printing dfile, using helper functions for BMD
@@ -427,7 +423,6 @@ class Logistic_213(BMDModel):
 
     minimum_DG = 2
     model_name = 'Logistic'
-    dtype = 'D'
     exe = 'logist'
     exe_plot = '10logist'
     js_formula = "1/( 1 + Math.exp(-1*{intercept}-{slope}*x ))"
@@ -452,7 +447,6 @@ class Logistic_213(BMDModel):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
-    possible_bmr = ('Extra', 'Added')
 
 
 class Logistic_214(Logistic_213):
