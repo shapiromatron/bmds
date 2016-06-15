@@ -1,9 +1,10 @@
 from .base import BMDModel
+from .. import constants
 
 
 class Continuous(BMDModel):
     possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
-    dtype = 'C'
+    dtype = constants.CONTINUOUS
 
 
 class Polynomial_216(Continuous):
@@ -25,7 +26,7 @@ class Polynomial_216(Continuous):
         for i in xrange(1, degpoly + 1):
             p.append('beta_' + str(i))
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     #todo: add check that degree poly must be <=8
@@ -90,7 +91,7 @@ class Linear_216(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ['alpha', 'rho', 'beta_0', 'beta_1']
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     #todo: add check that degree poly must be <=8
@@ -148,7 +149,7 @@ class Exponential_M2_17(Continuous):
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
         txt.append('\n'.join([v for i in xrange(4)]))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 2
@@ -208,7 +209,7 @@ class Exponential_M3_17(Continuous):
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
         txt.append('\n'.join([v for i in xrange(4)]))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -268,7 +269,7 @@ class Exponential_M4_17(Continuous):
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
         txt.append('\n'.join([v for i in xrange(4)]))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -328,7 +329,7 @@ class Exponential_M5_17(Continuous):
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
         txt.append('\n'.join([v for i in xrange(4)]))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 4
@@ -385,7 +386,7 @@ class Power_216(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'control', 'slope', 'power')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -440,7 +441,7 @@ class Hill_216(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'intercept', 'v', 'n', 'k')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_continuous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 4

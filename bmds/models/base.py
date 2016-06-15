@@ -122,28 +122,6 @@ class BMDModel(object):
         return '\n'.join([' '.join([str(i) for i in specs]),
                           init, ' '.join([str(i) for i in inits])])
 
-    def _dfile_print_dichotomous_dataset(self, dataset):
-        # add dose-response dataset, dropping doses as specified
-        dropped = self.values['dose_drop'][0]
-        txt = 'Dose Incidence NEGATIVE_RESPONSE\n'
-        for i, v in enumerate(dataset['dr']):
-            if i < len(dataset['dr']) - dropped:
-                txt += '%f %d %d\n' % (v['dose'],
-                                       v['incidence'],
-                                       v['n'] - v['incidence'])
-        return txt
-
-    def _dfile_print_continuous_dataset(self, dataset):
-        dropped = self.values['dose_drop'][0]
-        txt = 'Dose NumAnimals Response Stdev\n'
-        for i, v in enumerate(dataset['dr']):
-            if i < len(dataset['dr']) - dropped:
-                txt += '%f %f %f %f\n' % (v['dose'],
-                                          v['n'],
-                                          v['response'],
-                                          v['stdev'])
-        return txt
-
     def _dfile_print_options(self, order):
         #helper function; given tuple order of parameters in the 'value'
         # dictionary, return a space-separated list

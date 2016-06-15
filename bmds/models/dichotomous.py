@@ -1,13 +1,14 @@
 from .base import BMDModel
+from .. import constants
 
 
 class Dichotomous(BMDModel):
-    dtype = 'D'
+    dtype = constants.DICHOTOMOUS
     possible_bmr = ('Extra', 'Added')
 
 
-class DichotomousCancer(BMDModel):
-    dtype = 'DC'
+class DichotomousCancer(Dichotomous):
+    dtype = constants.DICHOTOMOUS_CANCER
     possible_bmr = ('Extra', 'Added')
 
 
@@ -30,7 +31,7 @@ class Multistage_32(Dichotomous):
         for i in xrange(1, degree_poly + 1):
             p.append('beta' + str(i))
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     #todo: add check that degree poly must be <=8
@@ -94,7 +95,7 @@ class MultistageCancer_19(DichotomousCancer):
         for i in xrange(1, degree_poly + 1):
             p.append('beta' + str(i))
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     #todo: add check that degree poly must be <=8
@@ -154,7 +155,7 @@ class Weibull_215(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'power')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -207,7 +208,7 @@ class LogProbit_32(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'intercept')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -260,7 +261,7 @@ class Probit_32(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'intercept')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 2
@@ -313,7 +314,7 @@ class Gamma_215(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'power')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -365,7 +366,7 @@ class LogLogistic_213(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'intercept')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 3
@@ -418,7 +419,7 @@ class Logistic_213(Dichotomous):
         txt.append(self._dfile_print_options(p))
         p = ('background', 'slope', 'intercept')
         txt.append(self._dfile_print_parameters(p))
-        txt.append(self._dfile_print_dichotomous_dataset(dataset))
+        txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
     minimum_DG = 2
