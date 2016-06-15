@@ -47,6 +47,15 @@ class BMDModel(object):
 
     """
 
+    def __init__(self, dataset):
+        #save default values originally
+        self.dataset = dataset
+        self.values = {}
+        self.override = {}
+        self.override_txt = ['']
+        for k, v in self.defaults.iteritems():
+            self.values[k] = self._get_option_value(k)
+
     def build_defaults(self, json=False):
         """
         Build default options dictionary for the BMD model, returning only
@@ -129,11 +138,3 @@ class BMDModel(object):
         for f in order:
             r.append(self.values[f][0])
         return ' '.join([str(i) for i in r])
-
-    def __init__(self):
-        #save default values originally
-        self.values = {}
-        self.override = {}
-        self.override_txt = ['']
-        for k, v in self.defaults.iteritems():
-            self.values[k] = self._get_option_value(k)
