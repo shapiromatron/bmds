@@ -79,8 +79,7 @@ class MultistageCancer_19(DichotomousCancer):
     def as_dfile(self):
         txt = self._dfile_print_header()
         degree_poly = self.values['degree_poly'][0]
-        txt.append(str(self.dataset.doses_used) +
-                   ' ' + str(degree_poly))
+        txt.append('{} {}'.format(self.dataset.doses_used, degree_poly))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_beta',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')

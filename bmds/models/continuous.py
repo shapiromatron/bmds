@@ -15,7 +15,7 @@ class Polynomial_216(Continuous):
         txt = self._dfile_print_header()
         degpoly = int(self.values['degree_poly'][0])
         txt.append(str(degpoly))
-        txt.append('1 ' + str(self.dataset.doses_used) + ' 0')
+        txt.append('1 {} 0'.format(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_polynomial',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -79,7 +79,7 @@ class Linear_216(Polynomial_216):
     def as_dfile(self):
         txt = self._dfile_print_header()
         txt.append('1')
-        txt.append('1 ' + str(self.dataset.doses_used) + ' 0')
+        txt.append('1 {} 0'.format(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_polynomial',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -133,7 +133,7 @@ class Exponential_M2_17(Continuous):
 
     def as_dfile(self, dataset):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -190,7 +190,7 @@ class Exponential_M3_17(Continuous):
 
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -247,7 +247,7 @@ class Exponential_M4_17(Continuous):
 
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -304,7 +304,7 @@ class Exponential_M5_17(Continuous):
 
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -360,7 +360,7 @@ class Exponential_M5_19(Exponential_M5_17):
 class Power_216(Continuous):
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + ' 0')
+        txt.append('1 {} 0'.format(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_power',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -413,7 +413,7 @@ class Power_217(Power_216):
 class Hill_216(Continuous):
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 ' + str(self.dataset.doses_used) + ' 0')
+        txt.append('1 {} 0'.format(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_n',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
