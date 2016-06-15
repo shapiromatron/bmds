@@ -48,3 +48,17 @@ def test_dfile_outputs():
     dfile = ds.as_dfile()
     expected = 'Dose NumAnimals Response Stdev\n1.000000 1.000000 1.000000 1.000000\n2.000000 2.000000 2.000000 2.000000\n3.000000 3.000000 3.000000 3.000000'  # noqa
     assert dfile == expected
+
+
+def test_doses_used():
+    ds5 = [1, 2, 3, 4, 5]
+
+    ds = bmds.DichotomousDataset(ds5, ds5, ds5)
+    assert ds.doses_used == 5
+    ds = bmds.DichotomousDataset(ds5, ds5, ds5, doses_dropped=2)
+    assert ds.doses_used == 3
+
+    ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5)
+    assert ds.doses_used == 5
+    ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5, doses_dropped=2)
+    assert ds.doses_used == 3

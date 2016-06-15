@@ -6,6 +6,7 @@ class DichotomousDataset(object):
         self.incidences = incidences
         self.doses_dropped = doses_dropped
         self.num_doses = len(doses)
+        self.doses_used = self.num_doses - self.doses_dropped
         self.remainings = [n-p for n, p in zip(ns, incidences)]
         self.validate()
 
@@ -16,13 +17,13 @@ class DichotomousDataset(object):
                 [self.doses, self.ns, self.incidences]):
             raise ValueError('All input lists must be same length')
 
-        if self.num_doses-self.doses_dropped < 3:
+        if self.doses_used < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')
 
     def as_dfile(self):
         rows = ['Dose Incidence NEGATIVE_RESPONSE']
         for i, v in enumerate(self.doses):
-            if i >= self.num_doses - self.doses_dropped:
+            if i >= self.doses_used:
                 continue
             rows.append('%f %d %d' % (
                 self.doses[i], self.incidences[i], self.remainings[i]))
@@ -38,6 +39,7 @@ class ContinuousDataset(object):
         self.stdevs = stdevs
         self.doses_dropped = doses_dropped
         self.num_doses = len(doses)
+        self.doses_used = self.num_doses - self.doses_dropped
         self.validate()
 
     def validate(self):
@@ -47,13 +49,13 @@ class ContinuousDataset(object):
                 [self.doses, self.ns, self.responses, self.stdevs]):
             raise ValueError('All input lists must be same length')
 
-        if self.num_doses-self.doses_dropped < 3:
+        if self.doses_used < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')
 
     def as_dfile(self):
         rows = ['Dose NumAnimals Response Stdev']
         for i, v in enumerate(self.doses):
-            if i >= self.num_doses - self.doses_dropped:
+            if i >= self.doses_used:
                 continue
             rows.append('%f %f %f %f' % (
                 self.doses[i], self.ns[i], self.responses[i], self.stdevs[i]))
