@@ -1,0 +1,3 @@
+# testing
+pytest==2.9.1
+pytest-xdist==1.14
