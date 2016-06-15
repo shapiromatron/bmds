@@ -56,6 +56,9 @@ class BMDModel(object):
         for k, v in self.defaults.iteritems():
             self.values[k] = self._get_option_value(k)
 
+    def as_dfile():
+        raise NotImplementedError('Abstract method requires implementation')
+
     def build_defaults(self, json=False):
         """
         Build default options dictionary for the BMD model, returning only
@@ -68,7 +71,7 @@ class BMDModel(object):
         return json.dumps(opt) if json else opt
 
     def valid_bmr(self, bmr):
-        #given a model instance, check if a BMR is valid for this model-type
+        # given a model instance, check if a BMR is valid for this model-type
         return bmr['type'] in self.possible_bmr
 
     def update_model(self, override, override_txt, bmr):
@@ -132,7 +135,7 @@ class BMDModel(object):
                           init, ' '.join([str(i) for i in inits])])
 
     def _dfile_print_options(self, order):
-        #helper function; given tuple order of parameters in the 'value'
+        # helper function; given tuple order of parameters in the 'value'
         # dictionary, return a space-separated list
         r = []
         for f in order:

@@ -16,13 +16,9 @@ class DichotomousCancer(Dichotomous):
 
 class Multistage_32(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        degree_poly = self.values['degree_poly'][0]
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]) +
-                   ' ' + str(degree_poly))
+        txt.append('{} {}'.format(self.dataset.doses_used, self.values['degree_poly'][0]))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_beta',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -80,12 +76,10 @@ class Multistage_33(Multistage_32):
 
 class MultistageCancer_19(DichotomousCancer):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
         degree_poly = self.values['degree_poly'][0]
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]) +
+        txt.append(str(self.dataset.doses_used) +
                    ' ' + str(degree_poly))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_beta',
@@ -144,11 +138,9 @@ class MultistageCancer_110(MultistageCancer_19):
 
 class Weibull_215(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_power',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -197,11 +189,9 @@ class Weibull_216(Weibull_215):
 
 class LogProbit_32(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -250,11 +240,9 @@ class LogProbit_33(LogProbit_32):
 
 class Probit_32(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -303,11 +291,9 @@ class Probit_33(Probit_32):
 
 class Gamma_215(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'restrict_power',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -355,11 +341,9 @@ class Gamma_216(Gamma_215):
 
 class LogLogistic_213(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
@@ -408,11 +392,9 @@ class LogLogistic_214(LogLogistic_213):
 
 class Logistic_213(Dichotomous):
 
-    def dfile_print(self, dataset):
-        """Custom file for printing dfile, using helper functions for BMD
-        parent class."""
+    def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append(str(dataset['numDG'] - self.values['dose_drop'][0]))
+        txt.append(str(self.dataset.doses_used))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
              'bmd_calculation', 'append_or_overwrite', 'smooth_option')
