@@ -74,7 +74,7 @@ class BMDModel(object):
             exe = self.get_exe_path()
             dfile = self.write_dfile()
 
-            # RunProcess([exe, dfile], timeout=20).Run()
+            RunProcess([exe, dfile], timeout=20).call()
 
             outfile = dfile.replace('.(d)', '.out')
             if os.path.exists(outfile):
@@ -88,7 +88,8 @@ class BMDModel(object):
             self.cleanup()
 
     def get_tempfile(self, prefix='bmds-', suffix='.txt'):
-        _, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        os.close(fd)
         self.tempfns.append(fn)
         return fn
 
