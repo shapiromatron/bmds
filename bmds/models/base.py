@@ -48,48 +48,19 @@ class BMDModel(object):
     """
 
     def __init__(self, dataset):
-        #save default values originally
+
         self.dataset = dataset
-        self.values = {}
+
         self.override = {}
         self.override_txt = ['']
+
+        # set default values
+        self.values = {}
         for k, v in self.defaults.iteritems():
             self.values[k] = self._get_option_value(k)
 
     def as_dfile():
         raise NotImplementedError('Abstract method requires implementation')
-
-    def build_defaults(self, json=False):
-        """
-        Build default options dictionary for the BMD model, returning only
-        values which can be changed the by the user.
-        """
-        opt = {}
-        for k, v in self.defaults.iteritems():
-            if v['f'] == 0:    # if not fixed
-                opt[k] = v
-        return json.dumps(opt) if json else opt
-
-    def valid_bmr(self, bmr):
-        # given a model instance, check if a BMR is valid for this model-type
-        return bmr['type'] in self.possible_bmr
-
-    def update_model(self, override, override_txt, bmr):
-        """
-        Update the override dictionary and override text dictionary,
-        save new values. Also update the bmr option selected.
-        """
-        self.override = override
-        self.override_txt = override_txt
-        for k, v in self.override.iteritems():
-            if str(v).find('|') == -1:
-                self.values[k] = (v, False)
-            else:
-                self.values[k] = (v.split('|'))
-
-        self.values['bmr_type'] = (BMR_CROSSWALK[self.dtype][bmr['type']], False)
-        self.values['bmr'] = (bmr['value'], False)
-        self.values['confidence_level'] = (bmr['confidence_level'], False)
 
     def _get_option_value(self, key):
         """
@@ -101,43 +72,44 @@ class BMDModel(object):
             val = self.override[key]
         else:
             val = self.defaults[key]['d']
+
         if self.defaults[key]['t'] == 'p':  # parameter (two values)
             return val.split('|')
         else:
             return val, False
 
-    def _dfile_print_header(self):
-        return [self.model_name, 'BMDS_Model_Run',
-                '/temp/bmd/datafile.dax', '/temp/bmd/output.out']
+    def _dfile_print_header_rows(self):
+        return '{}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out'.format(self.model_name)  # noqa
 
-    def _dfile_print_parameters(self, order):
-        #Print parameters in the specified order. Expects a tuple of parameter
+    def _dfile_print_parameters(self, *params):
+        # Print parameters in the specified order. Expects a tuple of parameter
         # names, in the proper order.
-        if ((self.dtype == 'C') and (self.values['constant_variance'][0] == 1)):
+        if ((self.dtype == constants.CONTINUOUS) and
+                (self.values['constant_variance'][0] == 1)):
             self.values['rho'] = ('s', 0)  # for specified to equal 0
-        specs = []
-        inits = []
+        specifieds = []
+        initials = []
         init = '0'  # 1 if initialized, 0 otherwise
-        for i in order:
-            t, v = self.values[i]
-            #now save values
+        for param in params:
+            t, v = self.values[param]
+            # now add values
             if t == 'd':
-                specs.append(-9999)
-                inits.append(-9999)
+                specifieds.append(-9999)
+                initials.append(-9999)
             elif t == 's':
-                specs.append(v)
-                inits.append(-9999)
+                specifieds.append(v)
+                initials.append(-9999)
             elif t == 'i':
                 init = '1'
-                specs.append(-9999)
-                inits.append(v)
-        return '\n'.join([' '.join([str(i) for i in specs]),
-                          init, ' '.join([str(i) for i in inits])])
+                specifieds.append(-9999)
+                initials.append(v)
 
-    def _dfile_print_options(self, order):
-        # helper function; given tuple order of parameters in the 'value'
-        # dictionary, return a space-separated list
-        r = []
-        for f in order:
-            r.append(self.values[f][0])
-        return ' '.join([str(i) for i in r])
+        return '\n'.join([
+            ' '.join([str(i) for i in specifieds]),
+            init,
+            ' '.join([str(i) for i in initials])
+        ])
+
+    def _dfile_print_options(self, *params):
+        # Return space-separated list of values for dfile
+        return ' '.join([str(self.values[param][0]) for param in params])

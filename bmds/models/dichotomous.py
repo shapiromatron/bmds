@@ -17,22 +17,25 @@ class DichotomousCancer(Dichotomous):
 class Multistage_32(Dichotomous):
 
     def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append('{} {}'.format(self.dataset.doses_used, self.values['degree_poly'][0]))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'restrict_beta',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ['background']
-        for i in xrange(1, degree_poly + 1):
-            p.append('beta' + str(i))
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
+        degree_poly = self.values['degree_poly'][0]
 
-    #todo: add check that degree poly must be <=8
+        params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
+        params.insert(0, 'background')
+
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            '{} {}'.format(self.dataset.doses_used, degree_poly),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_beta',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(*params),
+            self.dataset.as_dfile(),
+        ])
+
+    # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
     exe = 'multistage'
@@ -76,24 +79,7 @@ class Multistage_33(Multistage_32):
 
 class MultistageCancer_19(DichotomousCancer):
 
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        degree_poly = self.values['degree_poly'][0]
-        txt.append('{} {}'.format(self.dataset.doses_used, degree_poly))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'restrict_beta',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ['background']
-        for i in xrange(1, degree_poly + 1):
-            p.append('beta' + str(i))
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
-
-    #todo: add check that degree poly must be <=8
+    # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
     exe = 'cancer'
@@ -127,6 +113,25 @@ class MultistageCancer_19(DichotomousCancer):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        degree_poly = self.values['degree_poly'][0]
+
+        params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
+        params.insert(0, 'background')
+
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            '{} {}'.format(self.dataset.doses_used, degree_poly),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_beta',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(*params),
+            self.dataset.as_dfile(),
+        ])
+
 
 class MultistageCancer_110(MultistageCancer_19):
     version = 1.10
@@ -136,20 +141,6 @@ class MultistageCancer_110(MultistageCancer_19):
 
 
 class Weibull_215(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'restrict_power',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'power')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 3
     model_name = 'Weibull'
@@ -178,6 +169,21 @@ class Weibull_215(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_power', 'bmd_calculation',
+                'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'power'),
+            self.dataset.as_dfile(),
+        ])
+
 
 class Weibull_216(Weibull_215):
     version = 2.16
@@ -187,20 +193,6 @@ class Weibull_216(Weibull_215):
 
 
 class LogProbit_32(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'intercept')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 3
     model_name = 'LogProbit'
@@ -229,6 +221,21 @@ class LogProbit_32(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'intercept'),
+            self.dataset.as_dfile(),
+        ])
+
 
 class LogProbit_33(LogProbit_32):
     version = 3.3
@@ -238,20 +245,6 @@ class LogProbit_33(LogProbit_32):
 
 
 class Probit_32(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'intercept')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 2
     model_name = 'Probit'
@@ -280,6 +273,21 @@ class Probit_32(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'intercept'),
+            self.dataset.as_dfile(),
+        ])
+
 
 class Probit_33(Probit_32):
     version = 3.3
@@ -289,20 +297,6 @@ class Probit_33(Probit_32):
 
 
 class Gamma_215(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'restrict_power',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'power')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 3
     model_name = 'Gamma'
@@ -330,6 +324,21 @@ class Gamma_215(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_power',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'power'),
+            self.dataset.as_dfile(),
+        ])
+
 
 class Gamma_216(Gamma_215):
     version = 2.16
@@ -339,20 +348,6 @@ class Gamma_216(Gamma_215):
 
 
 class LogLogistic_213(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'intercept')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 3
     model_name = 'LogLogistic'
@@ -381,6 +376,21 @@ class LogLogistic_213(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'intercept'),
+            self.dataset.as_dfile(),
+        ])
+
 
 class LogLogistic_214(LogLogistic_213):
     version = 2.14
@@ -390,20 +400,6 @@ class LogLogistic_214(LogLogistic_213):
 
 
 class Logistic_213(Dichotomous):
-
-    def as_dfile(self):
-        txt = self._dfile_print_header()
-        txt.append(str(self.dataset.doses_used))
-        p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
-             'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
-             'bmd_calculation', 'append_or_overwrite', 'smooth_option')
-        txt.append(self._dfile_print_options(p))
-        p = ('bmr', 'bmr_type', 'confidence_level')
-        txt.append(self._dfile_print_options(p))
-        p = ('background', 'slope', 'intercept')
-        txt.append(self._dfile_print_parameters(p))
-        txt.append(self.dataset.as_dfile())
-        return '\n'.join(txt)
 
     minimum_DG = 2
     model_name = 'Logistic'
@@ -431,6 +427,21 @@ class Logistic_213(Dichotomous):
         'bmr':                      {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1},
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
+
+    def as_dfile(self):
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'background', 'slope', 'intercept'),
+            self.dataset.as_dfile(),
+        ])
 
 
 class Logistic_214(Logistic_213):
