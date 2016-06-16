@@ -1,8 +1,4 @@
-import os
-
 from . import models, constants
-
-root = os.path.dirname(os.path.abspath(__file__))
 
 
 class Session(object):

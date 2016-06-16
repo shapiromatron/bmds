@@ -10,10 +10,10 @@ class Continuous(BMDModel):
 
 
 class Polynomial_216(Continuous):
-
     # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
+    bmds_version_dir = 'v231'
     exe = 'poly'
     exe_plot = '00poly'
     js_formula = "{beta_0} + ({beta_1}*x) + ({beta_2}*Math.pow(x,2)) + ({beta_3}*Math.pow(x,3)) + ({beta_4}*Math.pow(x,4)) + ({beta_5}*Math.pow(x,5)) + ({beta_6}*Math.pow(x,6)) + ({beta_7}*Math.pow(x,7)) + ({beta_8}*Math.pow(x,8))"
@@ -70,6 +70,7 @@ class Polynomial_216(Continuous):
 
 
 class Polynomial_217(Polynomial_216):
+    bmds_version_dir = 'v240'
     version = 2.17
     date = '01/28/2013'
     defaults = deepcopy(Polynomial_216.defaults)
@@ -77,10 +78,10 @@ class Polynomial_217(Polynomial_216):
 
 
 class Linear_216(Polynomial_216):
-
     # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
+    bmds_version_dir = 'v231'
     exe = 'poly'
     exe_plot = '00poly'
     js_formula = "{beta_0} + ({beta_1}*x)"
@@ -126,6 +127,7 @@ class Linear_216(Polynomial_216):
 
 
 class Linear_217(Linear_216):
+    bmds_version_dir = 'v240'
     version = 2.17
     date = '01/28/2013'
     defaults = deepcopy(Linear_216.defaults)
@@ -133,10 +135,10 @@ class Linear_217(Linear_216):
 
 
 class Exponential_M2_17(Continuous):
-
     minimum_DG = 2
     pretty_name = 'Exponential-M2'
     model_name = 'Exponential'
+    bmds_version_dir = 'v231'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
     js_formula = "{a} * Math.exp({sign}*{b}*x)"
@@ -184,6 +186,7 @@ class Exponential_M2_17(Continuous):
 
 
 class Exponential_M2_19(Exponential_M2_17):
+    bmds_version_dir = 'v240'
     version = 1.9
     date = '01/29/2013'
     defaults = deepcopy(Exponential_M2_17.defaults)
@@ -191,7 +194,6 @@ class Exponential_M2_19(Exponential_M2_17):
 
 
 class Exponential_M3_17(Exponential_M2_17):
-
     minimum_DG = 3
     pretty_name = 'Exponential-M3'
     model_name = 'Exponential'
@@ -202,6 +204,7 @@ class Exponential_M3_17(Exponential_M2_17):
 
 
 class Exponential_M3_19(Exponential_M3_17):
+    bmds_version_dir = 'v240'
     version = 1.9
     ddate = '01/29/2013'
     defaults = deepcopy(Exponential_M3_17.defaults)
@@ -209,7 +212,6 @@ class Exponential_M3_19(Exponential_M3_17):
 
 
 class Exponential_M4_17(Exponential_M2_17):
-
     minimum_DG = 3
     pretty_name = 'Exponential-M4'
     model_name = 'Exponential'
@@ -220,6 +222,7 @@ class Exponential_M4_17(Exponential_M2_17):
 
 
 class Exponential_M4_19(Exponential_M4_17):
+    bmds_version_dir = 'v240'
     version = 1.9
     date = '01/29/2013'
     defaults = deepcopy(Exponential_M4_17.defaults)
@@ -227,7 +230,6 @@ class Exponential_M4_19(Exponential_M4_17):
 
 
 class Exponential_M5_17(Exponential_M2_17):
-
     minimum_DG = 4
     pretty_name = 'Exponential-M5'
     model_name = 'Exponential'
@@ -238,6 +240,7 @@ class Exponential_M5_17(Exponential_M2_17):
 
 
 class Exponential_M5_19(Exponential_M5_17):
+    bmds_version_dir = 'v240'
     version = 1.9
     date = '01/29/2013'
     defaults = deepcopy(Exponential_M5_17.defaults)
@@ -245,9 +248,9 @@ class Exponential_M5_19(Exponential_M5_17):
 
 
 class Power_216(Continuous):
-
     minimum_DG = 3
     model_name = 'Power'
+    bmds_version_dir = 'v231'
     exe = 'power'
     exe_plot = '00power'
     js_formula = "{control} + {slope} * Math.pow(x,{power})"
@@ -293,6 +296,7 @@ class Power_216(Continuous):
 
 
 class Power_217(Power_216):
+    bmds_version_dir = 'v240'
     version = 2.17
     date = '01/28/2013'
     defaults = deepcopy(Power_216.defaults)
@@ -300,9 +304,9 @@ class Power_217(Power_216):
 
 
 class Hill_216(Continuous):
-
     minimum_DG = 4
     model_name = 'Hill'
+    bmds_version_dir = 'v231'
     exe = 'hill'
     exe_plot = '00Hill'
     js_formula = "{intercept} + ({v}*Math.pow(x,{n})) / (Math.pow({k},{n}) + Math.pow(x,{n}))"
@@ -349,6 +353,7 @@ class Hill_216(Continuous):
 
 
 class Hill_217(Hill_216):
+    bmds_version_dir = 'v240'
     version = 2.17
     date = '01/28/2013'
     defaults = deepcopy(Hill_216.defaults)

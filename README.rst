@@ -36,7 +36,6 @@ are shown below:
     # execute each model and parse results
     for model in models:
         model.execute()
-        model.parse_results()
 
 
 Installation notes:

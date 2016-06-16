@@ -1,4 +1,9 @@
+import os
+import tempfile
+
 from .. import constants
+from ..parser import OutputParser
+from ..utils import RunProcess
 
 
 BMR_CROSSWALK = {
@@ -17,6 +22,9 @@ BMR_CROSSWALK = {
         'Extra': 4
     }
 }
+
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
 class BMDModel(object):
@@ -58,8 +66,59 @@ class BMDModel(object):
         for k, v in self.defaults.iteritems():
             self.values[k] = self._get_option_value(k)
 
-    def as_dfile():
+        self.tempfns = []
+        self.output_created = False
+
+    def execute(self):
+        try:
+            exe = self.get_exe_path()
+            dfile = self.write_dfile()
+
+            # RunProcess([exe, dfile], timeout=20).Run()
+
+            outfile = dfile.replace('.(d)', '.out')
+            if os.path.exists(outfile):
+                self.output_created = True
+                self.tempfns.append(outfile)
+                self.parse_results(outfile)
+
+        except Exception as e:
+            raise e
+        finally:
+            self.cleanup()
+
+    def get_tempfile(self, prefix='bmds-', suffix='.txt'):
+        _, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        self.tempfns.append(fn)
+        return fn
+
+    def cleanup(self):
+        for fn in self.tempfns:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+    @classmethod
+    def get_exe_path(cls):
+        return os.path.abspath(os.path.join(
+            ROOT,
+            cls.bmds_version_dir,
+            cls.exe + '.exe'))
+
+    def parse_results(self, fn):
+        with open(fn, 'r') as f:
+            text = f.read()
+        parser = OutputParser(text, self.dtype, self.model_name)
+        self.output_text = text
+        self.output = parser.output
+
+    def as_dfile(self):
         raise NotImplementedError('Abstract method requires implementation')
+
+    def write_dfile(self):
+        f_in = self.get_tempfile(suffix='.(d)')
+        with open(f_in, 'w') as f:
+            f.write(self.as_dfile())
+        return f_in
 
     def _get_option_value(self, key):
         """

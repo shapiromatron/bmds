@@ -15,29 +15,10 @@ class DichotomousCancer(Dichotomous):
 
 
 class Multistage_32(Dichotomous):
-
-    def as_dfile(self):
-        degree_poly = self.values['degree_poly'][0]
-
-        params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
-        params.insert(0, 'background')
-
-        return '\n'.join([
-            self._dfile_print_header_rows(),
-            '{} {}'.format(self.dataset.doses_used, degree_poly),
-            self._dfile_print_options(
-                'max_iterations', 'relative_fn_conv', 'parameter_conv',
-                'bmdl_curve_calculation', 'restrict_beta',
-                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
-            self._dfile_print_options(
-                'bmr', 'bmr_type', 'confidence_level'),
-            self._dfile_print_parameters(*params),
-            self.dataset.as_dfile(),
-        ])
-
     # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
+    bmds_version_dir = 'v231'
     exe = 'multistage'
     exe_plot = '10multista'
     js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"
@@ -69,8 +50,28 @@ class Multistage_32(Dichotomous):
         'bmr_type':                 {'c': 'b',  't': 'd', 'f': 1, 'd': 0},
         'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}}
 
+    def as_dfile(self):
+        degree_poly = self.values['degree_poly'][0]
+
+        params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
+        params.insert(0, 'background')
+
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            '{} {}'.format(self.dataset.doses_used, degree_poly),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_beta',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(*params),
+            self.dataset.as_dfile(),
+        ])
+
 
 class Multistage_33(Multistage_32):
+    bmds_version_dir = 'v240'
     version = 3.3
     date = '02/28/2013'
     defaults = deepcopy(Multistage_32.defaults)
@@ -78,10 +79,10 @@ class Multistage_33(Multistage_32):
 
 
 class MultistageCancer_19(DichotomousCancer):
-
     # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
+    bmds_version_dir = 'v231'
     exe = 'cancer'
     exe_plot = '10cancer'
     js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"
@@ -134,6 +135,7 @@ class MultistageCancer_19(DichotomousCancer):
 
 
 class MultistageCancer_110(MultistageCancer_19):
+    bmds_version_dir = 'v240'
     version = 1.10
     date = '02/28/2013'
     defaults = deepcopy(MultistageCancer_19.defaults)
@@ -141,9 +143,9 @@ class MultistageCancer_110(MultistageCancer_19):
 
 
 class Weibull_215(Dichotomous):
-
     minimum_DG = 3
     model_name = 'Weibull'
+    bmds_version_dir = 'v231'
     exe = 'weibull'
     exe_plot = '10weibull'
     js_formula = "{Background} + (1-{Background}) * (1 - Math.exp( -1.*{Slope} * Math.pow(x,{Power}) ))"
@@ -186,6 +188,7 @@ class Weibull_215(Dichotomous):
 
 
 class Weibull_216(Weibull_215):
+    bmds_version_dir = 'v240'
     version = 2.16
     date = '02/28/2013'
     defaults = deepcopy(Weibull_215.defaults)
@@ -193,9 +196,9 @@ class Weibull_216(Weibull_215):
 
 
 class LogProbit_32(Dichotomous):
-
     minimum_DG = 3
     model_name = 'LogProbit'
+    bmds_version_dir = 'v231'
     exe = 'probit'
     exe_plot = '10probit'
     js_formula = "{background} + (1-{background}) * Math.normalcdf(0,1,{intercept} + {slope}*Math.log(x))"
@@ -238,6 +241,7 @@ class LogProbit_32(Dichotomous):
 
 
 class LogProbit_33(LogProbit_32):
+    bmds_version_dir = 'v240'
     version = 3.3
     date = '02/28/2013'
     defaults = deepcopy(LogProbit_32.defaults)
@@ -245,9 +249,9 @@ class LogProbit_33(LogProbit_32):
 
 
 class Probit_32(Dichotomous):
-
     minimum_DG = 2
     model_name = 'Probit'
+    bmds_version_dir = 'v231'
     exe = 'probit'
     exe_plot = '10probit'
     js_formula = "Math.normalcdf(0,1,{intercept} + {slope}*x)"
@@ -290,6 +294,7 @@ class Probit_32(Dichotomous):
 
 
 class Probit_33(Probit_32):
+    bmds_version_dir = 'v240'
     version = 3.3
     date = '02/28/2013'
     defaults = deepcopy(Probit_32.defaults)
@@ -297,9 +302,9 @@ class Probit_33(Probit_32):
 
 
 class Gamma_215(Dichotomous):
-
     minimum_DG = 3
     model_name = 'Gamma'
+    bmds_version_dir = 'v231'
     exe = 'gamma'
     exe_plot = '10gammhit'
     js_formula = "{Background} + (1 - {Background}) * Math.GammaCDF(x*{Slope},{Power})"
@@ -341,6 +346,7 @@ class Gamma_215(Dichotomous):
 
 
 class Gamma_216(Gamma_215):
+    bmds_version_dir = 'v240'
     version = 2.16
     date = '02/28/2013'
     defaults = deepcopy(Gamma_215.defaults)
@@ -348,9 +354,9 @@ class Gamma_216(Gamma_215):
 
 
 class LogLogistic_213(Dichotomous):
-
     minimum_DG = 3
     model_name = 'LogLogistic'
+    bmds_version_dir = 'v231'
     exe = 'logist'
     exe_plot = '10logist'
     js_formula = "{background} + (1-{background})/( 1 + Math.exp(-1.*{intercept}-1.*{slope}*Math.log(x) ) )"
@@ -393,6 +399,7 @@ class LogLogistic_213(Dichotomous):
 
 
 class LogLogistic_214(LogLogistic_213):
+    bmds_version_dir = 'v240'
     version = 2.14
     date = '02/28/2013'
     defaults = deepcopy(LogLogistic_213.defaults)
@@ -400,9 +407,9 @@ class LogLogistic_214(LogLogistic_213):
 
 
 class Logistic_213(Dichotomous):
-
     minimum_DG = 2
     model_name = 'Logistic'
+    bmds_version_dir = 'v231'
     exe = 'logist'
     exe_plot = '10logist'
     js_formula = "1/( 1 + Math.exp(-1*{intercept}-{slope}*x ))"
@@ -445,6 +452,7 @@ class Logistic_213(Dichotomous):
 
 
 class Logistic_214(Logistic_213):
+    bmds_version_dir = 'v240'
     version = 2.14
     date = '02/28/2013'
     defaults = deepcopy(Logistic_213.defaults)
