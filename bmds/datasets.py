@@ -57,6 +57,6 @@ class ContinuousDataset(object):
         for i, v in enumerate(self.doses):
             if i >= self.doses_used:
                 continue
-            rows.append('%f %f %f %f' % (
+            rows.append('%f %d %f %f' % (
                 self.doses[i], self.ns[i], self.responses[i], self.stdevs[i]))
         return '\n'.join(rows)

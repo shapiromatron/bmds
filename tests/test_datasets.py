@@ -47,7 +47,7 @@ def test_dfile_outputs():
         doses=dummy4, ns=dummy4, responses=dummy4, stdevs=dummy4,
         doses_dropped=1)
     dfile = ds.as_dfile()
-    expected = 'Dose NumAnimals Response Stdev\n1.000000 1.000000 1.000000 1.000000\n2.000000 2.000000 2.000000 2.000000\n3.000000 3.000000 3.000000 3.000000'  # noqa
+    expected = 'Dose NumAnimals Response Stdev\n1.000000 1 1.000000 1.000000\n2.000000 2 2.000000 2.000000\n3.000000 3 3.000000 3.000000'  # noqa
     assert dfile == expected
 
 
