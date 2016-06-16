@@ -64,8 +64,8 @@ class BMDModel(object):
     def _get_option_value(self, key):
         """
         Get option value(s), or use default value if no override value.
-        Two output values for 'p' type values (parameters), else one. Returns
-        a tuple of two values.
+        Two output values for 'p' type values (parameters), else one.
+        Returns a tuple of two values.
         """
         if key in self.override:
             val = self.override[key]
