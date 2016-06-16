@@ -23,13 +23,13 @@ class Polynomial_216(Continuous):
         p = ('bmr_type', 'bmr',  'constant_variance', 'confidence_level')
         txt.append(self._dfile_print_options(p))
         p = ['alpha', 'rho', 'beta_0']
-        for i in xrange(1, degpoly + 1):
+        for i in range(1, degpoly + 1):
             p.append('beta_' + str(i))
         txt.append(self._dfile_print_parameters(p))
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
-    #todo: add check that degree poly must be <=8
+    # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
     exe = 'poly'
@@ -91,7 +91,7 @@ class Linear_216(Polynomial_216):
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
-    #todo: add check that degree poly must be <=8
+    # todo: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
     exe = 'poly'
@@ -133,7 +133,7 @@ class Exponential_M2_17(Continuous):
 
     def as_dfile(self, dataset):
         txt = self._dfile_print_header()
-        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -142,7 +142,7 @@ class Exponential_M2_17(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
-        txt.append('\n'.join([v for i in xrange(4)]))
+        txt.append('\n'.join([v for i in range(4)]))
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
@@ -190,7 +190,7 @@ class Exponential_M3_17(Continuous):
 
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -199,7 +199,7 @@ class Exponential_M3_17(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
-        txt.append('\n'.join([v for i in xrange(4)]))
+        txt.append('\n'.join([v for i in range(4)]))
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
@@ -247,7 +247,7 @@ class Exponential_M4_17(Continuous):
 
     def as_dfile(self):
         txt = self._dfile_print_header()
-        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings)
+        txt.append('1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings))
         p = ('max_iterations', 'relative_fn_conv', 'parameter_conv',
              'bmdl_curve_calculation', 'bmd_calculation',
              'append_or_overwrite', 'smooth_option')
@@ -256,7 +256,7 @@ class Exponential_M4_17(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
-        txt.append('\n'.join([v for i in xrange(4)]))
+        txt.append('\n'.join([v for i in range(4)]))
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 
@@ -313,7 +313,7 @@ class Exponential_M5_17(Continuous):
         txt.append(self._dfile_print_options(p))
         p = ('alpha', 'rho', 'a', 'b', 'c', 'd')
         v = self._dfile_print_parameters(p)
-        txt.append('\n'.join([v for i in xrange(4)]))
+        txt.append('\n'.join([v for i in range(4)]))
         txt.append(self.dataset.as_dfile())
         return '\n'.join(txt)
 

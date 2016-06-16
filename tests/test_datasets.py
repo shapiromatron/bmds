@@ -30,12 +30,13 @@ def test_dataset_validation():
             doses=dummy3, ns=dummy3, responses=dummy3, stdevs=dummy3,
             doses_dropped=1)
 
+
 def test_dfile_outputs():
     dummy4 = [1, 2, 3, 4]
 
     # check dichotomous
     ds = bmds.DichotomousDataset(
-        doses=dummy4, ns=[5, 5, 5, 5], incidences=[0, 1, 2, 3,],
+        doses=dummy4, ns=[5, 5, 5, 5], incidences=[0, 1, 2, 3],
         doses_dropped=1)
     dfile = ds.as_dfile()
     expected = 'Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3'  # noqa

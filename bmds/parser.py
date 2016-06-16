@@ -42,37 +42,37 @@ class OutputParser(object):
         # begin line-by-line
         if self.model_type in ['D', 'DC']:
             self._import_dich_vals()
-            for i in xrange(len(outs)):
-                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':
+            for i in range(len(outs)):
+                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r'     Dose     Est._Prob.    Expected    Observed     Size       Residual':
+                elif outs[i] == r'     Dose     Est._Prob.    Expected    Observed     Size       Residual':  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
         elif self.model_type == 'C':
-            for i in xrange(len(outs)):
-                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':
+            for i in range(len(outs)):
+                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r' Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res.':
+                elif outs[i] == r' Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res.':  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
-                elif outs[i] == r'   Test    -2*log(Likelihood Ratio)  Test df        p-value    ':
+                elif outs[i] == r'   Test    -2*log(Likelihood Ratio)  Test df        p-value    ':  # noqa
                     self._lbl_pvalue(outs, i)
-                elif outs[i] == r"            Model      Log(likelihood)   # Param's      AIC":
+                elif outs[i] == r"            Model      Log(likelihood)   # Param's      AIC":  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
         elif self.model_type == 'E':
-            for i in xrange(len(outs)):
+            for i in range(len(outs)):
                 if outs[i] == r'                     Parameter Estimates':
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r'     Dose      N         Obs Mean     Obs Std Dev':
+                elif outs[i] == r'     Dose      N         Obs Mean     Obs Std Dev':  # noqa
                     self._lbl_fit_exp(outs, i, 'observed')
-                elif outs[i] == r'      Dose      Est Mean      Est Std     Scaled Residual':
+                elif outs[i] == r'      Dose      Est Mean      Est Std     Scaled Residual':  # noqa
                     self._lbl_fit_exp(outs, i, 'estimated')
-                elif outs[i] == r'     Test          -2*log(Likelihood Ratio)       D. F.         p-value':
+                elif outs[i] == r'     Test          -2*log(Likelihood Ratio)       D. F.         p-value':  # noqa
                     self._lbl_pvalue(outs, i)
-                elif outs[i] == r"                     Model      Log(likelihood)      DF         AIC":
+                elif outs[i] == r"                     Model      Log(likelihood)      DF         AIC":  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
-        #standardize possible errors
+        # standardize possible errors
         fields = ['AIC', 'p_value1', 'p_value2', 'p_value3', 'p_value4']
         for field in fields:
             if field in self.output and self.output[field] in ['NA', 'N/A']:
@@ -92,8 +92,10 @@ class OutputParser(object):
     def _import_single_searches(self):
         """
         Look for simple one-line regex searches common across dataset types -
-        If failed, then return -999. Note that AIC is only handled in this manner
-        for dichotomous; custom functions for continuous and exponential.
+        If failed, then return -999.
+
+        AIC is only handled in this method for dichotomous continuous and
+        exponential and handled via separate methods.
         """
         searches = {
             # (?<!Setting ) is a special case for preventing
@@ -140,8 +142,8 @@ class OutputParser(object):
         return up to three possible matches for the Chi^2, degrees of freedom,
         and p-value.
         """
-        m = re.search(r'Chi\^2 = (%s|\w+) +d.f. = +(%s|\w+) +P-value = +(%s|\w+)' %
-                      (self.re_num, self.re_num, self.re_num), self.output_text)
+        m = re.search(r'Chi\^2 = ({0}|\w+) +d.f. = +({0}|\w+) +P-value = +({0}|\w+)'.format(self.re_num),  # noqa
+                      self.output_text)
         cw = {1: "Chi2", 2: 'df', 3: 'p_value4'}
         for val in cw:
             try:
@@ -156,7 +158,7 @@ class OutputParser(object):
         while (len(outs[i].split()) > 0):
             vals = outs[i].split()
             self.output['parameters'][vals[0]] = {}
-            for j in xrange(1, len(vals)):
+            for j in range(1, len(vals)):
                 try:
                     self.output['parameters'][vals[0]][cw[j]] = float(vals[j])
                 except:
@@ -168,7 +170,7 @@ class OutputParser(object):
         i += self.NUM_LINE_SKIPS_FIT[self.model_type]
         while len(outs[i]) > 1:
             vals = outs[i].split()
-            for j in xrange(len(vals)):
+            for j in range(len(vals)):
                 try:
                     self.output[fit_tbl[j]].append(float(vals[j]))
                 except:
@@ -182,10 +184,10 @@ class OutputParser(object):
 
         if table_name == 'observed':
             tbl_names = ['fit_dose', 'fit_size', 'fit_observed', 'fit_stdev']
-            rng = xrange(len(outs[i].split()))
+            rng = range(len(outs[i].split()))
         elif table_name == 'estimated':
-            tbl_names = ['fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals']
-            rng = xrange(1, len(outs[i].split()))
+            tbl_names = ['fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals']  # noqa
+            rng = range(1, len(outs[i].split()))
 
         while len(outs[i]) > 0:
             vals = outs[i].split()

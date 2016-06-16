@@ -1,2 +1,2 @@
-from continuous import *
-from dichotomous import *
+from continuous import *  # noqa
+from dichotomous import *  # noqa

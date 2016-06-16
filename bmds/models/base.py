@@ -1,4 +1,3 @@
-import json
 from .. import constants
 
 
@@ -27,7 +26,7 @@ class BMDModel(object):
         - model_name = ''      # string model name
         - dtype = ''           # data type - 'D','C', etc.
         - exe = ''             # BMD executable (without extension)
-        - exe_plot             # wgnuplot input-file executable (without extension)
+        - exe_plot             # wgnuplot input-file executable (w/o extension)
         - version = 0          # version number
         - date = ''            # version date
         - defaults = {}        # default options setup
