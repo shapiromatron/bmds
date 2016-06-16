@@ -81,6 +81,10 @@ class BMDModel(object):
                 self.output_created = True
                 self.tempfns.append(outfile)
                 self.parse_results(outfile)
+            
+            o2 = dfile.replace('.(d)', '.002')
+            if os.path.exists(o2):
+                self.tempfns.append(o2)
 
         except Exception as e:
             raise e
@@ -95,9 +99,8 @@ class BMDModel(object):
 
     def cleanup(self):
         for fn in self.tempfns:
-            if os.path.exists(fn):
-                os.remove(fn)
-
+            os.remove(fn)
+                
     @classmethod
     def get_exe_path(cls):
         return os.path.abspath(os.path.join(
