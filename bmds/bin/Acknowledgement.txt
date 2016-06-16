@@ -1,0 +1,30 @@
+Sponsors
+EPA's National Center for Environmental Assessment with technical support from EPA's National Health & Environmental Effects Research Laboratory.
+
+Contractor
+Lockheed Martin - BMDS user interface with a risk assessment modeling framework and Dichotomous Hill model
+
+Credits
+
+RIVM (National Institute for Public Health and the Environment of the Netherlands, part of the Dutch administration), is a recognized leading center of expertise in the fields of health, nutrition, medicines, consumer safety and environmental protection working mainly for the Dutch government. RIVM is not a part of the US Environmental Protection Agency, but has given US EPA a non-exclusive, limited and revocable permission to use its logo only in recognition of RIVM's contribution to the development of certain BMDS models. The use of this logo here is neither an endorsement nor an advertisement for RIVM. RIVM does not accept any responsibility or liability for the activities of  - or failures to act by - US Environmental Protection Agency.
+
+The following contractor contributed to the models included in BMDS:
+
+Battelle -- quantal models with background additive to dose, and logistic and probit models with explicit background terms, and their plotting functions.
+
+We gratefully acknowledge the following software used in BMDS:
+
+GNUPLOT 4.6.3 -- Copyright 1986 - 1993, 1998, 2004   Thomas Williams, Colin Kelley
+GNU GCC compiler -- provided in the MinGW5.0 bundle
+
+DONLP2 and DONLP2_INTV_DYN -- Copyright by P. Spellucci. DONLP2 is restricted to non-commercial use by the author's copyright. More information on the optimizer can be found at http://www.mathematik.tu-darmstadt.de/fbereiche/numerik/staff/spellucci/DONLP2/.
+
+DMNGB -- from the PORT library of Lucent Technologies. This routine is archived in Netlib (http://www.netlib.org).
+
+The latter two routines are archived in netlib (http://www.netlib.org) -- managed by the University of Tennessee at Knoxville and Oak Ridge National Laboratory.
+
+Note
+Obtain the latest version of this program from the EPA BMDS web site (http://www.epa.gov/ncea/bmds.htm).  The features and models in the BMDS program that are downloadable from this web site have received at least an internal EPA review.  In order to allow for outside input towards improvement of the individual models, the C source code files for the latest beta versions of the models are separately available from the BMDS web site for continuous review and comment.
+
+Disclaimer
+This software has been reviewed in accordance with U.S. Environmental Protection Agency policy and approved for use.  Mention of trade names or commercial products does not constitute endorsement.
