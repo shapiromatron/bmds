@@ -2,8 +2,8 @@ BMDS: Benchmark dose modeling software
 ======================================
 
 This Python 2 package is designed to run the U.S. EPA BMDS_ software from a python
-interface. It is integrated into the HAWC_ software. Example function calls
-are shown below:
+interface. It is integrated into the HAWC_ software, but HAWC does not be installed
+on your computer to use this BMDS package. Example function calls are shown below:
 
 .. code-block:: python
 
