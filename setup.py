@@ -32,6 +32,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'pytest',
+        'enum34',
     ],
     include_package_data=True,
     zip_safe=False
