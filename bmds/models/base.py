@@ -175,3 +175,46 @@ class BMDModel(object):
     def _dfile_print_options(self, *params):
         # Return space-separated list of values for dfile
         return ' '.join([str(self.values[param][0]) for param in params])
+
+
+class DefaultParams(object):
+    bmdl_curve_calculation = {'c': 'ot', 't': 'b', 'f': 1, 'd': 0}
+    append_or_overwrite = {'c': 'ot', 't': 'b', 'f': 1, 'd': 0}
+    smooth_option = {'c': 'ot', 't': 'b', 'f': 1, 'd': 0}
+    max_iterations = {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'}
+    relative_fn_conv = {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'}  # noqa
+    parameter_conv = {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'}  # noqa
+    bmd_calculation = {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'}  # noqa
+    bmdl_curve_calc = {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'}  # noqa
+    dose_drop = {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'}
+    confidence_level = {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95}
+    constant_variance = {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}  # noqa
+    dich_bmr = {'c': 'b',  't': 'i', 'f': 1, 'd': 0.1}
+    dich_bmr_type = {'c': 'b',  't': 'd', 'f': 1, 'd': 0}
+    cont_bmr = {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0}
+    cont_bmr_type = {'c': 'b',  't': 'i', 'f': 1, 'd': 1}
+
+    @staticmethod
+    def degree_poly(f=0, d=2, showName=True):
+        d = {'c': 'ot', 't': 'i', 'f': f, 'd': d}
+        if showName:
+            d['n'] = 'Degree of Polynomial'
+        return d
+
+    @staticmethod
+    def log_transform(d):
+        return {'c': 'ot', 't': 'b', 'f': 1, 'd': d}
+
+    @staticmethod
+    def param_generator(name=None, f=0):
+        d = {'c': 'p', 't': 'p', 'f': f, 'd': 'd|'}
+        if name:
+            d['n'] = name
+        return d
+
+    @staticmethod
+    def restrict(f, d, n=None):
+        d = {'c': 'ot', 't': 'b', 'f': f, 'd': d}
+        if n:
+            d['n'] = n
+        return d

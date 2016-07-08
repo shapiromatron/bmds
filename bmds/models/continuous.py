@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from .base import BMDModel
+from .base import BMDModel, DefaultParams
 from .. import constants
 
 
@@ -16,37 +16,40 @@ class Polynomial_216(Continuous):
     bmds_version_dir = 'v231'
     exe = 'poly'
     exe_plot = '00poly'
-    js_formula = "{beta_0} + ({beta_1}*x) + ({beta_2}*Math.pow(x,2)) + ({beta_3}*Math.pow(x,3)) + ({beta_4}*Math.pow(x,4)) + ({beta_5}*Math.pow(x,5)) + ({beta_6}*Math.pow(x,6)) + ({beta_7}*Math.pow(x,7)) + ({beta_8}*Math.pow(x,8))"
-    js_parameters = ['beta_0', 'beta_1', 'beta_2', 'beta_3', 'beta_4', 'beta_5', 'beta_6', 'beta_7', 'beta_8']
+    js_formula = "{beta_0} + ({beta_1}*x) + ({beta_2}*Math.pow(x,2)) + ({beta_3}*Math.pow(x,3)) + ({beta_4}*Math.pow(x,4)) + ({beta_5}*Math.pow(x,5)) + ({beta_6}*Math.pow(x,6)) + ({beta_7}*Math.pow(x,7)) + ({beta_8}*Math.pow(x,8))"  # noqa
+    js_parameters = [
+        'beta_0', 'beta_1', 'beta_2', 'beta_3', 'beta_4',
+        'beta_5', 'beta_6', 'beta_7', 'beta_8']
     version = 2.16
     date = '05/26/2010'
     defaults = {
-        'bmdl_curve_calculation':   {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'append_or_overwrite':      {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'smooth_option':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'max_iterations':           {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'},
-        'relative_fn_conv':         {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'},
-        'parameter_conv':           {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'},
-        'alpha':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Alpha'},
-        'rho':                      {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Rho'},
-        'beta_0':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta0'},
-        'beta_1':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta1'},
-        'beta_2':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta2'},
-        'beta_3':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta3'},
-        'beta_4':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta4'},
-        'beta_5':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta5'},
-        'beta_7':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta7'},
-        'beta_6':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta6'},
-        'beta_8':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta8'},
-        'restrict_polynomial':      {'c': 'ot', 't': 'rp', 'f': 0, 'd': 0, 'n': 'Restrict Polynomial'},
-        'degree_poly':              {'c': 'ot', 't': 'i', 'f': 0, 'd': 2, 'n': 'Degree of Polynomial'},
-        'bmd_calculation':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'},
-        'bmdl_curve_calc':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'},
-        'dose_drop':                {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'},
-        'bmr':                      {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0},
-        'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
-        'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
-        'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'alpha': DefaultParams.param_generator('Alpha'),
+        'rho': DefaultParams.param_generator('Rho'),
+        'beta_0': DefaultParams.param_generator('Beta0'),
+        'beta_1': DefaultParams.param_generator('Beta1'),
+        'beta_2': DefaultParams.param_generator('Beta2'),
+        'beta_3': DefaultParams.param_generator('Beta3'),
+        'beta_4': DefaultParams.param_generator('Beta4'),
+        'beta_5': DefaultParams.param_generator('Beta5'),
+        'beta_7': DefaultParams.param_generator('Beta7'),
+        'beta_6': DefaultParams.param_generator('Beta6'),
+        'beta_8': DefaultParams.param_generator('Beta8'),
+        'restrict_polynomial': DefaultParams.restrict(f=0, d=0, n='Restrict Polynomial'),  # noqa
+        'degree_poly': DefaultParams.degree_poly(),
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.cont_bmr,
+        'bmr_type': DefaultParams.cont_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+        'constant_variance': DefaultParams.constant_variance,
+    }
 
     def as_dfile(self):
         degpoly = int(self.values['degree_poly'][0])
@@ -89,25 +92,26 @@ class Linear_216(Polynomial_216):
     version = 2.16
     date = '05/26/2010'
     defaults = {
-        'bmdl_curve_calculation':   {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'append_or_overwrite':      {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'smooth_option':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'max_iterations':           {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'},
-        'relative_fn_conv':         {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'},
-        'parameter_conv':           {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'},
-        'alpha':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Alpha'},
-        'rho':                      {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Rho'},
-        'beta_0':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta0'},
-        'beta_1':                   {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Beta1'},
-        'restrict_polynomial':      {'c': 'ot', 't': 'rp', 'f': 0, 'd': 0, 'n': 'Restrict Polynomial'},
-        'degree_poly':              {'c': 'ot', 't': 'i', 'f': 1, 'd': 1},
-        'bmd_calculation':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'},
-        'bmdl_curve_calc':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'},
-        'dose_drop':                {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'},
-        'bmr':                      {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0},
-        'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
-        'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
-        'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'alpha': DefaultParams.param_generator('Alpha'),
+        'rho': DefaultParams.param_generator('Rho'),
+        'beta_0': DefaultParams.param_generator('Beta0'),
+        'beta_1': DefaultParams.param_generator('Beta1'),
+        'restrict_polynomial': DefaultParams.restrict(f=0, d=0, n='Restrict Polynomial'),  # noqa
+        'degree_poly': DefaultParams.degree_poly(f=1, d=1, showName=False),
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.cont_bmr,
+        'bmr_type': DefaultParams.cont_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+        'constant_variance': DefaultParams.constant_variance,
+    }
 
     def as_dfile(self):
         return '\n'.join([
@@ -147,25 +151,26 @@ class Exponential_M2_17(Continuous):
     version = 1.7
     date = '12/10/2009'
     defaults = {
-        'bmdl_curve_calculation':   {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'append_or_overwrite':      {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'smooth_option':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'max_iterations':           {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'},
-        'relative_fn_conv':         {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'},
-        'parameter_conv':           {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'},
-        'alpha':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Alpha'},
-        'rho':                      {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Rho'},
-        'a':                        {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'a'},
-        'b':                        {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'b'},
-        'c':                        {'c': 'p',  't': 'p', 'f': 1, 'd': 'd|', 'n': 'c'},
-        'd':                        {'c': 'p',  't': 'p', 'f': 1, 'd': 'd|', 'n': 'd'},
-        'bmd_calculation':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'},
-        'bmdl_curve_calc':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'},
-        'dose_drop':                {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'},
-        'bmr':                      {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0},
-        'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
-        'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
-        'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'alpha': DefaultParams.param_generator('Alpha'),
+        'rho': DefaultParams.param_generator('Rho'),
+        'a': DefaultParams.param_generator('a'),
+        'b': DefaultParams.param_generator('b'),
+        'c': DefaultParams.param_generator('c', f=1),
+        'd': DefaultParams.param_generator('d', f=1),
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.cont_bmr,
+        'bmr_type': DefaultParams.cont_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+        'constant_variance': DefaultParams.constant_variance,
+    }
     output_prefix = 'M2'
 
     def as_dfile(self):
@@ -258,26 +263,27 @@ class Power_216(Continuous):
     version = 2.16
     date = '10/28/2009'
     defaults = {
-        'bmdl_curve_calculation':   {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'append_or_overwrite':      {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'smooth_option':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'log_transform':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'max_iterations':           {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'},
-        'relative_fn_conv':         {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'},
-        'parameter_conv':           {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'},
-        'alpha':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Alpha'},
-        'rho':                      {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Rho'},
-        'control':                  {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Control'},
-        'slope':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Slope'},
-        'power':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Power'},
-        'restrict_power':           {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Restrict Power'},
-        'bmd_calculation':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'},
-        'bmdl_curve_calc':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'},
-        'dose_drop':                {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'},
-        'bmr':                      {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0},
-        'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
-        'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
-        'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'log_transform': DefaultParams.log_transform(d=0),
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'alpha': DefaultParams.param_generator('Alpha'),
+        'rho': DefaultParams.param_generator('Rho'),
+        'control': DefaultParams.param_generator('Control'),
+        'slope': DefaultParams.param_generator('Slope'),
+        'power': DefaultParams.param_generator('Power'),
+        'restrict_power': DefaultParams.restrict(f=0, d=1, n='Restrict Power'),  # noqa
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.cont_bmr,
+        'bmr_type': DefaultParams.cont_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+        'constant_variance': DefaultParams.constant_variance,
+    }
 
     def as_dfile(self):
         return '\n'.join([
@@ -309,32 +315,33 @@ class Hill_216(Continuous):
     bmds_version_dir = 'v231'
     exe = 'hill'
     exe_plot = '00Hill'
-    js_formula = "{intercept} + ({v}*Math.pow(x,{n})) / (Math.pow({k},{n}) + Math.pow(x,{n}))"
+    js_formula = "{intercept} + ({v}*Math.pow(x,{n})) / (Math.pow({k},{n}) + Math.pow(x,{n}))"  # noqa
     js_parameters = ['intercept', 'v', 'n', 'k']
     version = 2.16
     date = '04/06/2011'
     defaults = {
-        'bmdl_curve_calculation':   {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'append_or_overwrite':      {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'smooth_option':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'log_transform':            {'c': 'ot', 't': 'b', 'f': 1, 'd': 0},
-        'max_iterations':           {'c': 'op', 't': 'i', 'f': 0, 'd': 250, 'n': 'Iteration'},
-        'relative_fn_conv':         {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Relative Function'},
-        'parameter_conv':           {'c': 'op', 't': 'd', 'f': 0, 'd': 1.0E-08, 'n': 'Parameter'},
-        'alpha':                    {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Alpha'},
-        'rho':                      {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Rho'},
-        'intercept':                {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'Intercept'},
-        'v':                        {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'V'},
-        'n':                        {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'N'},
-        'k':                        {'c': 'p',  't': 'p', 'f': 0, 'd': 'd|', 'n': 'K'},
-        'restrict_n':               {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Restrict N>1'},
-        'bmd_calculation':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'BMD Calculation'},
-        'bmdl_curve_calc':          {'c': 'ot', 't': 'b', 'f': 0, 'd': 0, 'n': 'BMDL Curve Calculation'},
-        'dose_drop':                {'c': 'ot', 't': 'dd', 'f': 0, 'd': 0, 'n': 'Doses to drop'},
-        'bmr':                      {'c': 'b',  't': 'd', 'f': 1, 'd': 1.0},
-        'bmr_type':                 {'c': 'b',  't': 'i', 'f': 1, 'd': 1},
-        'confidence_level':         {'c': 'b',  't': 'd', 'f': 1, 'd': 0.95},
-        'constant_variance':        {'c': 'ot', 't': 'b', 'f': 0, 'd': 1, 'n': 'Constant Variance'}}
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'log_transform': DefaultParams.log_transform(d=0),
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'alpha': DefaultParams.param_generator('Alpha'),
+        'rho': DefaultParams.param_generator('Rho'),
+        'intercept': DefaultParams.param_generator('Intercept'),
+        'v': DefaultParams.param_generator('V'),
+        'n': DefaultParams.param_generator('N'),
+        'k': DefaultParams.param_generator('K'),
+        'restrict_n': DefaultParams.restrict(f=0, d=1, n='Restrict N>1'),
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.cont_bmr,
+        'bmr_type': DefaultParams.cont_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+        'constant_variance': DefaultParams.constant_variance,
+    }
 
     def as_dfile(self):
         return '\n'.join([
