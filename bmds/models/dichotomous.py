@@ -81,6 +81,10 @@ class Multistage_33(Multistage_32):
     defaults['max_iterations']['d'] = 500
 
 
+class Multistage_34(Multistage_33):
+    pass
+
+
 class MultistageCancer_19(DichotomousCancer):
     # todo: add check that degree poly must be <=8
     minimum_DG = 2

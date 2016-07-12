@@ -75,10 +75,42 @@ class BMDS_v240(BMDS_v231):
     }
 
 
+class BMDS_v260(BMDS_v240):
+    models = {
+        constants.DICHOTOMOUS: {
+            constants.M_Weibull: models.Weibull_216,
+            constants.M_LogProbit: models.LogProbit_33,
+            constants.M_Probit: models.Probit_33,
+            constants.M_Multistage: models.Multistage_34,
+            constants.M_Gamma: models.Gamma_216,
+            constants.M_Logistic: models.Logistic_214,
+            constants.M_LogLogistic: models.LogLogistic_214,
+        },
+        constants.DICHOTOMOUS_CANCER: {
+            constants.M_MultistageCancer: models.MultistageCancer_110,
+        },
+        constants.CONTINUOUS: {
+            constants.M_Linear: models.Linear_220,
+            constants.M_Polynomial: models.Polynomial_220,
+            constants.M_Power: models.Power_218,
+            constants.M_ExponentialM2: models.Exponential_M2_110,
+            constants.M_ExponentialM3: models.Exponential_M3_110,
+            constants.M_ExponentialM4: models.Exponential_M4_110,
+            constants.M_ExponentialM5: models.Exponential_M5_110,
+            constants.M_Hill: models.Hill_217,
+        },
+    }
+
+class BMDS_v2601(BMDS_v260):
+    pass
+
+
 VERSIONS = {
     '2.30': BMDS_v230,
     '2.31': BMDS_v231,
-    '2.40': BMDS_v240
+    '2.40': BMDS_v240,
+    '2.60': BMDS_v260,
+    '2.601': BMDS_v2601,
 }
 
 

@@ -6,8 +6,8 @@ import bmds
 class TestVersionsAndModels(unittest.TestCase):
 
     def test_get_versions(self):
-        versions = bmds.get_versions()
-        expected = ['2.40', '2.31', '2.30']
+        versions = sorted(bmds.get_versions())
+        expected = sorted(['2.40', '2.601', '2.31', '2.30', '2.60'])
         self.assertListEqual(versions, expected)
 
     def test_get_models(self):

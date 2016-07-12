@@ -80,6 +80,10 @@ class Polynomial_217(Polynomial_216):
     defaults['max_iterations']['d'] = 500
 
 
+class Polynomial_220(Polynomial_217):
+    pass
+
+
 class Linear_216(Polynomial_216):
     # todo: add check that degree poly must be <=8
     minimum_DG = 2
@@ -136,6 +140,10 @@ class Linear_217(Linear_216):
     date = '01/28/2013'
     defaults = deepcopy(Linear_216.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class Linear_220(Linear_217):
+    pass
 
 
 class Exponential_M2_17(Continuous):
@@ -198,6 +206,10 @@ class Exponential_M2_19(Exponential_M2_17):
     defaults['max_iterations']['d'] = 500
 
 
+class Exponential_M2_110(Exponential_M2_19):
+    pass
+
+
 class Exponential_M3_17(Exponential_M2_17):
     minimum_DG = 3
     pretty_name = 'Exponential-M3'
@@ -214,6 +226,10 @@ class Exponential_M3_19(Exponential_M3_17):
     ddate = '01/29/2013'
     defaults = deepcopy(Exponential_M3_17.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class Exponential_M3_110(Exponential_M3_19):
+    pass
 
 
 class Exponential_M4_17(Exponential_M2_17):
@@ -234,6 +250,10 @@ class Exponential_M4_19(Exponential_M4_17):
     defaults['max_iterations']['d'] = 500
 
 
+class Exponential_M4_110(Exponential_M4_19):
+    pass
+
+
 class Exponential_M5_17(Exponential_M2_17):
     minimum_DG = 4
     pretty_name = 'Exponential-M5'
@@ -250,6 +270,10 @@ class Exponential_M5_19(Exponential_M5_17):
     date = '01/29/2013'
     defaults = deepcopy(Exponential_M5_17.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class Exponential_M5_110(Exponential_M5_19):
+    pass
 
 
 class Power_216(Continuous):
@@ -307,6 +331,10 @@ class Power_217(Power_216):
     date = '01/28/2013'
     defaults = deepcopy(Power_216.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class Power_218(Power_217):
+    pass
 
 
 class Hill_216(Continuous):
