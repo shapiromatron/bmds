@@ -96,6 +96,13 @@ class BMDModel(object):
             os.remove(fn)
 
     @classmethod
+    def get_default(cls):
+        return {
+            'name': cls.model_name,
+            'defaults': cls.defaults
+        }
+
+    @classmethod
     def get_exe_path(cls):
         return os.path.abspath(os.path.join(
             ROOT,

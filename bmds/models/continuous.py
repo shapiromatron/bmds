@@ -148,8 +148,7 @@ class Linear_220(Linear_217):
 
 class Exponential_M2_17(Continuous):
     minimum_DG = 2
-    pretty_name = 'Exponential-M2'
-    model_name = 'Exponential'
+    model_name = 'Exponential-M2'
     bmds_version_dir = 'v231'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
@@ -212,8 +211,7 @@ class Exponential_M2_110(Exponential_M2_19):
 
 class Exponential_M3_17(Exponential_M2_17):
     minimum_DG = 3
-    pretty_name = 'Exponential-M3'
-    model_name = 'Exponential'
+    model_name = 'Exponential-M3'
     js_formula = "{a} * Math.exp({sign}*Math.pow({b}*x,{d}))"
     exp_run_settings = ' 0 0100 22 0 1'
     js_parameters = ['a', 'b', 'd', 'sign']
@@ -234,8 +232,7 @@ class Exponential_M3_110(Exponential_M3_19):
 
 class Exponential_M4_17(Exponential_M2_17):
     minimum_DG = 3
-    pretty_name = 'Exponential-M4'
-    model_name = 'Exponential'
+    model_name = 'Exponential-M4'
     js_formula = "{a} * ({c}-({c}-1) * Math.exp(-1.*{b}*x))"
     exp_run_settings = ' 0 0010 33 0 1'
     js_parameters = ['a', 'b', 'c']
@@ -256,8 +253,7 @@ class Exponential_M4_110(Exponential_M4_19):
 
 class Exponential_M5_17(Exponential_M2_17):
     minimum_DG = 4
-    pretty_name = 'Exponential-M5'
-    model_name = 'Exponential'
+    model_name = 'Exponential-M5'
     js_formula = "{a} * ({c}-({c}-1) *  Math.exp(-1.*Math.pow({b}*x,{d})))"
     exp_run_settings = ' 0 0001 44 0 1'
     js_parameters = ['a', 'b', 'c', 'd']

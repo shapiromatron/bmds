@@ -11,10 +11,14 @@ class Session(object):
         constants.CONTINUOUS: constants.CONTINUOUS_BMRS
     }
 
-    @classmethod
-    def get_default_params(cls, dtype):
-        models = cls.models[dtype]
-        return [model.get_default() for model in models]
+    def get_bmr_options(self, dtype):
+        return self.bmrs[dtype]
+
+    def get_model_options(self, dtype):
+        return [
+            model.get_default()
+            for model in self.models[dtype].values()
+        ]
 
 
 class BMDS_v230(Session):
@@ -119,6 +123,10 @@ VERSIONS = {
 
 def get_versions():
     return VERSIONS.keys()
+
+
+def get_session(version):
+    return VERSIONS[version]
 
 
 def get_models_for_version(version):

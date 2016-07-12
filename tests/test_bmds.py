@@ -14,6 +14,7 @@ class TestVersionsAndModels(unittest.TestCase):
         models = bmds.get_models_for_version('2.40')
         dich_model_names = models['D'].keys()
         expected = [
-            'LogLogistic', 'Weibull', 'Probit',
-            'LogProbit', 'Logistic', 'Gamma', 'Multistage']
+            'Logistic', 'LogLogistic', 'Probit',
+            'LogProbit', 'Multistage', 'Gamma', 'Weibull',
+        ]
         self.assertListEqual(dich_model_names, expected)
