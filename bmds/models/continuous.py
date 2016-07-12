@@ -40,7 +40,7 @@ class Polynomial_216(Continuous):
         'beta_7': DefaultParams.param_generator('Beta7'),
         'beta_6': DefaultParams.param_generator('Beta6'),
         'beta_8': DefaultParams.param_generator('Beta8'),
-        'restrict_polynomial': DefaultParams.restrict(f=0, d=0, n='Restrict Polynomial'),  # noqa
+        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict Polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
@@ -102,8 +102,8 @@ class Linear_216(Polynomial_216):
         'rho': DefaultParams.param_generator('Rho'),
         'beta_0': DefaultParams.param_generator('Beta0'),
         'beta_1': DefaultParams.param_generator('Beta1'),
-        'restrict_polynomial': DefaultParams.restrict(f=0, d=0, n='Restrict Polynomial'),  # noqa
-        'degree_poly': DefaultParams.degree_poly(f=1, d=1, showName=False),
+        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict Polynomial'),  # noqa
+        'degree_poly': DefaultParams.degree_poly(d=1, showName=False),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
@@ -161,8 +161,8 @@ class Exponential_M2_17(Continuous):
         'rho': DefaultParams.param_generator('Rho'),
         'a': DefaultParams.param_generator('a'),
         'b': DefaultParams.param_generator('b'),
-        'c': DefaultParams.param_generator('c', f=1),
-        'd': DefaultParams.param_generator('d', f=1),
+        'c': DefaultParams.param_generator('c'),
+        'd': DefaultParams.param_generator('d'),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
@@ -275,7 +275,7 @@ class Power_216(Continuous):
         'control': DefaultParams.param_generator('Control'),
         'slope': DefaultParams.param_generator('Slope'),
         'power': DefaultParams.param_generator('Power'),
-        'restrict_power': DefaultParams.restrict(f=0, d=1, n='Restrict Power'),  # noqa
+        'restrict_power': DefaultParams.restrict(d=1, n='Restrict Power'),  # noqa
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
@@ -333,7 +333,7 @@ class Hill_216(Continuous):
         'v': DefaultParams.param_generator('V'),
         'n': DefaultParams.param_generator('N'),
         'k': DefaultParams.param_generator('K'),
-        'restrict_n': DefaultParams.restrict(f=0, d=1, n='Restrict N>1'),
+        'restrict_n': DefaultParams.restrict(d=1, n='Restrict N>1'),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
