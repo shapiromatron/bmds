@@ -199,13 +199,13 @@ class DefaultParams(object):
         'c': constants.FC_OTHER,
         't': constants.FT_BOOL,
         'd': 1,
-        'n': 'BMD Calculation',
+        'n': 'BMD calculation',
     }
     bmdl_curve_calc = {
         'c': constants.FC_OTHER,
         't': constants.FT_BOOL,
         'd': 0,
-        'n': 'BMDL Curve Calculation',
+        'n': 'BMDL curve calculation',
     }
     dose_drop = {
         'c': constants.FC_OTHER,
@@ -217,7 +217,7 @@ class DefaultParams(object):
         'c': constants.FC_OTHER,
         't': constants.FT_BOOL,
         'd': 1,
-        'n': 'Constant Variance',
+        'n': 'Constant variance',
     }
     max_iterations = {
         'c': constants.FC_OPTIMIZER,
@@ -229,7 +229,7 @@ class DefaultParams(object):
         'c': constants.FC_OPTIMIZER,
         't': constants.FT_DECIMAL,
         'd': 1.0E-08,
-        'n': 'Relative Function',
+        'n': 'Relative function',
     }
     parameter_conv = {
         'c': constants.FC_OPTIMIZER,
@@ -271,7 +271,7 @@ class DefaultParams(object):
             'd': d,
         }
         if showName:
-            d['n'] = 'Degree of Polynomial'
+            d['n'] = 'Degree of polynomial'
         return d
 
     @staticmethod

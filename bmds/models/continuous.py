@@ -40,7 +40,7 @@ class Polynomial_216(Continuous):
         'beta_7': DefaultParams.param_generator('Beta7'),
         'beta_6': DefaultParams.param_generator('Beta6'),
         'beta_8': DefaultParams.param_generator('Beta8'),
-        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict Polynomial'),  # noqa
+        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
@@ -106,7 +106,7 @@ class Linear_216(Polynomial_216):
         'rho': DefaultParams.param_generator('Rho'),
         'beta_0': DefaultParams.param_generator('Beta0'),
         'beta_1': DefaultParams.param_generator('Beta1'),
-        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict Polynomial'),  # noqa
+        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(d=1, showName=False),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
@@ -299,7 +299,7 @@ class Power_216(Continuous):
         'control': DefaultParams.param_generator('Control'),
         'slope': DefaultParams.param_generator('Slope'),
         'power': DefaultParams.param_generator('Power'),
-        'restrict_power': DefaultParams.restrict(d=1, n='Restrict Power'),  # noqa
+        'restrict_power': DefaultParams.restrict(d=1, n='Restrict power'),  # noqa
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
