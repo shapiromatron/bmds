@@ -3,6 +3,24 @@ DICHOTOMOUS = 'D'
 DICHOTOMOUS_CANCER = 'DC'
 CONTINUOUS = 'C'
 
+# model names
+M_Weibull = 'Weibull'
+M_LogProbit = 'LogProbit'
+M_Probit = 'Probit'
+M_Multistage = 'Multistage'
+M_Gamma = 'Gamma'
+M_Logistic = 'Logistic'
+M_LogLogistic = 'LogLogistic'
+M_MultistageCancer = 'Multistage-Cancer'
+M_Linear = 'Linear'
+M_Polynomial = 'Polynomial'
+M_Power = 'Power'
+M_ExponentialM2 = 'Exponential-M2'
+M_ExponentialM3 = 'Exponential-M3'
+M_ExponentialM4 = 'Exponential-M4'
+M_ExponentialM5 = 'Exponential-M5'
+M_Hill = 'Hill'
+
 # bmr types
 DICHOTOMOUS_BMRS = [
     {'type': 'Extra', 'value': 0.1, 'confidence_level': 0.95},
