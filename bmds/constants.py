@@ -33,6 +33,22 @@ CONTINUOUS_BMRS = [
     {'type': 'Point', 'value': 1.0, 'confidence_level': 0.95},
     {'type': 'Extra', 'value': 1.0, 'confidence_level': 0.95},
 ]
+BMR_CROSSWALK = {
+    DICHOTOMOUS: {
+        'Extra': 0,
+        'Added': 1
+    },
+    DICHOTOMOUS_CANCER: {
+        'Extra': 0
+    },
+    CONTINUOUS: {
+        'Abs. Dev.': 0,
+        'Std. Dev.': 1,
+        'Rel. Dev.': 2,
+        'Point': 3,
+        'Extra': 4
+    }
+}
 
 # field types
 FT_INTEGER = 'i'

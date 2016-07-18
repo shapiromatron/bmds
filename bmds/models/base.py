@@ -6,24 +6,6 @@ from ..parser import OutputParser
 from ..utils import RunProcess
 
 
-BMR_CROSSWALK = {
-    constants.DICHOTOMOUS: {
-        'Extra': 0,
-        'Added': 1
-    },
-    constants.DICHOTOMOUS_CANCER: {
-        'Extra': 0
-    },
-    constants.CONTINUOUS: {
-        'Abs. Dev.': 0,
-        'Std. Dev.': 1,
-        'Rel. Dev.': 2,
-        'Point': 3,
-        'Extra': 4
-    }
-}
-
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
