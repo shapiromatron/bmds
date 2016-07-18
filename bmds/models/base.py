@@ -10,33 +10,10 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
 class BMDModel(object):
-    """
-    Has the following required static-class methods:
 
-        - model_name = ''      # string model name
-        - dtype = ''           # data type - 'D','C', etc.
-        - exe = ''             # BMD executable (without extension)
-        - exe_plot             # wgnuplot input-file executable (w/o extension)
-        - version = 0          # version number
-        - date = ''            # version date
-        - defaults = {}        # default options setup
-        - possible_bmr = ()    # possible BMRs which can be used w/ model
-
-    And at-least these instance methods:
-
-        - self.override = {}        # overridden values from default
-        - self.override_txt = ['']  # text string(s) for overridden values
-
-    """
-
-    def __init__(self, dataset):
-
+    def __init__(self, dataset, overrides=None):
         self.dataset = dataset
-
-        self.override = {}
-        self.override_txt = ['']
-
-        # set default values
+        self.overrides = overrides or {}
         self.values = {}
         self.tempfns = []
         self.output_created = False
