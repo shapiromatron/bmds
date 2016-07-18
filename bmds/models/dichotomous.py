@@ -54,7 +54,8 @@ class Multistage_32(Dichotomous):
     }
 
     def as_dfile(self):
-        degree_poly = self.values['degree_poly'][0]
+        self._set_values()
+        degree_poly = self.values['degree_poly']
 
         params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
         params.insert(0, 'background')
@@ -125,7 +126,8 @@ class MultistageCancer_19(DichotomousCancer):
     }
 
     def as_dfile(self):
-        degree_poly = self.values['degree_poly'][0]
+        self._set_values()
+        degree_poly = self.values['degree_poly']
 
         params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
         params.insert(0, 'background')
@@ -183,6 +185,7 @@ class Weibull_215(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),
@@ -237,6 +240,7 @@ class LogProbit_32(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),
@@ -291,6 +295,7 @@ class Probit_32(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),
@@ -344,6 +349,7 @@ class Gamma_215(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),
@@ -398,6 +404,7 @@ class LogLogistic_213(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),
@@ -452,6 +459,7 @@ class Logistic_213(Dichotomous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(self.dataset.doses_used),

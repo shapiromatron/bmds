@@ -26,7 +26,6 @@ class BMDModel(object):
 
         - self.override = {}        # overridden values from default
         - self.override_txt = ['']  # text string(s) for overridden values
-        - self.values = {}          # full values for object
 
     """
 
@@ -39,9 +38,6 @@ class BMDModel(object):
 
         # set default values
         self.values = {}
-        for k, v in self.defaults.iteritems():
-            self.values[k] = self._get_option_value(k)
-
         self.tempfns = []
         self.output_created = False
 
@@ -107,21 +103,25 @@ class BMDModel(object):
             f.write(self.as_dfile())
         return f_in
 
+    def _set_values(self):
+        self.values = {}
+        for k in self.defaults.keys():
+            self.values[k] = self._get_option_value(k)
+
     def _get_option_value(self, key):
         """
         Get option value(s), or use default value if no override value.
         Two output values for 'p' type values (parameters), else one.
-        Returns a tuple of two values.
+        Returns a single value or tuple of two values
         """
-        if key in self.override:
-            val = self.override[key]
-        else:
-            val = self.defaults[key]['d']
+        val = self.overrides[key] \
+            if key in self.overrides \
+            else self.defaults[key]['d']
 
         if self.defaults[key]['t'] == constants.FT_PARAM:
             return val.split('|')
         else:
-            return val, False
+            return val
 
     def _dfile_print_header_rows(self):
         return '{}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out'.format(self.model_name)  # noqa
@@ -130,7 +130,7 @@ class BMDModel(object):
         # Print parameters in the specified order. Expects a tuple of parameter
         # names, in the proper order.
         if ((self.dtype == constants.CONTINUOUS) and
-                (self.values['constant_variance'][0] == 1)):
+                (self.values['constant_variance'] == 1)):
             self.values['rho'] = ('s', 0)  # for specified to equal 0
         specifieds = []
         initials = []
@@ -159,7 +159,7 @@ class BMDModel(object):
 
     def _dfile_print_options(self, *params):
         # Return space-separated list of values for dfile
-        return ' '.join([str(self.values[param][0]) for param in params])
+        return ' '.join([str(self.values[param]) for param in params])
 
 
 class DefaultParams(object):

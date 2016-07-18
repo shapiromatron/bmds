@@ -52,7 +52,8 @@ class Polynomial_216(Continuous):
     }
 
     def as_dfile(self):
-        degpoly = int(self.values['degree_poly'][0])
+        self._set_values()
+        degpoly = int(self.values['degree_poly'])
         params = ['alpha', 'rho', 'beta_0']
         for i in range(1, degpoly + 1):
             params.append('beta_' + str(i))
@@ -118,6 +119,7 @@ class Linear_216(Polynomial_216):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             '1',
@@ -181,6 +183,7 @@ class Exponential_M2_17(Continuous):
     output_prefix = 'M2'
 
     def as_dfile(self):
+        self._set_values()
         params = self._dfile_print_parameters(
             'alpha', 'rho', 'a', 'b', 'c', 'd')
         return '\n'.join([
@@ -306,6 +309,7 @@ class Power_216(Continuous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             '1 {} 0'.format(self.dataset.doses_used),
@@ -368,6 +372,7 @@ class Hill_216(Continuous):
     }
 
     def as_dfile(self):
+        self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
             '1 {} 0'.format(self.dataset.doses_used),
