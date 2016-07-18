@@ -61,7 +61,7 @@ class Session(object):
 
 
 class BMDS_v230(Session):
-
+    version = 'BMDS230'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_213),
@@ -89,11 +89,11 @@ class BMDS_v230(Session):
 
 
 class BMDS_v231(BMDS_v230):
-    pass
+    version = 'BMDS231'
 
 
 class BMDS_v240(BMDS_v231):
-
+    version = 'BMDS240'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -121,6 +121,7 @@ class BMDS_v240(BMDS_v231):
 
 
 class BMDS_v260(BMDS_v240):
+    version = 'BMDS260'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -148,7 +149,7 @@ class BMDS_v260(BMDS_v240):
 
 
 class BMDS_v2601(BMDS_v260):
-    pass
+    version = 'BMDS2601'
 
 
 VERSIONS = {
