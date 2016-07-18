@@ -44,13 +44,14 @@ class Session(object):
     def has_models(self):
         return len(self._models) > 0
 
-    def add_model(self, name, overrides=None):
+    def add_model(self, name, overrides=None, id=None):
         if self.dataset is None:
             raise ValueError('Add dataset to session before adding models')
         Model = self.model_options[self.dtype][name]
         instance = Model(
             dataset=self.dataset,
-            overrides=overrides
+            overrides=overrides,
+            id=id,
         )
         self._models.append(instance)
 

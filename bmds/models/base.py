@@ -11,7 +11,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 class BMDModel(object):
 
-    def __init__(self, dataset, overrides=None):
+    def __init__(self, dataset, overrides=None, id=None):
+        self.id = id
         self.dataset = dataset
         self.overrides = overrides or {}
         self.values = {}
