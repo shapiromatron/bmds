@@ -30,8 +30,9 @@ class BMDModel(object):
             if os.path.exists(outfile):
                 self.output_created = True
                 self.tempfns.append(outfile)
-                self.parse_results(outfile)
-
+                with open(outfile, 'r') as f:
+                    text = f.read()
+                self.parse_results(text)
             o2 = dfile.replace('.(d)', '.002')
             if os.path.exists(o2):
                 self.tempfns.append(o2)
@@ -65,11 +66,9 @@ class BMDModel(object):
             cls.bmds_version_dir,
             cls.exe + '.exe'))
 
-    def parse_results(self, fn):
-        with open(fn, 'r') as f:
-            text = f.read()
-        parser = OutputParser(text, self.dtype, self.model_name)
-        self.output_text = text
+    def parse_results(self, outfile):
+        parser = OutputParser(outfile, self.dtype, self.model_name)
+        self.outfile = outfile
         self.output = parser.output
 
     def as_dfile(self):
