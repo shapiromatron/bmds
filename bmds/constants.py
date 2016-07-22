@@ -12,6 +12,13 @@ DICH_DTYPES = (
     DICHOTOMOUS_CANCER,
 )
 
+# bmds versions
+BMDS230 = 'BMDS230'
+BMDS231 = 'BMDS231'
+BMDS240 = 'BMDS240'
+BMDS260 = 'BMDS260'
+BMDS2601 = 'BMDS2601'
+
 # model names
 M_Weibull = 'Weibull'
 M_LogProbit = 'LogProbit'
