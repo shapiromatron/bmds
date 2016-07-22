@@ -21,10 +21,6 @@ class Multistage_32(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'multistage'
     exe_plot = '10multista'
-    js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"  # noqa
-    js_parameters = [
-        'Background', 'Beta(1)', 'Beta(2)', 'Beta(3)', 'Beta(4)',
-        'Beta(5)', 'Beta(6)', 'Beta(7)', 'Beta(8)']
     version = 3.2
     date = '05/26/2010'
     defaults = {
@@ -95,10 +91,6 @@ class MultistageCancer_19(DichotomousCancer):
     bmds_version_dir = 'BMDS231'
     exe = 'cancer'
     exe_plot = '10cancer'
-    js_formula = "{Background} + (1. - {Background}) * (1. - Math.exp( -1. * {Beta(1)}*x - {Beta(2)}*Math.pow(x,2) - {Beta(3)}*Math.pow(x,3) - {Beta(4)}*Math.pow(x,4) - {Beta(5)}*Math.pow(x,5) - {Beta(6)}*Math.pow(x,6) - {Beta(7)}*Math.pow(x,7) - {Beta(8)}*Math.pow(x,8)))"  # noqa
-    js_parameters = [
-        'Background', 'Beta(1)', 'Beta(2)', 'Beta(3)', 'Beta(4)',
-        'Beta(5)', 'Beta(6)', 'Beta(7)', 'Beta(8)']
     version = 1.9
     date = '05/26/2010'
     defaults = {
@@ -162,8 +154,6 @@ class Weibull_215(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'weibull'
     exe_plot = '10weibull'
-    js_formula = "{Background} + (1-{Background}) * (1 - Math.exp( -1.*{Slope} * Math.pow(x,{Power}) ))"  # noqa
-    js_parameters = ['Background', 'Slope', 'Power']
     version = 2.15
     date = '10/28/2009'
     defaults = {
@@ -217,8 +207,6 @@ class LogProbit_32(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'probit'
     exe_plot = '10probit'
-    js_formula = "{background} + (1-{background}) * Math.normalcdf(0,1,{intercept} + {slope}*Math.log(x))"  # noqa
-    js_parameters = ['background', 'intercept', 'slope']
     version = 3.2
     date = '10/28/2009'
     defaults = {
@@ -272,8 +260,6 @@ class Probit_32(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'probit'
     exe_plot = '10probit'
-    js_formula = "Math.normalcdf(0,1,{intercept} + {slope}*x)"
-    js_parameters = ['intercept', 'slope']
     version = 3.2
     date = '10/28/2009'
     defaults = {
@@ -327,8 +313,6 @@ class Gamma_215(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'gamma'
     exe_plot = '10gammhit'
-    js_formula = "{Background} + (1 - {Background}) * Math.GammaCDF(x*{Slope},{Power})"  # noqa
-    js_parameters = ['Background', 'Slope', 'Power']
     version = 2.15
     date = '10/28/2009'
     defaults = {
@@ -381,8 +365,6 @@ class LogLogistic_213(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'logist'
     exe_plot = '10logist'
-    js_formula = "{background} + (1-{background})/( 1 + Math.exp(-1.*{intercept}-1.*{slope}*Math.log(x) ) )"  # noqa
-    js_parameters = ['background', 'intercept', 'slope']
     version = 2.13
     date = '10/28/2009'
     defaults = {
@@ -436,8 +418,6 @@ class Logistic_213(Dichotomous):
     bmds_version_dir = 'BMDS231'
     exe = 'logist'
     exe_plot = '10logist'
-    js_formula = "1/( 1 + Math.exp(-1*{intercept}-{slope}*x ))"
-    js_parameters = ['intercept', 'slope']
     version = 2.13
     date = '10/28/2009'
     defaults = {

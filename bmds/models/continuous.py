@@ -16,10 +16,6 @@ class Polynomial_216(Continuous):
     bmds_version_dir = 'BMDS231'
     exe = 'poly'
     exe_plot = '00poly'
-    js_formula = "{beta_0} + ({beta_1}*x) + ({beta_2}*Math.pow(x,2)) + ({beta_3}*Math.pow(x,3)) + ({beta_4}*Math.pow(x,4)) + ({beta_5}*Math.pow(x,5)) + ({beta_6}*Math.pow(x,6)) + ({beta_7}*Math.pow(x,7)) + ({beta_8}*Math.pow(x,8))"  # noqa
-    js_parameters = [
-        'beta_0', 'beta_1', 'beta_2', 'beta_3', 'beta_4',
-        'beta_5', 'beta_6', 'beta_7', 'beta_8']
     version = 2.16
     date = '05/26/2010'
     defaults = {
@@ -94,8 +90,6 @@ class Linear_216(Polynomial_216):
     bmds_version_dir = 'BMDS231'
     exe = 'poly'
     exe_plot = '00poly'
-    js_formula = "{beta_0} + ({beta_1}*x)"
-    js_parameters = ['beta_0', 'beta_1']
     version = 2.16
     date = '05/26/2010'
     defaults = {
@@ -158,9 +152,7 @@ class Exponential_M2_17(Continuous):
     bmds_version_dir = 'BMDS231'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
-    js_formula = "{a} * Math.exp({sign}*{b}*x)"
     exp_run_settings = ' 0 1000 11 0 1'
-    js_parameters = ['a', 'b', 'sign']
     version = 1.7
     date = '12/10/2009'
     defaults = {
@@ -221,9 +213,7 @@ class Exponential_M2_110(Exponential_M2_19):
 class Exponential_M3_17(Exponential_M2_17):
     minimum_DG = 3
     model_name = 'Exponential-M3'
-    js_formula = "{a} * Math.exp({sign}*Math.pow({b}*x,{d}))"
     exp_run_settings = ' 0 0100 22 0 1'
-    js_parameters = ['a', 'b', 'd', 'sign']
     output_prefix = 'M3'
 
 
@@ -244,9 +234,7 @@ class Exponential_M3_110(Exponential_M3_19):
 class Exponential_M4_17(Exponential_M2_17):
     minimum_DG = 3
     model_name = 'Exponential-M4'
-    js_formula = "{a} * ({c}-({c}-1) * Math.exp(-1.*{b}*x))"
     exp_run_settings = ' 0 0010 33 0 1'
-    js_parameters = ['a', 'b', 'c']
     output_prefix = 'M4'
 
 
@@ -267,9 +255,7 @@ class Exponential_M4_110(Exponential_M4_19):
 class Exponential_M5_17(Exponential_M2_17):
     minimum_DG = 4
     model_name = 'Exponential-M5'
-    js_formula = "{a} * ({c}-({c}-1) *  Math.exp(-1.*Math.pow({b}*x,{d})))"
     exp_run_settings = ' 0 0001 44 0 1'
-    js_parameters = ['a', 'b', 'c', 'd']
     output_prefix = 'M5'
 
 
@@ -293,8 +279,6 @@ class Power_216(Continuous):
     bmds_version_dir = 'BMDS231'
     exe = 'power'
     exe_plot = '00power'
-    js_formula = "{control} + {slope} * Math.pow(x,{power})"
-    js_parameters = ['control', 'slope', 'power']
     version = 2.16
     date = '10/28/2009'
     defaults = {
@@ -357,8 +341,6 @@ class Hill_216(Continuous):
     bmds_version_dir = 'BMDS231'
     exe = 'hill'
     exe_plot = '00Hill'
-    js_formula = "{intercept} + ({v}*Math.pow(x,{n})) / (Math.pow({k},{n}) + Math.pow(x,{n}))"  # noqa
-    js_parameters = ['intercept', 'v', 'n', 'k']
     version = 2.16
     date = '04/06/2011'
     defaults = {
