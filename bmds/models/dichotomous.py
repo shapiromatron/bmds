@@ -83,7 +83,9 @@ class Multistage_33(Multistage_32):
 
 
 class Multistage_34(Multistage_33):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 3.4
+    date = '05/02/2014'
 
 
 class MultistageCancer_19(DichotomousCancer):

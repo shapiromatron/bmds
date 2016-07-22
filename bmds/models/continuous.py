@@ -82,7 +82,9 @@ class Polynomial_217(Polynomial_216):
 
 
 class Polynomial_220(Polynomial_217):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 2.20
+    date = '10/22/2014'
 
 
 class Linear_216(Polynomial_216):
@@ -145,7 +147,9 @@ class Linear_217(Linear_216):
 
 
 class Linear_220(Linear_217):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 2.20
+    date = '10/22/2014'
 
 
 class Exponential_M2_17(Continuous):
@@ -209,7 +213,9 @@ class Exponential_M2_19(Exponential_M2_17):
 
 
 class Exponential_M2_110(Exponential_M2_19):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 1.10
+    date = '01/12/2015'
 
 
 class Exponential_M3_17(Exponential_M2_17):
@@ -230,7 +236,9 @@ class Exponential_M3_19(Exponential_M3_17):
 
 
 class Exponential_M3_110(Exponential_M3_19):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 1.10
+    date = '01/12/2015'
 
 
 class Exponential_M4_17(Exponential_M2_17):
@@ -251,7 +259,9 @@ class Exponential_M4_19(Exponential_M4_17):
 
 
 class Exponential_M4_110(Exponential_M4_19):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 1.10
+    date = '01/12/2015'
 
 
 class Exponential_M5_17(Exponential_M2_17):
@@ -272,7 +282,9 @@ class Exponential_M5_19(Exponential_M5_17):
 
 
 class Exponential_M5_110(Exponential_M5_19):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 1.10
+    date = '01/12/2015'
 
 
 class Power_216(Continuous):
@@ -334,7 +346,9 @@ class Power_217(Power_216):
 
 
 class Power_218(Power_217):
-    pass
+    bmds_version_dir = 'BMDS260'
+    version = 2.18
+    date = '05/19/2014'
 
 
 class Hill_216(Continuous):
