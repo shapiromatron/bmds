@@ -1,46 +1,92 @@
 import re
 
+from . import constants
+
+EXPONENTIAL = 'E'
+CTYPES = [constants.CONTINUOUS, EXPONENTIAL]
+
 
 class OutputParser(object):
+
     # regex for finding numeric values
     re_num = r'[/+/-]?[0-9]+[/.]*[0-9]*[Ee+-]*[0-9]*'
 
     # line-skips by dataset type
-    NUM_LINE_SKIPS_PARAMS = {'C': 1, 'D': 1, 'DC': 1, 'E': 4}
-    NUM_LINE_SKIPS_FIT = {'C': 3, 'D': 2, 'DC': 2}
-    NUM_LINE_SKIPS_AIC = {'C': 1, 'E': 2}
+    NUM_LINE_SKIPS_PARAMS = {
+        constants.CONTINUOUS: 1,
+        constants.DICHOTOMOUS: 1,
+        constants.DICHOTOMOUS_CANCER: 1,
+        EXPONENTIAL: 4,
+    }
+
+    NUM_LINE_SKIPS_FIT = {
+        constants.CONTINUOUS: 3,
+        constants.DICHOTOMOUS: 2,
+        constants.DICHOTOMOUS_CANCER: 2,
+    }
+
+    NUM_LINE_SKIPS_AIC = {
+        constants.CONTINUOUS: 1,
+        EXPONENTIAL: 2,
+    }
 
     def __init__(self, output_text, dtype, model_name):
-        self.model_type = dtype
+        assert dtype in constants.DTYPES
+        if 'exponential' in model_name.lower():
+            dtype = EXPONENTIAL
+
+        self.dtype = dtype
         self.output_text = output_text
-        self.output = {'model_name': model_name}
-        self.import_error = False
+        self.model_name = model_name
         self.parse_output_file()
 
     def parse_output_file(self):
+        self.output = {}
+
+        self._set_default_values()
+        self._import_single_searches()
+        self._import_warnings()
+        self._import_line_by_line()
+        self._calc_residual_of_interest()
+        self._cleanup_nans()
+
+    def _set_default_values(self):
+        # set name
+        self.output['model_name'] = self.model_name
+
         # initial setup
-        vals = ["Chi2", 'df', 'p_value4', 'residual_of_interest']
+        vals = ('Chi2', 'df', 'p_value4', 'residual_of_interest')
         for val in vals:
             self.output[val] = -999
-        outs = self.output_text.splitlines()
 
-        # add blank placeholders
-        if self.model_type in ['D', 'DC']:
-            fit_tbl = ['fit_dose', 'fit_est_prob', 'fit_estimated',
-                       'fit_observed', 'fit_size', 'fit_residuals']
-        elif self.model_type in ['C', 'E']:
-            fit_tbl = ['fit_dose', 'fit_size', 'fit_observed',
-                       'fit_estimated', 'fit_stdev', 'fit_est_stdev',
-                       'fit_residuals']
+    def _import_line_by_line(self):
+        if self.dtype in constants.DICH_DTYPES:
+            fit_tbl = (
+                'fit_dose',
+                'fit_est_prob',
+                'fit_estimated',
+                'fit_observed',
+                'fit_size',
+                'fit_residuals',
+            )
+        elif self.dtype in CTYPES:
+            fit_tbl = (
+                'fit_dose',
+                'fit_size',
+                'fit_observed',
+                'fit_estimated',
+                'fit_stdev',
+                'fit_est_stdev',
+                'fit_residuals'
+            )
+
+        # set empty tables
         for val in fit_tbl:
             self.output[val] = []
 
-        # import values
-        self._import_single_searches()
-        self._import_warnings()
-
         # begin line-by-line
-        if self.model_type in ['D', 'DC']:
+        outs = self.output_text.splitlines()
+        if self.dtype in constants.DICH_DTYPES:
             self._import_dich_vals()
             for i in range(len(outs)):
                 if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
@@ -48,7 +94,7 @@ class OutputParser(object):
                 elif outs[i] == r'     Dose     Est._Prob.    Expected    Observed     Size       Residual':  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
-        elif self.model_type == 'C':
+        elif self.dtype == constants.CONTINUOUS:
             for i in range(len(outs)):
                 if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
                     self._lbl_parameter(outs, i)
@@ -59,7 +105,7 @@ class OutputParser(object):
                 elif outs[i] == r"            Model      Log(likelihood)   # Param's      AIC":  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
-        elif self.model_type == 'E':
+        elif self.dtype == EXPONENTIAL:
             for i in range(len(outs)):
                 if outs[i] == r'                     Parameter Estimates':
                     self._lbl_parameter(outs, i)
@@ -72,13 +118,14 @@ class OutputParser(object):
                 elif outs[i] == r"                     Model      Log(likelihood)      DF         AIC":  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
+    def _cleanup_nans(self):
         # standardize possible errors
-        fields = ['AIC', 'p_value1', 'p_value2', 'p_value3', 'p_value4']
+        fields = ('AIC', 'p_value1', 'p_value2', 'p_value3', 'p_value4')
         for field in fields:
             if field in self.output and self.output[field] in ['NA', 'N/A']:
                 self.output[field] = -999
 
-    def calc_residual_of_interest(self):
+    def _calc_residual_of_interest(self):
         bmd = self.output['BMD']
         if bmd > 0 and len(self.output['fit_dose']) > 0:
             diff = abs(self.output['fit_dose'][0] - bmd)
@@ -153,8 +200,13 @@ class OutputParser(object):
 
     def _lbl_parameter(self, outs, i):
         self.output['parameters'] = {}
-        cw = {1: 'estimate', 2: 'stdev', 3: '95_low_limit', 4: '95_high_limit'}
-        i += self.NUM_LINE_SKIPS_PARAMS[self.model_type]
+        cw = {
+            1: 'estimate',
+            2: 'stdev',
+            3: '95_low_limit',
+            4: '95_high_limit',
+        }
+        i += self.NUM_LINE_SKIPS_PARAMS[self.dtype]
         while (len(outs[i].split()) > 0):
             vals = outs[i].split()
             self.output['parameters'][vals[0]] = {}
@@ -167,7 +219,7 @@ class OutputParser(object):
 
     def _lbl_fit_cont_dich(self, outs, i, fit_tbl):
         # Line-by-line: find "Goodness  of  Fit" table
-        i += self.NUM_LINE_SKIPS_FIT[self.model_type]
+        i += self.NUM_LINE_SKIPS_FIT[self.dtype]
         while len(outs[i]) > 1:
             vals = outs[i].split()
             for j in range(len(vals)):
@@ -176,17 +228,16 @@ class OutputParser(object):
                 except:
                     self.output[fit_tbl[j]].append(vals[j])
             i += 1
-        self.calc_residual_of_interest()
 
     def _lbl_fit_exp(self, outs, i, table_name):
         # Line-by-line: find "Goodness  of  Fit" table - exponential - observed
         i += 2   # next line and dotted lines
 
         if table_name == 'observed':
-            tbl_names = ['fit_dose', 'fit_size', 'fit_observed', 'fit_stdev']
+            tbl_names = ('fit_dose', 'fit_size', 'fit_observed', 'fit_stdev')
             rng = range(len(outs[i].split()))
         elif table_name == 'estimated':
-            tbl_names = ['fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals']  # noqa
+            tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
             rng = range(1, len(outs[i].split()))
 
         while len(outs[i]) > 0:
@@ -197,9 +248,6 @@ class OutputParser(object):
                 except:
                     self.output[tbl_names[j]].apend(vals[j])
             i += 1
-
-        if table_name == 'estimated':
-            self.calc_residual_of_interest()
 
     def _lbl_pvalue(self, outs, i):
         # Line-by-line: find p-values (continuous)
@@ -229,8 +277,8 @@ class OutputParser(object):
 
     def _lbl_aic_cont_exp(self, outs, i):
         # Line-by-line: find AIC (continuous)
-        i += self.NUM_LINE_SKIPS_AIC[self.model_type]
-        field = ['fitted', '2', '3', '4', '5']  # continuous is "fitted"
+        i += self.NUM_LINE_SKIPS_AIC[self.dtype]
+        field = ('fitted', '2', '3', '4', '5')  # continuous is "fitted"
         while len(outs[i]) > 0:
             vals = outs[i].split()
             if vals[0] in field:
