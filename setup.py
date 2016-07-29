@@ -28,7 +28,7 @@ setup(
     url='https://github.com/shapiromatron/bmds',
     author='Andy Shapiro',
     author_email='shapiromatron@gmail.com',
-    license='TBD',
+    license='MIT',
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'pytest',
