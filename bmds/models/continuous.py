@@ -63,7 +63,7 @@ class Polynomial_216(Continuous):
                 'bmdl_curve_calculation', 'restrict_polynomial',
                 'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
             self._dfile_print_options(
-                'bmr_type', 'bmr',  'constant_variance', 'confidence_level'),
+                'bmr_type', 'bmr', 'constant_variance', 'confidence_level'),
             self._dfile_print_parameters(*params),
             self.dataset.as_dfile(),
         ])
@@ -125,7 +125,7 @@ class Linear_216(Polynomial_216):
                 'bmdl_curve_calculation', 'restrict_polynomial',
                 'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
             self._dfile_print_options(
-                'bmr_type', 'bmr',  'constant_variance', 'confidence_level'),
+                'bmr_type', 'bmr', 'constant_variance', 'confidence_level'),
             self._dfile_print_parameters(
                 'alpha', 'rho', 'beta_0', 'beta_1'),
             self.dataset.as_dfile(),

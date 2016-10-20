@@ -5,9 +5,9 @@ import threading
 
 class RunProcess(threading.Thread):
     """
-    Run process with the ability to automatically terminate a process given a
-    specified time interval, in seconds. From:
-    http://stackoverflow/questions/4158502/
+    Run process and terminate a process given a specified time interval.
+
+    Adapted from: http://stackoverflow/questions/4158502/
 
     Two input arguments:
         - cmd, the command to execute in subprocess, as a list
@@ -16,6 +16,7 @@ class RunProcess(threading.Thread):
     Example call:
         - RunProcess(["./foo", "arg1"]).call()
     """
+
     def __init__(self, cmd, timeout=60):
         threading.Thread.__init__(self)
         self.cmd = cmd

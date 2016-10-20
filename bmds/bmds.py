@@ -105,7 +105,7 @@ class BMDS_v240(BMDS_v231):
             (constants.M_Weibull, models.Weibull_216),
         ]),
         constants.DICHOTOMOUS_CANCER: OrderedDict([
-            (constants.M_MultistageCancer,  models.MultistageCancer_110),
+            (constants.M_MultistageCancer, models.MultistageCancer_110),
         ]),
         constants.CONTINUOUS: OrderedDict([
             (constants.M_Linear, models.Linear_217),
@@ -152,7 +152,7 @@ class BMDS_v2601(BMDS_v260):
     version = constants.BMDS2601
 
 
-VERSIONS =  {
+VERSIONS = {
     constants.BMDS230: BMDS_v230,
     constants.BMDS231: BMDS_v231,
     constants.BMDS240: BMDS_v240,

@@ -88,6 +88,7 @@ class BMDModel(object):
     def _get_option_value(self, key):
         """
         Get option value(s), or use default value if no override value.
+
         Two output values for 'p' type values (parameters), else one.
         Returns a single value or tuple of two values
         """
@@ -141,11 +142,15 @@ class BMDModel(object):
 
 class DefaultParams(object):
     """
-        c = category
-        t = field type
-        d = default
-        n = name (optional)
+    Container to store default modeling input parameters.
+
+    Key crosswalk:
+     - c = category
+     - t = field type
+     - d = default
+     - n = name (optional)
     """
+
     bmdl_curve_calculation = {
         'c': constants.FC_OTHER,
         't': constants.FT_BOOL,
@@ -207,27 +212,27 @@ class DefaultParams(object):
         'c': constants.FC_BMR,
         't': constants.FT_DECIMAL,
         'd': 0.95,
-     }
+    }
     dich_bmr = {
         'c': constants.FC_BMR,
         't': constants.FT_INTEGER,
         'd': 0.1,
-     }
+    }
     dich_bmr_type = {
         'c': constants.FC_BMR,
         't': constants.FT_DECIMAL,
         'd': 0,
-     }
+    }
     cont_bmr = {
         'c': constants.FC_BMR,
         't': constants.FT_DECIMAL,
         'd': 1.0,
-     }
+    }
     cont_bmr_type = {
         'c': constants.FC_BMR,
         't': constants.FT_INTEGER,
         'd': 1,
-     }
+    }
 
     @staticmethod
     def degree_poly(d=2, showName=True):

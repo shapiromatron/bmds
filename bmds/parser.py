@@ -138,7 +138,8 @@ class OutputParser(object):
 
     def _import_single_searches(self):
         """
-        Look for simple one-line regex searches common across dataset types -
+        Look for simple one-line regex searches common across dataset types.
+
         If failed, then return -999.
 
         AIC is only handled in this method for dichotomous continuous and
@@ -167,6 +168,8 @@ class OutputParser(object):
 
     def _import_warnings(self):
         """
+        Add custom warnings found in output files.
+
         Warnings in output files are searched for using this method; if a
         warning is found then it will be appended to the warnings list.
         """
@@ -185,6 +188,8 @@ class OutputParser(object):
 
     def _import_dich_vals(self):
         """
+        Import simple dichotomous values.
+
         Dichotomous values are found on one line, therefore one regex will
         return up to three possible matches for the Chi^2, degrees of freedom,
         and p-value.

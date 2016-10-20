@@ -7,7 +7,7 @@ class DichotomousDataset(object):
         self.doses_dropped = doses_dropped
         self.num_doses = len(doses)
         self.doses_used = self.num_doses - self.doses_dropped
-        self.remainings = [n-p for n, p in zip(ns, incidences)]
+        self.remainings = [n - p for n, p in zip(ns, incidences)]
         self.validate()
 
     def validate(self):
