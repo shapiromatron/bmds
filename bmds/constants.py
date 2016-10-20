@@ -84,3 +84,13 @@ FC_BMR = 'b'
 P_DEFAULT = 'd'
 P_SPECIFIED = 's'
 P_INITIALIZED = 'i'
+
+# logic bins
+BIN_NO_CHANGE = 0
+BIN_WARNING = 1
+BIN_FAILURE = 2
+BIN_TYPES = (
+    BIN_NO_CHANGE,
+    BIN_WARNING,
+    BIN_FAILURE,
+)
