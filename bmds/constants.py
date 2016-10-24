@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # dataset types
 DICHOTOMOUS = 'D'
 DICHOTOMOUS_CANCER = 'DC'
@@ -94,3 +96,8 @@ BIN_TYPES = (
     BIN_WARNING,
     BIN_FAILURE,
 )
+BINMOJI = {
+    0: u'✓',
+    1: u'?',
+    2: u'✕',
+}

@@ -26,75 +26,75 @@ def test_default_logic():
 
     # dichotomous:
     txt = dedentify(u"""
-    ✓ BMD exists
-    ✓ BMDL exists
-    ✕ BMDU exists
-    ✓ AIC exists
-    ✓ Residual of interest exists
-    ✕ Variance type: [threshold = 0.1]
-    ✕ Variance fit: [threshold = 0.1]
-    ✓ GGOF: [threshold = 0.1]
-    ✓ BMD/BMDL (warning): [threshold = 5.0]
-    ✓ BMD to BMDL ratio: [threshold = 20.0]
-    ✓ Residual of interest: [threshold = 2.0]
-    ✓ Warnings
-    ✓ High BMD: [threshold = 1.0]
-    ✓ High BMDL: [threshold = 1.0]
-    ✓ Low BMD (warning): [threshold = 3.0]
-    ✓ Low BMDL (warning): [threshold = 3.0]
-    ✓ Low BMD: [threshold = 10.0]
-    ✓ Low BMDL: [threshold = 10.0]
-    ✕ Control residual: [threshold = 2.0]
-    ✕ Control stdev: [threshold = 1.5]
+    ✓ BMD exists [bin=✕]
+    ✓ BMDL exists [bin=✕]
+    ✕ BMDU exists [bin=✓]
+    ✓ AIC exists [bin=✕]
+    ✓ Residual of interest exists [bin=?]
+    ✕ Variance type [bin=?, threshold=0.1]
+    ✕ Variance fit [bin=?, threshold=0.1]
+    ✓ GGOF [bin=?, threshold=0.1]
+    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Residual of interest [bin=✓, threshold=2.0]
+    ✓ Warnings [bin=✓]
+    ✓ High BMD [bin=✓, threshold=1.0]
+    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ Low BMD (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMD [bin=?, threshold=10.0]
+    ✓ Low BMDL [bin=?, threshold=10.0]
+    ✕ Control residual [bin=?, threshold=2.0]
+    ✕ Control stdev [bin=?, threshold=1.5]
     """)
     assert txt == bmds.Recommender(bmds.constants.DICHOTOMOUS).show_rules()
 
     # dichotomous-cancer:
     txt = dedentify(u"""
-    ✓ BMD exists
-    ✓ BMDL exists
-    ✓ BMDU exists
-    ✓ AIC exists
-    ✓ Residual of interest exists
-    ✕ Variance type: [threshold = 0.1]
-    ✕ Variance fit: [threshold = 0.1]
-    ✓ GGOF: [threshold = 0.05]
-    ✓ BMD/BMDL (warning): [threshold = 5.0]
-    ✓ BMD to BMDL ratio: [threshold = 20.0]
-    ✓ Residual of interest: [threshold = 2.0]
-    ✓ Warnings
-    ✓ High BMD: [threshold = 1.0]
-    ✓ High BMDL: [threshold = 1.0]
-    ✓ Low BMD (warning): [threshold = 3.0]
-    ✓ Low BMDL (warning): [threshold = 3.0]
-    ✓ Low BMD: [threshold = 10.0]
-    ✓ Low BMDL: [threshold = 10.0]
-    ✕ Control residual: [threshold = 2.0]
-    ✕ Control stdev: [threshold = 1.5]
+    ✓ BMD exists [bin=✕]
+    ✓ BMDL exists [bin=✕]
+    ✓ BMDU exists [bin=✓]
+    ✓ AIC exists [bin=✕]
+    ✓ Residual of interest exists [bin=?]
+    ✕ Variance type [bin=?, threshold=0.1]
+    ✕ Variance fit [bin=?, threshold=0.1]
+    ✓ GGOF [bin=?, threshold=0.05]
+    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Residual of interest [bin=✓, threshold=2.0]
+    ✓ Warnings [bin=✓]
+    ✓ High BMD [bin=✓, threshold=1.0]
+    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ Low BMD (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMD [bin=?, threshold=10.0]
+    ✓ Low BMDL [bin=?, threshold=10.0]
+    ✕ Control residual [bin=?, threshold=2.0]
+    ✕ Control stdev [bin=?, threshold=1.5]
     """)
     assert txt == bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).show_rules()
 
     # continuous:
     txt = dedentify(u"""
-    ✓ BMD exists
-    ✓ BMDL exists
-    ✕ BMDU exists
-    ✓ AIC exists
-    ✓ Residual of interest exists
-    ✓ Variance type: [threshold = 0.1]
-    ✓ Variance fit: [threshold = 0.1]
-    ✓ GGOF: [threshold = 0.1]
-    ✓ BMD/BMDL (warning): [threshold = 5.0]
-    ✓ BMD to BMDL ratio: [threshold = 20.0]
-    ✓ Residual of interest: [threshold = 2.0]
-    ✓ Warnings
-    ✓ High BMD: [threshold = 1.0]
-    ✓ High BMDL: [threshold = 1.0]
-    ✓ Low BMD (warning): [threshold = 3.0]
-    ✓ Low BMDL (warning): [threshold = 3.0]
-    ✓ Low BMD: [threshold = 10.0]
-    ✓ Low BMDL: [threshold = 10.0]
-    ✓ Control residual: [threshold = 2.0]
-    ✓ Control stdev: [threshold = 1.5]
+    ✓ BMD exists [bin=✕]
+    ✓ BMDL exists [bin=✕]
+    ✕ BMDU exists [bin=✓]
+    ✓ AIC exists [bin=✕]
+    ✓ Residual of interest exists [bin=?]
+    ✓ Variance type [bin=?, threshold=0.1]
+    ✓ Variance fit [bin=?, threshold=0.1]
+    ✓ GGOF [bin=?, threshold=0.1]
+    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Residual of interest [bin=✓, threshold=2.0]
+    ✓ Warnings [bin=✓]
+    ✓ High BMD [bin=✓, threshold=1.0]
+    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ Low BMD (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
+    ✓ Low BMD [bin=?, threshold=10.0]
+    ✓ Low BMDL [bin=?, threshold=10.0]
+    ✓ Control residual [bin=?, threshold=2.0]
+    ✓ Control stdev [bin=?, threshold=1.5]
     """)
     assert txt == bmds.Recommender(bmds.constants.CONTINUOUS).show_rules()

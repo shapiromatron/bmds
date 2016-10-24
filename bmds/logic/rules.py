@@ -16,8 +16,9 @@ class Rule(object):
 
     def __unicode__(self):
         enabled = u'✓' if self.enabled else u'✕'
-        threshold = '' if math.isnan(self.threshold) else ': [threshold = {}]'.format(self.threshold)
-        return u'{0} {1}{2}'.format(enabled, self.name, threshold)
+        binmoji = constants.BINMOJI[self.failure_bin]
+        threshold = '' if math.isnan(self.threshold) else ', threshold={}'.format(self.threshold)
+        return u'{0} {1} [bin={2}{3}]'.format(enabled, self.name, binmoji, threshold)
 
     def check(self, dataset, output):
         if self.enabled:
