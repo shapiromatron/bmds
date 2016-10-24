@@ -1,19 +1,116 @@
-from .. import constants, rules
+from .. import constants
+from . import rules
 
 
 class Recommender(object):
+    # Recommendation logic for a specified data-type.
 
     SUFFICIENTLY_CLOSE_BMDL = 3
 
     def __init__(self, dtype):
-        self.dtype = dtype
-        if self.dtype not in constants.DTYPES:
-            raise ValueError('Invalid data type')
-        self._load_default_rules()
 
-    def _load_default_rules(self):
-        # load default rules based on self.dtype
-        self.rules = rules  # todo: load from JSON
+        rule_args = dict()
+        if dtype == constants.DICHOTOMOUS:
+            pass
+        elif dtype == constants.CONTINUOUS:
+            rule_args['continuous'] = True
+        elif dtype == constants.DICHOTOMOUS_CANCER:
+            rule_args['cancer'] = True
+        else:
+            raise ValueError('Invalid data type')
+
+        self.dtype = dtype
+        self.rules = self._get_rule_defaults(**rule_args)
+
+    @classmethod
+    def _get_rule_defaults(cls, continuous=False, cancer=False):
+        continous_only = True if continuous else False
+        cancer_only = True if cancer else False
+        ggof_threshold = 0.05 if cancer else 0.1
+        return [
+            rules.BmdExists(
+                failure_bin=constants.BIN_FAILURE,
+            ),
+            rules.BmdlExists(
+                failure_bin=constants.BIN_FAILURE,
+            ),
+            rules.BmduExists(
+                failure_bin=constants.BIN_NO_CHANGE,
+                enabled=cancer_only,
+            ),
+            rules.AicExists(
+                failure_bin=constants.BIN_FAILURE,
+            ),
+            rules.RoiExists(
+                failure_bin=constants.BIN_WARNING,
+            ),
+            rules.CorrectVarianceModel(
+                failure_bin=constants.BIN_WARNING,
+                threshold=0.1,
+                enabled=continous_only,
+            ),
+            rules.VarianceFit(
+                failure_bin=constants.BIN_WARNING,
+                threshold=0.1,
+                enabled=continous_only,
+            ),
+            rules.GlobalFit(
+                failure_bin=constants.BIN_WARNING,
+                threshold=ggof_threshold,
+            ),
+            rules.BmdBmdlRatio(
+                failure_bin=constants.BIN_NO_CHANGE,
+                threshold=5.,
+                name='BMD/BMDL (warning)',
+            ),
+            rules.BmdBmdlRatio(
+                failure_bin=constants.BIN_WARNING,
+                threshold=20.,
+            ),
+            rules.RoiFit(
+                failure_bin=constants.BIN_NO_CHANGE,
+                threshold=2.,
+            ),
+            rules.Warnings(
+                failure_bin=constants.BIN_NO_CHANGE,
+            ),
+            rules.HighBmd(
+                failure_bin=constants.BIN_NO_CHANGE,
+                threshold=1.,
+            ),
+            rules.HighBmdl(
+                failure_bin=constants.BIN_WARNING,
+                threshold=1.,
+            ),
+            rules.LowBmd(
+                failure_bin=constants.BIN_NO_CHANGE,
+                threshold=3.,
+                name='Low BMD (warning)',
+            ),
+            rules.LowBmdl(
+                failure_bin=constants.BIN_NO_CHANGE,
+                threshold=3.,
+                name='Low BMDL (warning)',
+            ),
+            rules.LowBmd(
+                failure_bin=constants.BIN_WARNING,
+                threshold=10.,
+            ),
+            rules.LowBmdl(
+                failure_bin=constants.BIN_WARNING,
+                threshold=10.,
+            ),
+            rules.ControlResidual(
+                failure_bin=constants.BIN_WARNING,
+                threshold=2.,
+                enabled=continous_only,
+            ),
+            rules.ControlStdevResiduals(
+                failure_bin=constants.BIN_WARNING,
+                threshold=1.5,
+                enabled=continous_only,
+            ),
+        ]
 
     def recommend(self, dataset, models):
         # apply rules to each model
@@ -57,6 +154,9 @@ class Recommender(object):
             model.recommended = True
             model.recommended_variable = fld_name
 
+    def show_rules(self):
+        return u'\n'.join([unicode(rule) for rule in self.rules])
+
     def _get_bmdl_ratio(self, models):
         """Return BMDL ratio in list of models."""
         bmdls = [
@@ -67,7 +167,7 @@ class Recommender(object):
         return max(bmdls) / min(bmdls)
 
     def _get_min_model(models, fld_name):
-        """Get model with minimum value for specified field."""
+        """Return model with minimum value for specified field."""
         min_ = float('inf')
         idx = -1
 
