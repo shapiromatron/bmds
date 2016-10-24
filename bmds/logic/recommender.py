@@ -33,7 +33,7 @@ class Recommender(object):
 
             # apply tests for each model
             for rule in self.rules:
-                bin_, notes = rule.apply_rule(model.outputs)
+                bin_, notes = rule.check(model.outputs)
                 model.bin = max(bin_, model.bin)
                 if notes:
                     model.logic_notes[bin_].append(notes)

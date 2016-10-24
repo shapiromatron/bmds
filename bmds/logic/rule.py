@@ -12,11 +12,13 @@ class Rule(object):
         self.threshold = threshold
         self.enabled = enabled
 
-    def apply_rule(self, dtype, dataset, output):
-        # return tuple of (bin, notes) associated with rule
+    def check(self, dtype, dataset, output):
         if self._is_enabled(dtype):
-            method = getattr(self, self.rule_method_name)
-            return method(dtype, dataset, output)
+            return self.apply_rule(dtype, dataset, output)
+
+    def apply_rule(self, dtype, dataset, output):
+        # return tuple of (bin, notes) associated with rule or None
+        raise NotImplementedError('Abstract method.')
 
     def _is_enabled(self, dtype):
         return True
@@ -27,29 +29,52 @@ class Rule(object):
             val != -999 and \
             (isinstance(val, int) or isinstance(val, float))
 
-    def _assert_value_number(self, val):
+
+class ValueExistsRule(Rule):
+    # Test fails if value is not a valid float.
+
+    FIELD_NAME = None
+
+    def apply_rule(self, dtype, dataset, output):
+        val = output.get(self.FIELD_NAME)
         if self._is_valid_number(val):
             return constants.BIN_NO_CHANGE, None
         else:
             msg = '{} (={}) is not a valid number'.format(self.name, val)
             return self.failure_bin, msg
 
-    def _assert_less_than(self, val, threshold=None):
-        # Ensure value is less than threshold
-        if threshold is None:
-            threshold = self.threshold
 
-        if val < threshold:
-            return constants.BIN_NO_CHANGE, None
-        else:
-            msg = '{} (={}) is greater-than than threshold value {}'.format(
-                self.name, val, threshold)
-            return self.failure_bin, msg
+class BmdExists(ValueExistsRule):
+    FIELD_NAME = 'BMD'
 
-    def _assert_greater_than(self, val, threshold=None):
-        # Ensure value is greater than threshold
-        if threshold is None:
-            threshold = self.threshold
+
+class BmdlExists(ValueExistsRule):
+    FIELD_NAME = 'BMDL'
+
+
+class BmduExists(ValueExistsRule):
+    FIELD_NAME = 'BMDU'
+
+
+class AicExists(ValueExistsRule):
+    FIELD_NAME = 'AIC'
+
+
+class RoiExists(ValueExistsRule):
+    FIELD_NAME = 'residual_of_interest'
+
+
+class ValueGreaterThanRule(Rule):
+    # Test fails if value is less-than threshold.
+
+    FIELD_NAME = None
+
+    def _assert_greater_than(self, output):
+        val = output.get(self.FIELD_NAME)
+        threshold = self.threshold
+
+        if not self._is_valid_number(val):
+            return
 
         if val > threshold:
             return constants.BIN_NO_CHANGE, None
@@ -58,23 +83,112 @@ class Rule(object):
                 self.name, val, threshold)
             return self.failure_bin, msg
 
-    def _bmd_exists_rule(self, dtype, dataset, output):
-        return self._assert_value_number(output.get('BMD'))
 
-    def _bmdl_exists_rule(self, dtype, dataset, output):
-        return self._assert_value_number(output.get('BMDL'))
+class VarianceFit(ValueGreaterThanRule):
+    FIELD_NAME = 'p_value3'
 
-    def _bmdu_exists_rule(self, dtype, dataset, output):
-        return self._assert_value_number(output.get('BMDU'))
 
-    def _aic_exists_rule(self, dtype, dataset, output):
-        return self._assert_value_number(output.get('AIC'))
+class Fit(ValueGreaterThanRule):
+    FIELD_NAME = 'p_value4'
 
-    def _residual_of_interest_exists_rule(self, dtype, dataset, output):
-        # TODO - add
-        return self._assert_value_number(output.get('residual_of_interest'))
 
-    def _correct_variance_rule(self, dtype, dataset, output):
+class ValueLessThanRule(Rule):
+    # Test fails if value is greater-than threshold.
+
+    def get_value(self, dtype, dataset, output):
+        raise NotImplemented('Requires implementation')
+
+    def apply_rule(self, dtype, dataset, output):
+        val = self.get_value(dtype, dataset, output)
+        threshold = self.threshold
+
+        if not self._is_valid_number(val):
+            return
+
+        if val < threshold:
+            return constants.BIN_NO_CHANGE, None
+        else:
+            msg = '{} (={}) is greater-than than threshold value {}'.format(
+                self.name, val, threshold)
+            return self.failure_bin, msg
+
+
+class BmdBmdlRatio(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        bmd = output.get('BMD')
+        bmdl = output.get('BMDL')
+        if self._is_valid_number(bmd) and self._is_valid_number(bmdl):
+            return bmd / bmdl
+
+
+class RoiFit(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        return output.get('residual_of_interest')
+
+
+class HighBmd(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        max_dose = max(dataset.doses)
+        bmd = output.get('BMD')
+        if self._is_valid_number(max_dose) and self._is_valid_number(bmd):
+            return bmd / max_dose
+
+
+class HighBmdl(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        max_dose = max(dataset.doses)
+        bmdl = output.get('BMDL')
+        if self._is_valid_number(max_dose) and self._is_valid_number(bmdl):
+            return bmdl / max_dose
+
+
+class LowBmd(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        min_dose = min(dataset.doses)
+        bmd = output.get('BMD')
+        if self._is_valid_number(min_dose) and self._is_valid_number(bmd):
+            return min_dose / bmd
+
+
+class LowBmdl(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        min_dose = min(dataset.doses)
+        bmdl = output.get('BMDL')
+        if self._is_valid_number(min_dose) and self._is_valid_number(bmdl):
+            return min_dose / bmdl
+
+
+class ControlResiduals(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        if output.get('fit_residuals') and len(output['fit_residuals'] > 0):
+            return abs(output['fit_residuals'][0])
+
+
+class ControlStdevResiduals(ValueLessThanRule):
+
+    def get_value(self, dtype, dataset, output):
+        if output.get('fit_est_stdev') and output.get('fit_stdev') and \
+                len(output['fit_est_stdev'] > 0) and len(output['fit_stdev'] > 0):
+
+            modeled = abs(output['fit_est_stdev'][0])
+            actual = abs(output['fit_stdev'][0])
+
+            if self._is_valid_number(modeled) and self._is_valid_number(actual):
+                return abs(modeled / actual)
+
+
+class CorrectVarianceModel(Rule):
+    # Test fails if incorrect variance model is used for continuous datasets.
+
+    def apply_rule(self, dtype, dataset, output):
+
         # TODO - get variance model, should be integer 0 or 1
         constant_variance = 1  # (or 0)
 
@@ -97,70 +211,11 @@ class Rule(object):
         else:
             return constants.BIN_NO_CHANGE, None
 
-    def _variance_fit_rule(self, dtype, dataset, output):
-        p_value3 = output.get('p_value3')
-        if self._is_valid_number(p_value3):
-            return self._assert_greater_than(p_value3)
 
-    def _ggof_rule(self, dtype, dataset, output):
-        p_value4 = output.get('p_value4')
-        if self._is_valid_number(p_value4):
-            return self._assert_greater_than(p_value4)
+class Warnings(Rule):
+    # Test fails if any warnings exist.
 
-    def _bmd_bmdl_ratio_rule(self, dtype, dataset, output):
-        bmd = output.get('BMD')
-        bmdl = output.get('BMDL')
-        if self._is_valid_number(bmd) and self._is_valid_number(bmdl):
-            ratio = bmd / bmdl
-            return self.assertLessThan(ratio)
-
-    def _residual_of_interest_rule(self, dtype, dataset, output):
-        roi = output.get('residual_of_interest')
-        if self._is_valid_number(roi):
-            return self._assert_less_than(roi)
-
-    def _warnings_rule(self, dtype, dataset, output):
+    def apply_rule(self, dtype, dataset, output):
         warnings = output.get('warnings', [])
         if len(warnings) > 0:
             return constants.failure_bin, u'\n'.join(warnings)
-
-    def _high_bmd_rule(self, dtype, dataset, output):
-        max_dose = max(dataset.doses)
-        bmd = output.get('BMD')
-        if self._is_valid_number(max_dose) and self._is_valid_number(bmd):
-            return self._assert_less_than(bmd / max_dose)
-
-    def _high_bmdl_rule(self, dtype, dataset, output):
-        max_dose = max(dataset.doses)
-        bmdl = output.get('BMDL')
-        if self._is_valid_number(max_dose) and self._is_valid_number(bmdl):
-            return self._assert_less_than(bmdl / max_dose)
-
-    def _low_bmd_rule(self, dtype, dataset, output):
-        min_dose = min(dataset.doses)
-        bmd = output.get('BMD')
-        if self._is_valid_number(min_dose) and self._is_valid_number(bmd):
-            return self._assert_less_than(min_dose / bmd)
-
-    def _low_bmdl_rule(self, dtype, dataset, output):
-        min_dose = min(dataset.doses)
-        bmdl = output.get('BMDL')
-        if self._is_valid_number(min_dose) and self._is_valid_number(bmdl):
-            return self._assert_less_than(min_dose / bmdl)
-
-    def _control_residual_rule(self, dtype, dataset, output):
-        if output.get('fit_residuals') and len(output['fit_residuals'] > 0):
-            resid = abs(output['fit_residuals'][0])
-            if self._is_valid_number(resid):
-                return self._assert_less_than(resid)
-
-    def _control_stdev_rule(self, dtype, dataset, output):
-        if output.get('fit_est_stdev') and output.get('fit_stdev') and \
-                len(output['fit_est_stdev'] > 0) and len(output['fit_stdev'] > 0):
-
-            modeled = abs(output['fit_est_stdev'][0])
-            actual = abs(output['fit_stdev'][0])
-
-            if self._is_valid_number(modeled) and self._is_valid_number(actual):
-                ratio = abs(modeled / actual)
-                return self._assert_less_than(ratio)
