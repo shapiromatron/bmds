@@ -139,6 +139,9 @@ class BMDModel(object):
         # Return space-separated list of values for dfile
         return ' '.join([str(self.values[param]) for param in params])
 
+    def _get_model_name(self):
+        return self.exe
+
 
 class DefaultParams(object):
     """

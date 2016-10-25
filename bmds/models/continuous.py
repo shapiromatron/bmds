@@ -146,7 +146,30 @@ class Linear_220(Linear_217):
     date = '10/22/2014'
 
 
-class Exponential_M2_17(Continuous):
+class Exponential(Continuous):
+
+    def _get_model_name(self):
+        return '{}_{}'.format(self.exe, self.output_prefix.lower())
+
+    def as_dfile(self):
+        self._set_values()
+        params = self._dfile_print_parameters(
+            'alpha', 'rho', 'a', 'b', 'c', 'd')
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            '1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'bmd_calculation',
+                'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr_type', 'bmr', 'constant_variance', 'confidence_level'),
+            '\n'.join([params] * 4),
+            self.dataset.as_dfile(),
+        ])
+
+
+class Exponential_M2_17(Exponential):
     minimum_DG = 2
     model_name = 'Exponential-M2'
     bmds_version_dir = 'BMDS231'
@@ -177,23 +200,6 @@ class Exponential_M2_17(Continuous):
         'constant_variance': DefaultParams.constant_variance,
     }
     output_prefix = 'M2'
-
-    def as_dfile(self):
-        self._set_values()
-        params = self._dfile_print_parameters(
-            'alpha', 'rho', 'a', 'b', 'c', 'd')
-        return '\n'.join([
-            self._dfile_print_header_rows(),
-            '1 {}{}'.format(self.dataset.doses_used, self.exp_run_settings),
-            self._dfile_print_options(
-                'max_iterations', 'relative_fn_conv', 'parameter_conv',
-                'bmdl_curve_calculation', 'bmd_calculation',
-                'append_or_overwrite', 'smooth_option'),
-            self._dfile_print_options(
-                'bmr_type', 'bmr', 'constant_variance', 'confidence_level'),
-            '\n'.join([params] * 4),
-            self.dataset.as_dfile(),
-        ])
 
 
 class Exponential_M2_19(Exponential_M2_17):
