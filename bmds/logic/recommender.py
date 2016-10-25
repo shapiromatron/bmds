@@ -155,7 +155,7 @@ class Recommender(object):
             model.recommended_variable = fld_name
 
     def show_rules(self):
-        return u'\n'.join([unicode(rule) for rule in self.rules])
+        return u'\n'.join([rule.__unicode__() for rule in self.rules])
 
     def _get_bmdl_ratio(self, models):
         """Return BMDL ratio in list of models."""

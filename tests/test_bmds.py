@@ -12,7 +12,7 @@ class TestVersionsAndModels(unittest.TestCase):
 
     def test_get_models(self):
         models = bmds.get_models_for_version('BMDS240')
-        dich_model_names = models['D'].keys()
+        dich_model_names = list(models['D'].keys())
         expected = [
             'Logistic', 'LogLogistic', 'Probit',
             'LogProbit', 'Multistage', 'Gamma', 'Weibull',

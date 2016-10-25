@@ -7,4 +7,4 @@ from .logic import *  # noqa
 
 from . import constants, models  # noqa
 
-import monkeypatch
+from .monkeypatch import * # noqa
