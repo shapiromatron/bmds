@@ -4,7 +4,7 @@ BMDS: Benchmark dose modeling software
 .. image:: https://img.shields.io/pypi/v/bmds.svg
         :target: https://pypi.python.org/pypi/bmds
 
-.. image:: https://pypip.in/wheel/bmds/badge.svg
+.. image:: https://img.shields.io/pypi/wheel/bmds.svg
     :target: https://pypi.python.org/pypi/bmds/
     :alt: Wheel Status
 
