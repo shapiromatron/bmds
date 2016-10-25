@@ -19,9 +19,9 @@ def dataset():
 def test_executable_path():
 
     parents = (
-        bmds.Dichotomous,
-        bmds.DichotomousCancer,
-        bmds.Continuous,
+        bmds.models.Dichotomous,
+        bmds.models.DichotomousCancer,
+        bmds.models.Continuous,
     )
 
     for name, obj in inspect.getmembers(bmds):
@@ -32,9 +32,8 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
-@pytest.mark.skipif(sys.platform != "win32",
-                    reason='BMDS can only be executed on Windows')
 def test_execute(dataset):
-    model = bmds.Logistic_213(dataset)
+    model = bmds.models.Logistic_213(dataset)
     model.execute()
     assert model.output_created is True
+
