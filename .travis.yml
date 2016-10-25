@@ -1,11 +1,6 @@
 # Config file for automatic testing at travis-ci.org
 # This file will be regenerated if you run travis_pypi_setup.py
 language: python
-
-os:
-  - linux
-  - osx
-
 python: 3.5
 
 env:
