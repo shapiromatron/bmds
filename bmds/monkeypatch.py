@@ -40,18 +40,21 @@ def get_dataset(models):
         ]
     )
 
-
 if platform.system() != 'Windows':
-
+    NO_HOST_WARNING = (
+        'Using a non-Windows platform; BMDS cannot run natively in this OS.\n'
+        'To execute BMDS, please specify a BMDS_HOST environment variable,\n'
+        'and set this to a valid BMDS server root URL.\n'
+    )
     host = os.environ.get('BMDS_HOST', None)
     if host is None:
-        sys.stderr.write(
-            'Using a non-Windows platform; BMDS cannot run natively in this OS.\n'
-            'To execute BMDS, please specify a BMDS_HOST environment variable,\n'
-            'and set this to a valid BMDS server root URL.\n'
-        )
+        sys.stderr.write(NO_HOST_WARNING)
 
     def execute_model(self):
+
+        if host is None:
+            raise EnvironmentError(NO_HOST_WARNING)
+
         # submit data
         url = '{}/Server-receiving.php'.format(host)
         dataset = json.dumps(get_dataset([self]))
@@ -74,6 +77,10 @@ if platform.system() != 'Windows':
         self.parse_results(resp['OUT_file_str'])
 
     def execute_session(self):
+
+        if host is None:
+            raise EnvironmentError(NO_HOST_WARNING)
+
         # submit data
         url = '{}/Server-receiving.php'.format(host)
         dataset = json.dumps(get_dataset(self._models))
