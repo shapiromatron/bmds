@@ -31,8 +31,17 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
-def test_execute(dataset):
-    model = bmds.models.Logistic_213(dataset)
+def test_model_execute(dataset):
+    model = bmds.models.Power_218(dataset)
     model.execute()
     assert model.output_created is True
 
+
+def test_session_execute(dataset):
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=dataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Power)
+        session.add_model(bmds.constants.M_Linear)
+    session.execute()
+    assert session._models[0].output_created is True
+    assert session._models[1].output_created is True
