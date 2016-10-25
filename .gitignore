@@ -15,3 +15,6 @@
 # py.test cache
 .cache/*
 .tox
+
+# docs
+_build

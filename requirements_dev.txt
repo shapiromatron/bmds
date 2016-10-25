@@ -2,4 +2,7 @@ pip==8.1.2
 wheel==0.29.0
 tox==2.3.1
 
+Sphinx==1.4.8
+watchdog==0.8.3
+
 pytest==2.9.2

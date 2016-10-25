@@ -1,18 +1,5 @@
-import os
 import re
-import sys
 from setuptools import setup, find_packages
-
-
-if sys.argv[-1] == 'publish_test':
-    os.system('python setup.py sdist upload -r https://testpypi.python.org/pypi')
-    os.system('python setup.py bdist_wheel upload -r https://testpypi.python.org/pypi')
-    sys.exit()
-
-if sys.argv[-1] == 'publish_production':
-    os.system('python setup.py sdist upload')
-    os.system('python setup.py bdist_wheel upload')
-    sys.exit()
 
 
 def get_version():
