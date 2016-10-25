@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from setuptools import setup, find_packages
 
@@ -15,9 +16,10 @@ if sys.argv[-1] == 'publish_production':
 
 
 def get_version():
-    d = {}
-    execfile('./bmds/__init__.py', d)
-    return d['__version__']
+    regex = r"""^__version__ = '(.*)'$"""
+    with open('bmds/__init__.py', 'r') as f:
+        text = f.read()
+    return re.findall(regex, text, re.MULTILINE)[0]
 
 
 def get_readme():

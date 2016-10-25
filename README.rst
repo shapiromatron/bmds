@@ -1,6 +1,9 @@
 BMDS: Benchmark dose modeling software
 ======================================
 
+.. image:: https://img.shields.io/travis/shapiromatron/bmds.svg
+        :target: https://travis-ci.org/shapiromatron/bmds
+
 This Python 2 package is designed to run the U.S. EPA BMDS_ software from a python
 interface. It is integrated into the HAWC_ software, but HAWC does not be installed
 on your computer to use this BMDS package. Example function calls are shown below:
