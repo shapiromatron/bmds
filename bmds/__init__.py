@@ -7,8 +7,4 @@ from .logic import *  # noqa
 
 from . import constants, models  # noqa
 
-
-try:
-    from .monkeypatch import *  # noqa
-except ImportError:
-    pass
+import monkeypatch

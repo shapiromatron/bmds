@@ -1,5 +1,3 @@
-monkeypatch.py
-
 # ipython/jupyter notebooks
 .ipynb_checkpoints
 

@@ -25,6 +25,7 @@ def get_readme():
         return f.read()
 
 requirements = [
+    'requests',
 ]
 
 test_requirements = [
