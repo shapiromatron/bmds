@@ -336,7 +336,7 @@ class Power_217(Power_216):
 
 
 class Power_218(Power_217):
-    bmds_version_dir = 'BMDS2601'  # todo - change back after complete
+    bmds_version_dir = 'BMDS260'
     version = 2.18
     date = '05/19/2014'
 
