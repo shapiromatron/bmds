@@ -3,35 +3,7 @@ from . import session, models, constants
 from collections import OrderedDict
 
 
-class BMDS_v230(session.Session):
-    version = constants.BMDS230
-    model_options = {
-        constants.DICHOTOMOUS: OrderedDict([
-            (constants.M_Logistic, models.Logistic_213),
-            (constants.M_LogLogistic, models.LogLogistic_213),
-            (constants.M_Probit, models.Probit_32),
-            (constants.M_LogProbit, models.LogProbit_32),
-            (constants.M_Multistage, models.Multistage_32),
-            (constants.M_Gamma, models.Gamma_215),
-            (constants.M_Weibull, models.Weibull_215),
-        ]),
-        constants.DICHOTOMOUS_CANCER: OrderedDict([
-            (constants.M_MultistageCancer, models.MultistageCancer_19),
-        ]),
-        constants.CONTINUOUS: OrderedDict([
-            (constants.M_Linear, models.Linear_216),
-            (constants.M_Polynomial, models.Polynomial_216),
-            (constants.M_Power, models.Power_216),
-            (constants.M_Hill, models.Hill_216),
-            (constants.M_ExponentialM2, models.Exponential_M2_17),
-            (constants.M_ExponentialM3, models.Exponential_M3_17),
-            (constants.M_ExponentialM4, models.Exponential_M4_17),
-            (constants.M_ExponentialM5, models.Exponential_M5_17),
-        ]),
-    }
-
-
-class BMDS_v231(BMDS_v230):
+class BMDS_v231(session.Session):
     version = constants.BMDS231
 
 
@@ -96,7 +68,6 @@ class BMDS_v2601(BMDS_v260):
 
 
 VERSIONS = {
-    constants.BMDS230: BMDS_v230,
     constants.BMDS231: BMDS_v231,
     constants.BMDS240: BMDS_v240,
     constants.BMDS260: BMDS_v260,

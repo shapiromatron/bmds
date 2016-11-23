@@ -23,9 +23,7 @@ class BMDModel(object):
         try:
             exe = self.get_exe_path()
             dfile = self.write_dfile()
-
             RunProcess([exe, dfile], timeout=20).call()
-
             outfile = dfile.replace('.(d)', '.out')
             if os.path.exists(outfile):
                 self.output_created = True
@@ -36,7 +34,6 @@ class BMDModel(object):
             o2 = dfile.replace('.(d)', '.002')
             if os.path.exists(o2):
                 self.tempfns.append(o2)
-
         except Exception as e:
             raise e
         finally:
