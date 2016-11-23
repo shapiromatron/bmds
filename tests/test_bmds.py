@@ -7,7 +7,7 @@ class TestVersionsAndModels(unittest.TestCase):
 
     def test_get_versions(self):
         versions = sorted(bmds.get_versions())
-        expected = sorted(['BMDS230', 'BMDS231', 'BMDS240', 'BMDS260', 'BMDS2601'])
+        expected = sorted(['BMDS231', 'BMDS240', 'BMDS260', 'BMDS2601'])
         self.assertListEqual(versions, expected)
 
     def test_get_models(self):
