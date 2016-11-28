@@ -15,7 +15,7 @@ def dataset():
 def test_Polynomial_216(dataset):
     model = bmds.models.Polynomial_216(dataset)
     dfile = model.as_dfile()
-    expected = 'Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n2\n1 5 0\n250 1e-08 1e-08 0 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
+    expected = 'Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n2\n1 5 0\n250 1e-08 1e-08 0 1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
     assert dfile == expected
 
 
@@ -23,7 +23,7 @@ def test_Polynomial_217(dataset):
     model = bmds.models.Polynomial_217(dataset)
     dfile = model.as_dfile()
     expected = ''
-    expected = 'Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n2\n1 5 0\n500 1e-08 1e-08 0 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
+    expected = 'Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n2\n1 5 0\n500 1e-08 1e-08 0 1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
     assert dfile == expected
 
 

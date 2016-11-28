@@ -41,7 +41,10 @@ def test_session_execute(dataset):
     session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=dataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Power)
-        session.add_model(bmds.constants.M_Linear)
+        session.add_model(bmds.constants.M_Polynomial)
     session.execute()
     assert session._models[0].output_created is True
     assert session._models[1].output_created is True
+
+    # check that polynomial restriction is being used
+    assert 'The polynomial coefficients are restricted to be positive' in session._models[1].outfile
