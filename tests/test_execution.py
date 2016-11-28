@@ -7,12 +7,20 @@ import bmds
 
 
 @pytest.fixture
-def dataset():
+def cdataset():
     return bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[111, 142, 143, 93, 42],
         responses=[2.112, 2.095, 1.956, 1.587, 1.254],
         stdevs=[0.235, 0.209, 0.231, 0.263, 0.159])
+
+
+@pytest.fixture
+def ddataset():
+    return bmds.DichotomousDataset(
+        doses=[0, 1.96, 5.69, 29.75],
+        ns=[75, 49, 50, 49],
+        incidences=[5, 1, 3, 14])
 
 
 def test_executable_path():
@@ -31,14 +39,14 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
-def test_model_execute(dataset):
-    model = bmds.models.Power_218(dataset)
+def test_model_execute(cdataset):
+    model = bmds.models.Power_218(cdataset)
     model.execute()
     assert model.output_created is True
 
 
-def test_session_execute(dataset):
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=dataset)
+def test_session_execute(cdataset):
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Power)
         session.add_model(bmds.constants.M_Polynomial)
@@ -50,9 +58,9 @@ def test_session_execute(dataset):
     assert 'The polynomial coefficients are restricted to be negative' in session._models[1].outfile
 
 
-def test_parameter_overrides(dataset):
+def test_parameter_overrides(cdataset):
     # assert to overrides are used
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=dataset)
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Polynomial)
         session.add_model(bmds.constants.M_Polynomial,
@@ -73,3 +81,43 @@ def test_parameter_overrides(dataset):
     # check degree_poly override setting
     assert 'beta_3' not in model1.output['parameters']
     assert model2.output['parameters']['beta_3']['estimate'] == 0.0
+
+
+def test_continuous_restrictions(cdataset):
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Power)
+        session.add_model(bmds.constants.M_Power, overrides={'restrict_power': 0})
+        session.add_model(bmds.constants.M_Hill)
+        session.add_model(bmds.constants.M_Hill, overrides={'restrict_n': 0})
+
+    session.execute()
+    power1 = session._models[0]
+    power2 = session._models[1]
+    hill1 = session._models[2]
+    hill2 = session._models[3]
+
+    for m in session._models:
+        assert m.output_created is True
+
+    assert 'The power is restricted to be greater than or equal to 1' in power1.outfile
+    assert 'The power is not restricted' in power2.outfile
+    assert 'Power parameter restricted to be greater than 1' in hill1.outfile
+    assert 'Power parameter is not restricted' in hill2.outfile
+
+
+def test_dichotomous_restrictions(ddataset):
+    session = bmds.BMDS_v2601(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Weibull)
+        session.add_model(bmds.constants.M_Weibull, overrides={'restrict_power': 0})
+
+    session.execute()
+    weibull1 = session._models[0]
+    weibull2 = session._models[1]
+
+    for m in session._models:
+        assert m.output_created is True
+
+    assert 'Power parameter is restricted as power >= 1' in weibull1.outfile
+    assert 'Power parameter is not restricted' in weibull2.outfile

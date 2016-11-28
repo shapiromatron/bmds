@@ -6,7 +6,7 @@ History
 v0.2.1 (UPCOMING)
 -------------------
 
-* By default, polynomial restriction is based on dataset increase/decrease
+* Default polynomial restriction based on if dataset is increasing or decreasing (previously unrestricted)
 
 v0.2.0 (2016-11-23)
 -------------------
