@@ -6,7 +6,7 @@ History
 v0.2.1 (UPCOMING)
 -------------------
 
-* By default, restrict polynomials to be positive in Polynomial model
+* By default, polynomial restriction is based on dataset increase/decrease
 
 v0.2.0 (2016-11-23)
 -------------------

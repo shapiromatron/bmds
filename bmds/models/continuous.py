@@ -36,7 +36,7 @@ class Polynomial_216(Continuous):
         'beta_7': DefaultParams.param_generator('Beta7'),
         'beta_6': DefaultParams.param_generator('Beta6'),
         'beta_8': DefaultParams.param_generator('Beta8'),
-        'restrict_polynomial': DefaultParams.restrict(d=1, n='Restrict polynomial'),  # noqa
+        'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(),
         'bmd_calculation': DefaultParams.bmd_calculation,
         'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
@@ -46,6 +46,9 @@ class Polynomial_216(Continuous):
         'confidence_level': DefaultParams.confidence_level,
         'constant_variance': DefaultParams.constant_variance,
     }
+
+    def set_restrict_polynomial_value(self):
+        return 1 if self.dataset.is_increasing else -1
 
     def as_dfile(self):
         self._set_values()

@@ -52,6 +52,16 @@ class ContinuousDataset(object):
         if self.doses_used < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')
 
+    @property
+    def is_increasing(self):
+        inc = 0
+        for i in range(len(self.responses) - 1):
+            if self.responses[i + 1] > self.responses[i]:
+                inc += 1
+            else:
+                inc -= 1
+        return inc >= 0
+
     def as_dfile(self):
         rows = ['Dose NumAnimals Response Stdev']
         for i, v in enumerate(self.doses):

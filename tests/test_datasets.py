@@ -63,3 +63,14 @@ def test_doses_used():
     assert ds.doses_used == 5
     ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5, doses_dropped=2)
     assert ds.doses_used == 3
+
+
+def test_is_increasing():
+    dummy4 = [1, 2, 3, 4]
+
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, responses=dummy4, stdevs=dummy4)
+    assert ds.is_increasing is True
+
+    rev = list(reversed(dummy4))
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, responses=rev, stdevs=dummy4)
+    assert ds.is_increasing is False

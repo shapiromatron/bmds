@@ -89,9 +89,13 @@ class BMDModel(object):
         Two output values for 'p' type values (parameters), else one.
         Returns a single value or tuple of two values
         """
-        val = self.overrides[key] \
-            if key in self.overrides \
-            else self.defaults[key]['d']
+        fn_name = 'set_{}_value'.format(key)
+        if key in self.overrides:
+            val = self.overrides[key]
+        elif hasattr(self, fn_name):
+            val = getattr(self, fn_name)()
+        else:
+            val = self.defaults[key]['d']
 
         if self.defaults[key]['t'] == constants.FT_PARAM:
             return val.split('|')

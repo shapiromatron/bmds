@@ -47,4 +47,29 @@ def test_session_execute(dataset):
     assert session._models[1].output_created is True
 
     # check that polynomial restriction is being used
-    assert 'The polynomial coefficients are restricted to be positive' in session._models[1].outfile
+    assert 'The polynomial coefficients are restricted to be negative' in session._models[1].outfile
+
+
+def test_parameter_overrides(dataset):
+    # assert to overrides are used
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=dataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Polynomial)
+        session.add_model(bmds.constants.M_Polynomial,
+                          overrides={'constant_variance': 0, 'degree_poly': 3})
+
+    session.execute()
+    model1 = session._models[0]
+    model2 = session._models[1]
+
+    assert model1.output_created is True and model2.output_created is True
+
+    # check model-variance setting
+    assert 'A constant variance model is fit' in model1.outfile
+    assert 'rho' not in model1.output['parameters']
+    assert 'The variance is to be modeled' in model2.outfile
+    assert 'rho' in model2.output['parameters']
+
+    # check degree_poly override setting
+    assert 'beta_3' not in model1.output['parameters']
+    assert model2.output['parameters']['beta_3']['estimate'] == 0.0
