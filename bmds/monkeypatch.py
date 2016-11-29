@@ -51,7 +51,7 @@ if platform.system() != 'Windows':
         '  - BMDS_PASSWORD (e.g. mysecret)\n'
     )
 
-    def get_session():
+    def get_requests_session():
         if host is None or user is None or pw is None:
             raise EnvironmentError(NO_HOST_WARNING)
 
@@ -75,7 +75,7 @@ if platform.system() != 'Windows':
 
     def execute_model(self):
         # execute single model
-        session = get_session()
+        session = get_requests_session()
         url = '{}/dfile/'.format(host)
         resp = session.post(url, data=get_payload([self]))
 
@@ -85,7 +85,7 @@ if platform.system() != 'Windows':
 
     def execute_session(self):
         # submit data
-        session = get_session()
+        session = get_requests_session()
         url = '{}/dfile/'.format(host)
         resp = session.post(url, data=get_payload(self._models))
 
