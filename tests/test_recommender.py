@@ -98,3 +98,7 @@ def test_default_logic():
     ✓ Control stdev [bin=?, threshold=1.5]
     """)
     assert txt == bmds.Recommender(bmds.constants.CONTINUOUS).show_rules()
+
+
+def test_apply_logic():
+    assert 1 == 1
