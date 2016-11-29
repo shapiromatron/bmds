@@ -74,3 +74,15 @@ def test_is_increasing():
     rev = list(reversed(dummy4))
     ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, responses=rev, stdevs=dummy4)
     assert ds.is_increasing is False
+
+
+def test_anova():
+    ds = bmds.ContinuousDataset(
+        doses=[1, 2, 3, 4, 5, 6, 7],
+        ns=[8, 6, 6, 6, 6, 6, 6],
+        responses=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
+        stdevs=[0.884408974, 0.975597151, 0.301068371, 0.879069846, 0.220161323, 0.841362172, 0.571939331]
+    )
+    report = ds.get_anova_report()
+    expected = '                     Tests of Interest    \n   Test    -2*log(Likelihood Ratio)  Test df        p-value    \n   Test 1              22.2699         12           0.0346\n   Test 2               5.5741          6           0.4725\n   Test 3               5.5741          6           0.4725'  # noqa
+    assert report == expected

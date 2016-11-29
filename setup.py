@@ -15,6 +15,7 @@ def get_readme():
 
 requirements = [
     'requests',
+    'scipy',
 ]
 
 test_requirements = [

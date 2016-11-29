@@ -1,3 +1,6 @@
+from .anova import AnovaTests
+
+
 class DichotomousDataset(object):
 
     def __init__(self, doses, ns, incidences, doses_dropped=0):
@@ -70,3 +73,18 @@ class ContinuousDataset(object):
             rows.append('%f %d %f %f' % (
                 self.doses[i], self.ns[i], self.responses[i], self.stdevs[i]))
         return '\n'.join(rows)
+
+    @property
+    def anova(self):
+        if not hasattr(self, '_anova'):
+            num_params = 3  # assume linear model
+            (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
+                self.doses_used, self.ns, self.responses, self.stdevs)
+            tests = AnovaTests.get_anova_c3_tests(
+                num_params, self.doses_used, A1, A2, A3, AR)
+            self._anova = tests
+        return self._anova
+
+
+    def get_anova_report(self):
+        return AnovaTests.output_3tests(self.anova)
