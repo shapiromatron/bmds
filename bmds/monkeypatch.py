@@ -38,22 +38,34 @@ def get_payload(models):
 
 if platform.system() != 'Windows':
 
-    host = os.environ.get('BMDS_HOST', None)
+    host = os.environ.get('BMDS_HOST')
+    user = os.environ.get('BMDS_USER')
+    pw = os.environ.get('BMDS_PW')
     _request_session = None
     NO_HOST_WARNING = (
         'Using a non-Windows platform; BMDS cannot run natively in this OS.\n'
-        'To execute BMDS, please specify a BMDS_HOST environment variable,\n'
-        'and set this to a valid BMDS server root URL.\n'
+        'We can make a call to a remote server to execute.\n'
+        'To execute BMDS, please specify the following environment variables:\n'
+        '  - BMDS_HOST (e.g. http://bmds-server.com)\n'
+        '  - BMDS_USER (e.g. myusername)\n'
+        '  - BMDS_PW (e.g. mysecret)\n'
     )
 
     def get_session():
-        if host is None:
+        if host is None or user is None or pw is None:
             raise EnvironmentError(NO_HOST_WARNING)
 
         global _request_session
         if _request_session is None:
-            _request_session = requests.Session()
-            # todo - authenticate here.
+            s = requests.Session()
+            s.get('{}/admin/login/'.format(host))
+            csrftoken = s.cookies['csrftoken']
+            s.post('{}/admin/login/'.format(host), {
+                'username': user,
+                'password': pw,
+                'csrfmiddlewaretoken': csrftoken,
+            })
+            _request_session = s
         return _request_session
 
     def _set_outputs(model, result):
@@ -83,7 +95,7 @@ if platform.system() != 'Windows':
             _set_outputs(model, result)
 
     # print startup error if host is None
-    if host is None:
+    if host is None or user is None or pw is None:
         sys.stderr.write(NO_HOST_WARNING)
 
     # monkeypatch

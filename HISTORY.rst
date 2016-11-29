@@ -3,10 +3,12 @@ History
 =======
 
 
-v0.2.1 (UPCOMING)
+v0.3.0 (UPCOMING)
 -------------------
 
 * Default polynomial restriction based on if dataset is increasing or decreasing (previously unrestricted)
+* Add new batch dFileRunner to execute multiple dfiles in batch-mode (integration w/ bmds-server)
+
 
 v0.2.0 (2016-11-23)
 -------------------

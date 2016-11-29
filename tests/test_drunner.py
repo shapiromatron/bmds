@@ -1,5 +1,6 @@
-import pytest
 import json
+import pytest
+import sys
 
 import bmds
 
@@ -17,6 +18,7 @@ def inputs():
     return inputs
 
 
+@pytest.mark.skipif(sys.platform != 'win32', reason="requires Windows")
 def test_drunner(inputs):
     runner = bmds.BatchDfileRunner(inputs)
     outputs = runner.execute()
