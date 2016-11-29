@@ -39,16 +39,16 @@ def get_payload(models):
 if platform.system() != 'Windows':
 
     host = os.environ.get('BMDS_HOST')
-    user = os.environ.get('BMDS_USER')
-    pw = os.environ.get('BMDS_PW')
+    user = os.environ.get('BMDS_USERNAME')
+    pw = os.environ.get('BMDS_PASSWORD')
     _request_session = None
     NO_HOST_WARNING = (
         'Using a non-Windows platform; BMDS cannot run natively in this OS.\n'
         'We can make a call to a remote server to execute.\n'
         'To execute BMDS, please specify the following environment variables:\n'
         '  - BMDS_HOST (e.g. http://bmds-server.com)\n'
-        '  - BMDS_USER (e.g. myusername)\n'
-        '  - BMDS_PW (e.g. mysecret)\n'
+        '  - BMDS_USERNAME (e.g. myusername)\n'
+        '  - BMDS_PASSWORD (e.g. mysecret)\n'
     )
 
     def get_session():
