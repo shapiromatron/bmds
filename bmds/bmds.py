@@ -88,3 +88,11 @@ def get_models_for_version(version):
     if collection is None:
         raise ValueError('Unknown BMDS version')
     return collection.model_options
+
+
+def get_model(version, model_name):
+    models = get_models_for_version(version)
+    for keystore in models.values():
+        if model_name in keystore:
+            return keystore[model_name]
+    raise ValueError('Unknown model name')

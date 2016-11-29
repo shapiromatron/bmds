@@ -9,14 +9,40 @@ from ..utils import RunProcess
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
-class BMDModel(object):
+class TempFileMaker(object):
+    # Maintains a list of temporary files and cleans up after itself
+
+    def __init__(self):
+        self.tempfns = []
+
+    def add_tempfile(self, fn):
+        self.tempfns.append(fn)
+
+    def get_tempfile(self, prefix='', suffix='.txt'):
+        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        os.close(fd)
+        self.add_tempfile(fn)
+        return fn
+
+    def cleanup(self):
+        for fn in self.tempfns:
+            try:
+                os.remove(fn)
+            except OSError:
+                pass
+
+    def __del__(self):
+        self.cleanup()
+
+
+class BMDModel(TempFileMaker):
 
     def __init__(self, dataset, overrides=None, id=None):
+        super(TempFileMaker, self).__init__()
         self.id = id
         self.dataset = dataset
         self.overrides = overrides or {}
         self.values = {}
-        self.tempfns = []
         self.output_created = False
 
     def execute(self):
@@ -27,27 +53,17 @@ class BMDModel(object):
             outfile = dfile.replace('.(d)', '.out')
             if os.path.exists(outfile):
                 self.output_created = True
-                self.tempfns.append(outfile)
+                self.add_tempfile(outfile)
                 with open(outfile, 'r') as f:
                     text = f.read()
                 self.parse_results(text)
             o2 = dfile.replace('.(d)', '.002')
             if os.path.exists(o2):
-                self.tempfns.append(o2)
+                self.add_tempfile(o2)
         except Exception as e:
             raise e
         finally:
             self.cleanup()
-
-    def get_tempfile(self, prefix='bmds-', suffix='.txt'):
-        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
-        os.close(fd)
-        self.tempfns.append(fn)
-        return fn
-
-    def cleanup(self):
-        for fn in self.tempfns:
-            os.remove(fn)
 
     @classmethod
     def get_default(cls):
@@ -72,7 +88,7 @@ class BMDModel(object):
         raise NotImplementedError('Abstract method requires implementation')
 
     def write_dfile(self):
-        f_in = self.get_tempfile(suffix='.(d)')
+        f_in = self.get_tempfile(prefix='bmds-', suffix='.(d)')
         with open(f_in, 'w') as f:
             f.write(self.as_dfile())
         return f_in
