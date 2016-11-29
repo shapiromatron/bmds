@@ -26,6 +26,9 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
+dev: ## Start developer environment
+	./bin/dev.sh
+
 clean: clean-build clean-pyc clean-test ## remove all build, test and Python artifacts
 
 
