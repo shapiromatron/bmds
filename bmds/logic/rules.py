@@ -23,6 +23,8 @@ class Rule(object):
     def check(self, dataset, output):
         if self.enabled:
             return self.apply_rule(dataset, output)
+        else:
+            return constants.BIN_NO_CHANGE, None
 
     def apply_rule(self, dataset, output):
         # return tuple of (bin, notes) associated with rule or None
@@ -84,14 +86,11 @@ class ValueGreaterThanRule(Rule):
 
     field_name = None
 
-    def _assert_greater_than(self, output):
+    def apply_rule(self, dataset, output):
         val = output.get(self.field_name)
         threshold = self.threshold
 
-        if not self._is_valid_number(val):
-            return
-
-        if val > threshold:
+        if not self._is_valid_number(val) or val > threshold:
             return constants.BIN_NO_CHANGE, None
         else:
             msg = '{} (={}) is less-than than threshold value {}'.format(
@@ -123,10 +122,7 @@ class ValueLessThanRule(Rule):
         val = self.get_value(dataset, output)
         threshold = self.threshold
 
-        if not self._is_valid_number(val):
-            return
-
-        if val < threshold:
+        if not self._is_valid_number(val) or val < threshold:
             return constants.BIN_NO_CHANGE, None
         else:
             msg = '{} (={}) is greater-than than threshold value {}'.format(
@@ -209,7 +205,7 @@ class ControlResidual(ValueLessThanRule):
                            'may be inaccurate.')
 
     def get_value(self, dataset, output):
-        if output.get('fit_residuals') and len(output['fit_residuals'] > 0):
+        if output.get('fit_residuals') and len(output['fit_residuals']) > 0:
             return abs(output['fit_residuals'][0])
 
 
@@ -221,7 +217,7 @@ class ControlStdevResiduals(ValueLessThanRule):
 
     def get_value(self, dataset, output):
         if output.get('fit_est_stdev') and output.get('fit_stdev') and \
-                len(output['fit_est_stdev'] > 0) and len(output['fit_stdev'] > 0):
+                len(output['fit_est_stdev']) > 0 and len(output['fit_stdev']) > 0:
 
             modeled = abs(output['fit_est_stdev'][0])
             actual = abs(output['fit_stdev'][0])
@@ -251,9 +247,9 @@ class CorrectVarianceModel(Rule):
                 # correct variance model
                 msg = None
             else:
-                msg = 'Incorrect variance model (p-value 2 = ${})'.format(p_value2)
+                msg = 'Incorrect variance model (p-value 2 = {})'.format(p_value2)
         else:
-            msg = 'Correct variance model is undetermined (p-value 2 = ${})'.format(p_value2)
+            msg = 'Correct variance model is undetermined (p-value 2 = {})'.format(p_value2)
 
         if msg:
             return self.failure_bin, msg
@@ -271,3 +267,5 @@ class Warnings(Rule):
         warnings = output.get('warnings', [])
         if len(warnings) > 0:
             return constants.failure_bin, u'\n'.join(warnings)
+        else:
+            return constants.BIN_NO_CHANGE, None

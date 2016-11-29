@@ -7,7 +7,7 @@ class Recommender(object):
 
     SUFFICIENTLY_CLOSE_BMDL = 3
 
-    def __init__(self, dtype):
+    def __init__(self, dtype, overrides=None):
 
         rule_args = dict()
         if dtype == constants.DICHOTOMOUS:
@@ -21,6 +21,10 @@ class Recommender(object):
 
         self.dtype = dtype
         self.rules = self._get_rule_defaults(**rule_args)
+
+        if overrides:
+            # TODO: implement
+            pass
 
     @classmethod
     def _get_rule_defaults(cls, continuous=False, cancer=False):
@@ -130,8 +134,8 @@ class Recommender(object):
 
             # apply tests for each model
             for rule in self.rules:
-                bin_, notes = rule.check(model.outputs)
-                model.bin = max(bin_, model.bin)
+                bin_, notes = rule.check(dataset, model.output)
+                model.logic_bin = max(bin_, model.logic_bin)
                 if notes:
                     model.logic_notes[bin_].append(notes)
 
@@ -140,6 +144,10 @@ class Recommender(object):
             model for model in models
             if model.logic_bin == constants.BIN_NO_CHANGE
         ]
+
+        # exit early if there are no models left to recommend
+        if len(model_subset) == 0:
+            return
 
         # determine which approach to use for best-fitting model
         bmd_ratio = self._get_bmdl_ratio(model_subset)
@@ -150,9 +158,9 @@ class Recommender(object):
 
         # get and set recommended model
         model = self._get_min_model(model_subset, fld_name)
-        if model:
-            model.recommended = True
-            model.recommended_variable = fld_name
+        model.recommended = True
+        model.recommended_variable = fld_name
+        return model
 
     def show_rules(self):
         return u'\n'.join([rule.__unicode__() for rule in self.rules])
@@ -166,8 +174,9 @@ class Recommender(object):
         ]
         return max(bmdls) / min(bmdls)
 
-    def _get_min_model(models, fld_name):
+    def _get_min_model(self, models, fld_name):
         """Return model with minimum value for specified field."""
+        # TODO - get most parsimonious model if multiple w/ same
         min_ = float('inf')
         idx = -1
 
@@ -177,4 +186,4 @@ class Recommender(object):
                 idx = i
                 min_ = val
 
-        return models[idx] if idx >= 0 else None
+        return models[idx]

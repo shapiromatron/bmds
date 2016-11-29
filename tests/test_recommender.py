@@ -4,6 +4,8 @@ import textwrap
 import bmds
 import pytest
 
+from .fixtures import *  # noqa
+
 
 def dedentify(txt):
     return textwrap.dedent(txt).strip()
@@ -100,5 +102,16 @@ def test_default_logic():
     assert txt == bmds.Recommender(bmds.constants.CONTINUOUS).show_rules()
 
 
-def test_apply_logic():
-    assert 1 == 1
+def test_apply_logic(cdataset):
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Power)
+        session.add_model(bmds.constants.M_Polynomial)
+    session.execute()
+    session.add_recommender()
+    recommended = session.recommend()
+    assert recommended is None
+    assert session._models[0].logic_bin == 1
+    assert len(session._models[0].logic_notes[session._models[0].logic_bin]) == 2
+    assert session._models[1].logic_bin == 1
+    assert len(session._models[1].logic_notes[session._models[1].logic_bin]) == 2

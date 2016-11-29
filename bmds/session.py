@@ -1,4 +1,4 @@
-from . import datasets, constants
+from . import datasets, constants, logic
 
 
 class Session(object):
@@ -56,3 +56,9 @@ class Session(object):
     def execute(self):
         for model in self._models:
             model.execute()
+
+    def add_recommender(self, overrides=None):
+        self.recommender = logic.Recommender(self.dtype, overrides)
+
+    def recommend(self):
+        self.recommender.recommend(self.dataset, self._models)
