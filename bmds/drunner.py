@@ -14,9 +14,9 @@ class BatchDfileRunner(TempFileMaker):
     """
 
     def __init__(self, inputs):
-        super(TempFileMaker, self).__init__()
+        super(BatchDfileRunner, self).__init__()
         self.inputs = inputs
-        self.outputs = None
+        self.outputs = []
         self.execute()
 
     def execute(self):
@@ -24,7 +24,7 @@ class BatchDfileRunner(TempFileMaker):
         for obj in self.inputs:
 
             # get executable path
-            exe = bmds.get_model(obj['bmds_version'], obj['model_app_name']).get_exe_path()
+            exe = bmds.get_model(obj['bmds_version'], obj['model_name']).get_exe_path()
 
             # write dfile
             dfile = self.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')

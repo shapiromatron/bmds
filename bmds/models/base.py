@@ -38,7 +38,7 @@ class TempFileMaker(object):
 class BMDModel(TempFileMaker):
 
     def __init__(self, dataset, overrides=None, id=None):
-        super(TempFileMaker, self).__init__()
+        super(BMDModel, self).__init__()
         self.id = id
         self.dataset = dataset
         self.overrides = overrides or {}

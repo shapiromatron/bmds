@@ -24,6 +24,18 @@ from .session import Session
 from .models.base import BMDModel
 
 
+def get_payload(models):
+    return dict(
+        inputs=json.dumps([
+            dict(
+                bmds_version=model.bmds_version_dir,
+                model_name=model.model_name,
+                dfile=model.as_dfile(),
+            ) for model in models
+        ])
+    )
+
+
 if platform.system() != 'Windows':
 
     host = os.environ.get('BMDS_HOST', None)
@@ -44,28 +56,16 @@ if platform.system() != 'Windows':
             # todo - authenticate here.
         return _request_session
 
-    def get_payload(models):
-        return dict(
-            inputs=[
-                dict(
-                    bmds_version=model.bmds_version_dir,
-                    model_app_name=model._get_model_name(),
-                    dfile=model.as_dfile(),
-                ) for model in models
-            ]
-        )
-
     def _set_outputs(model, result):
-        model.output_created = result[0]
+        model.output_created = result['output_created']
         if model.output_created:
-            model.parse_results(result[1])
+            model.parse_results(result['outfile'])
 
     def execute_model(self):
         # execute single model
         session = get_session()
         url = '{}/dfile/'.format(host)
-        dataset = json.dumps(get_payload([self]))
-        resp = session.post(url, dataset)
+        resp = session.post(url, data=get_payload([self]))
 
         # parse outputs
         result = resp.json()[0]
@@ -75,8 +75,7 @@ if platform.system() != 'Windows':
         # submit data
         session = get_session()
         url = '{}/dfile/'.format(host)
-        dataset = json.dumps(get_payload(self._models))
-        resp = session.post(url, dataset)
+        resp = session.post(url, data=get_payload(self._models))
 
         # parse results for each model
         jsoned = resp.json()
