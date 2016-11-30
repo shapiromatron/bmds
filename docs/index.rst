@@ -1,8 +1,21 @@
-Welcome to BMDS's documentation!
-================================
+.. include:: ../README.rst
+
+
+Contributors:
+~~~~~~~~~~~~~
+
+- Andy Shapiro (`shapiromatron`_)
+- Longlong Yang
+
+.. _`shapiromatron`: https://github.com/shapiromatron
+
+
+Table of contents:
+~~~~~~~~~~~~~~~~~~
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   readme
+   quickstart
+   development
    history
