@@ -233,16 +233,17 @@ class CorrectVarianceModel(Rule):
     default_description = 'The correct variance model was used (based on p-test #2).'
 
     def apply_rule(self, dataset, output):
-
-        # TODO - get variance model, should be integer 0 or 1
-        constant_variance = 1  # (or 0)
+        # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+        # 1 = constant variance => Var(i) = alpha*mean(i)
+        rho = output['parameters'].get('rho')
+        constant_variance = 0 if rho else 1
 
         p_value2 = output.get('p_value2')
         if p_value2 == '<0.0001':
             p_value2 = 0.0001
 
         if self._is_valid_number(p_value2):
-            if (constant_variance == 1 and p_value2 >= 0.1) or \
+            if (constant_variance == 1 and p_value2 > 0.1) or \
                     (constant_variance == 0 and p_value2 <= 0.1):
                 # correct variance model
                 msg = None

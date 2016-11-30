@@ -1,6 +1,9 @@
 import pytest
 
 import bmds
+import numpy as np
+
+from .fixtures import *
 
 
 def test_dataset_validation():
@@ -76,13 +79,22 @@ def test_is_increasing():
     assert ds.is_increasing is False
 
 
-def test_anova():
-    ds = bmds.ContinuousDataset(
-        doses=[1, 2, 3, 4, 5, 6, 7],
-        ns=[8, 6, 6, 6, 6, 6, 6],
-        responses=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
-        stdevs=[0.884408974, 0.975597151, 0.301068371, 0.879069846, 0.220161323, 0.841362172, 0.571939331]
-    )
-    report = ds.get_anova_report()
+def test_anova(anova_dataset):
+    # Check that anova generates expected output from original specifications.
+    report = anova_dataset.get_anova_report()
     expected = '                     Tests of Interest    \n   Test    -2*log(Likelihood Ratio)  Test df        p-value    \n   Test 1              22.2699         12           0.0346\n   Test 2               5.5741          6           0.4725\n   Test 3               5.5741          6           0.4725'  # noqa
     assert report == expected
+
+
+@pytest.mark.skip(reason='waiting for revised method')  # TODO - remove skip
+def test_correct_variance_model(cdataset):
+    # TODO - check for constant and non constant datasets
+    # Check that the correct variance model is selected for dataset
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    for model in session.model_options:
+        session.add_model(bmds.constants.M_Power)
+    session.execute()
+    model = session._models[0]
+    calc_pvalue2 = cdataset.anova[1].TEST
+    correct_pvalue2 = model.output['p_value2']
+    assert np.isclose(calc_pvalue2, correct_pvalue2)

@@ -8,9 +8,15 @@ class Continuous(BMDModel):
     possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
     dtype = constants.CONTINUOUS
 
+    def set_constant_variance_value(self):
+        # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+        # 1 = constant variance => Var(i) = alpha*mean(i)
+        ptest2 = self.dataset.anova[2].TEST
+        return 0 if ptest2 <= 0.1 else 1
+
 
 class Polynomial_216(Continuous):
-    # todo: add check that degree poly must be <=8
+    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
     bmds_version_dir = 'BMDS231'
@@ -87,7 +93,7 @@ class Polynomial_220(Polynomial_217):
 
 
 class Linear_216(Polynomial_216):
-    # todo: add check that degree poly must be <=8
+    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
     bmds_version_dir = 'BMDS231'

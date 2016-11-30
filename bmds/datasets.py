@@ -85,6 +85,5 @@ class ContinuousDataset(object):
             self._anova = tests
         return self._anova
 
-
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)

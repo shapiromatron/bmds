@@ -15,7 +15,7 @@ class DichotomousCancer(Dichotomous):
 
 
 class Multistage_32(Dichotomous):
-    # todo: add check that degree poly must be <=8
+    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
     bmds_version_dir = 'BMDS231'
@@ -85,7 +85,7 @@ class Multistage_34(Multistage_33):
 
 
 class MultistageCancer_19(DichotomousCancer):
-    # todo: add check that degree poly must be <=8
+    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
     bmds_version_dir = 'BMDS231'
