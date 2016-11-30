@@ -19,6 +19,26 @@ class BatchDfileRunner(TempFileMaker):
         self.outputs = []
         self.execute()
 
+    def get_outfile(self, dfile, model_name):
+        outfile = dfile.replace('.(d)', '.out')
+        oo2 = outfile.replace('.out', '.002')
+
+        # if not exponential, exit early
+        if 'exponential' not in model_name.lower():
+            return outfile
+
+        # side-effect- cleanup other files created by exponential
+        if os.path.exists(outfile):
+            self.add_tempfile(outfile)
+        if os.path.exists(oo2):
+            self.add_tempfile(oo2)
+
+        # get exponential model prefix
+        prefix = model_name.split('-')[1]
+        path, fn = os.path.split(outfile)
+        outfile = os.path.join(path, prefix + fn)
+        return outfile
+
     def execute(self):
 
         for obj in self.inputs:
@@ -37,15 +57,15 @@ class BatchDfileRunner(TempFileMaker):
             }
             try:
                 utils.RunProcess([exe, dfile], timeout=20).call()
-                outfile = dfile.replace('.(d)', '.out')
+                outfile = self.get_outfile(dfile, obj['model_name'])
+                oo2 = outfile.replace('.(d)', '.002')
                 if os.path.exists(outfile):
-                    output['output_created'] = True
                     self.add_tempfile(outfile)
+                    output['output_created'] = True
                     with open(outfile, 'r') as f:
                         output['outfile'] = f.read()
-                o2 = dfile.replace('.(d)', '.002')
-                if os.path.exists(o2):
-                    self.add_tempfile(o2)
+                if os.path.exists(oo2):
+                    self.add_tempfile(oo2)
             except Exception as e:
                 raise e
             finally:
