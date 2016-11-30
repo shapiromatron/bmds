@@ -1,7 +1,7 @@
 import pytest
 
 import bmds
-
+import numpy as np
 
 @pytest.fixture
 def cdataset():
@@ -22,9 +22,11 @@ def ddataset():
 
 @pytest.fixture
 def anova_dataset():
+    variances = [0.884408974, 0.975597151, 0.301068371, 0.879069846, 0.220161323, 0.841362172, 0.571939331]
+    stdevs = np.power(np.array(variances), 0.5)
     return bmds.ContinuousDataset(
         doses=[1, 2, 3, 4, 5, 6, 7],
         ns=[8, 6, 6, 6, 6, 6, 6],
         responses=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
-        stdevs=[0.884408974, 0.975597151, 0.301068371, 0.879069846, 0.220161323, 0.841362172, 0.571939331]
+        stdevs=stdevs,
     )

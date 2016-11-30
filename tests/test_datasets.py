@@ -86,7 +86,6 @@ def test_anova(anova_dataset):
     assert report == expected
 
 
-@pytest.mark.skip(reason='waiting for revised method')  # TODO - remove skip
 def test_correct_variance_model(cdataset):
     # TODO - check for constant and non constant datasets
     # Check that the correct variance model is selected for dataset
@@ -97,4 +96,6 @@ def test_correct_variance_model(cdataset):
     model = session._models[0]
     calc_pvalue2 = cdataset.anova[1].TEST
     correct_pvalue2 = model.output['p_value2']
-    assert np.isclose(calc_pvalue2, correct_pvalue2)
+    # large tolerance due to reporting in text-file
+    atol = 1e-3
+    assert np.isclose(calc_pvalue2, correct_pvalue2, atol=atol)

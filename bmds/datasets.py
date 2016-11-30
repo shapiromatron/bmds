@@ -1,4 +1,5 @@
 from .anova import AnovaTests
+import numpy as np
 
 
 class DichotomousDataset(object):
@@ -75,11 +76,18 @@ class ContinuousDataset(object):
         return '\n'.join(rows)
 
     @property
+    def variances(self):
+        if not hasattr(self, '_variances'):
+            stds = np.array(self.stdevs)
+            self._variances = np.power(stds, 2).tolist()
+        return self._variances
+
+    @property
     def anova(self):
         if not hasattr(self, '_anova'):
             num_params = 3  # assume linear model
             (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                self.doses_used, self.ns, self.responses, self.stdevs)
+                self.doses_used, self.ns, self.responses, self.variances)
             tests = AnovaTests.get_anova_c3_tests(
                 num_params, self.doses_used, A1, A2, A3, AR)
             self._anova = tests
