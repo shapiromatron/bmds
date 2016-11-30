@@ -125,12 +125,18 @@ class Recommender(object):
             model.recommended_variable = None
 
             # set no warnings by default (innocent until proven guilty)
-            model.logic_bin = constants.BIN_NO_CHANGE
             model.logic_notes = {
                 constants.BIN_NO_CHANGE: [],
                 constants.BIN_WARNING: [],
                 constants.BIN_FAILURE: [],
             }
+
+            # if no output is created, place model in failure bin
+            if model.output_created:
+                model.logic_bin = constants.BIN_NO_CHANGE
+            else:
+                model.logic_bin = constants.BIN_FAILURE
+                continue
 
             # apply tests for each model
             for rule in self.rules:
