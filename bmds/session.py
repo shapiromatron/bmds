@@ -61,4 +61,4 @@ class Session(object):
         self.recommender = logic.Recommender(self.dtype, overrides)
 
     def recommend(self):
-        self.recommender.recommend(self.dataset, self._models)
+        return self.recommender.recommend(self.dataset, self._models)

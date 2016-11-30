@@ -122,7 +122,7 @@ class Recommender(object):
 
             # set global recommendations
             model.recommended = False
-            model.recommended_notes = ''
+            model.recommended_variable = None
 
             # set no warnings by default (innocent until proven guilty)
             model.logic_bin = constants.BIN_NO_CHANGE
