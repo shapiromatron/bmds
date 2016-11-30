@@ -30,9 +30,8 @@ def test_model_execute(cdataset):
 
 def test_session_execute(cdataset):
     session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
-    for model in session.model_options:
-        session.add_model(bmds.constants.M_Power)
-        session.add_model(bmds.constants.M_Polynomial)
+    session.add_model(bmds.constants.M_Power)
+    session.add_model(bmds.constants.M_Polynomial)
     session.execute()
     assert session._models[0].output_created is True
     assert session._models[1].output_created is True
@@ -44,10 +43,9 @@ def test_session_execute(cdataset):
 def test_parameter_overrides(cdataset):
     # assert to overrides are used
     session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
-    for model in session.model_options:
-        session.add_model(bmds.constants.M_Polynomial)
-        session.add_model(bmds.constants.M_Polynomial,
-                          overrides={'constant_variance': 1, 'degree_poly': 3})
+    session.add_model(bmds.constants.M_Polynomial)
+    session.add_model(bmds.constants.M_Polynomial,
+                      overrides={'constant_variance': 1, 'degree_poly': 3})
 
     session.execute()
     model1 = session._models[0]
@@ -68,11 +66,10 @@ def test_parameter_overrides(cdataset):
 
 def test_continuous_restrictions(cdataset):
     session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
-    for model in session.model_options:
-        session.add_model(bmds.constants.M_Power)
-        session.add_model(bmds.constants.M_Power, overrides={'restrict_power': 0})
-        session.add_model(bmds.constants.M_Hill)
-        session.add_model(bmds.constants.M_Hill, overrides={'restrict_n': 0})
+    session.add_model(bmds.constants.M_Power)
+    session.add_model(bmds.constants.M_Power, overrides={'restrict_power': 0})
+    session.add_model(bmds.constants.M_Hill)
+    session.add_model(bmds.constants.M_Hill, overrides={'restrict_n': 0})
 
     session.execute()
     power1 = session._models[0]
