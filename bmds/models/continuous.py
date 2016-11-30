@@ -1,4 +1,5 @@
 from copy import deepcopy
+import os
 
 from .base import BMDModel, DefaultParams
 from .. import constants
@@ -159,6 +160,23 @@ class Exponential(Continuous):
 
     def _get_model_name(self):
         return '{}_{}'.format(self.exe, self.output_prefix.lower())
+
+    def get_outfile(self, dfile):
+        # Exponential model output files play differently.
+        #
+        # Append the model-prefix to outfile.
+        #
+        # Note: this function has a side-effect of adding the blank out and 002
+        # files which are created to be automatically cleaned-up.
+        outfile = super(Exponential, self).get_outfile(dfile)
+        oo2 = outfile.replace('.out', '.002')
+        if os.path.exists(outfile):
+            self.add_tempfile(outfile)
+        if os.path.exists(oo2):
+            self.add_tempfile(oo2)
+        path, fn = os.path.split(outfile)
+        fn = self.output_prefix + fn
+        return os.path.join(path, fn)
 
     def as_dfile(self):
         self._set_values()

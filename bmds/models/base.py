@@ -50,14 +50,14 @@ class BMDModel(TempFileMaker):
             exe = self.get_exe_path()
             dfile = self.write_dfile()
             RunProcess([exe, dfile], timeout=20).call()
-            outfile = dfile.replace('.(d)', '.out')
+            outfile = self.get_outfile(dfile)
+            o2 = outfile.replace('.(d)', '.002')
             if os.path.exists(outfile):
                 self.output_created = True
                 self.add_tempfile(outfile)
                 with open(outfile, 'r') as f:
                     text = f.read()
                 self.parse_results(text)
-            o2 = dfile.replace('.(d)', '.002')
             if os.path.exists(o2):
                 self.add_tempfile(o2)
         except Exception as e:
@@ -78,6 +78,9 @@ class BMDModel(TempFileMaker):
             ROOT,
             cls.bmds_version_dir,
             cls.exe + '.exe'))
+
+    def get_outfile(self, dfile):
+        return dfile.replace('.(d)', '.out')
 
     def parse_results(self, outfile):
         parser = OutputParser(outfile, self.dtype, self.model_name)

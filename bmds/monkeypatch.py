@@ -77,7 +77,8 @@ if platform.system() != 'Windows':
         # execute single model
         session = get_requests_session()
         url = '{}/dfile/'.format(host)
-        resp = session.post(url, data=get_payload([self]))
+        payload = get_payload([self])
+        resp = session.post(url, data=payload)
 
         # parse outputs
         result = resp.json()[0]
@@ -87,7 +88,8 @@ if platform.system() != 'Windows':
         # submit data
         session = get_requests_session()
         url = '{}/dfile/'.format(host)
-        resp = session.post(url, data=get_payload(self._models))
+        payload = get_payload(self._models)
+        resp = session.post(url, data=payload)
 
         # parse results for each model
         jsoned = resp.json()

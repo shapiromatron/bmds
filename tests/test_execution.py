@@ -64,6 +64,18 @@ def test_parameter_overrides(cdataset):
     assert model2.output['parameters']['beta_3']['estimate'] == 0.0
 
 
+def test_exponential(cdataset):
+    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session.add_model(bmds.constants.M_ExponentialM2)
+    session.add_model(bmds.constants.M_ExponentialM3)
+    session.add_model(bmds.constants.M_ExponentialM4)
+    session.add_model(bmds.constants.M_ExponentialM5)
+    session.execute()
+    for model in session._models:
+        assert model.output_created is True
+        assert len(model.outfile) > 0
+
+
 def test_continuous_restrictions(cdataset):
     session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
