@@ -7,39 +7,44 @@ Install the software using pip:
 
     pip install bmds
 
-Example function calls shown below:
+An example continuous model execution:
 
 .. code-block:: python
 
     import bmds
 
-    # get available BMDS versions
-    bmds.get_versions()
-
-    # get BMDS models for the specified version
-    bmds.get_models_for_version('2.40')
-
-    # create example datasets
-    ds1 = bmds.DichotomousDataset(
-        doses=[0, 1.96, 5.69, 29.75],
-        ns=[75, 49, 50, 49],
-        incidences=[5, 1, 3, 14])
-
-    ds2 = bmds.ContinuousDataset(
+    dataset = bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[111, 142, 143, 93, 42],
         responses=[2.112, 2.095, 1.956, 1.587, 1.254],
-        stdevs=[0.235, 0.209, 0.231, 0.263, 0.159])
+        stdevs=[0.235, 0.209, 0.231, 0.263, 0.159]
+    )
 
-    # create new model runs
-    models = [
-        bmds.Gamma_215(ds1),
-        bmds.Power_217(ds2),
-    ]
+    session = bmds.BMDS.latest_version(
+        bmds.constants.CONTINUOUS,
+        dataset=dataset)
+    session.add_default_models()
+    session.execute()
+    session.recommend()
 
-    # execute each model and parse results
-    for model in models:
-        model.execute()
+An example dichotomous model execution:
+
+.. code-block:: python
+
+    import bmds
+
+    dataset = bmds.DichotomousDataset(
+        doses=[0, 1.96, 5.69, 29.75],
+        ns=[75, 49, 50, 49],
+        incidences=[5, 1, 3, 14]
+    )
+
+    session = bmds.BMDS.latest_version(
+        bmds.constants.DICHOTOMOUS,
+        dataset=dataset)
+    session.add_default_models()
+    session.execute()
+    session.recommend()
 
 Use on Mac and/or Linux
 -----------------------
