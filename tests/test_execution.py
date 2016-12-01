@@ -29,7 +29,7 @@ def test_model_execute(cdataset):
 
 
 def test_session_execute(cdataset):
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
     session.add_model(bmds.constants.M_Polynomial)
     session.execute()
@@ -42,7 +42,7 @@ def test_session_execute(cdataset):
 
 def test_parameter_overrides(cdataset):
     # assert to overrides are used
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Polynomial)
     session.add_model(bmds.constants.M_Polynomial,
                       overrides={'constant_variance': 1, 'degree_poly': 3})
@@ -65,7 +65,7 @@ def test_parameter_overrides(cdataset):
 
 
 def test_exponential(cdataset):
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_ExponentialM2)
     session.add_model(bmds.constants.M_ExponentialM3)
     session.add_model(bmds.constants.M_ExponentialM4)
@@ -77,7 +77,7 @@ def test_exponential(cdataset):
 
 
 def test_continuous_restrictions(cdataset):
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
     session.add_model(bmds.constants.M_Power, overrides={'restrict_power': 0})
     session.add_model(bmds.constants.M_Hill)
@@ -99,7 +99,7 @@ def test_continuous_restrictions(cdataset):
 
 
 def test_dichotomous_restrictions(ddataset):
-    session = bmds.BMDS_v2601(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Weibull)
         session.add_model(bmds.constants.M_Weibull, overrides={'restrict_power': 0})

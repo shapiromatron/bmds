@@ -103,7 +103,7 @@ def test_default_logic():
 
 
 def test_apply_logic(cdataset):
-    session = bmds.BMDS_v2601(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Power)
         session.add_model(bmds.constants.M_Polynomial)
