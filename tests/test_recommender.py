@@ -111,7 +111,7 @@ def test_apply_logic(cdataset):
     session.add_recommender()
     recommended = session.recommend()
     assert recommended is None
-    assert session._models[0].logic_bin == 1
-    assert len(session._models[0].logic_notes[session._models[0].logic_bin]) == 1
-    assert session._models[1].logic_bin == 1
-    assert len(session._models[1].logic_notes[session._models[1].logic_bin]) == 1
+    assert session.models[0].logic_bin == 1
+    assert len(session.models[0].logic_notes[session.models[0].logic_bin]) == 1
+    assert session.models[1].logic_bin == 1
+    assert len(session.models[1].logic_notes[session.models[1].logic_bin]) == 1

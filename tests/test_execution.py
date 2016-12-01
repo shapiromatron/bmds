@@ -33,11 +33,11 @@ def test_session_execute(cdataset):
     session.add_model(bmds.constants.M_Power)
     session.add_model(bmds.constants.M_Polynomial)
     session.execute()
-    assert session._models[0].output_created is True
-    assert session._models[1].output_created is True
+    assert session.models[0].output_created is True
+    assert session.models[1].output_created is True
 
     # check that polynomial restriction is being used
-    assert 'The polynomial coefficients are restricted to be negative' in session._models[1].outfile
+    assert 'The polynomial coefficients are restricted to be negative' in session.models[1].outfile
 
 
 def test_parameter_overrides(cdataset):
@@ -48,8 +48,8 @@ def test_parameter_overrides(cdataset):
                       overrides={'constant_variance': 1, 'degree_poly': 3})
 
     session.execute()
-    model1 = session._models[0]
-    model2 = session._models[1]
+    model1 = session.models[0]
+    model2 = session.models[1]
 
     assert model1.output_created is True and model2.output_created is True
 
@@ -71,7 +71,7 @@ def test_exponential(cdataset):
     session.add_model(bmds.constants.M_ExponentialM4)
     session.add_model(bmds.constants.M_ExponentialM5)
     session.execute()
-    for model in session._models:
+    for model in session.models:
         assert model.output_created is True
         assert len(model.outfile) > 0
 
@@ -84,12 +84,12 @@ def test_continuous_restrictions(cdataset):
     session.add_model(bmds.constants.M_Hill, overrides={'restrict_n': 0})
 
     session.execute()
-    power1 = session._models[0]
-    power2 = session._models[1]
-    hill1 = session._models[2]
-    hill2 = session._models[3]
+    power1 = session.models[0]
+    power2 = session.models[1]
+    hill1 = session.models[2]
+    hill2 = session.models[3]
 
-    for m in session._models:
+    for m in session.models:
         assert m.output_created is True
 
     assert 'The power is restricted to be greater than or equal to 1' in power1.outfile
@@ -105,10 +105,10 @@ def test_dichotomous_restrictions(ddataset):
         session.add_model(bmds.constants.M_Weibull, overrides={'restrict_power': 0})
 
     session.execute()
-    weibull1 = session._models[0]
-    weibull2 = session._models[1]
+    weibull1 = session.models[0]
+    weibull2 = session.models[1]
 
-    for m in session._models:
+    for m in session.models:
         assert m.output_created is True
 
     assert 'Power parameter is restricted as power >= 1' in weibull1.outfile

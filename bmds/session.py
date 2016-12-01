@@ -43,7 +43,7 @@ class BMDS(object):
         self.dtype = dtype
         if self.dtype not in constants.DTYPES:
             raise ValueError('Invalid data type')
-        self._models = []
+        self.models = []
         self.dataset = dataset
 
     @property
@@ -70,7 +70,7 @@ class BMDS(object):
 
     @property
     def has_models(self):
-        return len(self._models) > 0
+        return len(self.models) > 0
 
     def add_default_models(self):
         for name in self.model_options[self.dtype].keys():
@@ -85,10 +85,10 @@ class BMDS(object):
             overrides=overrides,
             id=id,
         )
-        self._models.append(instance)
+        self.models.append(instance)
 
     def execute(self):
-        for model in self._models:
+        for model in self.models:
             model.execute()
 
     def add_recommender(self, overrides=None):
@@ -97,7 +97,7 @@ class BMDS(object):
     def recommend(self):
         if not hasattr(self, 'recommender'):
             self.add_recommender()
-        self.recommended_model = self.recommender.recommend(self.dataset, self._models)
+        self.recommended_model = self.recommender.recommend(self.dataset, self.models)
         return self.recommended_model
 
 

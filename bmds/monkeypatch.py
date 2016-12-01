@@ -88,12 +88,12 @@ if platform.system() != 'Windows':
         # submit data
         session = get_requests_session()
         url = '{}/dfile/'.format(host)
-        payload = get_payload(self._models)
+        payload = get_payload(self.models)
         resp = session.post(url, data=payload)
 
         # parse results for each model
         jsoned = resp.json()
-        for model, result in zip(self._models, jsoned):
+        for model, result in zip(self.models, jsoned):
             _set_outputs(model, result)
 
     # print startup error if host is None
