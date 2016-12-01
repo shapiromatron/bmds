@@ -3,6 +3,11 @@ from subprocess import Popen
 import threading
 
 
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
+
+
 class RunProcess(threading.Thread):
     """
     Run process and terminate a process given a specified time interval.

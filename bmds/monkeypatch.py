@@ -20,7 +20,7 @@ import platform
 import requests
 import sys
 
-from .session import Session
+from .session import BMDS
 from .models.base import BMDModel
 
 
@@ -101,5 +101,5 @@ if platform.system() != 'Windows':
         sys.stderr.write(NO_HOST_WARNING)
 
     # monkeypatch
-    Session.execute = execute_session
+    BMDS.execute = execute_session
     BMDModel.execute = execute_model

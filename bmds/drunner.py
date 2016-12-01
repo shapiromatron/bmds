@@ -1,6 +1,6 @@
 import os
 
-from . import bmds, utils
+from . import utils, session
 
 from .models.base import TempFileMaker
 
@@ -44,7 +44,7 @@ class BatchDfileRunner(TempFileMaker):
         for obj in self.inputs:
 
             # get executable path
-            exe = bmds.get_model(obj['bmds_version'], obj['model_name']).get_exe_path()
+            exe = session.BMDS.get_model(obj['bmds_version'], obj['model_name']).get_exe_path()
 
             # write dfile
             dfile = self.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')

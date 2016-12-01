@@ -1,5 +1,6 @@
-from .anova import AnovaTests
 import numpy as np
+
+from .anova import AnovaTests
 
 
 class DichotomousDataset(object):

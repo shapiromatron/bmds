@@ -1,7 +1,6 @@
 __version__ = '0.3.0'
 
 from .session import * # noqa
-from .bmds import *  # noqa
 from .datasets import *  # noqa
 from .logic import *  # noqa
 from .drunner import *  # noqa
