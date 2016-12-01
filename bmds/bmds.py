@@ -67,27 +67,24 @@ class BMDS_v2601(BMDS_v260):
     version = constants.BMDS2601
 
 
-VERSIONS = {
-    constants.BMDS231: BMDS_v231,
-    constants.BMDS240: BMDS_v240,
-    constants.BMDS260: BMDS_v260,
-    constants.BMDS2601: BMDS_v2601,
-}
+VERSIONS = OrderedDict((
+    (constants.BMDS231, BMDS_v231),
+    (constants.BMDS240, BMDS_v240),
+    (constants.BMDS260, BMDS_v260),
+    (constants.BMDS2601, BMDS_v2601),
+))
 
 
-def get_versions():
+def latest_bmds(*args, **kwargs):
+    return list(VERSIONS.values())[-1](*args, **kwargs)
+
+
+def get_bmds_versions():
     return VERSIONS.keys()
 
 
 def get_session(version):
     return VERSIONS[version]
-
-
-def get_models_for_version(version):
-    collection = VERSIONS.get(version)
-    if collection is None:
-        raise ValueError('Unknown BMDS version')
-    return collection.model_options
 
 
 def get_model(version, model_name):

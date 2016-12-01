@@ -3,6 +3,7 @@ import pytest
 import bmds
 import numpy as np
 
+
 @pytest.fixture
 def cdataset():
     return bmds.ContinuousDataset(

@@ -3,10 +3,6 @@ from . import datasets, constants, logic
 
 class Session(object):
 
-    @property
-    def model_options(self):
-        raise NotImplementedError('Abstract method requires implementation')
-
     bmr_options = {
         constants.DICHOTOMOUS: constants.DICHOTOMOUS_BMRS,
         constants.DICHOTOMOUS_CANCER: constants.DICHOTOMOUS_BMRS,
@@ -19,6 +15,10 @@ class Session(object):
             raise ValueError('Invalid data type')
         self._models = []
         self.dataset = dataset
+
+    @property
+    def model_options(self):
+        raise NotImplementedError('Abstract method requires implementation')
 
     def get_bmr_options(self):
         return self.bmr_options[self.dtype]
@@ -42,6 +42,10 @@ class Session(object):
     def has_models(self):
         return len(self._models) > 0
 
+    def add_default_models(self):
+        for name in self.model_options[self.dtype].keys():
+            self.add_model(name)
+
     def add_model(self, name, overrides=None, id=None):
         if self.dataset is None:
             raise ValueError('Add dataset to session before adding models')
@@ -61,4 +65,7 @@ class Session(object):
         self.recommender = logic.Recommender(self.dtype, overrides)
 
     def recommend(self):
-        return self.recommender.recommend(self.dataset, self._models)
+        if not hasattr(self, 'recommender'):
+            self.add_recommender()
+        self.recommended_model = self.recommender.recommend(self.dataset, self._models)
+        return self.recommended_model
