@@ -267,6 +267,6 @@ class Warnings(Rule):
     def apply_rule(self, dataset, output):
         warnings = output.get('warnings', [])
         if len(warnings) > 0:
-            return constants.failure_bin, u'\n'.join(warnings)
+            return self.failure_bin, u'\n'.join(warnings)
         else:
             return constants.BIN_NO_CHANGE, None
