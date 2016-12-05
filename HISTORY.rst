@@ -2,6 +2,12 @@
 History
 =======
 
+v0.4.0 (NEXT)
+-------------------
+
+* Updated documentation for installing
+
+
 v0.3.0 (2016-12-05)
 -------------------
 

@@ -17,6 +17,6 @@ Table of contents:
    :maxdepth: 3
 
    quickstart
+   installation
    api
-   development
    history

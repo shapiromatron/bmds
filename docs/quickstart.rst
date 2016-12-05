@@ -7,6 +7,8 @@ Install the software using pip:
 
     pip install bmds
 
+Trouble installing? See notes on :ref:`Windows <windows-install>` or :ref:`Mac/Linux <mac-install>`.
+
 An example continuous model execution:
 
 .. code-block:: python
@@ -46,28 +48,8 @@ An example dichotomous model execution:
     session.execute()
     session.recommend()
 
-Use on Mac and/or Linux
------------------------
+    print(session.recommended_model.model_name)
+    >>> 'Multistage'
 
-Due to limitations in the underlying BMDS software, the BMDS will only
-execute on Windows. However, by using a (remote) Windows server which executes
-BMDS, you can run this software on any platform. Install the package as you
-normally would, but in addition, you'll need to add a few additional environment
-variables to specify the `BMDS server`_  URL and login credentials:
-
-.. code-block:: bash
-
-    export "BMDS_HOST=http://bmds-server.com"
-    export "BMDS_USERNAME=myusername"
-    export "BMDS_PASSWORD=mysecret"
-
-That should do it!
-
-.. note::
-
-    These are just example settings, you'll need to configure your own BMDS
-    server to use. Want to borrow mine? Sure, just `ping me!`_
-
-.. _`BMDS server`: https://github.com/shapiromatron/bmds-server
-.. _`ping me!`: mailto:shapiromatron@gmail.com
-
+    print(session.recommended_model.output['BMD'])
+    >>> 18.0607
