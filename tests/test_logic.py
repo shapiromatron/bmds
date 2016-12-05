@@ -7,6 +7,9 @@ import pytest
 from .fixtures import *  # noqa
 
 
+# TODO: add individual logic-test for each case
+
+
 def dedentify(txt):
     return textwrap.dedent(txt).strip()
 

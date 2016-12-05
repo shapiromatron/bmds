@@ -2,14 +2,16 @@
 History
 =======
 
-v0.3.0 (UPCOMING)
+v0.3.0 (2016-12-05)
 -------------------
 
-* Default polynomial restriction based on if dataset is increasing or decreasing (previously unrestricted)
+* Model recommendation system enabled [`Wignall et al. 2014`_]
 * Default continuous variance model now calculated based on dataset using same statistics as BMDS [Thanks Longlong!]
+* Default polynomial restriction based on if dataset is increasing or decreasing (previously unrestricted)
 * Add new batch dFileRunner to execute multiple dfiles in batch-mode (integration w/ bmds-server)
-* (development): added a new tmux developer environment
-* Model recommendation system enabled
+* Updated Makefile to include with a new tmux developer environment
+
+.. _`Wignall et al. 2014`: https://doi.org/10.1289/ehp.1307539
 
 v0.2.0 (2016-11-23)
 -------------------
