@@ -1,3 +1,4 @@
+from copy import deepcopy
 from . import datasets, constants, logic, models, utils
 
 from collections import OrderedDict
@@ -74,7 +75,10 @@ class BMDS(object):
 
     def add_default_models(self, global_overrides=None):
         for name in self.model_options[self.dtype].keys():
-            self.add_model(name, overrides=global_overrides)
+            overrides = deepcopy(global_overrides) \
+                if global_overrides is not None \
+                else None
+            self.add_model(name, overrides=overrides)
 
     def add_model(self, name, overrides=None, id=None):
         if self.dataset is None:

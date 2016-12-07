@@ -5,7 +5,7 @@ History
 v0.4.0 (NEXT)
 -------------------
 
-* Updated documentation for installing
+* Allowed global overrides (such as BMR settings) as an optional input to ``Session.add_default_models``
 
 
 v0.3.0 (2016-12-05)
