@@ -72,9 +72,9 @@ class BMDS(object):
     def has_models(self):
         return len(self.models) > 0
 
-    def add_default_models(self):
+    def add_default_models(self, global_overrides=None):
         for name in self.model_options[self.dtype].keys():
-            self.add_model(name)
+            self.add_model(name, overrides=global_overrides)
 
     def add_model(self, name, overrides=None, id=None):
         if self.dataset is None:
