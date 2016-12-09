@@ -455,3 +455,48 @@ class Logistic_214(Logistic_213):
     date = '02/28/2013'
     defaults = deepcopy(Logistic_213.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class DichotomousHill_13(Dichotomous):
+    minimum_DG = 4
+    model_name = 'Dichotomous-Hill'
+    bmds_version_dir = 'BMDS260'
+    exe = 'DichoHill'
+    exe_plot = '10DichoHill'
+    version = 1.3
+    date = '02/28/2013'
+    defaults = deepcopy({
+        'bmdl_curve_calculation': DefaultParams.bmdl_curve_calculation,
+        'restrict_power': DefaultParams.log_transform(d=1),
+        'append_or_overwrite': DefaultParams.append_or_overwrite,
+        'smooth_option': DefaultParams.smooth_option,
+        'max_iterations': DefaultParams.max_iterations,
+        'relative_fn_conv': DefaultParams.relative_fn_conv,
+        'parameter_conv': DefaultParams.parameter_conv,
+        'v': DefaultParams.param_generator(),
+        'g': DefaultParams.param_generator(),
+        'intercept': DefaultParams.param_generator(),
+        'slope': DefaultParams.param_generator(),
+        'bmd_calculation': DefaultParams.bmd_calculation,
+        'dose_drop': DefaultParams.dose_drop,
+        'bmr': DefaultParams.dich_bmr,
+        'bmr_type': DefaultParams.dich_bmr_type,
+        'confidence_level': DefaultParams.confidence_level,
+    })
+    defaults['max_iterations']['d'] = 500
+
+    def as_dfile(self):
+        self._set_values()
+        return '\n'.join([
+            self._dfile_print_header_rows(),
+            str(self.dataset.doses_used),
+            self._dfile_print_options(
+                'max_iterations', 'relative_fn_conv', 'parameter_conv',
+                'bmdl_curve_calculation', 'restrict_power',
+                'bmd_calculation', 'append_or_overwrite', 'smooth_option'),
+            self._dfile_print_options(
+                'bmr', 'bmr_type', 'confidence_level'),
+            self._dfile_print_parameters(
+                'v', 'g', 'intercept', 'slope'),
+            self.dataset.as_dfile(),
+        ])

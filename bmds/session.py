@@ -148,6 +148,7 @@ class BMDS_v260(BMDS_v240):
             (constants.M_Multistage, models.Multistage_34),
             (constants.M_Gamma, models.Gamma_216),
             (constants.M_Weibull, models.Weibull_216),
+            (constants.M_DichotomousHill, models.DichotomousHill_13),
         ]),
         constants.DICHOTOMOUS_CANCER: OrderedDict([
             (constants.M_MultistageCancer, models.MultistageCancer_110),
