@@ -10,24 +10,31 @@ class Rule(object):
         self.failure_bin = failure_bin
         self.enabled = kwargs.get('enabled', True)
         self.threshold = kwargs.get('threshold', float('nan'))
-        self.name = kwargs.get('name', self.default_name)
-        self.description = kwargs.get('name', self.default_description)
+        self.rule_name = kwargs.get('rule_name', self.default_rule_name)
         self.kwargs = kwargs
 
     def __unicode__(self):
         enabled = u'✓' if self.enabled else u'✕'
         binmoji = constants.BINMOJI[self.failure_bin]
-        threshold = '' if math.isnan(self.threshold) else ', threshold={}'.format(self.threshold)
-        return u'{0} {1} [bin={2}{3}]'.format(enabled, self.name, binmoji, threshold)
+        threshold = '' if math.isnan(self.threshold) \
+            else ', threshold={}'.format(self.threshold)
+        return u'{0} {1} [bin={2}{3}]'.format(
+            enabled, self.rule_name, binmoji, threshold)
 
     def check(self, dataset, output):
         if self.enabled:
             return self.apply_rule(dataset, output)
         else:
-            return constants.BIN_NO_CHANGE, None
+            return self.return_pass()
+
+    def return_pass(self):
+        return constants.BIN_NO_CHANGE, None
 
     def apply_rule(self, dataset, output):
         # return tuple of (bin, notes) associated with rule or None
+        raise NotImplementedError('Abstract method.')
+
+    def get_failure_message(self, *args):
         raise NotImplementedError('Abstract method.')
 
     def _is_valid_number(self, val):
@@ -37,83 +44,83 @@ class Rule(object):
             (isinstance(val, int) or isinstance(val, float))
 
 
-class ValueExistsRule(Rule):
-    """Test fails if value is not a valid float."""
-
+class NumericValueExists(Rule):
+    # Test succeeds if value is numeric and not -999
     field_name = None
+    field_name_verbose = None
 
     def apply_rule(self, dataset, output):
         val = output.get(self.field_name)
         if self._is_valid_number(val):
-            return constants.BIN_NO_CHANGE, None
+            return self.return_pass()
         else:
-            msg = '{} (={}) is not a valid number'.format(self.name, val)
-            return self.failure_bin, msg
+            return self.failure_bin, self.get_failure_message()
+
+    def get_failure_message(self):
+        name = getattr(self, 'field_name_verbose', self.field_name)
+        return '{} does not exist'.format(name)
 
 
-class BmdExists(ValueExistsRule):
-    default_name = 'BMD exists'
-    default_description = 'A BMD value was successfully calculated.'
+class BmdExists(NumericValueExists):
+    default_rule_name = 'BMD exists'
     field_name = 'BMD'
 
 
-class BmdlExists(ValueExistsRule):
-    default_name = 'BMDL exists'
-    default_description = 'A BMDL value was successfully calculated.'
+class BmdlExists(NumericValueExists):
+    default_rule_name = 'BMDL exists'
     field_name = 'BMDL'
 
 
-class BmduExists(ValueExistsRule):
-    default_name = 'BMDU exists'
-    default_description = 'A BMDU value was successfully calculated.'
+class BmduExists(NumericValueExists):
+    default_rule_name = 'BMDU exists'
     field_name = 'BMDU'
 
 
-class AicExists(ValueExistsRule):
-    default_name = 'AIC exists'
-    default_description = 'An AIC value was successfully calculated.'
+class AicExists(NumericValueExists):
+    default_rule_name = 'AIC exists'
     field_name = 'AIC'
 
 
-class RoiExists(ValueExistsRule):
-    default_name = 'Residual of interest exists'
-    default_description = 'A residual of interest can be calculated.'
+class RoiExists(NumericValueExists):
+    default_rule_name = 'Residual of interest exists'
     field_name = 'residual_of_interest'
+    field_name_verbose = 'Residual of Interest'
 
 
-class ValueGreaterThanRule(Rule):
+class ShouldBeGreaterThan(Rule):
     # Test fails if value is less-than threshold.
-
-    field_name = None
+    field_name = ''
+    field_name_verbose = ''
 
     def apply_rule(self, dataset, output):
         val = output.get(self.field_name)
         threshold = self.threshold
 
-        if not self._is_valid_number(val) or val > threshold:
-            return constants.BIN_NO_CHANGE, None
+        if not self._is_valid_number(val) or val >= threshold:
+            return self.return_pass()
         else:
-            msg = '{} (={}) is less-than than threshold value {}'.format(
-                self.name, val, threshold)
-            return self.failure_bin, msg
+            return self.failure_bin, self.get_failure_message(val, threshold)
+
+    def get_failure_message(self, val, threshold):
+        name = self.field_name_verbose
+        return '{} is less than threshold ({}<{})'.format(name, val, threshold)
 
 
-class VarianceFit(ValueGreaterThanRule):
-    default_name = 'Variance fit'
-    default_description = ('The variance model appropriately captures the variance '
-                           'of the dataset being modeled (based on p-test #3).')
+class VarianceFit(ShouldBeGreaterThan):
+    default_rule_name = 'Variance fit'
     field_name = 'p_value3'
+    field_name_verbose = 'Variance model fit p-value'
 
 
-class GlobalFit(ValueGreaterThanRule):
-    default_name = 'GGOF'
-    default_description = ('The mean model is appropriately modeling the dataset, '
-                           'based on the global-goodness-of-fit.')
+class GlobalFit(ShouldBeGreaterThan):
+    default_rule_name = 'GGOF'
     field_name = 'p_value4'
+    field_name_verbose = 'Goodness of fit p-value'
 
 
-class ValueLessThanRule(Rule):
-    """Test fails if value is greater-than threshold."""
+class ShouldBeLessThan(Rule):
+    # Test fails if value is greater-than threshold.
+    msg = ''  # w/ arguments for value and threshold
 
     def get_value(self, dataset, output):
         raise NotImplemented('Requires implementation')
@@ -122,98 +129,101 @@ class ValueLessThanRule(Rule):
         val = self.get_value(dataset, output)
         threshold = self.threshold
 
-        if not self._is_valid_number(val) or val < threshold:
-            return constants.BIN_NO_CHANGE, None
+        if not self._is_valid_number(val) or val <= threshold:
+            return self.return_pass()
         else:
-            msg = '{} (={}) is greater-than than threshold value {}'.format(
-                self.name, val, threshold)
-            return self.failure_bin, msg
+            return self.failure_bin, self.get_failure_message(val, threshold)
+
+    def get_failure_message(self, val, threshold):
+        name = self.field_name_verbose
+        return '{} is greater than threshold ({}>{})'.format(name, val, threshold)
 
 
-class BmdBmdlRatio(ValueLessThanRule):
-    default_name = 'BMD to BMDL ratio'
-    default_description = ('The ratio between the BMD and BMDL values is large, '
-                           'indicating a large spread of estimates in the range of interest.')
+class BmdBmdlRatio(ShouldBeLessThan):
+    default_rule_name = 'BMD to BMDL ratio'
+    field_name_verbose = 'BMD/BMDL ratio'
 
     def get_value(self, dataset, output):
         bmd = output.get('BMD')
         bmdl = output.get('BMDL')
-        if self._is_valid_number(bmd) and self._is_valid_number(bmdl):
+        if self._is_valid_number(bmd) \
+                and self._is_valid_number(bmdl) \
+                and bmdl != 0:
             return bmd / bmdl
 
 
-class RoiFit(ValueLessThanRule):
-    default_name = 'Residual of interest'
-    default_description = ('The absolute value of the residual at the dose closest '
-                           'to the BMD is large, which means the model may not be '
-                           'estimating well in this range.')
+class RoiFit(ShouldBeLessThan):
+    default_rule_name = 'Residual of interest'
+    field_name_verbose = 'Residual of interest'
 
     def get_value(self, dataset, output):
         return output.get('residual_of_interest')
 
 
-class HighBmd(ValueLessThanRule):
-    default_name = 'High BMD'
-    default_description = ('The BMD estimate is greater than the maximum dose, '
-                           'thus the model is extrapolating a result.')
+class HighBmd(ShouldBeLessThan):
+    default_rule_name = 'High BMD'
+    field_name_verbose = 'BMD/high dose ratio'
 
     def get_value(self, dataset, output):
         max_dose = max(dataset.doses)
         bmd = output.get('BMD')
-        if self._is_valid_number(max_dose) and self._is_valid_number(bmd):
+        if self._is_valid_number(max_dose) \
+                and self._is_valid_number(bmd)\
+                and bmd != 0:
             return bmd / max_dose
 
 
-class HighBmdl(ValueLessThanRule):
-    default_name = 'High BMDL'
-    default_description = ('The BMDL estimate is greater than the maximum dose, '
-                           'thus the model is extrapolating a result.')
+class HighBmdl(ShouldBeLessThan):
+    default_rule_name = 'High BMDL'
+    field_name_verbose = 'BMDL/high dose ratio'
 
     def get_value(self, dataset, output):
         max_dose = max(dataset.doses)
         bmdl = output.get('BMDL')
-        if self._is_valid_number(max_dose) and self._is_valid_number(bmdl):
+        if self._is_valid_number(max_dose) and \
+                self._is_valid_number(bmdl) and \
+                max_dose > 0:
             return bmdl / max_dose
 
 
-class LowBmd(ValueLessThanRule):
-    default_name = 'Low BMD'
-    default_description = 'The BMD estimate is lower than the lowest non-zero dose.'
+class LowBmd(ShouldBeLessThan):
+    default_rule_name = 'Low BMD'
+    field_name_verbose = 'BMD/minimum dose ratio'
 
     def get_value(self, dataset, output):
         min_dose = min([d for d in dataset.doses if d > 0])
         bmd = output.get('BMD')
-        if self._is_valid_number(min_dose) and self._is_valid_number(bmd):
+        if self._is_valid_number(min_dose) and \
+                self._is_valid_number(bmd) and \
+                bmd > 0:
             return min_dose / bmd
 
 
-class LowBmdl(ValueLessThanRule):
-    default_name = 'Low BMDL'
-    default_description = 'The BMDL estimate is lower than the lowest non-zero dose.'
+class LowBmdl(ShouldBeLessThan):
+    default_rule_name = 'Low BMDL'
+    field_name_verbose = 'BMDL/minimum dose ratio'
 
     def get_value(self, dataset, output):
         min_dose = min([d for d in dataset.doses if d > 0])
         bmdl = output.get('BMDL')
-        if self._is_valid_number(min_dose) and self._is_valid_number(bmdl):
+        if self._is_valid_number(min_dose) and \
+                self._is_valid_number(bmdl) and \
+                bmdl > 0:
             return min_dose / bmdl
 
 
-class ControlResidual(ValueLessThanRule):
-    default_name = 'Control residual'
-    default_description = ('The absolute value of the residual at the control is large, '
-                           'which is often used to estimate the BMR. Thus, the BMR estimate '
-                           'may be inaccurate.')
+class ControlResidual(ShouldBeLessThan):
+    default_rule_name = 'Control residual'
+    field_name_verbose = 'Control residual'
 
     def get_value(self, dataset, output):
         if output.get('fit_residuals') and len(output['fit_residuals']) > 0:
             return abs(output['fit_residuals'][0])
 
 
-class ControlStdevResiduals(ValueLessThanRule):
-    default_name = 'Control stdev'
-    default_description = ('The standard deviation estimate at the control is different '
-                           'the the reported deviation, which is often used to estimate the BMR. '
-                           'Thus, the BMR estimate may be inaccurate.')
+class ControlStdevResiduals(ShouldBeLessThan):
+    default_rule_name = 'Control stdev'
+    field_name_verbose = 'Control standard deviation residual'
 
     def get_value(self, dataset, output):
         if output.get('fit_est_stdev') and output.get('fit_stdev') and \
@@ -227,10 +237,8 @@ class ControlStdevResiduals(ValueLessThanRule):
 
 
 class CorrectVarianceModel(Rule):
-    """Test fails if incorrect variance model is used for continuous datasets."""
-
-    default_name = 'Variance type'
-    default_description = 'The correct variance model was used (based on p-test #2).'
+    # Check variance model (continuous datasets-only)
+    default_rule_name = 'Variance type'
 
     def apply_rule(self, dataset, output):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
@@ -255,18 +263,19 @@ class CorrectVarianceModel(Rule):
         if msg:
             return self.failure_bin, msg
         else:
-            return constants.BIN_NO_CHANGE, None
+            return self.return_pass()
 
 
 class Warnings(Rule):
-    """Test fails if any warnings exist."""
+    # Test fails if any warnings exist.
+    default_rule_name = 'Warnings'
 
-    default_name = 'Warnings'
-    default_description = 'The model output file included additional warnings.'
+    def get_failure_message(self, warnings):
+        return u'BMDS warning: {}'.format('; '.join(warnings))
 
     def apply_rule(self, dataset, output):
         warnings = output.get('warnings', [])
         if len(warnings) > 0:
-            return self.failure_bin, u'\n'.join(warnings)
+            return self.failure_bin, self.get_failure_message(warnings)
         else:
-            return constants.BIN_NO_CHANGE, None
+            return self.return_pass()

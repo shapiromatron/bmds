@@ -2,12 +2,11 @@
 import textwrap
 
 import bmds
+from bmds.logic import rules
+
 import pytest
 
 from .fixtures import *  # noqa
-
-
-# TODO: add individual logic-test for each case
 
 
 def dedentify(txt):
@@ -118,3 +117,125 @@ def test_apply_logic(cdataset):
     assert len(session.models[0].logic_notes[session.models[0].logic_bin]) == 1
     assert session.models[1].logic_bin == 1
     assert len(session.models[1].logic_notes[session.models[1].logic_bin]) == 1
+
+
+def test_exists_rules(cdataset):
+    rule = rules.BmdExists(bmds.constants.BIN_FAILURE)
+
+    bin, msg = rule.apply_rule(cdataset, {'BMD': 1})
+    assert bin == bmds.constants.BIN_NO_CHANGE
+    assert msg is None
+
+    outputs = [
+        {},
+        {'BMD': -999}
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+        assert msg == rule.get_failure_message()
+
+
+def test_greater_than(cdataset):
+    rule = rules.GlobalFit(bmds.constants.BIN_FAILURE, threshold=1)
+
+    outputs = [
+        {'p_value4': 1.01},
+        {'p_value4': 1},
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [
+        {'p_value4': 0.99}
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+
+
+def test_less_than(cdataset):
+    rule = rules.GlobalFit(bmds.constants.BIN_FAILURE, threshold=1)
+
+    outputs = [
+        {'p_value4': 1.01},
+        {'p_value4': 1},
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [
+        {'p_value4': 0.99}
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+
+
+def test_warnings(cdataset):
+    rule = rules.Warnings(bmds.constants.BIN_FAILURE)
+
+    outputs = [
+        {},
+        {'warnings': []},
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [
+        {'warnings': ['failure']}
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+
+
+def test_variance_model(cdataset):
+    rule = rules.CorrectVarianceModel(bmds.constants.BIN_FAILURE)
+
+    outputs = [
+        {
+            'parameters': {'rho': {'value': 1}},
+            'p_value2': 0.05
+        },
+        {
+            'parameters': {'rho': {'value': 1}},
+            'p_value2': '<0.0001'
+        },
+        {
+            'parameters': {},
+            'p_value2': 0.15
+        },
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [
+        {
+            'parameters': {},
+            'p_value2': 0.05
+        },
+        {
+            'parameters': {},
+            'p_value2': '<0.0001'
+        },
+        {
+            'parameters': {'rho': {'value': 1}},
+            'p_value2': 0.15
+        },
+        {
+            'parameters': {'rho': {'value': 1}},
+            'p_value2': 'NaN'
+        },
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE

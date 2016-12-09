@@ -65,7 +65,7 @@ class Recommender(object):
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_NO_CHANGE,
                 threshold=5.,
-                name='BMD/BMDL (warning)',
+                rule_name='BMD/BMDL (warning)',
             ),
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_WARNING,
@@ -89,12 +89,12 @@ class Recommender(object):
             rules.LowBmd(
                 failure_bin=constants.BIN_NO_CHANGE,
                 threshold=3.,
-                name='Low BMD (warning)',
+                rule_name='Low BMD (warning)',
             ),
             rules.LowBmdl(
                 failure_bin=constants.BIN_NO_CHANGE,
                 threshold=3.,
-                name='Low BMDL (warning)',
+                rule_name='Low BMDL (warning)',
             ),
             rules.LowBmd(
                 failure_bin=constants.BIN_WARNING,
