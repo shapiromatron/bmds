@@ -178,6 +178,7 @@ class DefaultParams(object):
         'c': constants.FC_OTHER,
         't': constants.FT_BOOL,
         'd': 0,
+        'n': 'BMDL curve calculation',
     }
     append_or_overwrite = {
         'c': constants.FC_OTHER,
@@ -194,12 +195,6 @@ class DefaultParams(object):
         't': constants.FT_BOOL,
         'd': 1,
         'n': 'BMD calculation',
-    }
-    bmdl_curve_calc = {
-        'c': constants.FC_OTHER,
-        't': constants.FT_BOOL,
-        'd': 0,
-        'n': 'BMDL curve calculation',
     }
     dose_drop = {
         'c': constants.FC_OTHER,

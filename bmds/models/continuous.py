@@ -46,7 +46,6 @@ class Polynomial_216(Continuous):
         'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(),
         'bmd_calculation': DefaultParams.bmd_calculation,
-        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
         'bmr': DefaultParams.cont_bmr,
         'bmr_type': DefaultParams.cont_bmr_type,
@@ -116,7 +115,6 @@ class Linear_216(Polynomial_216):
         'restrict_polynomial': DefaultParams.restrict(d=0, n='Restrict polynomial'),  # noqa
         'degree_poly': DefaultParams.degree_poly(d=1, showName=False),
         'bmd_calculation': DefaultParams.bmd_calculation,
-        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
         'bmr': DefaultParams.cont_bmr,
         'bmr_type': DefaultParams.cont_bmr_type,
@@ -219,7 +217,6 @@ class Exponential_M2_17(Exponential):
         'c': DefaultParams.param_generator('c'),
         'd': DefaultParams.param_generator('d'),
         'bmd_calculation': DefaultParams.bmd_calculation,
-        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
         'bmr': DefaultParams.cont_bmr,
         'bmr_type': DefaultParams.cont_bmr_type,
@@ -329,7 +326,6 @@ class Power_216(Continuous):
         'power': DefaultParams.param_generator('Power'),
         'restrict_power': DefaultParams.restrict(d=1, n='Restrict power'),  # noqa
         'bmd_calculation': DefaultParams.bmd_calculation,
-        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
         'bmr': DefaultParams.cont_bmr,
         'bmr_type': DefaultParams.cont_bmr_type,
@@ -392,7 +388,6 @@ class Hill_216(Continuous):
         'k': DefaultParams.param_generator('K'),
         'restrict_n': DefaultParams.restrict(d=1, n='Restrict N>1'),
         'bmd_calculation': DefaultParams.bmd_calculation,
-        'bmdl_curve_calc': DefaultParams.bmdl_curve_calc,
         'dose_drop': DefaultParams.dose_drop,
         'bmr': DefaultParams.cont_bmr,
         'bmr_type': DefaultParams.cont_bmr_type,
