@@ -117,6 +117,8 @@ class Recommender(object):
         ]
 
     def recommend(self, dataset, models):
+        # TODO - test
+
         # apply rules to each model
         for model in models:
 

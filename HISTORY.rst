@@ -6,6 +6,7 @@ v0.4.0 (NEXT)
 -------------------
 
 * Allowed global overrides (such as BMR settings) as an optional input to ``Session.add_default_models``
+* Updated test-logic outputs for individual tests (and added tests)
 
 
 v0.3.0 (2016-12-05)

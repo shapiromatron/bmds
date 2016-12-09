@@ -57,7 +57,9 @@ class NumericValueExists(Rule):
             return self.failure_bin, self.get_failure_message()
 
     def get_failure_message(self):
-        name = getattr(self, 'field_name_verbose', self.field_name)
+        name = getattr(self, 'field_name_verbose')
+        if name is None:
+            name = self.field_name
         return '{} does not exist'.format(name)
 
 
@@ -103,7 +105,7 @@ class ShouldBeGreaterThan(Rule):
 
     def get_failure_message(self, val, threshold):
         name = self.field_name_verbose
-        return '{} is less than threshold ({}<{})'.format(name, val, threshold)
+        return '{} is less than threshold ({:.3} < {})'.format(name, float(val), threshold)
 
 
 class VarianceFit(ShouldBeGreaterThan):
@@ -136,7 +138,7 @@ class ShouldBeLessThan(Rule):
 
     def get_failure_message(self, val, threshold):
         name = self.field_name_verbose
-        return '{} is greater than threshold ({}>{})'.format(name, val, threshold)
+        return '{} is greater than threshold ({:.3} > {})'.format(name, float(val), threshold)
 
 
 class BmdBmdlRatio(ShouldBeLessThan):
@@ -170,7 +172,7 @@ class HighBmd(ShouldBeLessThan):
         if self._is_valid_number(max_dose) \
                 and self._is_valid_number(bmd)\
                 and bmd != 0:
-            return bmd / max_dose
+            return bmd / float(max_dose)
 
 
 class HighBmdl(ShouldBeLessThan):
@@ -183,7 +185,7 @@ class HighBmdl(ShouldBeLessThan):
         if self._is_valid_number(max_dose) and \
                 self._is_valid_number(bmdl) and \
                 max_dose > 0:
-            return bmdl / max_dose
+            return bmdl / float(max_dose)
 
 
 class LowBmd(ShouldBeLessThan):
@@ -196,7 +198,7 @@ class LowBmd(ShouldBeLessThan):
         if self._is_valid_number(min_dose) and \
                 self._is_valid_number(bmd) and \
                 bmd > 0:
-            return min_dose / bmd
+            return min_dose / float(bmd)
 
 
 class LowBmdl(ShouldBeLessThan):
@@ -209,12 +211,12 @@ class LowBmdl(ShouldBeLessThan):
         if self._is_valid_number(min_dose) and \
                 self._is_valid_number(bmdl) and \
                 bmdl > 0:
-            return min_dose / bmdl
+            return min_dose / float(bmdl)
 
 
 class ControlResidual(ShouldBeLessThan):
     default_rule_name = 'Control residual'
-    field_name_verbose = 'Control residual'
+    field_name_verbose = 'Residual at lowest dose'
 
     def get_value(self, dataset, output):
         if output.get('fit_residuals') and len(output['fit_residuals']) > 0:
@@ -223,7 +225,7 @@ class ControlResidual(ShouldBeLessThan):
 
 class ControlStdevResiduals(ShouldBeLessThan):
     default_rule_name = 'Control stdev'
-    field_name_verbose = 'Control standard deviation residual'
+    field_name_verbose = 'Ratio of modeled to actual stdev. at control'
 
     def get_value(self, dataset, output):
         if output.get('fit_est_stdev') and output.get('fit_stdev') and \
@@ -232,8 +234,10 @@ class ControlStdevResiduals(ShouldBeLessThan):
             modeled = abs(output['fit_est_stdev'][0])
             actual = abs(output['fit_stdev'][0])
 
-            if self._is_valid_number(modeled) and self._is_valid_number(actual):
-                return abs(modeled / actual)
+            if self._is_valid_number(modeled) and \
+                    self._is_valid_number(actual) and \
+                    modeled > 0 and actual > 0:
+                return max(abs(modeled / actual), abs(actual / modeled))
 
 
 class CorrectVarianceModel(Rule):
@@ -250,15 +254,14 @@ class CorrectVarianceModel(Rule):
         if p_value2 == '<0.0001':
             p_value2 = 0.0001
 
+        msg = None
         if self._is_valid_number(p_value2):
-            if (constant_variance == 1 and p_value2 > 0.1) or \
-                    (constant_variance == 0 and p_value2 <= 0.1):
-                # correct variance model
-                msg = None
-            else:
-                msg = 'Incorrect variance model (p-value 2 = {})'.format(p_value2)
+            if (constant_variance == 1 and p_value2 <= 0.1):
+                msg = 'Incorrect variance model (p-value 2 = {}), constant variance selected'.format(p_value2)
+            elif (constant_variance == 0 and p_value2 >= 0.1):
+                msg = 'Incorrect variance model (p-value 2 = {}), modeled variance selected'.format(p_value2)
         else:
-            msg = 'Correct variance model is undetermined (p-value 2 = {})'.format(p_value2)
+            msg = 'Correct variance model cannot be determined (p-value 2 = {})'.format(p_value2)
 
         if msg:
             return self.failure_bin, msg
@@ -271,7 +274,7 @@ class Warnings(Rule):
     default_rule_name = 'Warnings'
 
     def get_failure_message(self, warnings):
-        return u'BMDS warning: {}'.format('; '.join(warnings))
+        return u'Warning(s): {}'.format('; '.join(warnings))
 
     def apply_rule(self, dataset, output):
         warnings = output.get('warnings', [])

@@ -189,29 +189,24 @@ def test_warnings(cdataset):
         assert msg is None
 
     outputs = [
-        {'warnings': ['failure']}
+        ({'warnings': ['model has not converged']},
+         'Warning(s): model has not converged'),
+        ({'warnings': ['model has not converged', 'this happened too']},
+         'Warning(s): model has not converged; this happened too'),
     ]
-    for output in outputs:
+    for output, expected in outputs:
         bin, msg = rule.apply_rule(cdataset, output)
         assert bin == bmds.constants.BIN_FAILURE
+        assert msg == expected
 
 
 def test_variance_model(cdataset):
     rule = rules.CorrectVarianceModel(bmds.constants.BIN_FAILURE)
 
     outputs = [
-        {
-            'parameters': {'rho': {'value': 1}},
-            'p_value2': 0.05
-        },
-        {
-            'parameters': {'rho': {'value': 1}},
-            'p_value2': '<0.0001'
-        },
-        {
-            'parameters': {},
-            'p_value2': 0.15
-        },
+        {'parameters': {'rho': {'value': 1}}, 'p_value2': 0.05},
+        {'parameters': {'rho': {'value': 1}}, 'p_value2': '<0.0001'},
+        {'parameters': {}, 'p_value2': 0.15},
     ]
     for output in outputs:
         bin, msg = rule.apply_rule(cdataset, output)
@@ -219,23 +214,80 @@ def test_variance_model(cdataset):
         assert msg is None
 
     outputs = [
-        {
-            'parameters': {},
-            'p_value2': 0.05
-        },
-        {
-            'parameters': {},
-            'p_value2': '<0.0001'
-        },
-        {
-            'parameters': {'rho': {'value': 1}},
-            'p_value2': 0.15
-        },
-        {
-            'parameters': {'rho': {'value': 1}},
-            'p_value2': 'NaN'
-        },
+        (
+            {'parameters': {}, 'p_value2': 0.05},
+            'Incorrect variance model (p-value 2 = 0.05), constant variance selected'
+        ),
+        (
+            {'parameters': {}, 'p_value2': '<0.0001'},
+            'Incorrect variance model (p-value 2 = 0.0001), constant variance selected'
+        ),
+        (
+            {'parameters': {'rho': {'value': 1}}, 'p_value2': 0.15},
+            'Incorrect variance model (p-value 2 = 0.15), modeled variance selected'
+        ),
+        (
+            {'parameters': {'rho': {'value': 1}}, 'p_value2': 'NaN'},
+            'Correct variance model cannot be determined (p-value 2 = NaN)'
+        ),
     ]
-    for output in outputs:
+    for output, expected in outputs:
         bin, msg = rule.apply_rule(cdataset, output)
         assert bin == bmds.constants.BIN_FAILURE
+        assert msg == expected
+
+
+def test_error_messages(cdataset):
+    # Check that error messages are what want them to be.
+    # NOTE - Warnings and CorrectVarianceModel rules checked their special tests
+
+    # check existence fields
+    rule_classes = [
+        (rules.BmdExists, 'BMD does not exist'),
+        (rules.BmdlExists, 'BMDL does not exist'),
+        (rules.BmduExists, 'BMDU does not exist'),
+        (rules.AicExists, 'AIC does not exist'),
+        (rules.RoiExists, 'Residual of Interest does not exist'),
+    ]
+    for rule_class, expected in rule_classes:
+        rule = rule_class(bmds.constants.BIN_FAILURE)
+        _, msg = rule.apply_rule(cdataset, {})
+        assert msg == expected
+
+    # check greater than fields
+    rule_classes = [
+        (rules.VarianceFit, {'p_value3': 0.09},
+         'Variance model fit p-value is less than threshold (0.09 < 0.1)'),
+        (rules.GlobalFit, {'p_value4': 0.09},
+         'Goodness of fit p-value is less than threshold (0.09 < 0.1)'),
+    ]
+    for rule_class, outputs, expected in rule_classes:
+        rule = rule_class(bmds.constants.BIN_FAILURE, threshold=0.1)
+        _, msg = rule.apply_rule(cdataset, outputs)
+        assert msg == expected
+
+    # check less-than fields
+    max_dose = max(cdataset.doses)
+    min_dose = min([dose for dose in cdataset.doses if dose > 0])
+    rule_classes = [
+        (rules.BmdBmdlRatio, {'BMD': 10, 'BMDL': 1},
+         'BMD/BMDL ratio is greater than threshold (10.0 > 1)'),
+        (rules.RoiFit, {'residual_of_interest': 2},
+         'Residual of interest is greater than threshold (2.0 > 1)'),
+        (rules.HighBmd, {'BMD': max_dose + 1},
+         'BMD/high dose ratio is greater than threshold (1.0 > 1)'),
+        (rules.HighBmdl, {'BMDL': max_dose + 1},
+         'BMDL/high dose ratio is greater than threshold (1.0 > 1)'),
+        (rules.LowBmd, {'BMD': min_dose - 1},
+         'BMD/minimum dose ratio is greater than threshold (1.11 > 1)'),
+        (rules.LowBmdl, {'BMDL': min_dose - 1},
+         'BMDL/minimum dose ratio is greater than threshold (1.11 > 1)'),
+        (rules.ControlResidual, {'fit_residuals': [2]},
+         'Residual at lowest dose is greater than threshold (2.0 > 1)'),
+        (rules.ControlStdevResiduals, {'fit_est_stdev': [2], 'fit_stdev': [1]},
+         'Ratio of modeled to actual stdev. at control is greater than threshold (2.0 > 1)'),
+    ]
+    for rule_class, outputs, expected in rule_classes:
+        rule = rule_class(bmds.constants.BIN_FAILURE, threshold=1)
+        _, msg = rule.apply_rule(cdataset, outputs)
+        assert msg == expected
