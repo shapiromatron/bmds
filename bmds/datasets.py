@@ -3,7 +3,16 @@ import numpy as np
 from .anova import AnovaTests
 
 
-class DichotomousDataset(object):
+class Dataset(object):
+
+    def validate(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
+    def as_dfile(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
+
+class DichotomousDataset(Dataset):
 
     def __init__(self, doses, ns, incidences, doses_dropped=0):
         self.doses = doses
@@ -22,6 +31,9 @@ class DichotomousDataset(object):
                 [self.doses, self.ns, self.incidences]):
             raise ValueError('All input lists must be same length')
 
+        if length != len(set(self.doses)):
+            raise ValueError('Doses are not unique')
+
         if self.doses_used < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')
 
@@ -35,7 +47,7 @@ class DichotomousDataset(object):
         return '\n'.join(rows)
 
 
-class ContinuousDataset(object):
+class ContinuousDataset(Dataset):
 
     def __init__(self, doses, ns, means, stdevs, doses_dropped=0):
         self.doses = doses
@@ -53,6 +65,9 @@ class ContinuousDataset(object):
                 len(lst) == length for lst in
                 [self.doses, self.ns, self.means, self.stdevs]):
             raise ValueError('All input lists must be same length')
+
+        if length != len(set(self.doses)):
+            raise ValueError('Doses are not unique')
 
         if self.doses_used < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')

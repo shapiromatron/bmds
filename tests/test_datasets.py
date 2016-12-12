@@ -10,6 +10,7 @@ def test_dataset_validation():
     # make dummy datasets
     dummy3 = [1, 2, 3]
     dummy4 = [1, 2, 3, 4]
+    dummy3_dups = [0, 0, 1]
 
     # these should be valid
     bmds.DichotomousDataset(
@@ -31,6 +32,14 @@ def test_dataset_validation():
             doses_dropped=1)
         bmds.ContinuousDataset(
             doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3,
+            doses_dropped=1)
+
+        # duplicate dose-groups
+        bmds.DichotomousDataset(
+            doses=dummy3_dups, ns=dummy3, incidences=dummy3,
+            doses_dropped=1)
+        bmds.ContinuousDataset(
+            doses=dummy3_dups, ns=dummy3, means=dummy3, stdevs=dummy3,
             doses_dropped=1)
 
 
