@@ -39,6 +39,12 @@ M_ExponentialM4 = 'Exponential-M4'
 M_ExponentialM5 = 'Exponential-M5'
 M_Hill = 'Hill'
 
+VARIABLE_POLYNOMIAL = (
+    M_Multistage,
+    M_MultistageCancer,
+    M_Polynomial,
+)
+
 # bmr types
 DICHOTOMOUS_BMRS = [
     {'type': 'Extra', 'value': 0.1, 'confidence_level': 0.95},

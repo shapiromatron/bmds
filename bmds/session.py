@@ -79,7 +79,15 @@ class BMDS(object):
                 if global_overrides is not None \
                 else None
 
-            self.add_model(name, overrides=overrides)
+            if name in constants.VARIABLE_POLYNOMIAL:
+                for i in range(2, min(self.dataset.num_doses, 8)):
+                    overrides = {} \
+                        if overrides is None \
+                        else deepcopy(overrides)
+                    overrides['degree_poly'] = i
+                    self.add_model(name, overrides=overrides)
+            else:
+                self.add_model(name, overrides=overrides)
 
     def add_model(self, name, overrides=None, id=None):
         if self.dataset is None:
