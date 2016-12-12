@@ -37,10 +37,10 @@ class DichotomousDataset(object):
 
 class ContinuousDataset(object):
 
-    def __init__(self, doses, ns, responses, stdevs, doses_dropped=0):
+    def __init__(self, doses, ns, means, stdevs, doses_dropped=0):
         self.doses = doses
         self.ns = ns
-        self.responses = responses
+        self.means = means
         self.stdevs = stdevs
         self.doses_dropped = doses_dropped
         self.num_doses = len(doses)
@@ -51,7 +51,7 @@ class ContinuousDataset(object):
         length = len(self.doses)
         if not all(
                 len(lst) == length for lst in
-                [self.doses, self.ns, self.responses, self.stdevs]):
+                [self.doses, self.ns, self.means, self.stdevs]):
             raise ValueError('All input lists must be same length')
 
         if self.doses_used < 3:
@@ -60,8 +60,8 @@ class ContinuousDataset(object):
     @property
     def is_increasing(self):
         inc = 0
-        for i in range(len(self.responses) - 1):
-            if self.responses[i + 1] > self.responses[i]:
+        for i in range(len(self.means) - 1):
+            if self.means[i + 1] > self.means[i]:
                 inc += 1
             else:
                 inc -= 1
@@ -73,7 +73,7 @@ class ContinuousDataset(object):
             if i >= self.doses_used:
                 continue
             rows.append('%f %d %f %f' % (
-                self.doses[i], self.ns[i], self.responses[i], self.stdevs[i]))
+                self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
         return '\n'.join(rows)
 
     @property
@@ -88,7 +88,7 @@ class ContinuousDataset(object):
         if not hasattr(self, '_anova'):
             num_params = 3  # assume linear model
             (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                self.doses_used, self.ns, self.responses, self.variances)
+                self.doses_used, self.ns, self.means, self.variances)
             tests = AnovaTests.get_anova_c3_tests(
                 num_params, self.doses_used, A1, A2, A3, AR)
             self._anova = tests

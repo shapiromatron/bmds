@@ -15,7 +15,7 @@ def test_dataset_validation():
     bmds.DichotomousDataset(
         doses=dummy3, ns=dummy3, incidences=dummy3)
     bmds.ContinuousDataset(
-        doses=dummy3, ns=dummy3, responses=dummy3, stdevs=dummy3)
+        doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3)
 
     # these should raise errors
     with pytest.raises(ValueError):
@@ -23,14 +23,14 @@ def test_dataset_validation():
         bmds.DichotomousDataset(
             doses=dummy4, ns=dummy3, incidences=dummy3)
         bmds.ContinuousDataset(
-            doses=dummy4, ns=dummy3, responses=dummy3, stdevs=dummy3)
+            doses=dummy4, ns=dummy3, means=dummy3, stdevs=dummy3)
 
         # 2 remaining after dropping-doses
         bmds.DichotomousDataset(
             doses=dummy3, ns=dummy3, incidences=dummy3,
             doses_dropped=1)
         bmds.ContinuousDataset(
-            doses=dummy3, ns=dummy3, responses=dummy3, stdevs=dummy3,
+            doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3,
             doses_dropped=1)
 
 
@@ -47,7 +47,7 @@ def test_dfile_outputs():
 
     # check continuous
     ds = bmds.ContinuousDataset(
-        doses=dummy4, ns=dummy4, responses=dummy4, stdevs=dummy4,
+        doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4,
         doses_dropped=1)
     dfile = ds.as_dfile()
     expected = 'Dose NumAnimals Response Stdev\n1.000000 1 1.000000 1.000000\n2.000000 2 2.000000 2.000000\n3.000000 3 3.000000 3.000000'  # noqa
@@ -71,11 +71,11 @@ def test_doses_used():
 def test_is_increasing():
     dummy4 = [1, 2, 3, 4]
 
-    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, responses=dummy4, stdevs=dummy4)
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4)
     assert ds.is_increasing is True
 
     rev = list(reversed(dummy4))
-    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, responses=rev, stdevs=dummy4)
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=rev, stdevs=dummy4)
     assert ds.is_increasing is False
 
 
