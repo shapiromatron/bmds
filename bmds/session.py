@@ -80,7 +80,7 @@ class BMDS(object):
                 else None
 
             if name in constants.VARIABLE_POLYNOMIAL:
-                for i in range(2, min(self.dataset.num_doses, 8)):
+                for i in range(2, min(self.dataset.doses_used, 8)):
                     overrides = {} \
                         if overrides is None \
                         else deepcopy(overrides)

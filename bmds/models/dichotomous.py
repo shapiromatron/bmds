@@ -57,7 +57,7 @@ class Multistage_32(Dichotomous):
 
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {}'.format(self.dataset.doses_used, degree_poly),
+            '{} {}'.format(self.dataset.dataset_length , degree_poly),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_beta',
@@ -126,7 +126,7 @@ class MultistageCancer_19(DichotomousCancer):
 
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {}'.format(self.dataset.doses_used, degree_poly),
+            '{} {}'.format(self.dataset.dataset_length , degree_poly),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_beta',
@@ -177,7 +177,7 @@ class Weibull_215(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_power', 'bmd_calculation',
@@ -229,7 +229,7 @@ class LogProbit_32(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
@@ -281,7 +281,7 @@ class Probit_32(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
@@ -332,7 +332,7 @@ class Gamma_215(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_power',
@@ -384,7 +384,7 @@ class LogLogistic_213(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
@@ -436,7 +436,7 @@ class Logistic_213(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'log_transform', 'restrict_slope',
@@ -489,7 +489,7 @@ class DichotomousHill_13(Dichotomous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            str(self.dataset.doses_used),
+            str(self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_power',

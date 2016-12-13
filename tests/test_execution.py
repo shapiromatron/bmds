@@ -22,22 +22,28 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
-def test_model_execute(cdataset):
-    model = bmds.models.Power_218(cdataset)
-    model.execute()
-    assert model.output_created is True
+def test_default_execution(cdataset, ddataset, cidataset):
+    # All models execute given valid inputs
 
+    def _check_session(session, num_models):
+        session.add_default_models()
+        assert len(session.models) == num_models
+        session.execute()
+        for model in session.models:
+            assert model.output_created is True
+            assert len(model.outfile) > 0
 
-def test_session_execute(cdataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
-    session.add_model(bmds.constants.M_Power)
-    session.add_model(bmds.constants.M_Polynomial)
-    session.execute()
-    assert session.models[0].output_created is True
-    assert session.models[1].output_created is True
+    _check_session(session, 10)
 
-    # check that polynomial restriction is being used
-    assert 'The polynomial coefficients are restricted to be negative' in session.models[1].outfile
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cidataset)
+    _check_session(session, 12)
+
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    _check_session(session, 9)
+
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
+    _check_session(session, 2)
 
 
 def test_parameter_overrides(cdataset):
@@ -62,18 +68,6 @@ def test_parameter_overrides(cdataset):
     # check degree_poly override setting
     assert 'beta_3' not in model1.output['parameters']
     assert model2.output['parameters']['beta_3']['estimate'] == 0.0
-
-
-def test_exponential(cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
-    session.add_model(bmds.constants.M_ExponentialM2)
-    session.add_model(bmds.constants.M_ExponentialM3)
-    session.add_model(bmds.constants.M_ExponentialM4)
-    session.add_model(bmds.constants.M_ExponentialM5)
-    session.execute()
-    for model in session.models:
-        assert model.output_created is True
-        assert len(model.outfile) > 0
 
 
 def test_continuous_restrictions(cdataset):

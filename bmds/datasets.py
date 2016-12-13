@@ -15,6 +15,8 @@ class Dataset(object):
 
 class DichotomousDataset(Dataset):
 
+    BMDS_DATASET_TYPE = 1  # group data
+
     def __init__(self, doses, ns, incidences, doses_dropped=0):
         self.doses = doses
         self.ns = ns
@@ -47,8 +49,14 @@ class DichotomousDataset(Dataset):
                 self.doses[i], self.incidences[i], self.remainings[i]))
         return '\n'.join(rows)
 
+    @property
+    def dataset_length(self):
+        return self.doses_used
+
 
 class ContinuousDataset(Dataset):
+
+    BMDS_DATASET_TYPE = 1  # group data
 
     def __init__(self, doses, ns, means, stdevs, doses_dropped=0):
         self.doses = doses
@@ -110,11 +118,17 @@ class ContinuousDataset(Dataset):
             self._anova = tests
         return self._anova
 
+    @property
+    def dataset_length(self):
+        return self.doses_used
+
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)
 
 
 class ContinuousIndividualDataset(ContinuousDataset):
+
+    BMDS_DATASET_TYPE = 0  # individual data
 
     def __init__(self, doses, responses, doses_dropped=0):
         self.individual_doses = doses
@@ -159,3 +173,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
                 continue
             rows.append('%f %f' % (dose, response))
         return '\n'.join(rows)
+
+    @property
+    def dataset_length(self):
+        return len(self.individual_doses)
