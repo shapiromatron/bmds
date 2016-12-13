@@ -17,6 +17,8 @@ def test_dataset_validation():
         doses=dummy3, ns=dummy3, incidences=dummy3)
     bmds.ContinuousDataset(
         doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3)
+    bmds.ContinuousIndividualDataset(
+        doses=dummy3, responses=dummy3)
 
     # these should raise errors
     with pytest.raises(ValueError):
@@ -25,6 +27,8 @@ def test_dataset_validation():
             doses=dummy4, ns=dummy3, incidences=dummy3)
         bmds.ContinuousDataset(
             doses=dummy4, ns=dummy3, means=dummy3, stdevs=dummy3)
+        bmds.ContinuousIndividualDataset(
+            doses=dummy4, responses=dummy3)
 
         # 2 remaining after dropping-doses
         bmds.DichotomousDataset(
@@ -32,6 +36,9 @@ def test_dataset_validation():
             doses_dropped=1)
         bmds.ContinuousDataset(
             doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3,
+            doses_dropped=1)
+        bmds.ContinuousIndividualDataset(
+            doses=dummy3, responses=dummy3,
             doses_dropped=1)
 
         # duplicate dose-groups
@@ -41,6 +48,26 @@ def test_dataset_validation():
         bmds.ContinuousDataset(
             doses=dummy3_dups, ns=dummy3, means=dummy3, stdevs=dummy3,
             doses_dropped=1)
+
+        # also duplicate, but less than 2 dose-groups
+        bmds.ContinuousIndividualDataset(
+            doses=dummy3_dups, responses=dummy3)
+
+
+def test_ci_summary_stats(cidataset):
+    assert len(cidataset.doses) == 7
+    assert np.isclose(
+        cidataset.ns,
+        [8, 6, 6, 6, 6, 6, 6]
+    ).all()
+    assert np.isclose(
+        cidataset.means,
+        [9.9264, 10.1889, 10.17755, 10.3571, 10.0275, 11.4933, 10.85275]
+    ).all()
+    assert np.isclose(
+        cidataset.stdevs,
+        [0.87969, 0.90166, 0.50089, 0.85590, 0.42833, 0.83734, 0.690373]
+    ).all()
 
 
 def test_dfile_outputs():
@@ -62,9 +89,18 @@ def test_dfile_outputs():
     expected = 'Dose NumAnimals Response Stdev\n1.000000 1 1.000000 1.000000\n2.000000 2 2.000000 2.000000\n3.000000 3 3.000000 3.000000'  # noqa
     assert dfile == expected
 
+    # check continuous individual
+    ds = bmds.ContinuousIndividualDataset(
+        doses=dummy4, responses=dummy4,
+        doses_dropped=1)
+    dfile = ds.as_dfile()
+    expected = 'Dose Response\n1.000000 1.000000\n2.000000 2.000000\n3.000000 3.000000'  # noqa
+    assert dfile == expected
+
 
 def test_doses_used():
     ds5 = [1, 2, 3, 4, 5]
+    ds5dups = [1, 2, 3, 4, 5] * 2
 
     ds = bmds.DichotomousDataset(ds5, ds5, ds5)
     assert ds.doses_used == 5
@@ -74,6 +110,11 @@ def test_doses_used():
     ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5)
     assert ds.doses_used == 5
     ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5, doses_dropped=2)
+    assert ds.doses_used == 3
+
+    ds = bmds.ContinuousIndividualDataset(ds5dups, ds5dups)
+    assert ds.doses_used == 5
+    ds = bmds.ContinuousIndividualDataset(ds5dups, ds5dups, doses_dropped=2)
     assert ds.doses_used == 3
 
 

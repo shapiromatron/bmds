@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 
 from .anova import AnovaTests
@@ -111,3 +112,50 @@ class ContinuousDataset(Dataset):
 
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)
+
+
+class ContinuousIndividualDataset(ContinuousDataset):
+
+    def __init__(self, doses, responses, doses_dropped=0):
+        self.individual_doses = doses
+        self.responses = responses
+        self.doses_dropped = doses_dropped
+        self.set_summary_data()
+        self.num_doses = len(self.doses)
+        self.doses_used = self.num_doses - self.doses_dropped
+        self.validate()
+
+    def validate(self):
+        length = len(self.individual_doses)
+        if not all(
+                len(lst) == length for lst in
+                [self.individual_doses, self.responses]):
+            raise ValueError('All input lists must be same length')
+
+        if self.doses_used < 3:
+            raise ValueError('Must have 3 or more doses after dropping doses')
+
+    def set_summary_data(self):
+        doses = list(set(self.individual_doses))
+        doses.sort()
+
+        dd = defaultdict(list)
+        for d, r in zip(self.individual_doses, self.responses):
+            dd[d].append(r)
+
+        def _get_stats(lst):
+            arr = np.array(lst, dtype=np.float64)
+            return [arr.size, arr.mean(), arr.std()]
+
+        vals = [_get_stats(dd[dose]) for dose in doses]
+        self.ns, self.means, self.stdevs = zip(*vals)
+        self.doses = doses
+
+    def as_dfile(self):
+        rows = ['Dose Response']
+        for dose, response in zip(self.individual_doses, self.responses):
+            dose_idx = self.doses.index(dose)
+            if dose_idx >= self.doses_used:
+                continue
+            rows.append('%f %f' % (dose, response))
+        return '\n'.join(rows)
