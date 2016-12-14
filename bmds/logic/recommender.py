@@ -12,7 +12,7 @@ class Recommender(object):
         rule_args = dict()
         if dtype == constants.DICHOTOMOUS:
             pass
-        elif dtype == constants.CONTINUOUS:
+        elif dtype in constants.CONTINUOUS_DTYPES:
             rule_args['continuous'] = True
         elif dtype == constants.DICHOTOMOUS_CANCER:
             rule_args['cancer'] = True

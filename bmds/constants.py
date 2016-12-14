@@ -4,14 +4,20 @@
 DICHOTOMOUS = 'D'
 DICHOTOMOUS_CANCER = 'DC'
 CONTINUOUS = 'C'
+CONTINUOUS_INDIVIDUAL = 'CI'
 DTYPES = (
     DICHOTOMOUS,
     DICHOTOMOUS_CANCER,
     CONTINUOUS,
+    CONTINUOUS_INDIVIDUAL,
 )
-DICH_DTYPES = (
+DICHOTOMOUS_DTYPES = (
     DICHOTOMOUS,
     DICHOTOMOUS_CANCER,
+)
+CONTINUOUS_DTYPES = (
+    CONTINUOUS,
+    CONTINUOUS_INDIVIDUAL,
 )
 
 # bmds versions
@@ -45,7 +51,7 @@ VARIABLE_POLYNOMIAL = (
     M_Polynomial,
 )
 
-# bmr types
+# BMR types
 DICHOTOMOUS_BMRS = [
     {'type': 'Extra', 'value': 0.1, 'confidence_level': 0.95},
     {'type': 'Added', 'value': 0.1, 'confidence_level': 0.95},
@@ -73,6 +79,7 @@ BMR_CROSSWALK = {
         'Extra': 4
     }
 }
+BMR_CROSSWALK[CONTINUOUS_INDIVIDUAL] = BMR_CROSSWALK[CONTINUOUS]
 
 # field types
 FT_INTEGER = 'i'

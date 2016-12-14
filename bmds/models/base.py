@@ -127,7 +127,7 @@ class BMDModel(TempFileMaker):
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter
         # names, in the proper order.
-        if ((self.dtype == constants.CONTINUOUS) and
+        if ((self.dtype in constants.CONTINUOUS_DTYPES) and
                 (self.values['constant_variance'] == 1)):
             self.values['rho'] = ('s', 0)  # for specified to equal 0
         specifieds = []

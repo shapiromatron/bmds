@@ -6,8 +6,8 @@ from .. import constants
 
 
 class Continuous(BMDModel):
+    dtype = 'C'  # for parsing output; therefore C is equivalent to CI
     possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
-    dtype = constants.CONTINUOUS
 
     def set_constant_variance_value(self):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho

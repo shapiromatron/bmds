@@ -37,7 +37,8 @@ class BMDS(object):
     bmr_options = {
         constants.DICHOTOMOUS: constants.DICHOTOMOUS_BMRS,
         constants.DICHOTOMOUS_CANCER: constants.DICHOTOMOUS_BMRS,
-        constants.CONTINUOUS: constants.CONTINUOUS_BMRS
+        constants.CONTINUOUS: constants.CONTINUOUS_BMRS,
+        constants.CONTINUOUS_INDIVIDUAL: constants.CONTINUOUS_BMRS
     }
 
     def __init__(self, dtype, dataset=None):
@@ -63,7 +64,9 @@ class BMDS(object):
     def add_dataset(self, **kwargs):
         if self.dtype == constants.CONTINUOUS:
             ds = datasets.ContinuousDataset(**kwargs)
-        elif self.dtype in constants.DICH_DTYPES:
+        elif self.dtype == constants.CONTINUOUS_INDIVIDUAL:
+            ds = datasets.ContinuousIndividualDataset(**kwargs)
+        elif self.dtype in constants.DICHOTOMOUS_DTYPES:
             ds = datasets.DichotomousDataset(**kwargs)
         else:
             raise ValueError('Invalid dtype')
@@ -143,6 +146,16 @@ class BMDS_v240(BMDS_v231):
             (constants.M_ExponentialM4, models.Exponential_M4_19),
             (constants.M_ExponentialM5, models.Exponential_M5_19),
         ]),
+        constants.CONTINUOUS_INDIVIDUAL: OrderedDict([
+            (constants.M_Linear, models.Linear_217),
+            (constants.M_Polynomial, models.Polynomial_217),
+            (constants.M_Power, models.Power_217),
+            (constants.M_Hill, models.Hill_217),
+            (constants.M_ExponentialM2, models.Exponential_M2_19),
+            (constants.M_ExponentialM3, models.Exponential_M3_19),
+            (constants.M_ExponentialM4, models.Exponential_M4_19),
+            (constants.M_ExponentialM5, models.Exponential_M5_19),
+        ]),
     }
 
 
@@ -163,6 +176,16 @@ class BMDS_v260(BMDS_v240):
             (constants.M_MultistageCancer, models.MultistageCancer_110),
         ]),
         constants.CONTINUOUS: OrderedDict([
+            (constants.M_Linear, models.Linear_220),
+            (constants.M_Polynomial, models.Polynomial_220),
+            (constants.M_Power, models.Power_218),
+            (constants.M_Hill, models.Hill_217),
+            (constants.M_ExponentialM2, models.Exponential_M2_110),
+            (constants.M_ExponentialM3, models.Exponential_M3_110),
+            (constants.M_ExponentialM4, models.Exponential_M4_110),
+            (constants.M_ExponentialM5, models.Exponential_M5_110),
+        ]),
+        constants.CONTINUOUS_INDIVIDUAL: OrderedDict([
             (constants.M_Linear, models.Linear_220),
             (constants.M_Polynomial, models.Polynomial_220),
             (constants.M_Power, models.Power_218),

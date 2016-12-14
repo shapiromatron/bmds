@@ -3,7 +3,7 @@ import re
 from . import constants
 
 EXPONENTIAL = 'E'
-CTYPES = [constants.CONTINUOUS, EXPONENTIAL]
+CTYPES = [constants.CONTINUOUS, constants.CONTINUOUS_INDIVIDUAL, EXPONENTIAL]
 
 
 class OutputParser(object):
@@ -14,6 +14,7 @@ class OutputParser(object):
     # line-skips by dataset type
     NUM_LINE_SKIPS_PARAMS = {
         constants.CONTINUOUS: 1,
+        constants.CONTINUOUS_INDIVIDUAL: 1,
         constants.DICHOTOMOUS: 1,
         constants.DICHOTOMOUS_CANCER: 1,
         EXPONENTIAL: 4,
@@ -21,12 +22,14 @@ class OutputParser(object):
 
     NUM_LINE_SKIPS_FIT = {
         constants.CONTINUOUS: 3,
+        constants.CONTINUOUS_INDIVIDUAL: 3,
         constants.DICHOTOMOUS: 2,
         constants.DICHOTOMOUS_CANCER: 2,
     }
 
     NUM_LINE_SKIPS_AIC = {
         constants.CONTINUOUS: 1,
+        constants.CONTINUOUS_INDIVIDUAL: 1,
         EXPONENTIAL: 2,
     }
 
@@ -60,7 +63,7 @@ class OutputParser(object):
             self.output[val] = -999
 
     def _import_line_by_line(self):
-        if self.dtype in constants.DICH_DTYPES:
+        if self.dtype in constants.DICHOTOMOUS_DTYPES:
             fit_tbl = (
                 'fit_dose',
                 'fit_est_prob',
@@ -86,7 +89,7 @@ class OutputParser(object):
 
         # begin line-by-line
         outs = self.output_text.splitlines()
-        if self.dtype in constants.DICH_DTYPES:
+        if self.dtype in constants.DICHOTOMOUS_DTYPES:
             self._import_dich_vals()
             for i in range(len(outs)):
                 if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
@@ -94,7 +97,7 @@ class OutputParser(object):
                 elif outs[i] == r'     Dose     Est._Prob.    Expected    Observed     Size       Residual':  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
-        elif self.dtype == constants.CONTINUOUS:
+        elif self.dtype in constants.CONTINUOUS_DTYPES:
             for i in range(len(outs)):
                 if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
                     self._lbl_parameter(outs, i)
