@@ -9,7 +9,7 @@ Install the software using pip:
 
 Trouble installing? See notes on :ref:`Windows <windows-install>` or :ref:`Mac/Linux <mac-install>`.
 
-An example continuous model execution:
+An example continuous summary dataset:
 
 .. code-block:: python
 

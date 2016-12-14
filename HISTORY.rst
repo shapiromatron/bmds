@@ -12,7 +12,7 @@ v0.4.0 (NEXT)
 * By default, polynomial-like models are run multiple times with different degrees.
     - Previously, a single polynomial model was added with an order of ``min(n-1, 8)``, where ``n`` is the number of dose-groups. Now, multilpe models are added ranging from ``[3 - min(n-1, 8)]``, inclusive
     - Polynomial like models include: Polynomial, Multistage, and Multistage-Cancer
-
+* Added the ability to use individual continuous data, instead of summary data
 
 v0.3.0 (2016-12-05)
 -------------------
