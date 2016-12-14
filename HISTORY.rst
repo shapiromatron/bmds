@@ -2,7 +2,7 @@
 History
 =======
 
-v0.4.0 (NEXT)
+v0.4.0 (2016-12-14)
 -------------------
 
 * Added Dichotomous-Hill model to list of dichotomous models
