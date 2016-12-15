@@ -1,0 +1,99 @@
+class SessionBatch(list):
+    """
+    Export utilities for exporting a collection of multiple BMD sessions.
+
+    Examples:
+    ---------
+    >>> datasets = [
+            bmds.ContinuousDataset(
+                doses=[0, 10, 50, 150, 400],
+                ns=[111, 142, 143, 93, 42],
+                means=[2.112, 2.095, 1.956, 1.587, 1.254],
+                stdevs=[0.235, 0.209, 0.231, 0.263, 0.159]),
+            bmds.ContinuousDataset(
+                doses=[0, 10, 50, 150, 400],
+                ns=[111, 142, 143, 93, 42],
+                means=[2.112, 2.095, 1.956, 1.587, 1.254],
+                stdevs=[0.235, 0.209, 0.231, 0.263, 0.159])
+        ]
+
+    >>> batch = bmds.SessionBatch()
+        for dataset in datasets:
+            session = bmds.BMDS.latest_version(
+                bmds.constants.CONTINUOUS,
+                dataset=dataset)
+            session.add_default_models()
+            session.execute()
+            session.recommend()
+            batch.append(session)
+
+    >>> df = batch.to_df()
+    >>> batch.to_csv('~/Desktop/outputs.csv', include_io=True)
+    >>> batch.to_png_zip('~/Desktop', recommended_only=True)
+    """
+
+    def to_df(self, recommended_only=False, include_io=False):
+        """
+        Return a pandas DataFrame for each model and dataset.
+
+        Parameters
+        ----------
+        recommended_only : bool, optional
+            If True, only recommended models for each session are included. If
+            no model is recommended, then a row with it's ID will be included,
+            but all fields will be null.
+        include_io :  bool, optional
+            If True, then the input/output files from BMDS will also be
+            included, specifically the (d) input file and the out file.
+
+        Returns
+        -------
+        out : pandas.DataFrame
+            Data frame containing models and outputs
+
+        """
+        raise NotImplementedError('Coming soon to a BMDS library near you...')
+
+    def to_csv(self, filename, recommended_only=False, include_io=True):
+        """
+        Return a CSV for each model and dataset.
+
+        Parameters
+        ----------
+        filename : str or file
+            Either the file name (string) or an open file (file-like object)
+            where the data will be saved.
+        recommended_only : bool, optional
+            If True, only recommended models for each session are included. If
+            no model is recommended, then a row with it's ID will be included,
+            but all fields will be null.
+        include_io :  bool, optional
+            If True, then the input/output files from BMDS will also be
+            included, specifically the (d) input file and the out file.
+
+        Returns
+        -------
+        None
+
+        """
+        raise NotImplementedError('Coming soon to a BMDS library near you...')
+
+    def to_png(self, folder, recommended_only=False):
+        """
+        Create a PNG image of curve-fit for each model, where possible.
+
+        Parameters
+        ----------
+        folder : str
+            Path to the folder where the PNG files will be saved.
+        recommended_only : bool, optional
+            If True, only recommended models for each session are included. If
+            no model is recommended, then a row with it's ID will be included,
+            but all fields will be null.
+
+        Returns
+        -------
+        None
+
+        """
+        raise NotImplementedError('Coming soon to a BMDS library near you...')
