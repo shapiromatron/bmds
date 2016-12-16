@@ -1,3 +1,9 @@
+import os
+import pandas as pd
+
+from .session import BMDS
+
+
 class SessionBatch(list):
     """
     Export utilities for exporting a collection of multiple BMD sessions.
@@ -52,9 +58,14 @@ class SessionBatch(list):
             Data frame containing models and outputs
 
         """
-        raise NotImplementedError('Coming soon to a BMDS library near you...')
+        d = BMDS._df_ordered_dict(include_io)
+        [
+            session._to_df(d, i, recommended_only)
+            for i, session in enumerate(self)
+        ]
+        return pd.DataFrame(d)
 
-    def to_csv(self, filename, recommended_only=False, include_io=True):
+    def to_csv(self, filename, delimiter=',', recommended_only=False, include_io=False):
         """
         Return a CSV for each model and dataset.
 
@@ -63,6 +74,8 @@ class SessionBatch(list):
         filename : str or file
             Either the file name (string) or an open file (file-like object)
             where the data will be saved.
+        delimiter : str, optional
+            Delimiter used in CSV file between fields.
         recommended_only : bool, optional
             If True, only recommended models for each session are included. If
             no model is recommended, then a row with it's ID will be included,
@@ -76,7 +89,34 @@ class SessionBatch(list):
         None
 
         """
-        raise NotImplementedError('Coming soon to a BMDS library near you...')
+        df = self.to_df(recommended_only, include_io)
+        df.to_csv(filename, index=False, sep=delimiter)
+
+    def to_excel(self, filename, recommended_only=False, include_io=False):
+        """
+        Return an Excel file for each model and dataset.
+
+        Parameters
+        ----------
+        filename : str or ExcelWriter object
+            Either the file name (string) or an ExcelWriter object.
+        recommended_only : bool, optional
+            If True, only recommended models for each session are included. If
+            no model is recommended, then a row with it's ID will be included,
+            but all fields will be null.
+        include_io :  bool, optional
+            If True, then the input/output files from BMDS will also be
+            included, specifically the (d) input file and the out file.
+
+        Returns
+        -------
+        None
+
+        """
+        df = self.to_df(recommended_only, include_io)
+        if isinstance(filename, basestring):
+            filename = os.path.expanduser(filename)
+        df.to_excel(filename, index=False)
 
     def to_png(self, folder, recommended_only=False):
         """

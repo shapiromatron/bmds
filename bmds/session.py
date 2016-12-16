@@ -108,6 +108,10 @@ class BMDS(object):
         for model in self.models:
             model.execute()
 
+    @property
+    def recommendation_enabled(self):
+        return hasattr(self, 'recommended_model')
+
     def add_recommender(self, overrides=None):
         self.recommender = logic.Recommender(self.dtype, overrides)
 
@@ -116,6 +120,108 @@ class BMDS(object):
             self.add_recommender()
         self.recommended_model = self.recommender.recommend(self.dataset, self.models)
         return self.recommended_model
+
+    @staticmethod
+    def _df_ordered_dict(include_io=True):
+        # return an ordered defaultdict list
+        keys = [
+            'dataset_id', 'model_name', 'model_index',
+            'model_version', 'has_output',
+
+            'BMD', 'BMDL', 'BMDU', 'CSF',
+            'AIC', 'pvalue1', 'pvalue2', 'pvalue3', 'pvalue4',
+            'Chi2', 'df', 'residual_of_interest',
+            'warnings',
+
+            'logic_bin', 'logic_cautions', 'logic_warnings', 'logic_failures',
+            'recommended', 'recommended_variable',
+        ]
+
+        if include_io:
+            keys.extend(['dfile', 'outfile'])
+
+        return OrderedDict([(key, list()) for key in keys])
+
+    def _to_df(self, d, dataset_index, recommended_only):
+
+        def _nullify(show_null, value):
+            return '-' if show_null else value
+
+        for model_index, model in enumerate(self.models):
+
+            # special case for determining what to present.
+            show_null = False
+            if recommended_only:
+                if self.recommendation_enabled:
+                    if self.recommended_model is None:
+                        if model_index == 0:
+                            show_null = True
+                        else:
+                            continue
+                    elif self.recommended_model == model:
+                        pass
+                    else:
+                        continue
+                else:
+                    if model_index == 0:
+                        show_null = True
+                    else:
+                        continue
+
+            # add general model information
+            d['dataset_id'].append(dataset_index)
+
+            d['model_name'].append(_nullify(show_null, model.model_name))
+            d['model_index'].append(_nullify(show_null, model_index))
+            d['model_version'].append(_nullify(show_null, model.version))
+            d['has_output'].append(_nullify(show_null, model.output_created))
+
+            # add model outputs
+            outputs = {} \
+                if show_null \
+                else getattr(model, 'output', {})
+
+            d['BMD'].append(outputs.get('BMD', '-'))
+            d['BMDL'].append(outputs.get('BMDL', '-'))
+            d['BMDU'].append(outputs.get('BMDU', '-'))
+            d['CSF'].append(outputs.get('CSF', '-'))
+            d['AIC'].append(outputs.get('AIC', '-'))
+            d['pvalue1'].append(outputs.get('p_value1', '-'))
+            d['pvalue2'].append(outputs.get('p_value2', '-'))
+            d['pvalue3'].append(outputs.get('p_value3', '-'))
+            d['pvalue4'].append(outputs.get('p_value4', '-'))
+            d['Chi2'].append(outputs.get('Chi2', '-'))
+            d['df'].append(outputs.get('df', '-'))
+            d['residual_of_interest'].append(outputs.get('residual_of_interest', '-'))
+            d['warnings'].append('; '.join(outputs.get('warnings', ['-'])))
+
+            # add logic bin and warnings
+            logics = getattr(model, 'logic_notes', {})
+            bin_ = constants.BIN_TEXT[model.logic_bin] \
+                if hasattr(model, 'logic_bin') \
+                else '-'
+            d['logic_bin'].append(_nullify(show_null, bin_))
+
+            txt = '; '.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
+            d['logic_cautions'].append(_nullify(show_null, txt))
+            txt = '; '.join(logics.get(constants.BIN_WARNING, ['-']))
+            d['logic_warnings'].append(_nullify(show_null, txt))
+            txt = '; '.join(logics.get(constants.BIN_FAILURE, ['-']))
+            d['logic_failures'].append(_nullify(show_null, txt))
+
+            # add recommendation and recommendation variable
+            txt = getattr(model, 'recommended', '-')
+            d['recommended'].append(_nullify(show_null, txt))
+            txt = getattr(model, 'recommended_variable', '-')
+            d['recommended_variable'].append(_nullify(show_null, txt))
+
+            # add verbose outputs if specified
+            if 'dfile' in d:
+                txt = model.as_dfile()
+                d['dfile'].append(_nullify(show_null, txt))
+            if 'outfile' in d:
+                txt = getattr(model, 'outfile', '-')
+                d['outfile'].append(_nullify(show_null, txt))
 
 
 class BMDS_v231(BMDS):

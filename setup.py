@@ -16,6 +16,7 @@ def get_readme():
 requirements = [
     'requests',
     'numpy',
+    'openpyxl',
     'pandas',
     'scipy',
 ]

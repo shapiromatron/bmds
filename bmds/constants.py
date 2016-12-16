@@ -109,6 +109,11 @@ BIN_TYPES = (
     BIN_WARNING,
     BIN_FAILURE,
 )
+BIN_TEXT = {
+    BIN_NO_CHANGE: 'valid',
+    BIN_WARNING: 'warning',
+    BIN_FAILURE: 'failure',
+}
 BINMOJI = {
     0: u'✓',
     1: u'?',
