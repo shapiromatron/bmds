@@ -2,6 +2,11 @@
 History
 =======
 
+v0.5.0 (NEXT)
+-------------------
+
+* For multistage and multistage cancer, by default an order 1 polynomial model is also executed (previously started at order 2)
+
 v0.4.0 (2016-12-14)
 -------------------
 

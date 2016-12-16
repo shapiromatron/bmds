@@ -40,10 +40,10 @@ def test_default_execution(cdataset, ddataset, cidataset):
     _check_session(session, 12)
 
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
-    _check_session(session, 9)
+    _check_session(session, 10)
 
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
-    _check_session(session, 2)
+    _check_session(session, 3)
 
 
 def test_parameter_overrides(cdataset):
