@@ -1,14 +1,15 @@
 from collections import defaultdict
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
+
+import matplotlib as mpl
+mpl.use('Agg')  # noqa (required before the pyplot import)
+import matplotlib.pyplot as plt
 
 from .anova import AnovaTests
 
 
 # GLOBAL plot overrides
-mpl.use('Agg')
 plt.style.use('grayscale')
 mpl.rcParams.update({'font.size': 10})
 PLOT_FIGSIZE = (8, 5)
