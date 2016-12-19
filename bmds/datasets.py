@@ -8,6 +8,7 @@ from .anova import AnovaTests
 
 
 # GLOBAL plot overrides
+mpl.use('Agg')
 plt.style.use('grayscale')
 mpl.rcParams.update({'font.size': 10})
 PLOT_FIGSIZE = (8, 5)
