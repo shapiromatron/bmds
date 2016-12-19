@@ -12,6 +12,9 @@ class Dataset(object):
     def as_dfile(self):
         raise NotImplemented('Abstract method; Requires implementation')
 
+    def _to_dict(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
 
 class DichotomousDataset(Dataset):
 
@@ -52,6 +55,13 @@ class DichotomousDataset(Dataset):
     @property
     def dataset_length(self):
         return self.doses_used
+
+    def _to_dict(self):
+        return dict(
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+        )
 
 
 class ContinuousDataset(Dataset):
@@ -125,6 +135,14 @@ class ContinuousDataset(Dataset):
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)
 
+    def _to_dict(self):
+        return dict(
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+        )
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
 
@@ -177,3 +195,9 @@ class ContinuousIndividualDataset(ContinuousDataset):
     @property
     def dataset_length(self):
         return len(self.individual_doses)
+
+    def _to_dict(self):
+        return dict(
+            individual_doses=self.individual_doses,
+            responses=self.responses,
+        )

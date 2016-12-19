@@ -119,13 +119,16 @@ class BMDS(object):
         if not hasattr(self, 'recommender'):
             self.add_recommender()
         self.recommended_model = self.recommender.recommend(self.dataset, self.models)
+        self.recommended_model_index = self.models.index(self.recommended_model) \
+            if self.recommended_model is not None \
+            else None
         return self.recommended_model
 
     @staticmethod
     def _df_ordered_dict(include_io=True):
         # return an ordered defaultdict list
         keys = [
-            'dataset_id', 'model_name', 'model_index',
+            'dataset_index', 'model_name', 'model_index',
             'model_version', 'has_output',
 
             'BMD', 'BMDL', 'BMDU', 'CSF',
@@ -169,7 +172,7 @@ class BMDS(object):
                         continue
 
             # add general model information
-            d['dataset_id'].append(dataset_index)
+            d['dataset_index'].append(dataset_index)
 
             d['model_name'].append(_nullify(show_null, model.model_name))
             d['model_index'].append(_nullify(show_null, model_index))
@@ -222,6 +225,14 @@ class BMDS(object):
             if 'outfile' in d:
                 txt = getattr(model, 'outfile', '-')
                 d['outfile'].append(_nullify(show_null, txt))
+
+    def _to_dict(self, dataset_index):
+        return dict(
+            dataset_index=dataset_index,
+            dataset=self.dataset._to_dict(),
+            models=[model._to_dict(i) for i, model in enumerate(self.models)],
+            recommended_model_index=getattr(self, 'recommended_model_index', None)
+        )
 
 
 class BMDS_v231(BMDS):

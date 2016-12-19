@@ -162,6 +162,21 @@ class BMDModel(TempFileMaker):
     def _get_model_name(self):
         return self.exe
 
+    def _to_dict(self, model_index):
+        return dict(
+            model_index=model_index,
+            model_name=self.model_name,
+            model_version=self.version,
+            has_output=self.output_created,
+            dfile=self.as_dfile(),
+            outfile=getattr(self, 'outfile', None),
+            output=getattr(self, 'output', None),
+            logic_bin=getattr(self, 'logic_bin', None),
+            logic_notes=getattr(self, 'logic_notes', None),
+            recommended=getattr(self, 'recommended', None),
+            recommended_variable=getattr(self, 'recommended_variable', None),
+        )
+
 
 class DefaultParams(object):
     """

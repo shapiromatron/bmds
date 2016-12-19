@@ -1,4 +1,5 @@
 import bmds
+import numpy as np
 
 from .fixtures import *  # noqa
 
@@ -34,3 +35,13 @@ def test_batch(cdataset, ddataset):
 
     # check recommended_only
     assert df1.shape[0] == 3 and df2.shape[0] == 23
+
+    # check that a list of dictionaries is successfully built
+    dictionaries = batch.to_dicts()
+    assert len(dictionaries) == 3
+
+    # check dataset export, model exported, and recommendation is correct.
+    first = dictionaries[0]
+    assert first['dataset']['doses'][-1] == 400
+    assert first['recommended_model_index'] is None
+    assert np.isclose(first['models'][0]['output']['BMD'], 99.9419)

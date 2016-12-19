@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 
@@ -37,6 +38,50 @@ class SessionBatch(list):
     >>> batch.to_csv('~/Desktop/outputs.csv', include_io=True)
     >>> batch.to_png_zip('~/Desktop', recommended_only=True)
     """
+
+    def to_dicts(self):
+        """
+        Return a list of dictionaries of all model inputs and outputs.
+
+        Parameters
+        ----------
+        filename : str or file
+            Either the file name (string) or an open file (file-like object)
+            where the data will be saved.
+
+        Returns
+        -------
+        out : list
+            List of output dictionaries.
+        """
+        return [session._to_dict(i) for i, session in enumerate(self)]
+
+    def to_json(self, filename, indent=2):
+        """
+        Return a JSON string of all model inputs and outputs.
+
+        Parameters
+        ----------
+        filename : str or file
+            Either the file name (string) or an open file (file-like object)
+            where the data will be saved.
+        indent : int, optional
+            Indentation level for JSON output.
+
+        Returns
+        -------
+        out : str
+            JSON formatted output string.
+
+        """
+        d = self.to_dicts()
+        if hasattr(filename, 'write'):
+            json.dump(d, filename, indent=indent)
+        elif isinstance(filename, basestring):
+            with open(os.path.expanduser(filename), 'w') as f:
+                json.dump(d, f, indent=indent)
+        else:
+            raise ValueError('Unknown filename or file-object')
 
     def to_df(self, recommended_only=False, include_io=False):
         """
