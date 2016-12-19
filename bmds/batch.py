@@ -163,14 +163,16 @@ class SessionBatch(list):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 
-    def to_png(self, folder, recommended_only=False):
+    def to_images(self, folder, format='png', recommended_only=False):
         """
-        Create a PNG image of curve-fit for each model, where possible.
+        Create images of curve-fits for each model.
 
         Parameters
         ----------
         folder : str
             Path to the folder where the PNG files will be saved.
+        format : str, optional
+            Image output format. Valid options include: png, pdf, svg, ps, eps
         recommended_only : bool, optional
             If True, only recommended models for each session are included. If
             no model is recommended, then a row with it's ID will be included,

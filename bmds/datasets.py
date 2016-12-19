@@ -1,7 +1,17 @@
 from collections import defaultdict
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 
 from .anova import AnovaTests
+
+
+# GLOBAL plot overrides
+plt.style.use('grayscale')
+mpl.rcParams.update({'font.size': 10})
+PLOT_FIGSIZE = (8, 5)
+PLOT_MARGINS = 0.05
 
 
 class Dataset(object):
@@ -13,6 +23,9 @@ class Dataset(object):
         raise NotImplemented('Abstract method; Requires implementation')
 
     def _to_dict(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
+    def plot(self):
         raise NotImplemented('Abstract method; Requires implementation')
 
 
@@ -62,6 +75,52 @@ class DichotomousDataset(Dataset):
             ns=self.ns,
             incidences=self.incidences,
         )
+
+    @staticmethod
+    def _calculate_plotting(n, incidence):
+        """
+        Adds confidence intervals to dichotomous datasets. From bmds231_manual.pdf, pg 124-5.
+
+        LL = {(2np + z2 - 1) - z*sqrt[z2 - (2+1/n) + 4p(nq+1)]}/[2*(n+z2)]
+        UL = {(2np + z2 + 1) + z*sqrt[z2 + (2-1/n) + 4p(nq-1)]}/[2*(n+z2)]
+
+        - p = the observed proportion
+        - n = the total number in the group in question
+        - z = Z(1-alpha/2) is the inverse standard normal cumulative
+              distribution function evaluated at 1-alpha/2
+        - q = 1-p.
+
+        The error bars shown in BMDS plots use alpha = 0.05 and so
+        represent the 95% confidence intervals on the observed
+        proportions (independent of model).
+        """
+        p = incidence / float(n)
+        z = stats.norm.ppf(0.975)
+        q = 1. - p
+        ll = ((2 * n * p + 2 * z - 1) - z *
+              np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))) / (2 * (n + 2 * z))
+        ul = ((2 * n * p + 2 * z + 1) + z *
+              np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (2 * (n + 2 * z))
+        return p, ll, ul
+
+    def set_plot_data(self):
+        if hasattr(self, '_means'):
+            return
+        self._means, self._lls, self._uls = zip(*[
+            self._calculate_plotting(i, j)
+            for i, j in zip(self.ns, self.incidences)
+        ])
+
+    def plot(self):
+        self.set_plot_data()
+        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        plt.errorbar(
+            self.doses, self._means, yerr=[self._lls, self._uls],
+            fmt='o')
+        plt.margins(PLOT_MARGINS)
+        return plt
 
 
 class ContinuousDataset(Dataset):
@@ -143,6 +202,25 @@ class ContinuousDataset(Dataset):
             stdevs=self.stdevs,
         )
 
+    @property
+    def errorbars(self):
+        if not hasattr(self, '_errorbars'):
+            self._errorbars = [
+                stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
+                for stdev, n in zip(self.stdevs, self.ns)
+            ]
+        return self._errorbars
+
+    def plot(self):
+        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        plt.errorbar(
+            self.doses, self.means, yerr=self.errorbars,
+            fmt='o')
+        plt.margins(PLOT_MARGINS)
+        return plt
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
 
@@ -201,3 +279,13 @@ class ContinuousIndividualDataset(ContinuousDataset):
             individual_doses=self.individual_doses,
             responses=self.responses,
         )
+
+    def plot(self):
+        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        plt.scatter(
+            self.individual_doses, self.responses,
+            s=35, alpha=0.60, c='k')
+        plt.margins(PLOT_MARGINS)
+        return plt
