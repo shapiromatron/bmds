@@ -81,7 +81,7 @@ class DichotomousDataset(Dataset):
     @staticmethod
     def _calculate_plotting(n, incidence):
         """
-        Adds confidence intervals to dichotomous datasets. From bmds231_manual.pdf, pg 124-5.
+        Add confidence intervals to dichotomous datasets. From bmds231_manual.pdf, pg 124-5.
 
         LL = {(2np + z2 - 1) - z*sqrt[z2 - (2+1/n) + 4p(nq+1)]}/[2*(n+z2)]
         UL = {(2np + z2 + 1) + z*sqrt[z2 + (2-1/n) + 4p(nq-1)]}/[2*(n+z2)]

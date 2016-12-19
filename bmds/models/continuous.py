@@ -1,8 +1,8 @@
 from copy import deepcopy
 import os
+import numpy as np
 
 from .base import BMDModel, DefaultParams
-from .. import constants
 
 
 class Continuous(BMDModel):
@@ -56,9 +56,12 @@ class Polynomial_216(Continuous):
     def set_restrict_polynomial_value(self):
         return 1 if self.dataset.is_increasing else -1
 
+    def _get_degrees(self):
+        return int(self.values['degree_poly'])
+
     def as_dfile(self):
         self._set_values()
-        degpoly = int(self.values['degree_poly'])
+        degpoly = self._get_degrees()
         params = ['alpha', 'rho', 'beta_0']
         for i in range(1, degpoly + 1):
             params.append('beta_' + str(i))
@@ -76,6 +79,13 @@ class Polynomial_216(Continuous):
             self._dfile_print_parameters(*params),
             self.dataset.as_dfile(),
         ])
+
+    def add_to_plot(self, plt):
+        ys = np.zeros(self._xs.size)
+        for i in range(self._get_degrees() + 1):
+            param = self._get_param('beta_{}'.format(i))
+            ys += np.power(self._xs, i) * param
+        plt.plot(self._xs, ys)
 
 
 class Polynomial_217(Polynomial_216):
@@ -227,6 +237,13 @@ class Exponential_M2_17(Exponential):
     }
     output_prefix = 'M2'
 
+    def add_to_plot(self, plt):
+        sign = 1. if self.dataset.is_increasing else -1.
+        a = self._get_param('a')
+        b = self._get_param('b')
+        ys = a * np.exp(sign * b * self._xs)
+        plt.plot(self._xs, ys)
+
 
 class Exponential_M2_19(Exponential_M2_17):
     bmds_version_dir = 'BMDS240'
@@ -247,6 +264,14 @@ class Exponential_M3_17(Exponential_M2_17):
     model_name = 'Exponential-M3'
     exp_run_settings = ' 0 0100 22 0 1'
     output_prefix = 'M3'
+
+    def add_to_plot(self, plt):
+        sign = 1. if self.dataset.is_increasing else -1.
+        a = self._get_param('a')
+        b = self._get_param('b')
+        d = self._get_param('d')
+        ys = a * np.exp(sign * b * np.power(self._xs, d))
+        plt.plot(self._xs, ys)
 
 
 class Exponential_M3_19(Exponential_M3_17):
@@ -269,6 +294,13 @@ class Exponential_M4_17(Exponential_M2_17):
     exp_run_settings = ' 0 0010 33 0 1'
     output_prefix = 'M4'
 
+    def add_to_plot(self, plt):
+        a = self._get_param('a')
+        b = self._get_param('b')
+        c = self._get_param('c')
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * self._xs))
+        plt.plot(self._xs, ys)
+
 
 class Exponential_M4_19(Exponential_M4_17):
     bmds_version_dir = 'BMDS240'
@@ -289,6 +321,14 @@ class Exponential_M5_17(Exponential_M2_17):
     model_name = 'Exponential-M5'
     exp_run_settings = ' 0 0001 44 0 1'
     output_prefix = 'M5'
+
+    def add_to_plot(self, plt):
+        a = self._get_param('a')
+        b = self._get_param('b')
+        c = self._get_param('c')
+        d = self._get_param('d')
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * np.power(self._xs, d)))
+        plt.plot(self._xs, ys)
 
 
 class Exponential_M5_19(Exponential_M5_17):
@@ -351,6 +391,13 @@ class Power_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
+    def add_to_plot(self, plt):
+        slope = self._get_param('slope')
+        control = self._get_param('control')
+        power = self._get_param('power')
+        ys = control + slope * np.power(self._xs, power)
+        plt.plot(self._xs, ys)
+
 
 class Power_217(Power_216):
     bmds_version_dir = 'BMDS240'
@@ -412,6 +459,14 @@ class Hill_216(Continuous):
                 'alpha', 'rho', 'intercept', 'v', 'n', 'k'),
             self.dataset.as_dfile(),
         ])
+
+    def add_to_plot(self, plt):
+        intercept = self._get_param('intercept')
+        v = self._get_param('v')
+        n = self._get_param('n')
+        k = self._get_param('k')
+        ys = intercept + (v * np.power(self._xs, n)) / (np.power(k, n) + np.power(self._xs, n))
+        plt.plot(self._xs, ys)
 
 
 class Hill_217(Hill_216):

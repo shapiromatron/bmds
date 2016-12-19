@@ -1,7 +1,8 @@
 import os
+import numpy as np
 import tempfile
 
-from .. import constants
+from .. import constants, datasets
 from ..parser import OutputParser
 from ..utils import RunProcess
 
@@ -79,6 +80,10 @@ class BMDModel(TempFileMaker):
             cls.bmds_version_dir,
             cls.exe + '.exe'))
 
+    @property
+    def has_successfully_executed(self):
+        return hasattr(self, 'outfile')
+
     def get_outfile(self, dfile):
         return dfile.replace('.(d)', '.out')
 
@@ -90,11 +95,54 @@ class BMDModel(TempFileMaker):
     def as_dfile(self):
         raise NotImplementedError('Abstract method requires implementation')
 
+    def plot(self):
+        plt = self.dataset.plot()
+        if self.has_successfully_executed:
+            plt.title(self.model_name)
+            self._set_x_range(plt)
+            self.add_to_plot(plt)
+        else:
+            self._add_plot_failure(plt)
+        return plt
+
+    def add_to_plot(self, plt):
+        raise NotImplementedError('Abstract method requires implementation')
+
+    def _add_plot_failure(self, plt):
+        ax = plt.gca()
+        plt.text(
+            0.5, 0.8,
+            u'ERROR: {} cannot be plotted'.format(self.model_name),
+            style='italic',
+            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10},
+            horizontalalignment='center',
+            verticalalignment='center',
+            transform=ax.transAxes
+        )
+
+    def _set_x_range(self, plt):
+        ax = plt.gca()
+        bmd = max(0, self.output['BMD'])
+        bmdl = max(0, self.output['BMDL'])
+        doses = self.dataset.doses
+
+        # set values for what we'll need to calculate model curve
+        min_x = min(bmd, bmdl, *doses)
+        max_x = max(bmd, bmdl, *doses)
+        self._xs = np.linspace(max(min_x, 1e-9), max_x, 100)
+
+        # add a little extra padding on plot
+        padding = datasets.PLOT_MARGINS * (max_x - min_x)
+        ax.set_xlim(min_x - padding, max_x + padding)
+
     def write_dfile(self):
         f_in = self.get_tempfile(prefix='bmds-', suffix='.(d)')
         with open(f_in, 'w') as f:
             f.write(self.as_dfile())
         return f_in
+
+    def _get_param(self, key):
+        return self.output['parameters'][key]['estimate']
 
     def _set_values(self):
         self.values = {}
@@ -176,6 +224,7 @@ class BMDModel(TempFileMaker):
             recommended=getattr(self, 'recommended', None),
             recommended_variable=getattr(self, 'recommended_variable', None),
         )
+
 
 
 class DefaultParams(object):
