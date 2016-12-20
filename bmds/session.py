@@ -1,7 +1,9 @@
 from copy import deepcopy
+from collections import OrderedDict
+import os
+
 from . import datasets, constants, logic, models, utils
 
-from collections import OrderedDict
 
 __all__ = ('BMDS', )
 
@@ -174,7 +176,7 @@ class BMDS(object):
             # add general model information
             d['dataset_index'].append(dataset_index)
 
-            d['model_name'].append(_nullify(show_null, model.model_name))
+            d['model_name'].append(_nullify(show_null, model.name))
             d['model_index'].append(_nullify(show_null, model_index))
             d['model_version'].append(_nullify(show_null, model.version))
             d['has_output'].append(_nullify(show_null, model.output_created))

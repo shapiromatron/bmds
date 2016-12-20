@@ -17,7 +17,6 @@ class Continuous(BMDModel):
 
 
 class Polynomial_216(Continuous):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
     bmds_version_dir = 'BMDS231'
@@ -53,11 +52,18 @@ class Polynomial_216(Continuous):
         'constant_variance': DefaultParams.constant_variance,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
     def set_restrict_polynomial_value(self):
         return 1 if self.dataset.is_increasing else -1
 
     def _get_degrees(self):
-        return int(self.values['degree_poly'])
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
 
     def as_dfile(self):
         self._set_values()
@@ -131,6 +137,10 @@ class Linear_216(Polynomial_216):
         'confidence_level': DefaultParams.confidence_level,
         'constant_variance': DefaultParams.constant_variance,
     }
+
+    @property
+    def name(self):
+        return self.model_name
 
     def as_dfile(self):
         self._set_values()

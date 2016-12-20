@@ -48,8 +48,8 @@ An example dichotomous model execution:
     session.execute()
     session.recommend()
 
-    print(session.recommended_model.model_name)
-    >>> 'Multistage'
+    print(session.recommended_model.name)
+    >>> 'Multistage-2'
 
     print(session.recommended_model.output['BMD'])
     >>> 18.0607

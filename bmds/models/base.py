@@ -84,6 +84,10 @@ class BMDModel(TempFileMaker):
     def has_successfully_executed(self):
         return hasattr(self, 'outfile')
 
+    @property
+    def name(self):
+        return self.model_name
+
     def get_outfile(self, dfile):
         return dfile.replace('.(d)', '.out')
 
@@ -98,7 +102,7 @@ class BMDModel(TempFileMaker):
     def plot(self):
         plt = self.dataset.plot()
         if self.has_successfully_executed:
-            plt.title(self.model_name)
+            plt.title(self.name)
             self._set_x_range(plt)
             self.add_to_plot(plt)
         else:
@@ -112,7 +116,7 @@ class BMDModel(TempFileMaker):
         ax = plt.gca()
         plt.text(
             0.5, 0.8,
-            u'ERROR: {} cannot be plotted'.format(self.model_name),
+            u'ERROR: {} cannot be plotted'.format(self.name),
             style='italic',
             bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10},
             horizontalalignment='center',
@@ -213,7 +217,7 @@ class BMDModel(TempFileMaker):
     def _to_dict(self, model_index):
         return dict(
             model_index=model_index,
-            model_name=self.model_name,
+            model_name=self.name,
             model_version=self.version,
             has_output=self.output_created,
             dfile=self.as_dfile(),
@@ -224,7 +228,6 @@ class BMDModel(TempFileMaker):
             recommended=getattr(self, 'recommended', None),
             recommended_variable=getattr(self, 'recommended_variable', None),
         )
-
 
 
 class DefaultParams(object):

@@ -17,7 +17,6 @@ class DichotomousCancer(Dichotomous):
 
 
 class Multistage_32(Dichotomous):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
     bmds_version_dir = 'BMDS231'
@@ -50,8 +49,15 @@ class Multistage_32(Dichotomous):
         'confidence_level': DefaultParams.confidence_level,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
     def _get_degrees(self):
-        return int(self.values['degree_poly'])
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
 
     def as_dfile(self):
         self._set_values()
@@ -98,7 +104,6 @@ class Multistage_34(Multistage_33):
 
 
 class MultistageCancer_19(DichotomousCancer):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
     bmds_version_dir = 'BMDS231'
@@ -131,8 +136,15 @@ class MultistageCancer_19(DichotomousCancer):
         'confidence_level': DefaultParams.confidence_level,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
     def _get_degrees(self):
-        return int(self.values['degree_poly'])
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
 
     def as_dfile(self):
         self._set_values()
