@@ -36,7 +36,7 @@ class SessionBatch(list):
             batch.append(session)
 
     >>> df = batch.to_df()
-    >>> batch.to_csv('~/Desktop/outputs.csv', include_io=True)
+    >>> batch.to_csv('~/Desktop/outputs.csv')
     >>> batch.to_png_zip('~/Desktop', recommended_only=True)
     """
 
@@ -84,7 +84,7 @@ class SessionBatch(list):
         else:
             raise ValueError('Unknown filename or file-object')
 
-    def to_df(self, recommended_only=False, include_io=False):
+    def to_df(self, recommended_only=False, include_io=True):
         """
         Return a pandas DataFrame for each model and dataset.
 
@@ -111,7 +111,7 @@ class SessionBatch(list):
         ]
         return pd.DataFrame(d)
 
-    def to_csv(self, filename, delimiter=',', recommended_only=False, include_io=False):
+    def to_csv(self, filename, delimiter=',', recommended_only=False, include_io=True):
         """
         Return a CSV for each model and dataset.
 
@@ -138,7 +138,7 @@ class SessionBatch(list):
         df = self.to_df(recommended_only, include_io)
         df.to_csv(filename, index=False, sep=delimiter)
 
-    def to_excel(self, filename, recommended_only=False, include_io=False):
+    def to_excel(self, filename, recommended_only=False, include_io=True):
         """
         Return an Excel file for each model and dataset.
 
@@ -164,14 +164,14 @@ class SessionBatch(list):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 
-    def to_images(self, folder, format='png', recommended_only=False):
+    def save_images(self, directory, format='png', recommended_only=False):
         """
-        Create images of curve-fits for each model.
+        Save images of curve-fits for each model.
 
         Parameters
         ----------
-        folder : str
-            Path to the folder where the PNG files will be saved.
+        directory : str
+            Directory where the PNG files will be saved.
         format : str, optional
             Image output format. Valid options include: png, pdf, svg, ps, eps
         recommended_only : bool, optional
@@ -184,4 +184,9 @@ class SessionBatch(list):
         None
 
         """
-        raise NotImplementedError('Coming soon to a BMDS library near you...')
+        for i, session in enumerate(self):
+            session.save_images(
+                directory,
+                prefix=str(i),
+                format=format,
+                recommended_only=recommended_only)

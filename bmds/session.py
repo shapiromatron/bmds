@@ -236,6 +236,23 @@ class BMDS(object):
             recommended_model_index=getattr(self, 'recommended_model_index', None)
         )
 
+    def save_images(self, directory, prefix=None, format='png', recommended_only=False):
+        directory = os.path.expanduser(directory)
+        if not os.path.exists(directory):
+            raise ValueError('Directory not found: {}'.format(directory))
+
+        for model in self.models:
+            if recommended_only and (self.recommendation_enabled is False or
+                                     model.recommended is False):
+                continue
+
+            fn = '{}.{}'.format(model.name, format)
+            if prefix is not None:
+                fn = '{}-{}'.format(prefix, fn)
+
+            plt = model.plot()
+            plt.savefig(os.path.join(directory, fn))
+
 
 class BMDS_v231(BMDS):
     version = constants.BMDS231

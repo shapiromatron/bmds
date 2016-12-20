@@ -3,7 +3,7 @@ import numpy as np
 from scipy import stats
 
 import matplotlib as mpl
-mpl.use('Agg')  # noqa (required before the pyplot import)
+mpl.use('agg')  # noqa (required before the pyplot import)
 import matplotlib.pyplot as plt
 
 from .anova import AnovaTests
