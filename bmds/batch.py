@@ -1,6 +1,7 @@
 import json
 import os
 import pandas as pd
+from six import string_types
 
 from .session import BMDS
 
@@ -77,7 +78,7 @@ class SessionBatch(list):
         d = self.to_dicts()
         if hasattr(filename, 'write'):
             json.dump(d, filename, indent=indent)
-        elif isinstance(filename, basestring):
+        elif isinstance(filename, string_types):
             with open(os.path.expanduser(filename), 'w') as f:
                 json.dump(d, f, indent=indent)
         else:
@@ -159,7 +160,7 @@ class SessionBatch(list):
 
         """
         df = self.to_df(recommended_only, include_io)
-        if isinstance(filename, basestring):
+        if isinstance(filename, string_types):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 

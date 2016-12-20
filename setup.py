@@ -20,6 +20,7 @@ requirements = [
     'openpyxl',
     'pandas',
     'scipy',
+    'six',
 ]
 
 test_requirements = [
