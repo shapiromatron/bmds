@@ -86,12 +86,12 @@ class Polynomial_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
-        ys = np.zeros(self._xs.size)
+    def get_ys(self, xs):
+        ys = np.zeros(xs.size)
         for i in range(self._get_degrees() + 1):
             param = self._get_param('beta_{}'.format(i))
-            ys += np.power(self._xs, i) * param
-        plt.plot(self._xs, ys)
+            ys += np.power(xs, i) * param
+        return ys
 
 
 class Polynomial_217(Polynomial_216):
@@ -109,7 +109,6 @@ class Polynomial_220(Polynomial_217):
 
 
 class Linear_216(Polynomial_216):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
     bmds_version_dir = 'BMDS231'
@@ -247,12 +246,12 @@ class Exponential_M2_17(Exponential):
     }
     output_prefix = 'M2'
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         sign = 1. if self.dataset.is_increasing else -1.
         a = self._get_param('a')
         b = self._get_param('b')
-        ys = a * np.exp(sign * b * self._xs)
-        plt.plot(self._xs, ys)
+        ys = a * np.exp(sign * b * xs)
+        return ys
 
 
 class Exponential_M2_19(Exponential_M2_17):
@@ -275,13 +274,13 @@ class Exponential_M3_17(Exponential_M2_17):
     exp_run_settings = ' 0 0100 22 0 1'
     output_prefix = 'M3'
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         sign = 1. if self.dataset.is_increasing else -1.
         a = self._get_param('a')
         b = self._get_param('b')
         d = self._get_param('d')
-        ys = a * np.exp(sign * b * np.power(self._xs, d))
-        plt.plot(self._xs, ys)
+        ys = a * np.exp(sign * b * np.power(xs, d))
+        return ys
 
 
 class Exponential_M3_19(Exponential_M3_17):
@@ -304,12 +303,12 @@ class Exponential_M4_17(Exponential_M2_17):
     exp_run_settings = ' 0 0010 33 0 1'
     output_prefix = 'M4'
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         a = self._get_param('a')
         b = self._get_param('b')
         c = self._get_param('c')
-        ys = a * (c - (c - 1.) * np.exp(-1. * b * self._xs))
-        plt.plot(self._xs, ys)
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * xs))
+        return ys
 
 
 class Exponential_M4_19(Exponential_M4_17):
@@ -332,13 +331,13 @@ class Exponential_M5_17(Exponential_M2_17):
     exp_run_settings = ' 0 0001 44 0 1'
     output_prefix = 'M5'
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         a = self._get_param('a')
         b = self._get_param('b')
         c = self._get_param('c')
         d = self._get_param('d')
-        ys = a * (c - (c - 1.) * np.exp(-1. * b * np.power(self._xs, d)))
-        plt.plot(self._xs, ys)
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * np.power(xs, d)))
+        return ys
 
 
 class Exponential_M5_19(Exponential_M5_17):
@@ -401,12 +400,12 @@ class Power_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         slope = self._get_param('slope')
         control = self._get_param('control')
         power = self._get_param('power')
-        ys = control + slope * np.power(self._xs, power)
-        plt.plot(self._xs, ys)
+        ys = control + slope * np.power(xs, power)
+        return ys
 
 
 class Power_217(Power_216):
@@ -470,13 +469,13 @@ class Hill_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         intercept = self._get_param('intercept')
         v = self._get_param('v')
         n = self._get_param('n')
         k = self._get_param('k')
-        ys = intercept + (v * np.power(self._xs, n)) / (np.power(k, n) + np.power(self._xs, n))
-        plt.plot(self._xs, ys)
+        ys = intercept + (v * np.power(xs, n)) / (np.power(k, n) + np.power(xs, n))
+        return ys
 
 
 class Hill_217(Hill_216):

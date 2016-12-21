@@ -101,16 +101,30 @@ class BMDModel(TempFileMaker):
 
     def plot(self):
         plt = self.dataset.plot()
+        plt.title(self.name)
         if self.has_successfully_executed:
-            plt.title(self.name)
             self._set_x_range(plt)
-            self.add_to_plot(plt)
+            plt.plot(self._xs, self.get_ys(self._xs))
+            self.add_bmr_lines(plt)
         else:
             self._add_plot_failure(plt)
         return plt
 
-    def add_to_plot(self, plt):
-        raise NotImplementedError('Abstract method requires implementation')
+    def get_ys(self, xs):
+        raise NotImplementedError('Abstract base method; requires implementation.')
+
+    def add_bmr_lines(self, plt):
+        # add BMD and BMDL lines to plot.
+        bmd = self.output['BMD']
+        bmdl = self.output['BMDL']
+        ax = plt.gca()
+        xrng = ax.xaxis.get_data_interval()
+        yrng = ax.yaxis.get_data_interval()
+        ys = self.get_ys(np.array([bmd, bmdl]))
+        plt.plot([bmd, bmd], [yrng[0], ys[0]], 'k-', lw=2)
+        plt.plot([bmdl, bmdl], [yrng[0], ys[1]], 'k-', lw=2)
+        plt.plot([xrng[0], bmd], [ys[0], ys[0]], 'k-', lw=2)
+        plt.plot([xrng[0], bmdl], [ys[1], ys[1]], 'k-', lw=2)
 
     def _add_plot_failure(self, plt):
         ax = plt.gca()

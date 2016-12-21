@@ -1,27 +1,17 @@
-from io import BytesIO
-import os
-
 from .fixtures import *  # noqa
 
 
-RESOURCES = os.path.abspath(os.path.join(os.path.dirname(__file__), 'resources'))
+@pytest.mark.mpl_image_compare
+def test_cdataset_plot(cdataset):
+    return cdataset.plot()
 
 
-def test_dataset_plots(cdataset, cidataset, ddataset):
-    tests = (
-        (cdataset, 'cdataset.png'),
-        (cidataset, 'cidataset.png'),
-        (ddataset, 'ddataset.png'),
-    )
-    for ds, fn in tests:
-        plot = ds.plot()
-        f = BytesIO()
-        plot.savefig(f, format='png')
+@pytest.mark.mpl_image_compare
+def test_cidataset_plot(cidataset):
+    return cidataset.plot()
 
-        actual = f.getvalue()
-        f.close()
 
-        with open(os.path.join(RESOURCES, fn), 'rb') as f:
-            expected = f.read()
+@pytest.mark.mpl_image_compare
+def test_ddataset_plot(ddataset):
+    return ddataset.plot()
 
-        assert actual == expected

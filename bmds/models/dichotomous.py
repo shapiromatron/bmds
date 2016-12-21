@@ -79,14 +79,14 @@ class Multistage_32(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('Background')
-        ys = np.zeros(self._xs.size)
+        ys = np.zeros(xs.size)
         for i in range(1, self._get_degrees() + 1):
             param = self._get_param('Beta({})'.format(i))
-            ys += param * np.power(self._xs, i)
+            ys += param * np.power(xs, i)
         ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
-        plt.plot(self._xs, ys)
+        return ys
 
 
 class Multistage_33(Multistage_32):
@@ -166,14 +166,14 @@ class MultistageCancer_19(DichotomousCancer):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('Background')
-        ys = np.zeros(self._xs.size)
+        ys = np.zeros(xs.size)
         for i in range(1, self._get_degrees() + 1):
             param = self._get_param('Beta({})'.format(i))
-            ys += param * np.power(self._xs, i)
+            ys += param * np.power(xs, i)
         ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
-        plt.plot(self._xs, ys)
+        return ys
 
 
 class MultistageCancer_110(MultistageCancer_19):
@@ -227,13 +227,13 @@ class Weibull_215(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('Background')
         slope = self._get_param('Slope')
         power = self._get_param('Power')
         ys = background + (1.0 - background) * \
-            (1 - np.exp(-1.0 * slope * np.power(self._xs, power)))
-        plt.plot(self._xs, ys)
+            (1 - np.exp(-1.0 * slope * np.power(xs, power)))
+        return ys
 
 
 class Weibull_216(Weibull_215):
@@ -287,12 +287,12 @@ class LogProbit_32(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('background')
         slope = self._get_param('slope')
         intercept = self._get_param('intercept')
-        ys = background + (1.0 - background) * norm.cdf(intercept + slope * np.log(self._xs))
-        plt.plot(self._xs, ys)
+        ys = background + (1.0 - background) * norm.cdf(intercept + slope * np.log(xs))
+        return ys
 
 
 class LogProbit_33(LogProbit_32):
@@ -346,11 +346,11 @@ class Probit_32(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         slope = self._get_param('slope')
         intercept = self._get_param('intercept')
-        ys = norm.cdf(intercept + slope * self._xs)
-        plt.plot(self._xs, ys)
+        ys = norm.cdf(intercept + slope * xs)
+        return ys
 
 
 class Probit_33(Probit_32):
@@ -403,12 +403,12 @@ class Gamma_215(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('Background')
         slope = self._get_param('Slope')
         power = self._get_param('Power')
-        ys = background + (1.0 - background) * gamma.cdf(self._xs * slope, power)
-        plt.plot(self._xs, ys)
+        ys = background + (1.0 - background) * gamma.cdf(xs * slope, power)
+        return ys
 
 
 class Gamma_216(Gamma_215):
@@ -462,13 +462,13 @@ class LogLogistic_213(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         background = self._get_param('background')
         intercept = self._get_param('intercept')
         slope = self._get_param('slope')
         ys = background + (1.0 - background) / (
-            1 + np.exp(-1.0 * intercept - 1.0 * slope * np.log(self._xs)))
-        plt.plot(self._xs, ys)
+            1 + np.exp(-1.0 * intercept - 1.0 * slope * np.log(xs)))
+        return ys
 
 
 class LogLogistic_214(LogLogistic_213):
@@ -522,11 +522,11 @@ class Logistic_213(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         intercept = self._get_param('intercept')
         slope = self._get_param('slope')
-        ys = 1.0 / (1.0 + np.exp(-1.0 * intercept - slope * self._xs))
-        plt.plot(self._xs, ys)
+        ys = 1.0 / (1.0 + np.exp(-1.0 * intercept - slope * xs))
+        return ys
 
 
 class Logistic_214(Logistic_213):
@@ -581,11 +581,10 @@ class DichotomousHill_13(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
-    def add_to_plot(self, plt):
+    def get_ys(self, xs):
         v = self._get_param('v')
         g = self._get_param('g')
         intercept = self._get_param('intercept')
         slope = self._get_param('slope')
-        ys = v * g + (v - v * g) / (1.0 + np.exp(
-            -intercept - slope * np.log(self._xs)))
-        plt.plot(self._xs, ys)
+        ys = v * g + (v - v * g) / (1.0 + np.exp(-intercept - slope * np.log(xs)))
+        return ys
