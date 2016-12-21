@@ -149,12 +149,10 @@ class BMDS(object):
 
     def _to_df(self, d, dataset_index, recommended_only):
 
-        def _nullify(show_null, value):
-            return '-' if show_null else value
-
         for model_index, model in enumerate(self.models):
 
-            # special case for determining what to present.
+            # determine if model should be presented, or if a null-model should
+            # be presented (if no model is recommended.)
             show_null = False
             if recommended_only:
                 if self.recommendation_enabled:
@@ -173,60 +171,8 @@ class BMDS(object):
                     else:
                         continue
 
-            # add general model information
             d['dataset_index'].append(dataset_index)
-
-            d['model_name'].append(_nullify(show_null, model.name))
-            d['model_index'].append(_nullify(show_null, model_index))
-            d['model_version'].append(_nullify(show_null, model.version))
-            d['has_output'].append(_nullify(show_null, model.output_created))
-
-            # add model outputs
-            outputs = {} \
-                if show_null \
-                else getattr(model, 'output', {})
-
-            d['BMD'].append(outputs.get('BMD', '-'))
-            d['BMDL'].append(outputs.get('BMDL', '-'))
-            d['BMDU'].append(outputs.get('BMDU', '-'))
-            d['CSF'].append(outputs.get('CSF', '-'))
-            d['AIC'].append(outputs.get('AIC', '-'))
-            d['pvalue1'].append(outputs.get('p_value1', '-'))
-            d['pvalue2'].append(outputs.get('p_value2', '-'))
-            d['pvalue3'].append(outputs.get('p_value3', '-'))
-            d['pvalue4'].append(outputs.get('p_value4', '-'))
-            d['Chi2'].append(outputs.get('Chi2', '-'))
-            d['df'].append(outputs.get('df', '-'))
-            d['residual_of_interest'].append(outputs.get('residual_of_interest', '-'))
-            d['warnings'].append('; '.join(outputs.get('warnings', ['-'])))
-
-            # add logic bin and warnings
-            logics = getattr(model, 'logic_notes', {})
-            bin_ = constants.BIN_TEXT[model.logic_bin] \
-                if hasattr(model, 'logic_bin') \
-                else '-'
-            d['logic_bin'].append(_nullify(show_null, bin_))
-
-            txt = '; '.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
-            d['logic_cautions'].append(_nullify(show_null, txt))
-            txt = '; '.join(logics.get(constants.BIN_WARNING, ['-']))
-            d['logic_warnings'].append(_nullify(show_null, txt))
-            txt = '; '.join(logics.get(constants.BIN_FAILURE, ['-']))
-            d['logic_failures'].append(_nullify(show_null, txt))
-
-            # add recommendation and recommendation variable
-            txt = getattr(model, 'recommended', '-')
-            d['recommended'].append(_nullify(show_null, txt))
-            txt = getattr(model, 'recommended_variable', '-')
-            d['recommended_variable'].append(_nullify(show_null, txt))
-
-            # add verbose outputs if specified
-            if 'dfile' in d:
-                txt = model.as_dfile()
-                d['dfile'].append(_nullify(show_null, txt))
-            if 'outfile' in d:
-                txt = getattr(model, 'outfile', '-')
-                d['outfile'].append(_nullify(show_null, txt))
+            model._to_df(d, model_index, show_null)
 
     def _to_dict(self, dataset_index):
         return dict(

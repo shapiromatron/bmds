@@ -229,6 +229,64 @@ class BMDModel(TempFileMaker):
             recommended_variable=getattr(self, 'recommended_variable', None),
         )
 
+    def _to_df(self, d, idx, show_null):
+        # TODO - export dataset and residuals as vectors
+
+        def _nullify(show_null, value):
+            return constants.NULL if show_null else value
+
+        d['model_name'].append(_nullify(show_null, self.name))
+        d['model_index'].append(_nullify(show_null, idx))
+        d['model_version'].append(_nullify(show_null, self.version))
+        d['has_output'].append(_nullify(show_null, self.output_created))
+
+        # add model outputs
+        outputs = {} \
+            if show_null \
+            else getattr(self, 'output', {})
+
+        d['BMD'].append(outputs.get('BMD', '-'))
+        d['BMDL'].append(outputs.get('BMDL', '-'))
+        d['BMDU'].append(outputs.get('BMDU', '-'))
+        d['CSF'].append(outputs.get('CSF', '-'))
+        d['AIC'].append(outputs.get('AIC', '-'))
+        d['pvalue1'].append(outputs.get('p_value1', '-'))
+        d['pvalue2'].append(outputs.get('p_value2', '-'))
+        d['pvalue3'].append(outputs.get('p_value3', '-'))
+        d['pvalue4'].append(outputs.get('p_value4', '-'))
+        d['Chi2'].append(outputs.get('Chi2', '-'))
+        d['df'].append(outputs.get('df', '-'))
+        d['residual_of_interest'].append(outputs.get('residual_of_interest', '-'))
+        d['warnings'].append('; '.join(outputs.get('warnings', ['-'])))
+
+        # add logic bin and warnings
+        logics = getattr(self, 'logic_notes', {})
+        bin_ = constants.BIN_TEXT[self.logic_bin] \
+            if hasattr(self, 'logic_bin') \
+            else '-'
+        d['logic_bin'].append(_nullify(show_null, bin_))
+
+        txt = '; '.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
+        d['logic_cautions'].append(_nullify(show_null, txt))
+        txt = '; '.join(logics.get(constants.BIN_WARNING, ['-']))
+        d['logic_warnings'].append(_nullify(show_null, txt))
+        txt = '; '.join(logics.get(constants.BIN_FAILURE, ['-']))
+        d['logic_failures'].append(_nullify(show_null, txt))
+
+        # add recommendation and recommendation variable
+        txt = getattr(self, 'recommended', '-')
+        d['recommended'].append(_nullify(show_null, txt))
+        txt = getattr(self, 'recommended_variable', '-')
+        d['recommended_variable'].append(_nullify(show_null, txt))
+
+        # add verbose outputs if specified
+        if 'dfile' in d:
+            txt = self.as_dfile()
+            d['dfile'].append(_nullify(show_null, txt))
+        if 'outfile' in d:
+            txt = getattr(self, 'outfile', '-')
+            d['outfile'].append(_nullify(show_null, txt))
+
 
 class DefaultParams(object):
     """
