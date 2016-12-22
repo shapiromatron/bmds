@@ -196,8 +196,8 @@ class BMDS(object):
             if prefix is not None:
                 fn = '{}-{}'.format(prefix, fn)
 
-            plt = model.plot()
-            plt.savefig(os.path.join(directory, fn))
+            fig = model.plot()
+            fig.savefig(os.path.join(directory, fn))
 
 
 class BMDS_v231(BMDS):

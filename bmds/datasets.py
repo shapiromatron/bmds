@@ -2,18 +2,8 @@ from collections import defaultdict
 import numpy as np
 from scipy import stats
 
-import matplotlib as mpl
-mpl.use('Agg')  # noqa (required before the pyplot import)
-import matplotlib.pyplot as plt
-
+from . import plotting
 from .anova import AnovaTests
-
-
-# GLOBAL plot overrides
-plt.style.use('grayscale')
-mpl.rcParams.update({'font.size': 10})
-PLOT_FIGSIZE = (8, 5)
-PLOT_MARGINS = 0.05
 
 
 class Dataset(object):
@@ -115,14 +105,15 @@ class DichotomousDataset(Dataset):
 
     def plot(self):
         self.set_plot_data()
-        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
         ax.set_xlabel('Dose')
         ax.set_ylabel('Response')
-        plt.errorbar(
+        ax.errorbar(
             self.doses, self._means, yerr=[self._lls, self._uls],
-            fmt='o')
-        plt.margins(PLOT_MARGINS)
-        return plt
+            **plotting.DATASET_POINT_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig
 
 
 class ContinuousDataset(Dataset):
@@ -214,14 +205,15 @@ class ContinuousDataset(Dataset):
         return self._errorbars
 
     def plot(self):
-        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
         ax.set_xlabel('Dose')
         ax.set_ylabel('Response')
-        plt.errorbar(
+        ax.errorbar(
             self.doses, self.means, yerr=self.errorbars,
-            fmt='o')
-        plt.margins(PLOT_MARGINS)
-        return plt
+            **plotting.DATASET_POINT_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig
 
 
 class ContinuousIndividualDataset(ContinuousDataset):
@@ -283,11 +275,12 @@ class ContinuousIndividualDataset(ContinuousDataset):
         )
 
     def plot(self):
-        fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
         ax.set_xlabel('Dose')
         ax.set_ylabel('Response')
-        plt.scatter(
+        ax.scatter(
             self.individual_doses, self.responses,
-            s=35, alpha=0.60, c='k')
-        plt.margins(PLOT_MARGINS)
-        return plt
+            **plotting.DATASET_INDIVIDUAL_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig

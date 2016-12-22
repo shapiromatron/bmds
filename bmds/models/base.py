@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tempfile
 
-from .. import constants, datasets
+from .. import constants, plotting
 from ..parser import OutputParser
 from ..utils import RunProcess
 
@@ -100,46 +100,66 @@ class BMDModel(TempFileMaker):
         raise NotImplementedError('Abstract method requires implementation')
 
     def plot(self):
-        plt = self.dataset.plot()
-        plt.title(self.name)
+        fig = self.dataset.plot()
+        ax = fig.gca()
+        ax.set_title(self.name)
         if self.has_successfully_executed:
-            self._set_x_range(plt)
-            plt.plot(self._xs, self.get_ys(self._xs))
-            self.add_bmr_lines(plt)
+            self._set_x_range(ax)
+            ax.plot(
+                self._xs, self.get_ys(self._xs),
+                **plotting.LINE_FORMAT)
+            self._add_bmr_lines(ax)
         else:
-            self._add_plot_failure(plt)
-        return plt
+            self._add_plot_failure(ax)
+        return fig
 
     def get_ys(self, xs):
         raise NotImplementedError('Abstract base method; requires implementation.')
 
-    def add_bmr_lines(self, plt):
+    def _add_bmr_lines(self, ax):
         # add BMD and BMDL lines to plot.
         bmd = self.output['BMD']
         bmdl = self.output['BMDL']
-        ax = plt.gca()
-        xrng = ax.xaxis.get_data_interval()
-        yrng = ax.yaxis.get_data_interval()
+        xdomain = ax.xaxis.get_view_interval()
+        ydomain = ax.yaxis.get_view_interval()
+        xrng = xdomain[1] - xdomain[0]
+        yrng = ydomain[1] - ydomain[0]
         ys = self.get_ys(np.array([bmd, bmdl]))
-        plt.plot([bmd, bmd], [yrng[0], ys[0]], 'k-', lw=2)
-        plt.plot([bmdl, bmdl], [yrng[0], ys[1]], 'k-', lw=2)
-        plt.plot([xrng[0], bmd], [ys[0], ys[0]], 'k-', lw=2)
-        plt.plot([xrng[0], bmdl], [ys[1], ys[1]], 'k-', lw=2)
 
-    def _add_plot_failure(self, plt):
-        ax = plt.gca()
-        plt.text(
+        ax.axhline(ys[0],
+                   xmin=0,
+                   xmax=(bmd - xdomain[0]) / xrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axhline(ys[1],
+                   xmin=0,
+                   xmax=(bmdl - xdomain[0]) / xrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axvline(bmd,
+                   ymin=0,
+                   ymax=(ys[0] - ydomain[0]) / yrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axvline(bmdl,
+                   ymin=0,
+                   ymax=(ys[1] - ydomain[0]) / yrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.text(bmd + xrng * 0.01,
+                ydomain[0] + yrng * 0.02,
+                'BMD',
+                horizontalalignment='left', **plotting.BMD_LABEL_FORMAT)
+        ax.text(bmdl - xrng * 0.01,
+                ydomain[0] + yrng * 0.02,
+                'BMDL',
+                horizontalalignment='right', **plotting.BMD_LABEL_FORMAT)
+
+    def _add_plot_failure(self, ax):
+        ax.text(
             0.5, 0.8,
-            u'ERROR: {} cannot be plotted'.format(self.name),
-            style='italic',
-            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10},
-            horizontalalignment='center',
-            verticalalignment='center',
-            transform=ax.transAxes
+            u'ERROR: model cannot be plotted',
+            transform=ax.transAxes,
+            **plotting.FAILURE_MESSAGE_FORMAT
         )
 
-    def _set_x_range(self, plt):
-        ax = plt.gca()
+    def _set_x_range(self, ax):
         bmd = max(0, self.output['BMD'])
         bmdl = max(0, self.output['BMDL'])
         doses = self.dataset.doses
@@ -150,7 +170,7 @@ class BMDModel(TempFileMaker):
         self._xs = np.linspace(max(min_x, 1e-9), max_x, 100)
 
         # add a little extra padding on plot
-        padding = datasets.PLOT_MARGINS * (max_x - min_x)
+        padding = plotting.PLOT_MARGINS * (max_x - min_x)
         ax.set_xlim(min_x - padding, max_x + padding)
 
     def write_dfile(self):

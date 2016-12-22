@@ -15,7 +15,7 @@ def get_readme():
 
 requirements = [
     'requests',
-    'matplotlib==1.4.3',
+    'matplotlib',
     'numpy',
     'openpyxl',
     'pandas',
