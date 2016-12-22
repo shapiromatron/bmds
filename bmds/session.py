@@ -1,6 +1,7 @@
 from copy import deepcopy
 from collections import OrderedDict
 import os
+import pandas as pd
 
 from . import datasets, constants, logic, models, utils
 
@@ -147,7 +148,7 @@ class BMDS(object):
 
         return OrderedDict([(key, list()) for key in keys])
 
-    def _to_df(self, d, dataset_index, recommended_only):
+    def _add_to_to_ordered_dict(self, d, dataset_index, recommended_only=False):
 
         for model_index, model in enumerate(self.models):
 
@@ -182,7 +183,14 @@ class BMDS(object):
             recommended_model_index=getattr(self, 'recommended_model_index', None)
         )
 
-    def save_images(self, directory, prefix=None, format='png', recommended_only=False):
+    def to_excel(self, filename):
+        d = self._df_ordered_dict()
+        self._add_to_to_ordered_dict(d, 0)
+        df = pd.DataFrame(d)
+        filename = os.path.expanduser(filename)
+        df.to_excel(filename, index=False)
+
+    def save_plots(self, directory, prefix=None, format='png', recommended_only=False):
         directory = os.path.expanduser(directory)
         if not os.path.exists(directory):
             raise ValueError('Directory not found: {}'.format(directory))

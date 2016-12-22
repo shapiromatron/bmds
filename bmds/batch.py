@@ -10,8 +10,8 @@ class SessionBatch(list):
     """
     Export utilities for exporting a collection of multiple BMD sessions.
 
-    Examples:
-    ---------
+    Example
+    -------
     >>> datasets = [
             bmds.ContinuousDataset(
                 doses=[0, 10, 50, 150, 400],
@@ -24,7 +24,6 @@ class SessionBatch(list):
                 means=[2.112, 2.095, 1.956, 1.587, 1.254],
                 stdevs=[0.235, 0.209, 0.231, 0.263, 0.159])
         ]
-
     >>> batch = bmds.SessionBatch()
         for dataset in datasets:
             session = bmds.BMDS.latest_version(
@@ -34,7 +33,6 @@ class SessionBatch(list):
             session.execute()
             session.recommend()
             batch.append(session)
-
     >>> df = batch.to_df()
     >>> batch.to_csv('~/Desktop/outputs.csv')
     >>> batch.to_png_zip('~/Desktop', recommended_only=True)
@@ -104,12 +102,12 @@ class SessionBatch(list):
             Data frame containing models and outputs
 
         """
-        d = BMDS._df_ordered_dict(include_io)
+        od = BMDS._df_ordered_dict(include_io)
         [
-            session._to_df(d, i, recommended_only)
+            session._add_to_to_ordered_dict(od, i, recommended_only)
             for i, session in enumerate(self)
         ]
-        return pd.DataFrame(d)
+        return pd.DataFrame(od)
 
     def to_csv(self, filename, delimiter=',', recommended_only=False, include_io=True):
         """
@@ -164,9 +162,9 @@ class SessionBatch(list):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 
-    def save_images(self, directory, format='png', recommended_only=False):
+    def save_plots(self, directory, format='png', recommended_only=False):
         """
-        Save images of curve-fits for each model.
+        Save images of dose-response curve-fits for each model.
 
         Parameters
         ----------
@@ -185,7 +183,7 @@ class SessionBatch(list):
 
         """
         for i, session in enumerate(self):
-            session.save_images(
+            session.save_plots(
                 directory,
                 prefix=str(i),
                 format=format,
