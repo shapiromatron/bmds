@@ -228,10 +228,11 @@ class BMDModel(TempFileMaker):
     def _get_model_name(self):
         return self.exe
 
-    def _to_dict(self, model_index):
+    def to_dict(self, model_index):
         return dict(
+            name=self.name,
             model_index=model_index,
-            model_name=self.name,
+            model_name=self.model_name,
             model_version=self.version,
             has_output=self.output_created,
             dfile=self.as_dfile(),

@@ -174,11 +174,11 @@ class BMDS(object):
             d['dataset_index'].append(dataset_index)
             model._to_df(d, model_index, show_null)
 
-    def _to_dict(self, dataset_index):
+    def to_dict(self, dataset_index):
         return dict(
             dataset_index=dataset_index,
-            dataset=self.dataset._to_dict(),
-            models=[model._to_dict(i) for i, model in enumerate(self.models)],
+            dataset=self.dataset.to_dict(),
+            models=[model.to_dict(i) for i, model in enumerate(self.models)],
             recommended_model_index=getattr(self, 'recommended_model_index', None)
         )
 
