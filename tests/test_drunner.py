@@ -10,7 +10,7 @@ from .fixtures import *  # noqa
 @pytest.fixture
 def inputs(cdataset):
     model = bmds.models.Power_218(cdataset)
-    payload = bmds.get_payload([model])
+    payload = bmds.monkeypatch._get_payload([model])
     inputs = json.loads(payload['inputs'])
     return inputs
 

@@ -3,21 +3,38 @@ from collections import OrderedDict
 import os
 import pandas as pd
 
-from . import datasets, constants, logic, models, utils
+from . import constants, logic, models, utils
 
 
 __all__ = ('BMDS', )
 
 
 class BMDS(object):
+    """
+    A single dataset, related models, outputs, and model recommendations.
+    """
 
     @utils.classproperty
     def versions(cls):
+        """
+        Return all available BMDS software versions.
+
+        Example
+        -------
+
+        import bmds
+
+        Returns
+        -------
+        OrderedDict of available BMDS versions.
+        """
         return _BMDS_VERSIONS
 
     @classmethod
     def get_model(cls, version, model_name):
-        # given a bmds version and model_name, return model class
+        """
+        Return BMDS model class given BMDS version and model-name.
+        """
         models = cls.versions[version].model_options
         for keystore in models.values():
             if model_name in keystore:
@@ -63,17 +80,6 @@ class BMDS(object):
             model.get_default()
             for model in self.model_options[self.dtype].values()
         ]
-
-    def add_dataset(self, **kwargs):
-        if self.dtype == constants.CONTINUOUS:
-            ds = datasets.ContinuousDataset(**kwargs)
-        elif self.dtype == constants.CONTINUOUS_INDIVIDUAL:
-            ds = datasets.ContinuousIndividualDataset(**kwargs)
-        elif self.dtype in constants.DICHOTOMOUS_DTYPES:
-            ds = datasets.DichotomousDataset(**kwargs)
-        else:
-            raise ValueError('Invalid dtype')
-        self.dataset = ds
 
     @property
     def has_models(self):

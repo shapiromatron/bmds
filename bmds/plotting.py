@@ -1,6 +1,8 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+__all__ = []
+
 PLOT_FIGSIZE = (8, 5)
 PLOT_MARGINS = 0.05
 DATASET_POINT_FORMAT = dict(

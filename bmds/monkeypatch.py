@@ -23,8 +23,10 @@ import sys
 from .session import BMDS
 from .models.base import BMDModel
 
+__all__ = []
 
-def get_payload(models):
+
+def _get_payload(models):
     return dict(
         inputs=json.dumps([
             dict(
@@ -51,7 +53,7 @@ if platform.system() != 'Windows':
         '  - BMDS_PASSWORD (e.g. mysecret)\n'
     )
 
-    def get_requests_session():
+    def _get_requests_session():
         if host is None or user is None or pw is None:
             raise EnvironmentError(NO_HOST_WARNING)
 
@@ -75,9 +77,9 @@ if platform.system() != 'Windows':
 
     def execute_model(self):
         # execute single model
-        session = get_requests_session()
+        session = _get_requests_session()
         url = '{}/dfile/'.format(host)
-        payload = get_payload([self])
+        payload = _get_payload([self])
         resp = session.post(url, data=payload)
 
         # parse outputs
@@ -86,9 +88,9 @@ if platform.system() != 'Windows':
 
     def execute_session(self):
         # submit data
-        session = get_requests_session()
+        session = _get_requests_session()
         url = '{}/dfile/'.format(host)
-        payload = get_payload(self.models)
+        payload = _get_payload(self.models)
         resp = session.post(url, data=payload)
 
         # parse results for each model

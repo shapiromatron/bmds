@@ -5,10 +5,17 @@ from scipy import stats
 from . import plotting
 from .anova import AnovaTests
 
+__all__ = [
+    'DichotomousDataset',
+    'ContinuousDataset',
+    'ContinuousIndividualDataset',
+]
+
 
 class Dataset(object):
+    # Abstract parent-class for dataset-types.
 
-    def validate(self):
+    def _validate(self):
         raise NotImplemented('Abstract method; Requires implementation')
 
     def as_dfile(self):
@@ -22,8 +29,23 @@ class Dataset(object):
 
 
 class DichotomousDataset(Dataset):
+    """
+    Dataset object for dichotomous datasets.
 
-    BMDS_DATASET_TYPE = 1  # group data
+    A dichotomous dataset contains a list of 3 identically sized arrays of
+    input values, for the dose, number of subjects, and incidences (subjects
+    with a positive response).
+
+    Example
+    -------
+    >>> dataset = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14]
+        )
+    """
+
+    _BMDS_DATASET_TYPE = 1  # group data
 
     def __init__(self, doses, ns, incidences, doses_dropped=0):
         self.doses = doses
@@ -33,9 +55,9 @@ class DichotomousDataset(Dataset):
         self.num_doses = len(doses)
         self.doses_used = self.num_doses - self.doses_dropped
         self.remainings = [n - p for n, p in zip(ns, incidences)]
-        self.validate()
+        self._validate()
 
-    def validate(self):
+    def _validate(self):
         length = len(self.doses)
         if not all(
                 len(lst) == length for lst in
@@ -49,6 +71,18 @@ class DichotomousDataset(Dataset):
             raise ValueError('Must have 3 or more doses after dropping doses')
 
     def as_dfile(self):
+        """
+        Return the dataset representation in BMDS .(d) file.
+
+        Example
+        -------
+        >>> print(dataset.as_dfile())
+        Dose Incidence NEGATIVE_RESPONSE
+        0.000000 5 70
+        1.960000 1 48
+        5.690000 3 47
+        29.750000 14 35
+        """
         rows = ['Dose Incidence NEGATIVE_RESPONSE']
         for i, v in enumerate(self.doses):
             if i >= self.doses_used:
@@ -59,9 +93,15 @@ class DichotomousDataset(Dataset):
 
     @property
     def dataset_length(self):
+        """
+        Return the length of the vector of doses-used.
+        """
         return self.doses_used
 
     def to_dict(self):
+        """
+        Returns a dictionary representation of the dataset.
+        """
         return dict(
             doses=self.doses,
             ns=self.ns,
@@ -95,7 +135,7 @@ class DichotomousDataset(Dataset):
               np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (2 * (n + 2 * z))
         return p, ll, ul
 
-    def set_plot_data(self):
+    def _set_plot_data(self):
         if hasattr(self, '_means'):
             return
         self._means, self._lls, self._uls = zip(*[
@@ -104,7 +144,24 @@ class DichotomousDataset(Dataset):
         ])
 
     def plot(self):
-        self.set_plot_data()
+        """
+        Return a matplotlib figure of the dose-response dataset.
+
+        Examples
+        --------
+        >>> fig = dataset.plot()
+        >>> fig.show()
+
+        .. image:: ../tests/resources/test_ddataset_plot.png
+           :align: center
+           :alt: Example generated BMD plot
+
+        Returns
+        -------
+        out : matplotlib.figure.Figure
+            A matplotlib figure representation of the dataset.
+        """
+        self._set_plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
         ax.set_xlabel('Dose')
@@ -117,8 +174,24 @@ class DichotomousDataset(Dataset):
 
 
 class ContinuousDataset(Dataset):
+    """
+    Dataset object for continuous datasets.
 
-    BMDS_DATASET_TYPE = 1  # group data
+    A continuous dataset contains a list of 4 identically sized arrays of
+    input values, for the dose, number of subjects, mean of response values for
+    dose group, and standard-devation of response for that dose group.
+
+    Example
+    -------
+    >>> dataset = bmds.ContinuousDataset(
+            doses=[0, 10, 50, 150, 400],
+            ns=[25, 25, 24, 24, 24],
+            means=[2.61, 2.81, 2.96, 4.66, 11.23],
+            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
+        )
+    """
+
+    _BMDS_DATASET_TYPE = 1  # group data
 
     def __init__(self, doses, ns, means, stdevs, doses_dropped=0):
         self.doses = doses
@@ -128,9 +201,9 @@ class ContinuousDataset(Dataset):
         self.doses_dropped = doses_dropped
         self.num_doses = len(doses)
         self.doses_used = self.num_doses - self.doses_dropped
-        self.validate()
+        self._validate()
 
-    def validate(self):
+    def _validate(self):
         length = len(self.doses)
         if not all(
                 len(lst) == length for lst in
@@ -154,6 +227,9 @@ class ContinuousDataset(Dataset):
         return inc >= 0
 
     def as_dfile(self):
+        """
+        Return the dataset representation in BMDS .(d) file.
+        """
         rows = ['Dose NumAnimals Response Stdev']
         for i, v in enumerate(self.doses):
             if i >= self.doses_used:
@@ -188,6 +264,9 @@ class ContinuousDataset(Dataset):
         return AnovaTests.output_3tests(self.anova)
 
     def to_dict(self):
+        """
+        Return a dictionary representation of the dataset.
+        """
         return dict(
             doses=self.doses,
             ns=self.ns,
@@ -205,6 +284,23 @@ class ContinuousDataset(Dataset):
         return self._errorbars
 
     def plot(self):
+        """
+        Return a matplotlib figure of the dose-response dataset.
+
+        Examples
+        --------
+        >>> fig = dataset.plot()
+        >>> fig.show()
+
+        .. image:: ../tests/resources/test_cdataset_plot.png
+           :align: center
+           :alt: Example generated BMD plot
+
+        Returns
+        -------
+        out : matplotlib.figure.Figure
+            A matplotlib figure representation of the dataset.
+        """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
         ax.set_xlabel('Dose')
@@ -217,8 +313,38 @@ class ContinuousDataset(Dataset):
 
 
 class ContinuousIndividualDataset(ContinuousDataset):
+    """
+    Dataset object for continuous individual datasets.
 
-    BMDS_DATASET_TYPE = 0  # individual data
+    A continuous individual dataset contains a list of 2 identically sized
+    arrays of input values, one for the dose and one for the response of an
+    individual test-subject.
+
+    Example
+    -------
+    >>> dataset = bmds.ContinuousIndividualDataset(
+            doses=[
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+                1, 1, 1, 1, 1, 1,
+                10, 10, 10, 10, 10, 10,
+                100, 100, 100, 100, 100, 100,
+                300, 300, 300, 300, 300, 300,
+                500, 500, 500, 500, 500, 500,
+            ],
+            responses=[
+                8.1079, 9.3063, 9.7431, 9.781, 10.052, 10.613, 10.751, 11.057,
+                9.1556, 9.6821, 9.8256, 10.2095, 10.2222, 12.0382,
+                9.5661, 9.7059, 9.9905, 10.2716, 10.471, 11.0602,
+                8.8514, 10.0107, 10.0854, 10.5683, 11.1394, 11.4875,
+                9.5427, 9.7211, 9.8267, 10.0231, 10.1833, 10.8685,
+                10.368, 10.5176, 11.3168, 12.002, 12.1186, 12.6368,
+                9.9572, 10.1347, 10.7743, 11.0571, 11.1564, 12.0368
+            ]
+        )
+    """
+
+    _BMDS_DATASET_TYPE = 0  # individual data
 
     def __init__(self, doses, responses, doses_dropped=0):
         self.individual_doses = doses
@@ -227,9 +353,9 @@ class ContinuousIndividualDataset(ContinuousDataset):
         self.set_summary_data()
         self.num_doses = len(self.doses)
         self.doses_used = self.num_doses - self.doses_dropped
-        self.validate()
+        self._validate()
 
-    def validate(self):
+    def _validate(self):
         length = len(self.individual_doses)
         if not all(
                 len(lst) == length for lst in
@@ -256,6 +382,9 @@ class ContinuousIndividualDataset(ContinuousDataset):
         self.doses = doses
 
     def as_dfile(self):
+        """
+        Return the dataset representation in BMDS .(d) file.
+        """
         rows = ['Dose Response']
         for dose, response in zip(self.individual_doses, self.responses):
             dose_idx = self.doses.index(dose)
@@ -269,12 +398,32 @@ class ContinuousIndividualDataset(ContinuousDataset):
         return len(self.individual_doses)
 
     def to_dict(self):
+        """
+        Return a dictionary representation of the dataset.
+        """
         return dict(
             individual_doses=self.individual_doses,
             responses=self.responses,
         )
 
     def plot(self):
+        """
+        Return a matplotlib figure of the dose-response dataset.
+
+        Examples
+        --------
+        >>> fig = dataset.plot()
+        >>> fig.show()
+
+        .. image:: ../tests/resources/test_cidataset_plot.png
+           :align: center
+           :alt: Example generated BMD plot
+
+        Returns
+        -------
+        out : matplotlib.figure.Figure
+            A matplotlib figure representation of the dataset.
+        """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
         ax.set_xlabel('Dose')

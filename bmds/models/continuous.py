@@ -75,7 +75,7 @@ class Polynomial_216(Continuous):
         return '\n'.join([
             self._dfile_print_header_rows(),
             str(degpoly),
-            '{} {} 0'.format(self.dataset.BMDS_DATASET_TYPE, self.dataset.dataset_length),
+            '{} {} 0'.format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_polynomial',
@@ -146,7 +146,7 @@ class Linear_216(Polynomial_216):
         return '\n'.join([
             self._dfile_print_header_rows(),
             '1',
-            '{} {} 0'.format(self.dataset.BMDS_DATASET_TYPE, self.dataset.dataset_length),
+            '{} {} 0'.format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_polynomial',
@@ -202,7 +202,7 @@ class Exponential(Continuous):
         return '\n'.join([
             self._dfile_print_header_rows(),
             '{} {}{}'.format(
-                self.dataset.BMDS_DATASET_TYPE, self.dataset.dataset_length,
+                self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length,
                 self.exp_run_settings),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
@@ -388,7 +388,7 @@ class Power_216(Continuous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {} 0'.format(self.dataset.BMDS_DATASET_TYPE, self.dataset.dataset_length),
+            '{} {} 0'.format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_power',
@@ -457,7 +457,7 @@ class Hill_216(Continuous):
         self._set_values()
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {} 0'.format(self.dataset.BMDS_DATASET_TYPE, self.dataset.dataset_length),
+            '{} {} 0'.format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_n',

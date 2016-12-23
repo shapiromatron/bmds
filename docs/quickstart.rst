@@ -15,6 +15,7 @@ An example continuous summary dataset:
 
     import bmds
 
+    # create a dataset
     dataset = bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[25, 25, 24, 24, 24],
@@ -22,12 +23,23 @@ An example continuous summary dataset:
         stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
     )
 
+    # create a BMD session and add default BMD models
     session = bmds.BMDS.latest_version(
         bmds.constants.CONTINUOUS,
         dataset=dataset)
     session.add_default_models()
+
+    # execute the session
     session.execute()
+
+    # recommend a best-fitting model
     session.recommend()
+
+    print(session.recommended_model.output['model_name'])
+    # 'Exponential-M2'
+
+    print(session.recommended_model.output['BMD'])
+    # 93.7803
 
     # save dose-response plots
     session.save_plots('~/Desktop', format='pdf')

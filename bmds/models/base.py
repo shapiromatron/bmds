@@ -10,6 +10,29 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
 class BMDModel(object):
+    """
+    Parent class for individual BMDS models.
+
+    The interface for all models is identical to the base BMDModel class, and
+    is therefore documented here.
+
+    Example
+    -------
+
+    >>> dataset = bmds.ContinuousDataset(
+            doses=[0, 10, 50, 150, 400],
+            ns=[25, 25, 24, 24, 24],
+            means=[2.61, 2.81, 2.96, 4.66, 11.23],
+            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
+        )
+    >>> model = bmds.models.Polynomial_220(
+            dataset,
+            overrides={"degree_poly": 3}
+        )
+    >>> model.execute()
+    >>> model.output['BMD']
+    88.3549
+    """
 
     def __init__(self, dataset, overrides=None, id=None):
         self.tempfiles = TempFileList()
@@ -20,6 +43,9 @@ class BMDModel(object):
         self.output_created = False
 
     def execute(self):
+        """
+        Execute the BMDS model and parse outputs if successful.
+        """
         try:
             exe = self.get_exe_path()
             dfile = self.write_dfile()
@@ -41,6 +67,9 @@ class BMDModel(object):
 
     @classmethod
     def get_default(cls):
+        """
+        Return default parameters for this model.
+        """
         return {
             'name': cls.model_name,
             'defaults': cls.defaults
@@ -48,6 +77,9 @@ class BMDModel(object):
 
     @classmethod
     def get_exe_path(cls):
+        """
+        Return the full path to the executable.
+        """
         return os.path.abspath(os.path.join(
             ROOT,
             cls.bmds_version_dir,
@@ -55,10 +87,16 @@ class BMDModel(object):
 
     @property
     def has_successfully_executed(self):
+        """
+        Check if model has successful completed.
+        """
         return hasattr(self, 'outfile')
 
     @property
     def name(self):
+        """
+        Return the model name, and degree of polynomial for some models.
+        """
         return self.model_name
 
     def get_outfile(self, dfile):
@@ -70,9 +108,32 @@ class BMDModel(object):
         self.output = parser.output
 
     def as_dfile(self):
+        """
+        Represent this model in the BMDS (d) file input representation.
+        """
         raise NotImplementedError('Abstract method requires implementation')
 
     def plot(self):
+        """
+        After model execution, print the dataset, curve-fit, BMD, and BMDL.
+
+        Example
+        -------
+
+        >>> import os
+        >>> fn = os.path.expanduser('~/Desktop/image.png')
+        >>> fig = model.plot()
+        >>> fig.savefig(fn)
+
+        .. figure:: ../tests/resources/test_exponential_m4_plot.png
+           :scale: 80%
+           :align: center
+           :alt: Example generated BMD plot
+
+           BMD models can generate plots using the ``plot()`` method; an example
+           is shown here.
+
+        """
         fig = self.dataset.plot()
         ax = fig.gca()
         ax.set_title(self.name)
@@ -147,6 +208,9 @@ class BMDModel(object):
         ax.set_xlim(min_x - padding, max_x + padding)
 
     def write_dfile(self):
+        """
+        Write the generated d_file to a temporary file.
+        """
         f_in = self.tempfiles.get_tempfile(prefix='bmds-', suffix='.(d)')
         with open(f_in, 'w') as f:
             f.write(self.as_dfile())
@@ -222,6 +286,19 @@ class BMDModel(object):
         return self.exe
 
     def to_dict(self, model_index):
+        """
+        Return a summary of the model in a dictionary format for serialization.
+
+        Parameters
+        ----------
+        model_index : int
+            The index of the model in a list of models, should be unique
+
+        Returns
+        -------
+        out : dictionary
+            A dictionary of model inputs, and raw and parsed outputs
+        """
         return dict(
             name=self.name,
             model_index=model_index,
