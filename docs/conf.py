@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
-extensions = ['sphinx.ext.viewcode', ]
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.viewcode',
+]
 templates_path = ['_templates']
 source_suffix = '.rst'
+autosummary_generate = True
 
 master_doc = 'index'
 project = u'BMDS'
@@ -14,6 +20,10 @@ exclude_patterns = []
 pygments_style = 'sphinx'
 todo_include_todos = False
 
+# Napoleon settings
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_use_rtype = False
 
 # -- Options for HTML output ----------------------------------------------
 html_theme = 'alabaster'

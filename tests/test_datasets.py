@@ -137,7 +137,6 @@ def test_anova(anova_dataset):
 
 
 def test_correct_variance_model(cdataset):
-    # TODO - check for constant and non constant datasets
     # Check that the correct variance model is selected for dataset
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:

@@ -1,4 +1,6 @@
 from copy import deepcopy
+import numpy as np
+from scipy.stats import norm, gamma
 
 from .base import BMDModel, DefaultParams
 from .. import constants
@@ -15,7 +17,6 @@ class DichotomousCancer(Dichotomous):
 
 
 class Multistage_32(Dichotomous):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage'
     bmds_version_dir = 'BMDS231'
@@ -48,16 +49,26 @@ class Multistage_32(Dichotomous):
         'confidence_level': DefaultParams.confidence_level,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
+    def _get_degrees(self):
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
+
     def as_dfile(self):
         self._set_values()
-        degree_poly = self.values['degree_poly']
+        degree_poly = self._get_degrees()
 
         params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
         params.insert(0, 'background')
 
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {}'.format(self.dataset.dataset_length , degree_poly),
+            '{} {}'.format(self.dataset.dataset_length, degree_poly),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_beta',
@@ -67,6 +78,15 @@ class Multistage_32(Dichotomous):
             self._dfile_print_parameters(*params),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        background = self._get_param('Background')
+        ys = np.zeros(xs.size)
+        for i in range(1, self._get_degrees() + 1):
+            param = self._get_param('Beta({})'.format(i))
+            ys += param * np.power(xs, i)
+        ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
+        return ys
 
 
 class Multistage_33(Multistage_32):
@@ -84,7 +104,6 @@ class Multistage_34(Multistage_33):
 
 
 class MultistageCancer_19(DichotomousCancer):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Multistage-Cancer'
     bmds_version_dir = 'BMDS231'
@@ -117,9 +136,19 @@ class MultistageCancer_19(DichotomousCancer):
         'confidence_level': DefaultParams.confidence_level,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
+    def _get_degrees(self):
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
+
     def as_dfile(self):
         self._set_values()
-        degree_poly = self.values['degree_poly']
+        degree_poly = self._get_degrees()
 
         params = ['beta{}'.format(i) for i in range(1, degree_poly + 1)]
         params.insert(0, 'background')
@@ -136,6 +165,15 @@ class MultistageCancer_19(DichotomousCancer):
             self._dfile_print_parameters(*params),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        background = self._get_param('Background')
+        ys = np.zeros(xs.size)
+        for i in range(1, self._get_degrees() + 1):
+            param = self._get_param('Beta({})'.format(i))
+            ys += param * np.power(xs, i)
+        ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
+        return ys
 
 
 class MultistageCancer_110(MultistageCancer_19):
@@ -189,6 +227,14 @@ class Weibull_215(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
+    def get_ys(self, xs):
+        background = self._get_param('Background')
+        slope = self._get_param('Slope')
+        power = self._get_param('Power')
+        ys = background + (1.0 - background) * \
+            (1 - np.exp(-1.0 * slope * np.power(xs, power)))
+        return ys
+
 
 class Weibull_216(Weibull_215):
     bmds_version_dir = 'BMDS240'
@@ -240,6 +286,13 @@ class LogProbit_32(Dichotomous):
                 'background', 'slope', 'intercept'),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        background = self._get_param('background')
+        slope = self._get_param('slope')
+        intercept = self._get_param('intercept')
+        ys = background + (1.0 - background) * norm.cdf(intercept + slope * np.log(xs))
+        return ys
 
 
 class LogProbit_33(LogProbit_32):
@@ -293,6 +346,12 @@ class Probit_32(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
+    def get_ys(self, xs):
+        slope = self._get_param('slope')
+        intercept = self._get_param('intercept')
+        ys = norm.cdf(intercept + slope * xs)
+        return ys
+
 
 class Probit_33(Probit_32):
     bmds_version_dir = 'BMDS240'
@@ -343,6 +402,13 @@ class Gamma_215(Dichotomous):
                 'background', 'slope', 'power'),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        background = self._get_param('Background')
+        slope = self._get_param('Slope')
+        power = self._get_param('Power')
+        ys = background + (1.0 - background) * gamma.cdf(xs * slope, power)
+        return ys
 
 
 class Gamma_216(Gamma_215):
@@ -396,6 +462,14 @@ class LogLogistic_213(Dichotomous):
             self.dataset.as_dfile(),
         ])
 
+    def get_ys(self, xs):
+        background = self._get_param('background')
+        intercept = self._get_param('intercept')
+        slope = self._get_param('slope')
+        ys = background + (1.0 - background) / (
+            1 + np.exp(-1.0 * intercept - 1.0 * slope * np.log(xs)))
+        return ys
+
 
 class LogLogistic_214(LogLogistic_213):
     bmds_version_dir = 'BMDS240'
@@ -447,6 +521,12 @@ class Logistic_213(Dichotomous):
                 'background', 'slope', 'intercept'),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        intercept = self._get_param('intercept')
+        slope = self._get_param('slope')
+        ys = 1.0 / (1.0 + np.exp(-1.0 * intercept - slope * xs))
+        return ys
 
 
 class Logistic_214(Logistic_213):
@@ -500,3 +580,11 @@ class DichotomousHill_13(Dichotomous):
                 'v', 'g', 'intercept', 'slope'),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        v = self._get_param('v')
+        g = self._get_param('g')
+        intercept = self._get_param('intercept')
+        slope = self._get_param('slope')
+        ys = v * g + (v - v * g) / (1.0 + np.exp(-intercept - slope * np.log(xs)))
+        return ys

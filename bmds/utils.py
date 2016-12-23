@@ -1,11 +1,33 @@
 import logging
 from subprocess import Popen
+import os
+import tempfile
 import threading
 
 
 class classproperty(property):
     def __get__(self, cls, owner):
         return classmethod(self.fget).__get__(None, owner)()
+
+
+class TempFileList(list):
+    # Maintains a list of temporary files and cleans up after itself
+
+    def get_tempfile(self, prefix='', suffix='.txt'):
+        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        os.close(fd)
+        self.append(fn)
+        return fn
+
+    def cleanup(self):
+        for fn in iter(self):
+            try:
+                os.remove(fn)
+            except OSError:
+                pass
+
+    def __del__(self):
+        self.cleanup()
 
 
 class RunProcess(threading.Thread):

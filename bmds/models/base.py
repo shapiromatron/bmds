@@ -1,44 +1,18 @@
 import os
-import tempfile
+import numpy as np
 
-from .. import constants
+from .. import constants, plotting
 from ..parser import OutputParser
-from ..utils import RunProcess
+from ..utils import RunProcess, TempFileList
 
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
-class TempFileMaker(object):
-    # Maintains a list of temporary files and cleans up after itself
-
-    def __init__(self):
-        self.tempfns = []
-
-    def add_tempfile(self, fn):
-        self.tempfns.append(fn)
-
-    def get_tempfile(self, prefix='', suffix='.txt'):
-        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
-        os.close(fd)
-        self.add_tempfile(fn)
-        return fn
-
-    def cleanup(self):
-        for fn in self.tempfns:
-            try:
-                os.remove(fn)
-            except OSError:
-                pass
-
-    def __del__(self):
-        self.cleanup()
-
-
-class BMDModel(TempFileMaker):
+class BMDModel(object):
 
     def __init__(self, dataset, overrides=None, id=None):
-        super(BMDModel, self).__init__()
+        self.tempfiles = TempFileList()
         self.id = id
         self.dataset = dataset
         self.overrides = overrides or {}
@@ -54,16 +28,16 @@ class BMDModel(TempFileMaker):
             o2 = outfile.replace('.(d)', '.002')
             if os.path.exists(outfile):
                 self.output_created = True
-                self.add_tempfile(outfile)
+                self.tempfiles.append(outfile)
                 with open(outfile, 'r') as f:
                     text = f.read()
                 self.parse_results(text)
             if os.path.exists(o2):
-                self.add_tempfile(o2)
+                self.tempfiles.append(o2)
         except Exception as e:
             raise e
         finally:
-            self.cleanup()
+            self.tempfiles.cleanup()
 
     @classmethod
     def get_default(cls):
@@ -79,6 +53,14 @@ class BMDModel(TempFileMaker):
             cls.bmds_version_dir,
             cls.exe + '.exe'))
 
+    @property
+    def has_successfully_executed(self):
+        return hasattr(self, 'outfile')
+
+    @property
+    def name(self):
+        return self.model_name
+
     def get_outfile(self, dfile):
         return dfile.replace('.(d)', '.out')
 
@@ -90,11 +72,88 @@ class BMDModel(TempFileMaker):
     def as_dfile(self):
         raise NotImplementedError('Abstract method requires implementation')
 
+    def plot(self):
+        fig = self.dataset.plot()
+        ax = fig.gca()
+        ax.set_title(self.name)
+        if self.has_successfully_executed:
+            self._set_x_range(ax)
+            ax.plot(
+                self._xs, self.get_ys(self._xs),
+                **plotting.LINE_FORMAT)
+            self._add_bmr_lines(ax)
+        else:
+            self._add_plot_failure(ax)
+        return fig
+
+    def get_ys(self, xs):
+        raise NotImplementedError('Abstract base method; requires implementation.')
+
+    def _add_bmr_lines(self, ax):
+        # add BMD and BMDL lines to plot.
+        bmd = self.output['BMD']
+        bmdl = self.output['BMDL']
+        xdomain = ax.xaxis.get_view_interval()
+        ydomain = ax.yaxis.get_view_interval()
+        xrng = xdomain[1] - xdomain[0]
+        yrng = ydomain[1] - ydomain[0]
+        ys = self.get_ys(np.array([bmd, bmdl]))
+
+        ax.axhline(ys[0],
+                   xmin=0,
+                   xmax=(bmd - xdomain[0]) / xrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axhline(ys[1],
+                   xmin=0,
+                   xmax=(bmdl - xdomain[0]) / xrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axvline(bmd,
+                   ymin=0,
+                   ymax=(ys[0] - ydomain[0]) / yrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.axvline(bmdl,
+                   ymin=0,
+                   ymax=(ys[1] - ydomain[0]) / yrng,
+                   **plotting.BMD_LINE_FORMAT)
+        ax.text(bmd + xrng * 0.01,
+                ydomain[0] + yrng * 0.02,
+                'BMD',
+                horizontalalignment='left', **plotting.BMD_LABEL_FORMAT)
+        ax.text(bmdl - xrng * 0.01,
+                ydomain[0] + yrng * 0.02,
+                'BMDL',
+                horizontalalignment='right', **plotting.BMD_LABEL_FORMAT)
+
+    def _add_plot_failure(self, ax):
+        ax.text(
+            0.5, 0.8,
+            u'ERROR: model cannot be plotted',
+            transform=ax.transAxes,
+            **plotting.FAILURE_MESSAGE_FORMAT
+        )
+
+    def _set_x_range(self, ax):
+        bmd = max(0, self.output['BMD'])
+        bmdl = max(0, self.output['BMDL'])
+        doses = self.dataset.doses
+
+        # set values for what we'll need to calculate model curve
+        min_x = min(bmd, bmdl, *doses)
+        max_x = max(bmd, bmdl, *doses)
+        self._xs = np.linspace(max(min_x, 1e-9), max_x, 100)
+
+        # add a little extra padding on plot
+        padding = plotting.PLOT_MARGINS * (max_x - min_x)
+        ax.set_xlim(min_x - padding, max_x + padding)
+
     def write_dfile(self):
-        f_in = self.get_tempfile(prefix='bmds-', suffix='.(d)')
+        f_in = self.tempfiles.get_tempfile(prefix='bmds-', suffix='.(d)')
         with open(f_in, 'w') as f:
             f.write(self.as_dfile())
         return f_in
+
+    def _get_param(self, key):
+        return self.output['parameters'][key]['estimate']
 
     def _set_values(self):
         self.values = {}
@@ -161,6 +220,79 @@ class BMDModel(TempFileMaker):
 
     def _get_model_name(self):
         return self.exe
+
+    def to_dict(self, model_index):
+        return dict(
+            name=self.name,
+            model_index=model_index,
+            model_name=self.model_name,
+            model_version=self.version,
+            has_output=self.output_created,
+            dfile=self.as_dfile(),
+            outfile=getattr(self, 'outfile', None),
+            output=getattr(self, 'output', None),
+            logic_bin=getattr(self, 'logic_bin', None),
+            logic_notes=getattr(self, 'logic_notes', None),
+            recommended=getattr(self, 'recommended', None),
+            recommended_variable=getattr(self, 'recommended_variable', None),
+        )
+
+    def _to_df(self, d, idx, show_null):
+
+        def _nullify(show_null, value):
+            return constants.NULL if show_null else value
+
+        d['model_name'].append(_nullify(show_null, self.name))
+        d['model_index'].append(_nullify(show_null, idx))
+        d['model_version'].append(_nullify(show_null, self.version))
+        d['has_output'].append(_nullify(show_null, self.output_created))
+
+        # add model outputs
+        outputs = {} \
+            if show_null \
+            else getattr(self, 'output', {})
+
+        d['BMD'].append(outputs.get('BMD', '-'))
+        d['BMDL'].append(outputs.get('BMDL', '-'))
+        d['BMDU'].append(outputs.get('BMDU', '-'))
+        d['CSF'].append(outputs.get('CSF', '-'))
+        d['AIC'].append(outputs.get('AIC', '-'))
+        d['pvalue1'].append(outputs.get('p_value1', '-'))
+        d['pvalue2'].append(outputs.get('p_value2', '-'))
+        d['pvalue3'].append(outputs.get('p_value3', '-'))
+        d['pvalue4'].append(outputs.get('p_value4', '-'))
+        d['Chi2'].append(outputs.get('Chi2', '-'))
+        d['df'].append(outputs.get('df', '-'))
+        d['residual_of_interest'].append(outputs.get('residual_of_interest', '-'))
+        d['warnings'].append('; '.join(outputs.get('warnings', ['-'])))
+
+        # add logic bin and warnings
+        logics = getattr(self, 'logic_notes', {})
+        bin_ = constants.BIN_TEXT[self.logic_bin] \
+            if hasattr(self, 'logic_bin') \
+            else '-'
+        d['logic_bin'].append(_nullify(show_null, bin_))
+
+        txt = '; '.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
+        d['logic_cautions'].append(_nullify(show_null, txt))
+        txt = '; '.join(logics.get(constants.BIN_WARNING, ['-']))
+        d['logic_warnings'].append(_nullify(show_null, txt))
+        txt = '; '.join(logics.get(constants.BIN_FAILURE, ['-']))
+        d['logic_failures'].append(_nullify(show_null, txt))
+
+        # add recommendation and recommendation variable
+        txt = getattr(self, 'recommended', '-')
+        d['recommended'].append(_nullify(show_null, txt))
+        txt = getattr(self, 'recommended_variable', '-')
+        d['recommended_variable'].append(_nullify(show_null, txt))
+
+        # add verbose outputs if specified
+        if 'dfile' in d:
+            txt = self.as_dfile()
+            d['dfile'].append(_nullify(show_null, txt))
+        if 'outfile' in d:
+            txt = getattr(self, 'outfile', '-')
+            d['outfile'].append(_nullify(show_null, txt))
 
 
 class DefaultParams(object):

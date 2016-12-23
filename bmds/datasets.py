@@ -1,6 +1,8 @@
 from collections import defaultdict
 import numpy as np
+from scipy import stats
 
+from . import plotting
 from .anova import AnovaTests
 
 
@@ -10,6 +12,12 @@ class Dataset(object):
         raise NotImplemented('Abstract method; Requires implementation')
 
     def as_dfile(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
+    def to_dict(self):
+        raise NotImplemented('Abstract method; Requires implementation')
+
+    def plot(self):
         raise NotImplemented('Abstract method; Requires implementation')
 
 
@@ -52,6 +60,60 @@ class DichotomousDataset(Dataset):
     @property
     def dataset_length(self):
         return self.doses_used
+
+    def to_dict(self):
+        return dict(
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+        )
+
+    @staticmethod
+    def _calculate_plotting(n, incidence):
+        """
+        Add confidence intervals to dichotomous datasets. From bmds231_manual.pdf, pg 124-5.
+
+        LL = {(2np + z2 - 1) - z*sqrt[z2 - (2+1/n) + 4p(nq+1)]}/[2*(n+z2)]
+        UL = {(2np + z2 + 1) + z*sqrt[z2 + (2-1/n) + 4p(nq-1)]}/[2*(n+z2)]
+
+        - p = the observed proportion
+        - n = the total number in the group in question
+        - z = Z(1-alpha/2) is the inverse standard normal cumulative
+              distribution function evaluated at 1-alpha/2
+        - q = 1-p.
+
+        The error bars shown in BMDS plots use alpha = 0.05 and so
+        represent the 95% confidence intervals on the observed
+        proportions (independent of model).
+        """
+        p = incidence / float(n)
+        z = stats.norm.ppf(0.975)
+        q = 1. - p
+        ll = ((2 * n * p + 2 * z - 1) - z *
+              np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))) / (2 * (n + 2 * z))
+        ul = ((2 * n * p + 2 * z + 1) + z *
+              np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (2 * (n + 2 * z))
+        return p, ll, ul
+
+    def set_plot_data(self):
+        if hasattr(self, '_means'):
+            return
+        self._means, self._lls, self._uls = zip(*[
+            self._calculate_plotting(i, j)
+            for i, j in zip(self.ns, self.incidences)
+        ])
+
+    def plot(self):
+        self.set_plot_data()
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        ax.errorbar(
+            self.doses, self._means, yerr=[self._lls, self._uls],
+            **plotting.DATASET_POINT_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig
 
 
 class ContinuousDataset(Dataset):
@@ -125,6 +187,34 @@ class ContinuousDataset(Dataset):
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)
 
+    def to_dict(self):
+        return dict(
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+        )
+
+    @property
+    def errorbars(self):
+        if not hasattr(self, '_errorbars'):
+            self._errorbars = [
+                stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
+                for stdev, n in zip(self.stdevs, self.ns)
+            ]
+        return self._errorbars
+
+    def plot(self):
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        ax.errorbar(
+            self.doses, self.means, yerr=self.errorbars,
+            **plotting.DATASET_POINT_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
 
@@ -177,3 +267,20 @@ class ContinuousIndividualDataset(ContinuousDataset):
     @property
     def dataset_length(self):
         return len(self.individual_doses)
+
+    def to_dict(self):
+        return dict(
+            individual_doses=self.individual_doses,
+            responses=self.responses,
+        )
+
+    def plot(self):
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        ax.scatter(
+            self.individual_doses, self.responses,
+            **plotting.DATASET_INDIVIDUAL_FORMAT)
+        ax.margins(plotting.PLOT_MARGINS)
+        return fig

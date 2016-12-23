@@ -15,8 +15,12 @@ def get_readme():
 
 requirements = [
     'requests',
+    'matplotlib',
     'numpy',
+    'openpyxl',
+    'pandas',
     'scipy',
+    'six',
 ]
 
 test_requirements = [

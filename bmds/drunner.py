@@ -2,10 +2,8 @@ import os
 
 from . import utils, session
 
-from .models.base import TempFileMaker
 
-
-class BatchDfileRunner(TempFileMaker):
+class BatchDfileRunner(object):
     """
     Batch-execute a list of pre-created d-files.
 
@@ -14,7 +12,7 @@ class BatchDfileRunner(TempFileMaker):
     """
 
     def __init__(self, inputs):
-        super(BatchDfileRunner, self).__init__()
+        self.tempfiles = utils.TempFileList()
         self.inputs = inputs
         self.outputs = []
         self.execute()
@@ -29,9 +27,9 @@ class BatchDfileRunner(TempFileMaker):
 
         # side-effect- cleanup other files created by exponential
         if os.path.exists(outfile):
-            self.add_tempfile(outfile)
+            self.tempfiles.append(outfile)
         if os.path.exists(oo2):
-            self.add_tempfile(oo2)
+            self.tempfiles.append(oo2)
 
         # get exponential model prefix
         prefix = model_name.split('-')[1]
@@ -47,7 +45,7 @@ class BatchDfileRunner(TempFileMaker):
             exe = session.BMDS.get_model(obj['bmds_version'], obj['model_name']).get_exe_path()
 
             # write dfile
-            dfile = self.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')
+            dfile = self.tempfiles.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')
             with open(dfile, 'w') as f:
                 f.write(obj['dfile'])
 
@@ -58,18 +56,18 @@ class BatchDfileRunner(TempFileMaker):
             try:
                 utils.RunProcess([exe, dfile], timeout=20).call()
                 outfile = self.get_outfile(dfile, obj['model_name'])
-                oo2 = outfile.replace('.(d)', '.002')
+                oo2 = outfile.replace('.out', '.002')
                 if os.path.exists(outfile):
-                    self.add_tempfile(outfile)
+                    self.tempfiles.append(outfile)
                     output['output_created'] = True
                     with open(outfile, 'r') as f:
                         output['outfile'] = f.read()
                 if os.path.exists(oo2):
-                    self.add_tempfile(oo2)
+                    self.tempfiles.append(oo2)
             except Exception as e:
                 raise e
             finally:
-                self.cleanup()
+                self.tempfiles.cleanup()
 
             self.outputs.append(output)
 

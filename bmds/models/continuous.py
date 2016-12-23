@@ -1,8 +1,8 @@
 from copy import deepcopy
 import os
+import numpy as np
 
 from .base import BMDModel, DefaultParams
-from .. import constants
 
 
 class Continuous(BMDModel):
@@ -17,7 +17,6 @@ class Continuous(BMDModel):
 
 
 class Polynomial_216(Continuous):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Polynomial'
     bmds_version_dir = 'BMDS231'
@@ -53,12 +52,22 @@ class Polynomial_216(Continuous):
         'constant_variance': DefaultParams.constant_variance,
     }
 
+    @property
+    def name(self):
+        return u'{}-{}'.format(self.model_name, self._get_degrees())
+
     def set_restrict_polynomial_value(self):
         return 1 if self.dataset.is_increasing else -1
 
+    def _get_degrees(self):
+        degree = int(self.values['degree_poly'])
+        if not 0 < degree <= 8:
+            raise ValueError('Degree must be between 1 and 8, inclusive')
+        return degree
+
     def as_dfile(self):
         self._set_values()
-        degpoly = int(self.values['degree_poly'])
+        degpoly = self._get_degrees()
         params = ['alpha', 'rho', 'beta_0']
         for i in range(1, degpoly + 1):
             params.append('beta_' + str(i))
@@ -77,6 +86,13 @@ class Polynomial_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
+    def get_ys(self, xs):
+        ys = np.zeros(xs.size)
+        for i in range(self._get_degrees() + 1):
+            param = self._get_param('beta_{}'.format(i))
+            ys += np.power(xs, i) * param
+        return ys
+
 
 class Polynomial_217(Polynomial_216):
     bmds_version_dir = 'BMDS240'
@@ -93,7 +109,6 @@ class Polynomial_220(Polynomial_217):
 
 
 class Linear_216(Polynomial_216):
-    # TODO: add check that degree poly must be <=8
     minimum_DG = 2
     model_name = 'Linear'
     bmds_version_dir = 'BMDS231'
@@ -121,6 +136,10 @@ class Linear_216(Polynomial_216):
         'confidence_level': DefaultParams.confidence_level,
         'constant_variance': DefaultParams.constant_variance,
     }
+
+    @property
+    def name(self):
+        return self.model_name
 
     def as_dfile(self):
         self._set_values()
@@ -227,6 +246,13 @@ class Exponential_M2_17(Exponential):
     }
     output_prefix = 'M2'
 
+    def get_ys(self, xs):
+        sign = 1. if self.dataset.is_increasing else -1.
+        a = self._get_param('a')
+        b = self._get_param('b')
+        ys = a * np.exp(sign * b * xs)
+        return ys
+
 
 class Exponential_M2_19(Exponential_M2_17):
     bmds_version_dir = 'BMDS240'
@@ -247,6 +273,14 @@ class Exponential_M3_17(Exponential_M2_17):
     model_name = 'Exponential-M3'
     exp_run_settings = ' 0 0100 22 0 1'
     output_prefix = 'M3'
+
+    def get_ys(self, xs):
+        sign = 1. if self.dataset.is_increasing else -1.
+        a = self._get_param('a')
+        b = self._get_param('b')
+        d = self._get_param('d')
+        ys = a * np.exp(sign * b * np.power(xs, d))
+        return ys
 
 
 class Exponential_M3_19(Exponential_M3_17):
@@ -269,6 +303,13 @@ class Exponential_M4_17(Exponential_M2_17):
     exp_run_settings = ' 0 0010 33 0 1'
     output_prefix = 'M4'
 
+    def get_ys(self, xs):
+        a = self._get_param('a')
+        b = self._get_param('b')
+        c = self._get_param('c')
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * xs))
+        return ys
+
 
 class Exponential_M4_19(Exponential_M4_17):
     bmds_version_dir = 'BMDS240'
@@ -289,6 +330,14 @@ class Exponential_M5_17(Exponential_M2_17):
     model_name = 'Exponential-M5'
     exp_run_settings = ' 0 0001 44 0 1'
     output_prefix = 'M5'
+
+    def get_ys(self, xs):
+        a = self._get_param('a')
+        b = self._get_param('b')
+        c = self._get_param('c')
+        d = self._get_param('d')
+        ys = a * (c - (c - 1.) * np.exp(-1. * b * np.power(xs, d)))
+        return ys
 
 
 class Exponential_M5_19(Exponential_M5_17):
@@ -351,6 +400,13 @@ class Power_216(Continuous):
             self.dataset.as_dfile(),
         ])
 
+    def get_ys(self, xs):
+        slope = self._get_param('slope')
+        control = self._get_param('control')
+        power = self._get_param('power')
+        ys = control + slope * np.power(xs, power)
+        return ys
+
 
 class Power_217(Power_216):
     bmds_version_dir = 'BMDS240'
@@ -412,6 +468,14 @@ class Hill_216(Continuous):
                 'alpha', 'rho', 'intercept', 'v', 'n', 'k'),
             self.dataset.as_dfile(),
         ])
+
+    def get_ys(self, xs):
+        intercept = self._get_param('intercept')
+        v = self._get_param('v')
+        n = self._get_param('n')
+        k = self._get_param('k')
+        ys = intercept + (v * np.power(xs, n)) / (np.power(k, n) + np.power(xs, n))
+        return ys
 
 
 class Hill_217(Hill_216):

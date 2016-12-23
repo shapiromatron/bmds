@@ -17,9 +17,9 @@ An example continuous summary dataset:
 
     dataset = bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
-        ns=[111, 142, 143, 93, 42],
-        means=[2.112, 2.095, 1.956, 1.587, 1.254],
-        stdevs=[0.235, 0.209, 0.231, 0.263, 0.159]
+        ns=[25, 25, 24, 24, 24],
+        means=[2.61, 2.81, 2.96, 4.66, 11.23],
+        stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
     )
 
     session = bmds.BMDS.latest_version(
@@ -29,11 +29,15 @@ An example continuous summary dataset:
     session.execute()
     session.recommend()
 
-An example dichotomous model execution:
+    # save dose-response plots
+    session.save_plots('~/Desktop', format='pdf')
+
+    # save results to an Excel file
+    session.to_excel('~/Desktop/results.xlsx')
+
+To use a dichotomous dataset, only a few things change:
 
 .. code-block:: python
-
-    import bmds
 
     dataset = bmds.DichotomousDataset(
         doses=[0, 1.96, 5.69, 29.75],
@@ -44,12 +48,5 @@ An example dichotomous model execution:
     session = bmds.BMDS.latest_version(
         bmds.constants.DICHOTOMOUS,
         dataset=dataset)
-    session.add_default_models()
-    session.execute()
-    session.recommend()
 
-    print(session.recommended_model.model_name)
-    >>> 'Multistage'
-
-    print(session.recommended_model.output['BMD'])
-    >>> 18.0607
+To run multiple datasets, you can use a ``SessionBatch``.

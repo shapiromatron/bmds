@@ -1,7 +1,10 @@
 from copy import deepcopy
+from collections import OrderedDict
+import os
+import pandas as pd
+
 from . import datasets, constants, logic, models, utils
 
-from collections import OrderedDict
 
 __all__ = ('BMDS', )
 
@@ -83,7 +86,8 @@ class BMDS(object):
                 else None
 
             if name in constants.VARIABLE_POLYNOMIAL:
-                for i in range(2, min(self.dataset.doses_used, 8)):
+                start_idx = 2 if name == constants.M_Polynomial else 1
+                for i in range(start_idx, min(self.dataset.doses_used, 8)):
                     overrides = {} \
                         if overrides is None \
                         else deepcopy(overrides)
@@ -107,6 +111,10 @@ class BMDS(object):
         for model in self.models:
             model.execute()
 
+    @property
+    def recommendation_enabled(self):
+        return hasattr(self, 'recommended_model')
+
     def add_recommender(self, overrides=None):
         self.recommender = logic.Recommender(self.dtype, overrides)
 
@@ -114,7 +122,90 @@ class BMDS(object):
         if not hasattr(self, 'recommender'):
             self.add_recommender()
         self.recommended_model = self.recommender.recommend(self.dataset, self.models)
+        self.recommended_model_index = self.models.index(self.recommended_model) \
+            if self.recommended_model is not None \
+            else None
         return self.recommended_model
+
+    @staticmethod
+    def _df_ordered_dict(include_io=True):
+        # return an ordered defaultdict list
+        keys = [
+            'dataset_index', 'model_name', 'model_index',
+            'model_version', 'has_output',
+
+            'BMD', 'BMDL', 'BMDU', 'CSF',
+            'AIC', 'pvalue1', 'pvalue2', 'pvalue3', 'pvalue4',
+            'Chi2', 'df', 'residual_of_interest',
+            'warnings',
+
+            'logic_bin', 'logic_cautions', 'logic_warnings', 'logic_failures',
+            'recommended', 'recommended_variable',
+        ]
+
+        if include_io:
+            keys.extend(['dfile', 'outfile'])
+
+        return OrderedDict([(key, list()) for key in keys])
+
+    def _add_to_to_ordered_dict(self, d, dataset_index, recommended_only=False):
+
+        for model_index, model in enumerate(self.models):
+
+            # determine if model should be presented, or if a null-model should
+            # be presented (if no model is recommended.)
+            show_null = False
+            if recommended_only:
+                if self.recommendation_enabled:
+                    if self.recommended_model is None:
+                        if model_index == 0:
+                            show_null = True
+                        else:
+                            continue
+                    elif self.recommended_model == model:
+                        pass
+                    else:
+                        continue
+                else:
+                    if model_index == 0:
+                        show_null = True
+                    else:
+                        continue
+
+            d['dataset_index'].append(dataset_index)
+            model._to_df(d, model_index, show_null)
+
+    def to_dict(self, dataset_index):
+        return dict(
+            dataset_index=dataset_index,
+            dataset=self.dataset.to_dict(),
+            models=[model.to_dict(i) for i, model in enumerate(self.models)],
+            recommended_model_index=getattr(self, 'recommended_model_index', None)
+        )
+
+    def to_excel(self, filename):
+        d = self._df_ordered_dict()
+        self._add_to_to_ordered_dict(d, 0)
+        df = pd.DataFrame(d)
+        filename = os.path.expanduser(filename)
+        df.to_excel(filename, index=False)
+
+    def save_plots(self, directory, prefix=None, format='png', recommended_only=False):
+        directory = os.path.expanduser(directory)
+        if not os.path.exists(directory):
+            raise ValueError('Directory not found: {}'.format(directory))
+
+        for model in self.models:
+            if recommended_only and (self.recommendation_enabled is False or
+                                     model.recommended is False):
+                continue
+
+            fn = '{}.{}'.format(model.name, format)
+            if prefix is not None:
+                fn = '{}-{}'.format(prefix, fn)
+
+            fig = model.plot()
+            fig.savefig(os.path.join(directory, fn))
 
 
 class BMDS_v231(BMDS):

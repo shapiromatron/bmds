@@ -61,6 +61,9 @@ test:
 	# To show print statements when debugging tests, use the -s flag:
 	# 	$ py.test -k test_monkey_has_tail -s
 	#
+	# To generate baseline matplotlib images:
+	#   $ py.test --mpl-generate-path=tests/resources
+	#
 	py.test tests
 
 

@@ -5,6 +5,7 @@ A few tips and tricks are required to install this package, due to issues
 installing the scientific python stack on Windows, and BMDS on Mac/Linux.
 
 .. _windows-install:
+
 Installing on Windows
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -27,8 +28,9 @@ both are required for using the BMDS package. Here are two options, and recommen
 .. _`numpy and scipy binaries`: http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 .. _mac-install:
+
 Installing on Mac/linux
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Due to limitations in the underlying BMDS software, the BMDS will only
 execute on Windows. However, by using a (remote) Windows server which executes
