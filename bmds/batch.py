@@ -35,7 +35,7 @@ class SessionBatch(list):
             batch.append(session)
     >>> df = batch.to_df()
     >>> batch.to_csv('~/Desktop/outputs.csv')
-    >>> batch.to_png_zip('~/Desktop', recommended_only=True)
+    >>> batch.save_plots('~/Desktop', recommended_only=True)
     """
 
     def to_dicts(self):
