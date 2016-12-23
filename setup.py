@@ -14,13 +14,13 @@ def get_readme():
         return f.read()
 
 requirements = [
-    'requests',
-    'matplotlib',
-    'numpy',
-    'openpyxl',
-    'pandas',
-    'scipy',
     'six',
+    'requests',
+    'numpy',
+    'pandas',
+    'openpyxl',
+    'matplotlib',
+    'scipy',
 ]
 
 test_requirements = [
