@@ -56,7 +56,7 @@ class BatchDfileRunner(object):
             try:
                 utils.RunProcess([exe, dfile], timeout=20).call()
                 outfile = self.get_outfile(dfile, obj['model_name'])
-                oo2 = outfile.replace('.(d)', '.002')
+                oo2 = outfile.replace('.out', '.002')
                 if os.path.exists(outfile):
                     self.tempfiles.append(outfile)
                     output['output_created'] = True
