@@ -1,45 +1,18 @@
 import os
 import numpy as np
-import tempfile
 
 from .. import constants, plotting
 from ..parser import OutputParser
-from ..utils import RunProcess
+from ..utils import RunProcess, TempFileList
 
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
-class TempFileMaker(object):
-    # Maintains a list of temporary files and cleans up after itself
-
-    def __init__(self):
-        self.tempfns = []
-
-    def add_tempfile(self, fn):
-        self.tempfns.append(fn)
-
-    def get_tempfile(self, prefix='', suffix='.txt'):
-        fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
-        os.close(fd)
-        self.add_tempfile(fn)
-        return fn
-
-    def cleanup(self):
-        for fn in self.tempfns:
-            try:
-                os.remove(fn)
-            except OSError:
-                pass
-
-    def __del__(self):
-        self.cleanup()
-
-
-class BMDModel(TempFileMaker):
+class BMDModel(object):
 
     def __init__(self, dataset, overrides=None, id=None):
-        super(BMDModel, self).__init__()
+        self.tempfiles = TempFileList()
         self.id = id
         self.dataset = dataset
         self.overrides = overrides or {}
@@ -55,16 +28,16 @@ class BMDModel(TempFileMaker):
             o2 = outfile.replace('.(d)', '.002')
             if os.path.exists(outfile):
                 self.output_created = True
-                self.add_tempfile(outfile)
+                self.tempfiles.append(outfile)
                 with open(outfile, 'r') as f:
                     text = f.read()
                 self.parse_results(text)
             if os.path.exists(o2):
-                self.add_tempfile(o2)
+                self.tempfiles.append(o2)
         except Exception as e:
             raise e
         finally:
-            self.cleanup()
+            self.tempfiles.cleanup()
 
     @classmethod
     def get_default(cls):
@@ -174,7 +147,7 @@ class BMDModel(TempFileMaker):
         ax.set_xlim(min_x - padding, max_x + padding)
 
     def write_dfile(self):
-        f_in = self.get_tempfile(prefix='bmds-', suffix='.(d)')
+        f_in = self.tempfiles.get_tempfile(prefix='bmds-', suffix='.(d)')
         with open(f_in, 'w') as f:
             f.write(self.as_dfile())
         return f_in
