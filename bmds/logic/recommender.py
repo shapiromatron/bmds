@@ -23,8 +23,7 @@ class Recommender(object):
         self.rules = self._get_rule_defaults(**rule_args)
 
         if overrides:
-            # TODO: implement
-            pass
+            raise NotImplementedError('Overrides not implemented (yet).')
 
     @classmethod
     def _get_rule_defaults(cls, continuous=False, cancer=False):
@@ -117,8 +116,6 @@ class Recommender(object):
         ]
 
     def recommend(self, dataset, models):
-        # TODO - test
-
         # apply rules to each model
         for model in models:
 
@@ -184,7 +181,6 @@ class Recommender(object):
 
     def _get_min_model(self, models, fld_name):
         """Return model with minimum value for specified field."""
-        # TODO - get most parsimonious model if multiple w/ same
         min_ = float('inf')
         idx = -1
 

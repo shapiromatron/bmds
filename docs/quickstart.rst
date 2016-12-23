@@ -35,7 +35,6 @@ An example continuous summary dataset:
     # save results to an Excel file
     session.to_excel('~/Desktop/results.xlsx')
 
-
 To use a dichotomous dataset, only a few things change:
 
 .. code-block:: python

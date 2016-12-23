@@ -238,7 +238,6 @@ class BMDModel(object):
         )
 
     def _to_df(self, d, idx, show_null):
-        # TODO - export dataset and residuals as vectors
 
         def _nullify(show_null, value):
             return constants.NULL if show_null else value
