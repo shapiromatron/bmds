@@ -279,7 +279,7 @@ class Exponential_M3_17(Exponential_M2_17):
         a = self._get_param('a')
         b = self._get_param('b')
         d = self._get_param('d')
-        ys = a * np.exp(sign * b * np.power(xs, d))
+        ys = a * np.exp(sign * np.power(b * xs, d))
         return ys
 
 
@@ -336,7 +336,7 @@ class Exponential_M5_17(Exponential_M2_17):
         b = self._get_param('b')
         c = self._get_param('c')
         d = self._get_param('d')
-        ys = a * (c - (c - 1.) * np.exp(-1. * b * np.power(xs, d)))
+        ys = a * (c - (c - 1.) * np.exp(-1. * np.power(b * xs, d)))
         return ys
 
 

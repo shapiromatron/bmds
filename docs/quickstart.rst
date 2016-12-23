@@ -42,7 +42,7 @@ An example continuous summary dataset:
     # 93.7803
 
     # save dose-response plots
-    session.save_plots('~/Desktop', format='pdf')
+    session.save_plots('~/Desktop', format='png')
 
     # save results to an Excel file
     session.to_excel('~/Desktop/results.xlsx')
