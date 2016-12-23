@@ -2,7 +2,7 @@
 History
 =======
 
-v0.5.0 (NEXT)
+v0.5.0 (2016-12-23)
 -------------------
 
 * For multistage and multistage cancer, by default an order 1 polynomial model is also executed (previously started at order 2)
@@ -10,6 +10,7 @@ v0.5.0 (NEXT)
 * Export results as a pandas DataFrame, CSV, or Excel, in addition to JSON, and python dictionaries
 * Generate dose-response plots using matplotlib
 * Export dose-response plots
+* Improve documentation with better describing API and quickstart
 
 v0.4.0 (2016-12-14)
 -------------------
