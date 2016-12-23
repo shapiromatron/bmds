@@ -18,5 +18,7 @@
 
 # docs
 _build
+docs/_autosummary
 
+# testing notebooks
 notebooks
