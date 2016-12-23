@@ -2,6 +2,11 @@
 History
 =======
 
+v0.5.1 (2016-12-23)
+-------------------
+
+* hotfix - fix exponential models (they create additional temporary files, had to ensure that they're collected and removed.)
+
 v0.5.0 (2016-12-23)
 -------------------
 
