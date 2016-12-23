@@ -188,9 +188,9 @@ class Exponential(Continuous):
         outfile = super(Exponential, self).get_outfile(dfile)
         oo2 = outfile.replace('.out', '.002')
         if os.path.exists(outfile):
-            self.add_tempfile(outfile)
+            self.tempfiles.append(outfile)
         if os.path.exists(oo2):
-            self.add_tempfile(oo2)
+            self.tempfiles.append(oo2)
         path, fn = os.path.split(outfile)
         fn = self.output_prefix + fn
         return os.path.join(path, fn)
