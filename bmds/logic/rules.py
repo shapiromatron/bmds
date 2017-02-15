@@ -247,6 +247,9 @@ class CorrectVarianceModel(Rule):
     def apply_rule(self, dataset, output):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
         # 1 = constant variance => Var(i) = alpha*mean(i)
+        if 'parameters' not in output:
+            return self.return_pass()
+
         rho = output['parameters'].get('rho')
         constant_variance = 0 if rho else 1
 
