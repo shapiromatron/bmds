@@ -22,6 +22,7 @@ import sys
 
 from .session import BMDS
 from .models.base import BMDModel
+from .exceptions import RemoteBMDSExcecutionException
 
 __all__ = []
 
@@ -55,7 +56,7 @@ if platform.system() != 'Windows':
 
     def _get_requests_session():
         if host is None or user is None or pw is None:
-            raise EnvironmentError(NO_HOST_WARNING)
+            raise RemoteBMDSExcecutionException(NO_HOST_WARNING)
 
         global _request_session
         if _request_session is None:
@@ -67,7 +68,13 @@ if platform.system() != 'Windows':
                 'password': pw,
                 'csrfmiddlewaretoken': csrftoken,
             })
+
+            # ensure authentication was successful
+            if s.cookies.get('sessionid') is None:
+                raise RemoteBMDSExcecutionException('Authentication failed')
+
             _request_session = s
+
         return _request_session
 
     def _set_outputs(model, result):
