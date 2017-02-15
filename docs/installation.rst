@@ -13,7 +13,7 @@ Installing scientific python numpy_ and scipy_ can be tricky on Windows, and
 both are required for using the BMDS package. Here are two options, and recommended steps:
 
 1. Use Anaconda_.
-2. Use Python 3.5 and virtual environments. If you choose this method:
+2. Use Python 3.6 and virtual environments. If you choose this method:
     - Download the appropriate `numpy and scipy binaries`_
     - Create a new virtual environment
     - In the virtual environment, run the commands (with proper paths)::
