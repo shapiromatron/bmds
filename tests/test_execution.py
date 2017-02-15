@@ -70,7 +70,7 @@ def test_parameter_overrides(cdataset):
     assert model2.output['parameters']['beta_3']['estimate'] == 0.0
 
 
-def test_tiny_dataset():
+def test_tiny_datasets():
     # Observation # < parameters # for Hill model.
     # Make sure this doesn't break execution or recommendation.
     ds = bmds.ContinuousDataset(
@@ -81,6 +81,16 @@ def test_tiny_dataset():
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=ds)
     session.add_model(bmds.constants.M_Hill)
     session.add_model(bmds.constants.M_ExponentialM5)
+    session.execute()
+    session.recommend()
+    assert session.recommended_model_index is None
+
+    ds = bmds.DichotomousDataset(
+        doses=[0.0, 4.4, 46.0],
+        ns=[16, 16, 16],
+        incidences=[2, 5, 9])
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ds)
+    session.add_model(bmds.constants.M_DichotomousHill)
     session.execute()
     session.recommend()
     assert session.recommended_model_index is None
