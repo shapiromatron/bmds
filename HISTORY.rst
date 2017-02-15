@@ -2,6 +2,13 @@
 History
 =======
 
+v0.5.2 (2017-02-15)
+-------------------
+
+* added custom exceptions for BMDS package
+* explicitly check that BMDS remote-server authentication is successful
+* hotfix - fix error when running continuous models with 3 dose groups
+
 v0.5.1 (2016-12-23)
 -------------------
 
