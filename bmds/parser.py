@@ -261,10 +261,7 @@ class OutputParser(object):
         while len(outs[i]) > 0:
             vals = outs[i].split()
             for j in rng:  # skip dose, picked up w/ estimated
-                try:
-                    self.output[tbl_names[j]].append(float(vals[j]))
-                except:
-                    self.output[tbl_names[j]].apend(vals[j])
+                self.output[tbl_names[j]].append(try_float(vals[j]))
             i += 1
 
     def _lbl_pvalue(self, outs, i):
