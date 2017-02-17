@@ -11,6 +11,7 @@ Warning: Likelihood for fitted model larger than the Likelihood for model A3."""
 
 
 def test_bad_anova_parsing(bad_anova_dataset):
+    # check bad parsing of power
     with open('./tests/outfiles/bad_anova_power.out', 'r') as f:
         outfile = f.read()
     model = bmds.models.Power_218(bad_anova_dataset)
@@ -19,10 +20,9 @@ def test_bad_anova_parsing(bad_anova_dataset):
     actual = '\n'.join(warnings)
     assert expected_bad_anova_warnings == actual
 
-
-def test_bad_anova_parsing2(bad_anova_dataset):
+    # check separate issues with hill
     with open('./tests/outfiles/bad_anova_hill.out', 'r') as f:
         outfile = f.read()
     model = bmds.models.Hill_217(bad_anova_dataset)
     model.parse_results(outfile)
-    assert model.outfile['Chi2'] == '1.#QNAN'
+    assert model.output['Chi2'] == '1.#QNAN'
