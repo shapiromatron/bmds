@@ -54,3 +54,13 @@ def anova_dataset():
         means=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
         stdevs=stdevs,
     )
+
+
+@pytest.fixture
+def bad_anova_dataset():
+    return bmds.ContinuousDataset(
+        doses=[0.0, 0.2, 1.5, 10.0],
+        means=[0.0, 0.0, 0.0, 0.67],
+        ns=[6, 6, 6, 4],
+        stdevs=[0.0, 0.0, 0.0, 0.67],
+    )

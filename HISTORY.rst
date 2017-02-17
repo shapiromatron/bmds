@@ -2,6 +2,12 @@
 History
 =======
 
+v0.5.3 (NEXT)
+-------------------
+
+* handle edge-cases for ANOVA calculation failure
+
+
 v0.5.2 (2017-02-15)
 -------------------
 

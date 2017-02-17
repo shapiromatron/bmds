@@ -88,6 +88,9 @@ class AnovaTests(object):
 
     @staticmethod
     def output_3tests(tests):
+        if tests is None:
+            return 'ANOVA cannot be calculated for this dataset.'
+
         outputs = [
             '                     Tests of Interest    ',
             '   Test    -2*log(Likelihood Ratio)  Test df        p-value    ',

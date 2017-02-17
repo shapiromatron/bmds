@@ -247,12 +247,16 @@ class ContinuousDataset(Dataset):
 
     @property
     def anova(self):
+        # Either be a tuple of 3 Test objects, or None if anova failed
         if not hasattr(self, '_anova'):
-            num_params = 3  # assume linear model
-            (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                self.doses_used, self.ns, self.means, self.variances)
-            tests = AnovaTests.get_anova_c3_tests(
-                num_params, self.doses_used, A1, A2, A3, AR)
+            try:
+                num_params = 3  # assume linear model
+                (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
+                    self.doses_used, self.ns, self.means, self.variances)
+                tests = AnovaTests.get_anova_c3_tests(
+                    num_params, self.doses_used, A1, A2, A3, AR)
+            except ValueError:
+                tests = None
             self._anova = tests
         return self._anova
 
