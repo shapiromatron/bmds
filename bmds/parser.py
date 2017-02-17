@@ -6,6 +6,13 @@ EXPONENTIAL = 'E'
 CTYPES = [constants.CONTINUOUS, constants.CONTINUOUS_INDIVIDUAL, EXPONENTIAL]
 
 
+def try_float(v):
+    try:
+        return float(v)
+    except ValueError:
+        return v
+
+
 class OutputParser(object):
 
     # regex for finding numeric values
@@ -179,9 +186,12 @@ class OutputParser(object):
         warnings = (
             r'Warning: BMDL computation is at best imprecise for these data',
             r'THE MODEL HAS PROBABLY NOT CONVERGED!!!',
+            'THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!',
             r'BMR value is not in the range of the mean function',
             r'BMD = 100\*\(maximum dose\)',
             r'BMDL computation failed\.',
+            'Warning:  optimum may not have been found.  Bad completion code in Optimization routine.',  # noqa
+            'Warning: Likelihood for fitted model larger than the Likelihood for model A3.',  # noqa
         )
         self.output['warnings'] = []
         for warning in warnings:
@@ -279,8 +289,8 @@ class OutputParser(object):
                         self.output['p_value' + pvalue] = vals[4]
 
             if pvalue == '4':
-                self.output['Chi2'] = float(vals[2])
-                self.output['df'] = float(vals[3])
+                self.output['Chi2'] = try_float(vals[2])
+                self.output['df'] = try_float(vals[3])
             i += 1
 
     def _lbl_aic_cont_exp(self, outs, i):
