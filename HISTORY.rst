@@ -6,7 +6,7 @@ v0.5.3 (NEXT)
 -------------------
 
 * handle edge-cases for ANOVA calculation failure
-
+* fix 002 bmds temporary file cleanup
 
 v0.5.2 (2017-02-15)
 -------------------
