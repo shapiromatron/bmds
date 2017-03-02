@@ -2,7 +2,7 @@
 History
 =======
 
-v0.5.3 (NEXT)
+v0.5.3 (2017-03-02)
 -------------------
 
 * prevent errors when software is run with un-runnable dose-response datasets
