@@ -5,6 +5,7 @@ History
 v0.5.3 (NEXT)
 -------------------
 
+* prevent errors when software is run with un-runnable dose-response datasets
 * handle edge-cases for ANOVA calculation failure
 * fix 002 bmds temporary file cleanup
 

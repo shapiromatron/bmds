@@ -64,3 +64,22 @@ def bad_anova_dataset():
         ns=[6, 6, 6, 4],
         stdevs=[0.0, 0.0, 0.0, 0.67],
     )
+
+
+@pytest.fixture
+def bad_cdataset():
+    return bmds.ContinuousDataset(
+        doses=[0, 0.2, 1.5],
+        ns=[6, 6, 6],
+        means=[0.0, 0.0, 0.0],
+        stdevs=[0.0, 0.0, 0.0]
+    )
+
+
+@pytest.fixture
+def bad_ddataset():
+    return bmds.DichotomousDataset(
+        doses=[0, 5.0, 50.0, 150.0],
+        ns=[10, 10, 10, 10],
+        incidences=[0, 0, 0, 0]
+    )

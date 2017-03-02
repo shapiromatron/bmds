@@ -220,7 +220,10 @@ class ControlResidual(ShouldBeLessThan):
 
     def get_value(self, dataset, output):
         if output.get('fit_residuals') and len(output['fit_residuals']) > 0:
-            return abs(output['fit_residuals'][0])
+            try:
+                return abs(output['fit_residuals'][0])
+            except TypeError:
+                return float('nan')
 
 
 class ControlStdevResiduals(ShouldBeLessThan):
@@ -231,8 +234,11 @@ class ControlStdevResiduals(ShouldBeLessThan):
         if output.get('fit_est_stdev') and output.get('fit_stdev') and \
                 len(output['fit_est_stdev']) > 0 and len(output['fit_stdev']) > 0:
 
-            modeled = abs(output['fit_est_stdev'][0])
-            actual = abs(output['fit_stdev'][0])
+            try:
+                modeled = abs(output['fit_est_stdev'][0])
+                actual = abs(output['fit_stdev'][0])
+            except TypeError:
+                return float('nan')
 
             if self._is_valid_number(modeled) and \
                     self._is_valid_number(actual) and \

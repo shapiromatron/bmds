@@ -133,3 +133,20 @@ def test_dichotomous_restrictions(ddataset):
 
     assert 'Power parameter is restricted as power >= 1' in weibull1.outfile
     assert 'Power parameter is not restricted' in weibull2.outfile
+
+
+def test_bad_datasets(bad_cdataset, bad_ddataset):
+    # ensure library doesn't fail with a terrible dataset that should never
+    # be executed in the first place (which causes BMDS to throw NaN)
+
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=bad_cdataset)
+    session.add_default_models()
+    session.execute()
+    session.recommend()
+    assert session.recommended_model_index is None
+
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
+    session.add_default_models()
+    session.execute()
+    session.recommend()
+    assert session.recommended_model_index is None
