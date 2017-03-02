@@ -1,0 +1,167 @@
+
+
+ ==================================================================== 
+   	  Hill Model. (Version: 2.17;  Date: 01/28/2013) 
+  	  Input Data File: C:\Windows\TEMP\bmds-dfile-yp41oto2.(d)  
+  	  Gnuplot Plotting File:  C:\Windows\TEMP\bmds-dfile-yp41oto2.plt
+ 							Thu Feb 16 23:50:27 2017
+ ==================================================================== 
+
+ BMDS_Model_Run 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+   The form of the response function is: 
+
+   Y[dose] = intercept + v*dose^n/(k^n + dose^n)
+
+
+   Dependent variable = Response
+   Independent variable = Dose
+   Power parameter restricted to be greater than 1
+   The variance is to be modeled as Var(i) = exp(lalpha  + rho * ln(mean(i)))
+
+   Total number of dose groups = 4
+   Total number of records with missing values = 0
+   Maximum number of iterations = 500
+   Relative Function Convergence has been set to: 1e-008
+   Parameter Convergence has been set to: 1e-008
+
+
+
+                  Default Initial Parameter Values  
+                         lalpha =     -2.59271
+                            rho =            0
+                      intercept =            0
+                              v =         0.67
+                              n =           18
+                              k =        14.25
+
+
+           Asymptotic Correlation Matrix of Parameter Estimates
+
+                 lalpha          rho    intercept            v            n            k
+
+    lalpha      NA             NA             NA             NA             NA             NA       
+
+       rho      NA             NA             NA             NA             NA             NA       
+
+ intercept      NA             NA                   1      NA             -0.0073      -0.0021
+
+         v      NA             NA             NA             NA             NA             NA       
+
+         n      NA             NA             -0.0073      NA                   1         -1.1
+
+         k      NA             NA             -0.0021      NA                -1.1            1
+
+
+
+                                 Parameter Estimates
+
+                                                         95.0% Wald Confidence Interval
+       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit
+         lalpha         -4.26703               NA                  NA                  NA
+            rho         -1.05036               NA                  NA                  NA
+      intercept         0.121819               NA                  NA                  NA
+              v          4.95849               NA                  NA                  NA
+              n          9.45807               NA                  NA                  NA
+              k          92.6659               NA                  NA                  NA
+
+At least some variance estimates are negative.
+THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!
+Try again from another starting point.
+
+
+
+     Table of Data and Estimated Values of Interest
+
+ Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res.
+------     ---   --------     --------   -----------  -----------   ----------
+
+    0     6          0        0.122            0        0.358         -0.834
+  0.2     6          0        0.122            0        0.358         -0.834
+  1.5     6          0        0.122            0        0.358         -0.834
+   10     4       0.67        0.122         0.67        0.358           3.06
+ 
+Degrees of freedom for Test A3 vs fitted <= 0
+
+
+
+ Model Descriptions for likelihoods calculated
+
+
+ Model A1:        Yij = Mu(i) + e(ij)
+           Var{e(ij)} = Sigma^2
+
+ Model A2:        Yij = Mu(i) + e(ij)
+           Var{e(ij)} = Sigma(i)^2
+
+ Model A3:        Yij = Mu(i) + e(ij)
+           Var{e(ij)} = exp(lalpha + rho*ln(Mu(i)))
+     Model A3 uses any fixed variance parameters that
+     were specified by the user
+
+ Model  R:         Yi = Mu + e(i)
+            Var{e(i)} = Sigma^2
+
+
+                       Likelihoods of Interest
+
+            Model      Log(likelihood)   # Param's      AIC
+             A1           19.727238            5     -29.454477
+             A2            1.#INF00            8      -1.#INF00
+             A3            1.#QNAN0            6       1.#QNAN0
+         fitted           11.613650            6     -11.227299
+              R           11.613650            2     -19.227300
+
+
+                   Explanation of Tests  
+
+ Test 1:  Do responses and/or variances differ among Dose levels? 
+          (A2 vs. R)
+ Test 2:  Are Variances Homogeneous? (A1 vs A2)
+ Test 3:  Are variances adequately modeled? (A2 vs. A3)
+ Test 4:  Does the Model for the Mean Fit? (A3 vs. fitted)
+ (Note:  When rho=0 the results of Test 3 and Test 2 will be the same.)
+
+                     Tests of Interest    
+
+   Test    -2*log(Likelihood Ratio)  Test df        p-value    
+
+   Test 1               1.#INF          6          <.0001
+   Test 2               1.#INF          3          <.0001
+   Test 3              1.#QNAN          2          <.0001
+   Test 4              1.#QNAN          0              NA
+
+     The p-value for Test 1 is greater than .05.  There may not be a
+     difference between responses and/or variances among the dose levels.
+     Modeling the data with a dose/response curve may not be appropriate.
+     Furthermore, BMDL estimates from models that have an asymptote
+     parameter (Hill model, Exponential models 4 and 5) can be unstable
+     when a wide range of parameter values can give nearly identical
+     likelihoods.  One indicator of that problem is that the estimated
+     asymptotic response is far outside the range of the observed
+     responses.  The user may wish to consult a statistician if this
+     issue is seen or suspected.
+
+The p-value for Test 2 is greater than .1.  Consider running a 
+homogeneous model
+
+The p-value for Test 3 is greater than .1.  The modeled variance appears 
+ to be appropriate here
+
+NA - Degrees of freedom for Test 4 are less than or equal to 0.  The Chi-Square
+     test for fit is not valid
+ 
+
+        Benchmark Dose Computation
+
+Specified effect =             1
+
+Risk Type        =     Estimated standard deviations from the control mean 
+
+Confidence level =           0.95
+
+             BMD =        70.7361
+
+
+BMDL computation failed.

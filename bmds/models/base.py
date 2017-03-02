@@ -51,7 +51,7 @@ class BMDModel(object):
             dfile = self.write_dfile()
             RunProcess([exe, dfile], timeout=20).call()
             outfile = self.get_outfile(dfile)
-            o2 = outfile.replace('.(d)', '.002')
+            o2 = outfile.replace('.out', '.002')
             if os.path.exists(outfile):
                 self.output_created = True
                 self.tempfiles.append(outfile)

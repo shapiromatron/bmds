@@ -129,10 +129,15 @@ def test_is_increasing():
     assert ds.is_increasing is False
 
 
-def test_anova(anova_dataset):
+def test_anova(anova_dataset, bad_anova_dataset):
     # Check that anova generates expected output from original specifications.
     report = anova_dataset.get_anova_report()
     expected = '                     Tests of Interest    \n   Test    -2*log(Likelihood Ratio)  Test df        p-value    \n   Test 1              22.2699         12           0.0346\n   Test 2               5.5741          6           0.4725\n   Test 3               5.5741          6           0.4725'  # noqa
+    assert report == expected
+
+    # check bad anova dataset
+    report = bad_anova_dataset.get_anova_report()
+    expected = 'ANOVA cannot be calculated for this dataset.'
     assert report == expected
 
 

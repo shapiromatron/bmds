@@ -3,6 +3,14 @@ import bmds
 from .fixtures import *  # noqa
 
 
+def test_calculated_variance_value(anova_dataset, bad_anova_dataset):
+    model = bmds.models.Continuous(anova_dataset)
+    assert model.set_constant_variance_value() == 1
+
+    model = bmds.models.Continuous(bad_anova_dataset)
+    assert model.set_constant_variance_value() == 0
+
+
 def test_Polynomial_216(cdataset):
     model = bmds.models.Polynomial_216(cdataset)
     dfile = model.as_dfile()

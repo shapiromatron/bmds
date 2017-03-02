@@ -12,8 +12,8 @@ class Continuous(BMDModel):
     def set_constant_variance_value(self):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
         # 1 = constant variance => Var(i) = alpha*mean(i)
-        ptest2 = self.dataset.anova[2].TEST
-        return 0 if ptest2 <= 0.1 else 1
+        return 0 if (self.dataset.anova is None or
+                     self.dataset.anova[2].TEST <= 0.1) else 1
 
 
 class Polynomial_216(Continuous):
