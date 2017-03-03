@@ -51,14 +51,13 @@ class DichotomousDataset(Dataset):
 
     _BMDS_DATASET_TYPE = 1  # group data
 
-    def __init__(self, doses, ns, incidences, doses_dropped=0):
+    def __init__(self, doses, ns, incidences):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
-        self.doses_dropped = doses_dropped
-        self.num_doses = len(doses)
-        self.doses_used = self.num_doses - self.doses_dropped
-        self.remainings = [n - p for n, p in zip(ns, incidences)]
+        self.num_doses = len(doses)  # todo remove or prop?
+        self.doses_used = self.num_doses  # todo remove or prop?
+        self.remainings = [n - p for n, p in zip(ns, incidences)]  # todo remove or prop?
         self._validate()
 
     def _validate(self):
@@ -197,14 +196,13 @@ class ContinuousDataset(Dataset):
 
     _BMDS_DATASET_TYPE = 1  # group data
 
-    def __init__(self, doses, ns, means, stdevs, doses_dropped=0):
+    def __init__(self, doses, ns, means, stdevs):
         self.doses = doses
         self.ns = ns
         self.means = means
         self.stdevs = stdevs
-        self.doses_dropped = doses_dropped
-        self.num_doses = len(doses)
-        self.doses_used = self.num_doses - self.doses_dropped
+        self.num_doses = len(doses)  # todo remove or prop?
+        self.doses_used = self.num_doses  # todo remove or prop?
         self._validate()
 
     def _validate(self):
@@ -354,13 +352,12 @@ class ContinuousIndividualDataset(ContinuousDataset):
 
     _BMDS_DATASET_TYPE = 0  # individual data
 
-    def __init__(self, doses, responses, doses_dropped=0):
+    def __init__(self, doses, responses):
         self.individual_doses = doses
         self.responses = responses
-        self.doses_dropped = doses_dropped
         self.set_summary_data()
-        self.num_doses = len(self.doses)
-        self.doses_used = self.num_doses - self.doses_dropped
+        self.num_doses = len(self.doses)  # todo remove or prop?
+        self.doses_used = self.num_doses  # todo remove or prop?
         self._validate()
 
     def _validate(self):

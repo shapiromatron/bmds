@@ -30,25 +30,6 @@ def test_dataset_validation():
         bmds.ContinuousIndividualDataset(
             doses=dummy4, responses=dummy3)
 
-        # 2 remaining after dropping-doses
-        bmds.DichotomousDataset(
-            doses=dummy3, ns=dummy3, incidences=dummy3,
-            doses_dropped=1)
-        bmds.ContinuousDataset(
-            doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3,
-            doses_dropped=1)
-        bmds.ContinuousIndividualDataset(
-            doses=dummy3, responses=dummy3,
-            doses_dropped=1)
-
-        # duplicate dose-groups
-        bmds.DichotomousDataset(
-            doses=dummy3_dups, ns=dummy3, incidences=dummy3,
-            doses_dropped=1)
-        bmds.ContinuousDataset(
-            doses=dummy3_dups, ns=dummy3, means=dummy3, stdevs=dummy3,
-            doses_dropped=1)
-
         # also duplicate, but less than 2 dose-groups
         bmds.ContinuousIndividualDataset(
             doses=dummy3_dups, responses=dummy3)
@@ -71,28 +52,25 @@ def test_ci_summary_stats(cidataset):
 
 
 def test_dfile_outputs():
-    dummy4 = [1, 2, 3, 4]
+    dummy3 = [1, 2, 3]
 
     # check dichotomous
     ds = bmds.DichotomousDataset(
-        doses=dummy4, ns=[5, 5, 5, 5], incidences=[0, 1, 2, 3],
-        doses_dropped=1)
+        doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
     dfile = ds.as_dfile()
     expected = 'Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3'  # noqa
     assert dfile == expected
 
     # check continuous
     ds = bmds.ContinuousDataset(
-        doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4,
-        doses_dropped=1)
+        doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3)
     dfile = ds.as_dfile()
     expected = 'Dose NumAnimals Response Stdev\n1.000000 1 1.000000 1.000000\n2.000000 2 2.000000 2.000000\n3.000000 3 3.000000 3.000000'  # noqa
     assert dfile == expected
 
     # check continuous individual
     ds = bmds.ContinuousIndividualDataset(
-        doses=dummy4, responses=dummy4,
-        doses_dropped=1)
+        doses=dummy3, responses=dummy3)
     dfile = ds.as_dfile()
     expected = 'Dose Response\n1.000000 1.000000\n2.000000 2.000000\n3.000000 3.000000'  # noqa
     assert dfile == expected
@@ -101,20 +79,22 @@ def test_dfile_outputs():
 def test_doses_used():
     ds5 = [1, 2, 3, 4, 5]
     ds5dups = [1, 2, 3, 4, 5] * 2
+    ds3 = [1, 2, 3]
+    ds3dups = [1, 2, 3] * 2
 
     ds = bmds.DichotomousDataset(ds5, ds5, ds5)
     assert ds.doses_used == 5
-    ds = bmds.DichotomousDataset(ds5, ds5, ds5, doses_dropped=2)
+    ds = bmds.DichotomousDataset(ds3, ds3, ds3)
     assert ds.doses_used == 3
 
     ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5)
     assert ds.doses_used == 5
-    ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5, doses_dropped=2)
+    ds = bmds.ContinuousDataset(ds3, ds3, ds3, ds3)
     assert ds.doses_used == 3
 
     ds = bmds.ContinuousIndividualDataset(ds5dups, ds5dups)
     assert ds.doses_used == 5
-    ds = bmds.ContinuousIndividualDataset(ds5dups, ds5dups, doses_dropped=2)
+    ds = bmds.ContinuousIndividualDataset(ds3dups, ds3dups)
     assert ds.doses_used == 3
 
 
