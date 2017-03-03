@@ -93,7 +93,7 @@ class BMDModel(object):
 
     @property
     def can_be_executed(self):
-        return self.dataset.num_dose_groups >= self.minimum_DG
+        return self.dataset.num_dose_groups >= self.minimum_dose_groups
 
     @property
     def has_successfully_executed(self):

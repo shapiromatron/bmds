@@ -17,7 +17,7 @@ class Continuous(BMDModel):
 
 
 class Polynomial_216(Continuous):
-    minimum_DG = 2
+    minimum_dose_groups = 2
     model_name = 'Polynomial'
     bmds_version_dir = 'BMDS231'
     exe = 'poly'
@@ -109,7 +109,7 @@ class Polynomial_220(Polynomial_217):
 
 
 class Linear_216(Polynomial_216):
-    minimum_DG = 2
+    minimum_dose_groups = 2
     model_name = 'Linear'
     bmds_version_dir = 'BMDS231'
     exe = 'poly'
@@ -216,7 +216,7 @@ class Exponential(Continuous):
 
 
 class Exponential_M2_17(Exponential):
-    minimum_DG = 2
+    minimum_dose_groups = 2
     model_name = 'Exponential-M2'
     bmds_version_dir = 'BMDS231'
     exe = 'exponential'
@@ -269,7 +269,7 @@ class Exponential_M2_110(Exponential_M2_19):
 
 
 class Exponential_M3_17(Exponential_M2_17):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'Exponential-M3'
     exp_run_settings = ' 0 0100 22 0 1'
     output_prefix = 'M3'
@@ -298,7 +298,7 @@ class Exponential_M3_110(Exponential_M3_19):
 
 
 class Exponential_M4_17(Exponential_M2_17):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'Exponential-M4'
     exp_run_settings = ' 0 0010 33 0 1'
     output_prefix = 'M4'
@@ -326,7 +326,7 @@ class Exponential_M4_110(Exponential_M4_19):
 
 
 class Exponential_M5_17(Exponential_M2_17):
-    minimum_DG = 4
+    minimum_dose_groups = 4
     model_name = 'Exponential-M5'
     exp_run_settings = ' 0 0001 44 0 1'
     output_prefix = 'M5'
@@ -355,7 +355,7 @@ class Exponential_M5_110(Exponential_M5_19):
 
 
 class Power_216(Continuous):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'Power'
     bmds_version_dir = 'BMDS231'
     exe = 'power'
@@ -423,7 +423,7 @@ class Power_218(Power_217):
 
 
 class Hill_216(Continuous):
-    minimum_DG = 4
+    minimum_dose_groups = 4
     model_name = 'Hill'
     bmds_version_dir = 'BMDS231'
     exe = 'hill'

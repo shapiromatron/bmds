@@ -17,7 +17,7 @@ class DichotomousCancer(Dichotomous):
 
 
 class Multistage_32(Dichotomous):
-    minimum_DG = 2
+    minimum_dose_groups = 2
     model_name = 'Multistage'
     bmds_version_dir = 'BMDS231'
     exe = 'multistage'
@@ -104,7 +104,7 @@ class Multistage_34(Multistage_33):
 
 
 class MultistageCancer_19(DichotomousCancer):
-    minimum_DG = 2
+    minimum_dose_groups = 2
     model_name = 'Multistage-Cancer'
     bmds_version_dir = 'BMDS231'
     exe = 'cancer'
@@ -185,7 +185,7 @@ class MultistageCancer_110(MultistageCancer_19):
 
 
 class Weibull_215(Dichotomous):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'Weibull'
     bmds_version_dir = 'BMDS231'
     exe = 'weibull'
@@ -245,7 +245,7 @@ class Weibull_216(Weibull_215):
 
 
 class LogProbit_32(Dichotomous):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'LogProbit'
     bmds_version_dir = 'BMDS231'
     exe = 'probit'
@@ -304,7 +304,7 @@ class LogProbit_33(LogProbit_32):
 
 
 class Probit_32(Dichotomous):
-    minimum_DG = 2
+    minimum_dose_groups = 3
     model_name = 'Probit'
     bmds_version_dir = 'BMDS231'
     exe = 'probit'
@@ -362,7 +362,7 @@ class Probit_33(Probit_32):
 
 
 class Gamma_215(Dichotomous):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'Gamma'
     bmds_version_dir = 'BMDS231'
     exe = 'gamma'
@@ -420,7 +420,7 @@ class Gamma_216(Gamma_215):
 
 
 class LogLogistic_213(Dichotomous):
-    minimum_DG = 3
+    minimum_dose_groups = 3
     model_name = 'LogLogistic'
     bmds_version_dir = 'BMDS231'
     exe = 'logist'
@@ -480,7 +480,7 @@ class LogLogistic_214(LogLogistic_213):
 
 
 class Logistic_213(Dichotomous):
-    minimum_DG = 2
+    minimum_dose_groups = 3
     model_name = 'Logistic'
     bmds_version_dir = 'BMDS231'
     exe = 'logist'
@@ -538,7 +538,7 @@ class Logistic_214(Logistic_213):
 
 
 class DichotomousHill_13(Dichotomous):
-    minimum_DG = 4
+    minimum_dose_groups = 4
     model_name = 'Dichotomous-Hill'
     bmds_version_dir = 'BMDS260'
     exe = 'DichoHill'
