@@ -16,16 +16,19 @@ class Dataset(object):
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
-        raise NotImplemented('Abstract method; Requires implementation')
+        raise NotImplemented('Abstract method; requires implementation')
 
     def as_dfile(self):
-        raise NotImplemented('Abstract method; Requires implementation')
+        raise NotImplemented('Abstract method; requires implementation')
 
     def to_dict(self):
-        raise NotImplemented('Abstract method; Requires implementation')
+        raise NotImplemented('Abstract method; requires implementation')
 
     def plot(self):
-        raise NotImplemented('Abstract method; Requires implementation')
+        raise NotImplemented('Abstract method; requires implementation')
+
+    def drop_dose(self):
+        raise NotImplemented('Abstract method; requires implementation')
 
     @property
     def num_dose_groups(self):
@@ -55,9 +58,16 @@ class DichotomousDataset(Dataset):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
-        self.num_doses = len(doses)  # todo remove or prop?
-        self.doses_used = self.num_doses  # todo remove or prop?
-        self.remainings = [n - p for n, p in zip(ns, incidences)]  # todo remove or prop?
+        self.remainings = [n - p for n, p in zip(ns, incidences)]
+        self._sort_by_dose_group()
+        self._validate()
+
+    def _sort_by_dose_group(self):
+        # use mergesort since it's a stable-sorting algorithm in numpy
+        indexes = np.array(self.doses).argsort(kind='mergesort')
+        for fld in ('doses', 'ns', 'incidences', 'remainings'):
+            arr = getattr(self, fld)
+            setattr(self, fld, np.array(arr)[indexes].tolist())
         self._validate()
 
     def _validate(self):
@@ -70,8 +80,17 @@ class DichotomousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError('Doses are not unique')
 
-        if self.doses_used < 3:
-            raise ValueError('Must have 3 or more doses after dropping doses')
+        if self.num_dose_groups < 3:
+            raise ValueError('Must have 3 or more dose groups after dropping doses')
+
+    def drop_dose(self):
+        """
+        Drop the maximum dose and related response values.
+        """
+        for fld in ('doses', 'ns', 'incidences', 'remainings'):
+            arr = getattr(self, fld)[:-1]
+            setattr(self, fld, arr)
+        self._validate()
 
     def as_dfile(self):
         """
@@ -88,7 +107,7 @@ class DichotomousDataset(Dataset):
         """
         rows = ['Dose Incidence NEGATIVE_RESPONSE']
         for i, v in enumerate(self.doses):
-            if i >= self.doses_used:
+            if i >= self.num_dose_groups:
                 continue
             rows.append('%f %d %d' % (
                 self.doses[i], self.incidences[i], self.remainings[i]))
@@ -99,7 +118,7 @@ class DichotomousDataset(Dataset):
         """
         Return the length of the vector of doses-used.
         """
-        return self.doses_used
+        return self.num_dose_groups
 
     def to_dict(self):
         """
@@ -201,8 +220,15 @@ class ContinuousDataset(Dataset):
         self.ns = ns
         self.means = means
         self.stdevs = stdevs
-        self.num_doses = len(doses)  # todo remove or prop?
-        self.doses_used = self.num_doses  # todo remove or prop?
+        self._sort_by_dose_group()
+        self._validate()
+
+    def _sort_by_dose_group(self):
+        # use mergesort since it's a stable-sorting algorithm in numpy
+        indexes = np.array(self.doses).argsort(kind='mergesort')
+        for fld in ('doses', 'ns', 'means', 'stdevs'):
+            arr = getattr(self, fld)
+            setattr(self, fld, np.array(arr)[indexes].tolist())
         self._validate()
 
     def _validate(self):
@@ -215,8 +241,8 @@ class ContinuousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError('Doses are not unique')
 
-        if self.doses_used < 3:
-            raise ValueError('Must have 3 or more doses after dropping doses')
+        if self.num_dose_groups < 3:
+            raise ValueError('Must have 3 or more dose groups after dropping doses')
 
     @property
     def is_increasing(self):
@@ -228,13 +254,22 @@ class ContinuousDataset(Dataset):
                 inc -= 1
         return inc >= 0
 
+    def drop_dose(self):
+        """
+        Drop the maximum dose and related response values.
+        """
+        for fld in ('doses', 'ns', 'means', 'stdevs'):
+            arr = getattr(self, fld)[:-1]
+            setattr(self, fld, arr)
+        self._validate()
+
     def as_dfile(self):
         """
         Return the dataset representation in BMDS .(d) file.
         """
         rows = ['Dose NumAnimals Response Stdev']
         for i, v in enumerate(self.doses):
-            if i >= self.doses_used:
+            if i >= self.num_dose_groups:
                 continue
             rows.append('%f %d %f %f' % (
                 self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
@@ -254,9 +289,9 @@ class ContinuousDataset(Dataset):
             try:
                 num_params = 3  # assume linear model
                 (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                    self.doses_used, self.ns, self.means, self.variances)
+                    self.num_dose_groups, self.ns, self.means, self.variances)
                 tests = AnovaTests.get_anova_c3_tests(
-                    num_params, self.doses_used, A1, A2, A3, AR)
+                    num_params, self.num_dose_groups, A1, A2, A3, AR)
             except ValueError:
                 tests = None
             self._anova = tests
@@ -264,7 +299,7 @@ class ContinuousDataset(Dataset):
 
     @property
     def dataset_length(self):
-        return self.doses_used
+        return self.num_dose_groups
 
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova)
@@ -355,10 +390,16 @@ class ContinuousIndividualDataset(ContinuousDataset):
     def __init__(self, doses, responses):
         self.individual_doses = doses
         self.responses = responses
+        self._sort_by_dose_group()
         self.set_summary_data()
-        self.num_doses = len(self.doses)  # todo remove or prop?
-        self.doses_used = self.num_doses  # todo remove or prop?
         self._validate()
+
+    def _sort_by_dose_group(self):
+        # use mergesort since it's a stable-sorting algorithm in numpy
+        indexes = np.array(self.individual_doses).argsort(kind='mergesort')
+        for fld in ('individual_doses', 'responses'):
+            arr = getattr(self, fld)
+            setattr(self, fld, np.array(arr)[indexes].tolist())
 
     def _validate(self):
         length = len(self.individual_doses)
@@ -367,7 +408,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
                 [self.individual_doses, self.responses]):
             raise ValueError('All input lists must be same length')
 
-        if self.doses_used < 3:
+        if self.num_dose_groups < 3:
             raise ValueError('Must have 3 or more doses after dropping doses')
 
     def set_summary_data(self):
@@ -386,6 +427,18 @@ class ContinuousIndividualDataset(ContinuousDataset):
         self.ns, self.means, self.stdevs = zip(*vals)
         self.doses = doses
 
+    def drop_dose(self):
+        """
+        Drop the maximum dose and related response values.
+        """
+        doses = np.array(self.individual_doses)
+        responses = np.array(self.responses)
+        mask = (doses != doses.max())
+        self.individual_doses = doses[mask].tolist()
+        self.responses = responses[mask].tolist()
+        self.set_summary_data()
+        self._validate()
+
     def as_dfile(self):
         """
         Return the dataset representation in BMDS .(d) file.
@@ -393,7 +446,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         rows = ['Dose Response']
         for dose, response in zip(self.individual_doses, self.responses):
             dose_idx = self.doses.index(dose)
-            if dose_idx >= self.doses_used:
+            if dose_idx >= self.num_dose_groups:
                 continue
             rows.append('%f %f' % (dose, response))
         return '\n'.join(rows)

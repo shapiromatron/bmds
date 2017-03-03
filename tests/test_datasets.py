@@ -21,10 +21,10 @@ def test_dataset_validation():
         doses=dummy3, responses=dummy3)
 
     # these should raise errors
-    with pytest.raises(ValueError):
+    with pytest.raises((IndexError, ValueError)):
         # different sized lists
         bmds.DichotomousDataset(
-            doses=dummy4, ns=dummy3, incidences=dummy3)
+            doses=dummy3, ns=dummy3, incidences=dummy3)
         bmds.ContinuousDataset(
             doses=dummy4, ns=dummy3, means=dummy3, stdevs=dummy3)
         bmds.ContinuousIndividualDataset(
@@ -76,28 +76,6 @@ def test_dfile_outputs():
     assert dfile == expected
 
 
-def test_doses_used():
-    ds5 = [1, 2, 3, 4, 5]
-    ds5dups = [1, 2, 3, 4, 5] * 2
-    ds3 = [1, 2, 3]
-    ds3dups = [1, 2, 3] * 2
-
-    ds = bmds.DichotomousDataset(ds5, ds5, ds5)
-    assert ds.doses_used == 5
-    ds = bmds.DichotomousDataset(ds3, ds3, ds3)
-    assert ds.doses_used == 3
-
-    ds = bmds.ContinuousDataset(ds5, ds5, ds5, ds5)
-    assert ds.doses_used == 5
-    ds = bmds.ContinuousDataset(ds3, ds3, ds3, ds3)
-    assert ds.doses_used == 3
-
-    ds = bmds.ContinuousIndividualDataset(ds5dups, ds5dups)
-    assert ds.doses_used == 5
-    ds = bmds.ContinuousIndividualDataset(ds3dups, ds3dups)
-    assert ds.doses_used == 3
-
-
 def test_is_increasing():
     dummy4 = [1, 2, 3, 4]
 
@@ -107,6 +85,43 @@ def test_is_increasing():
     rev = list(reversed(dummy4))
     ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=rev, stdevs=dummy4)
     assert ds.is_increasing is False
+
+
+def test_dose_drops(cidataset):
+
+    cdataset = bmds.ContinuousDataset(
+        doses=list(reversed([0, 10, 50, 150, 400])),
+        ns=list(reversed([111, 142, 143, 93, 42])),
+        means=list(reversed([2.112, 2.095, 1.956, 1.587, 1.254])),
+        stdevs=list(reversed([0.235, 0.209, 0.231, 0.263, 0.159])))
+
+    assert cdataset.as_dfile() == 'Dose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
+    cdataset.drop_dose()
+    assert cdataset.as_dfile() == 'Dose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000'  # noqa
+    cdataset.drop_dose()
+    assert cdataset.as_dfile() == 'Dose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000'  # noqa
+    with pytest.raises(ValueError):
+        cdataset.drop_dose()
+
+    ddataset = bmds.DichotomousDataset(
+        doses=list(reversed([0, 1.96, 5.69, 29.75])),
+        ns=list(reversed([75, 49, 50, 49])),
+        incidences=list(reversed([5, 1, 3, 14])))
+    assert ddataset.as_dfile() == 'Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47\n29.750000 14 35'  # noqa
+    ddataset.drop_dose()
+    assert ddataset.as_dfile() == 'Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47'  # noqa
+    with pytest.raises(ValueError):
+        ddataset.drop_dose()
+
+    assert cidataset.as_dfile() == 'Dose Response\n0.000000 8.107900\n0.000000 9.306300\n0.000000 9.743100\n0.000000 9.781400\n0.000000 10.051700\n0.000000 10.613200\n0.000000 10.750900\n0.000000 11.056700\n0.100000 9.155600\n0.100000 9.682100\n0.100000 9.825600\n0.100000 10.209500\n0.100000 10.222200\n0.100000 12.038200\n1.000000 9.566100\n1.000000 9.705900\n1.000000 9.990500\n1.000000 10.271600\n1.000000 10.471000\n1.000000 11.060200\n10.000000 8.851400\n10.000000 10.010700\n10.000000 10.085400\n10.000000 10.568300\n10.000000 11.139400\n10.000000 11.487500\n100.000000 9.542700\n100.000000 9.721100\n100.000000 9.826700\n100.000000 10.023100\n100.000000 10.183300\n100.000000 10.868500\n300.000000 10.368000\n300.000000 10.517600\n300.000000 11.316800\n300.000000 12.002000\n300.000000 12.118600\n300.000000 12.636800\n500.000000 9.957200\n500.000000 10.134700\n500.000000 10.774300\n500.000000 11.057100\n500.000000 11.156400\n500.000000 12.036800'  # noqa
+    cidataset.drop_dose()
+    assert cidataset.as_dfile() == 'Dose Response\n0.000000 8.107900\n0.000000 9.306300\n0.000000 9.743100\n0.000000 9.781400\n0.000000 10.051700\n0.000000 10.613200\n0.000000 10.750900\n0.000000 11.056700\n0.100000 9.155600\n0.100000 9.682100\n0.100000 9.825600\n0.100000 10.209500\n0.100000 10.222200\n0.100000 12.038200\n1.000000 9.566100\n1.000000 9.705900\n1.000000 9.990500\n1.000000 10.271600\n1.000000 10.471000\n1.000000 11.060200\n10.000000 8.851400\n10.000000 10.010700\n10.000000 10.085400\n10.000000 10.568300\n10.000000 11.139400\n10.000000 11.487500\n100.000000 9.542700\n100.000000 9.721100\n100.000000 9.826700\n100.000000 10.023100\n100.000000 10.183300\n100.000000 10.868500\n300.000000 10.368000\n300.000000 10.517600\n300.000000 11.316800\n300.000000 12.002000\n300.000000 12.118600\n300.000000 12.636800'  # noqa
+    cidataset.drop_dose()
+    assert cidataset.as_dfile() == 'Dose Response\n0.000000 8.107900\n0.000000 9.306300\n0.000000 9.743100\n0.000000 9.781400\n0.000000 10.051700\n0.000000 10.613200\n0.000000 10.750900\n0.000000 11.056700\n0.100000 9.155600\n0.100000 9.682100\n0.100000 9.825600\n0.100000 10.209500\n0.100000 10.222200\n0.100000 12.038200\n1.000000 9.566100\n1.000000 9.705900\n1.000000 9.990500\n1.000000 10.271600\n1.000000 10.471000\n1.000000 11.060200\n10.000000 8.851400\n10.000000 10.010700\n10.000000 10.085400\n10.000000 10.568300\n10.000000 11.139400\n10.000000 11.487500\n100.000000 9.542700\n100.000000 9.721100\n100.000000 9.826700\n100.000000 10.023100\n100.000000 10.183300\n100.000000 10.868500'  # noqa
+    cidataset.drop_dose()
+    cidataset.drop_dose()
+    with pytest.raises(ValueError):
+        cidataset.drop_dose()
 
 
 def test_anova(anova_dataset, bad_anova_dataset):
