@@ -27,6 +27,10 @@ class Dataset(object):
     def plot(self):
         raise NotImplemented('Abstract method; Requires implementation')
 
+    @property
+    def num_dose_groups(self):
+        return len(set(self.doses))
+
 
 class DichotomousDataset(Dataset):
     """

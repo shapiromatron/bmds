@@ -2,6 +2,10 @@
 History
 =======
 
+v0.5.4 (NEXT)
+-------------------
+* don't attempt running models when there are too few dose-groups
+
 v0.5.3 (2017-03-02)
 -------------------
 
