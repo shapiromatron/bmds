@@ -46,6 +46,12 @@ class BMDModel(object):
         """
         Execute the BMDS model and parse outputs if successful.
         """
+
+        # exit early if execution is not possible
+        if not self.can_be_executed:
+            self.output_created = False
+            return
+
         try:
             exe = self.get_exe_path()
             dfile = self.write_dfile()
@@ -84,6 +90,10 @@ class BMDModel(object):
             ROOT,
             cls.bmds_version_dir,
             cls.exe + '.exe'))
+
+    @property
+    def can_be_executed(self):
+        return self.dataset.num_dose_groups >= self.minimum_dose_groups
 
     @property
     def has_successfully_executed(self):

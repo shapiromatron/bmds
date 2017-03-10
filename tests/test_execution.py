@@ -135,6 +135,19 @@ def test_dichotomous_restrictions(ddataset):
     assert 'Power parameter is not restricted' in weibull2.outfile
 
 
+def test_can_be_executed(bad_cdataset):
+    # ensure exit-early function properly detects which models can and
+    # cannot be executed, based on dataset size.
+
+    assert bad_cdataset.num_dose_groups == 3
+
+    model = bmds.models.Power_217(bad_cdataset)
+    assert model.can_be_executed is True
+
+    model = bmds.models.Exponential_M5_19(bad_cdataset)
+    assert model.can_be_executed is False
+
+
 def test_bad_datasets(bad_cdataset, bad_ddataset):
     # ensure library doesn't fail with a terrible dataset that should never
     # be executed in the first place (which causes BMDS to throw NaN)

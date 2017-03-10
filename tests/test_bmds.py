@@ -29,7 +29,7 @@ def test_default_model_additions(cdataset, ddataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
     assert len(session.models) == 10
-    assert num_polys(session) == min(cdataset.num_doses, 8) - 2
+    assert num_polys(session) == min(cdataset.num_dose_groups, 8) - 2
 
     for i in range(3, 9):
         array = range(i)
@@ -37,4 +37,4 @@ def test_default_model_additions(cdataset, ddataset):
         ds = bmds.ContinuousDataset(doses=array, ns=array, means=array, stdevs=array)
         session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=ds)
         session.add_default_models()
-        assert num_polys(session) == min(ds.num_doses, 8) - 2
+        assert num_polys(session) == min(ds.num_dose_groups, 8) - 2

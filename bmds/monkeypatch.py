@@ -84,25 +84,37 @@ if platform.system() != 'Windows':
 
     def execute_model(self):
         # execute single model
-        session = _get_requests_session()
-        url = '{}/dfile/'.format(host)
-        payload = _get_payload([self])
-        resp = session.post(url, data=payload)
+        if self.can_be_executed:
+            session = _get_requests_session()
+            url = '{}/dfile/'.format(host)
+            payload = _get_payload([self])
+            resp = session.post(url, data=payload)
+            result = resp.json()[0]
+        else:
+            result = {'output_created': False}
 
-        # parse outputs
-        result = resp.json()[0]
         _set_outputs(self, result)
 
     def execute_session(self):
         # submit data
+        executable_models = []
+        for model in self.models:
+            if model.can_be_executed:
+                executable_models.append(model)
+            else:
+                _set_outputs(model, {'output_created': False})
+
+        if len(executable_models) == 0:
+            return
+
         session = _get_requests_session()
         url = '{}/dfile/'.format(host)
-        payload = _get_payload(self.models)
+        payload = _get_payload(executable_models)
         resp = session.post(url, data=payload)
 
         # parse results for each model
         jsoned = resp.json()
-        for model, result in zip(self.models, jsoned):
+        for model, result in zip(executable_models, jsoned):
             _set_outputs(model, result)
 
     # print startup error if host is None
