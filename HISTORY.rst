@@ -5,6 +5,7 @@ History
 v0.7.0 (NEXT)
 -------------------
 * add runtime details to output
+* hide model failure popup when bmds unexpectedly fails  (significant performance boost)
 
 v0.6.0 (2017-03-10)
 -------------------
