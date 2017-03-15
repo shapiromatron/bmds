@@ -10,11 +10,6 @@ class Dichotomous(BMDModel):
     dtype = constants.DICHOTOMOUS
     possible_bmr = ('Extra', 'Added')
 
-    @property
-    def can_be_executed(self):
-        return self.dataset.num_dose_groups >= self.minimum_dose_groups and \
-            self.dataset.slope() > 0.
-
 
 class DichotomousCancer(Dichotomous):
     dtype = constants.DICHOTOMOUS_CANCER

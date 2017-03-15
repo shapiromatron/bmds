@@ -137,7 +137,7 @@ def test_dichotomous_restrictions(ddataset):
     assert 'Power parameter is not restricted' in weibull2.outfile
 
 
-def test_can_be_executed(bad_cdataset, bad_ddataset):
+def test_can_be_executed(bad_cdataset):
     # ensure exit-early function properly detects which models can and
     # cannot be executed, based on dataset size.
 
@@ -147,9 +147,6 @@ def test_can_be_executed(bad_cdataset, bad_ddataset):
     assert model.can_be_executed is True
 
     model = bmds.models.Exponential_M5_19(bad_cdataset)
-    assert model.can_be_executed is False
-
-    model = bmds.models.Probit_33(bad_ddataset)
     assert model.can_be_executed is False
 
 
