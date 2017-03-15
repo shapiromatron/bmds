@@ -113,6 +113,12 @@ class DichotomousDataset(Dataset):
                 self.doses[i], self.incidences[i], self.remainings[i]))
         return '\n'.join(rows)
 
+    def slope(self):
+        response = np.array(self.incidences, dtype=np.float64) /\
+            np.array(self.ns, dtype=np.float64)
+        regress = stats.linregress(self.doses, response)
+        return float(regress.slope)
+
     @property
     def dataset_length(self):
         """
