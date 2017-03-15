@@ -1,8 +1,22 @@
+import ctypes
 import logging
 from subprocess import Popen
 import os
+import sys
 import tempfile
 import threading
+    
+
+logger = logging.getLogger(__name__)
+
+
+# http://stackoverflow.com/questions/24130623/
+# Don't display the Windows GPF dialog if the invoked program dies.
+# Required for Weibull model with some datasets with negative slope
+SUBPROCESS_FLAGS = 0
+if sys.platform.startswith("win"):
+    SEM_NOGPFAULTERRORBOX = 0x0002 # From MSDN
+    ctypes.windll.kernel32.SetErrorMode(SEM_NOGPFAULTERRORBOX)
 
 
 class classproperty(property):
@@ -58,7 +72,6 @@ class RunProcess(threading.Thread):
         self.join(self.timeout)
 
         if self.is_alive():
-            logging.warning("Process stopped; timeout: %s" %
-                            ' '.join(self.cmd))
+            logger.warning('Process stopped; timeout: {}'.format(' '.join(self.cmd)))
             self.p.terminate()
             self.join()
