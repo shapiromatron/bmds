@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import numpy as np
 
@@ -41,15 +42,19 @@ class BMDModel(object):
         self.overrides = overrides or {}
         self.values = {}
         self.output_created = False
+        self.execution_start = None
+        self.execution_end = None
 
     def execute(self):
         """
         Execute the BMDS model and parse outputs if successful.
         """
+        self.execution_start = datetime.now()
 
         # exit early if execution is not possible
         if not self.can_be_executed:
             self.output_created = False
+            self.execution_end = datetime.now()
             return
 
         try:
@@ -58,6 +63,7 @@ class BMDModel(object):
             RunProcess([exe, dfile], timeout=20).call()
             outfile = self.get_outfile(dfile)
             o2 = outfile.replace('.out', '.002')
+            self.execution_end = datetime.now()
             if os.path.exists(outfile):
                 self.output_created = True
                 self.tempfiles.append(outfile)
@@ -70,6 +76,17 @@ class BMDModel(object):
             raise e
         finally:
             self.tempfiles.cleanup()
+
+    @property
+    def execution_duration(self):
+        """
+        Returns total BMDS execution time, in seconds.
+        """
+        duration = None
+        if self.execution_start and self.execution_end:
+            delta = self.execution_end - self.execution_start
+            duration = delta.total_seconds()
+        return duration
 
     @classmethod
     def get_default(cls):
@@ -116,6 +133,13 @@ class BMDModel(object):
         parser = OutputParser(outfile, self.dtype, self.model_name)
         self.outfile = outfile
         self.output = parser.output
+        execution_duration = self.execution_duration
+        if execution_duration is not None:
+            self.output.update(
+                execution_start_time=self.execution_start.isoformat(),
+                execution_end_time=self.execution_end.isoformat(),
+                execution_duration=execution_duration,
+            )
 
     def as_dfile(self):
         """

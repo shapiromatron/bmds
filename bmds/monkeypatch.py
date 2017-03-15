@@ -14,6 +14,7 @@ This requires an additional environment variable, BMDS_HOST, which is the host
 path for remote execution: e.g., the string "http://12.13.145.167".
 """
 
+from datetime import datetime
 import json
 import os
 import platform
@@ -84,6 +85,7 @@ if platform.system() != 'Windows':
 
     def execute_model(self):
         # execute single model
+        self.execution_start = datetime.now()
         if self.can_be_executed:
             session = _get_requests_session()
             url = '{}/dfile/'.format(host)
@@ -93,12 +95,15 @@ if platform.system() != 'Windows':
         else:
             result = {'output_created': False}
 
+        self.execution_end = datetime.now()
         _set_outputs(self, result)
 
     def execute_session(self):
         # submit data
+        start_time = datetime.now()
         executable_models = []
         for model in self.models:
+            model.execution_start = start_time
             if model.can_be_executed:
                 executable_models.append(model)
             else:
@@ -113,8 +118,10 @@ if platform.system() != 'Windows':
         resp = session.post(url, data=payload)
 
         # parse results for each model
+        end_time = datetime.now()
         jsoned = resp.json()
         for model, result in zip(executable_models, jsoned):
+            model.execution_end = end_time
             _set_outputs(model, result)
 
     # print startup error if host is None

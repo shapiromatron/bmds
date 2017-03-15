@@ -2,6 +2,10 @@
 History
 =======
 
+v0.7.0 (NEXT)
+-------------------
+* add runtime details to output
+
 v0.6.0 (2017-03-10)
 -------------------
 * Added new `drop_dose` method to Dataset

@@ -32,6 +32,8 @@ def test_default_execution(cdataset, ddataset, cidataset):
         for model in session.models:
             assert model.output_created is True
             assert len(model.outfile) > 0
+            assert model.execution_duration > 0
+            assert 'execution_end_time' in model.output
 
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     _check_session(session, 10)
