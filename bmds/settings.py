@@ -3,7 +3,7 @@ import platform
 
 # How long should the system wait for a BMDS model execution to complete
 # before closing (in seconds)
-BMDS_MODEL_TIMEOUT_SECONDS = 5
+BMDS_MODEL_TIMEOUT_SECONDS = 10
 
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != 'Windows':
