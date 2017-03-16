@@ -1,4 +1,5 @@
 import os
+from simple_settings import settings
 
 from . import utils, session
 
@@ -42,7 +43,8 @@ class BatchDfileRunner(object):
         for obj in self.inputs:
 
             # get executable path
-            exe = session.BMDS.get_model(obj['bmds_version'], obj['model_name']).get_exe_path()
+            exe = session.BMDS.get_model(obj['bmds_version'],
+                                         obj['model_name']).get_exe_path()
 
             # write dfile
             dfile = self.tempfiles.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')
@@ -54,7 +56,10 @@ class BatchDfileRunner(object):
                 'outfile': None,
             }
             try:
-                utils.RunProcess([exe, dfile], timeout=20).call()
+                utils.RunProcess(
+                    [exe, dfile],
+                    timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
+                ).call()
                 outfile = self.get_outfile(dfile, obj['model_name'])
                 oo2 = outfile.replace('.out', '.002')
                 if os.path.exists(outfile):
