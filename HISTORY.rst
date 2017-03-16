@@ -4,6 +4,7 @@ History
 
 v0.7.0 (NEXT)
 -------------------
+* the most parsimonious model is now recommended if a multiple models have the same AIC/BMDL
 * add runtime details to output
 * hide model failure popup when bmds unexpectedly fails  (significant performance boost)
 

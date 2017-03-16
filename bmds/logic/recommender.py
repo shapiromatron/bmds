@@ -162,7 +162,8 @@ class Recommender(object):
             fld_name = 'BMDL'
 
         # get and set recommended model
-        model = self._get_min_model(model_subset, fld_name)
+        model_subset = self._get_recommended_models(model_subset, fld_name)
+        model = self._get_parsimonious_model(model_subset)
         model.recommended = True
         model.recommended_variable = fld_name
         return model
@@ -179,15 +180,32 @@ class Recommender(object):
         ]
         return max(bmdls) / min(bmdls)
 
-    def _get_min_model(self, models, fld_name):
-        """Return model with minimum value for specified field."""
-        min_ = float('inf')
-        idx = -1
+    @staticmethod
+    def _get_recommended_models(models, fld_name):
+        """
+        Returns a list of models which have the minimum target field value
+        for a given field name (AIC or BMDL).
+        """
+        target_value = min([
+            model.output[fld_name]
+            for model in models
+        ])
+        return [
+            model
+            for model in models
+            if model.output[fld_name] == target_value
+        ]
 
-        for i, model in enumerate(models):
-            val = model.output[fld_name]
-            if val != -999 and val < min_:
-                idx = i
-                min_ = val
-
+    @staticmethod
+    def _get_parsimonious_model(models):
+        """
+        Return the most parsimonious model of all available models. The most
+        parsimonious model is defined as the model with the fewest number of
+        parameters.
+        """
+        params = [
+            len(model.output['parameters'])
+            for model in models
+        ]
+        idx = params.index(min(params))
         return models[idx]
