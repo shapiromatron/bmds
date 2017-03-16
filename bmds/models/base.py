@@ -60,25 +60,29 @@ class BMDModel(object):
             self.execution_end = datetime.now()
             return
 
+        exe = self.get_exe_path()
+        dfile = self.write_dfile()
+        outfile = self.get_outfile(dfile)
+        o2 = outfile.replace('.out', '.002')
+
         try:
-            exe = self.get_exe_path()
-            dfile = self.write_dfile()
             RunProcess([exe, dfile], timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS).call()
-            outfile = self.get_outfile(dfile)
-            o2 = outfile.replace('.out', '.002')
-            self.execution_end = datetime.now()
-            if os.path.exists(outfile):
-                self.output_created = True
-                self.tempfiles.append(outfile)
-                with open(outfile, 'r') as f:
-                    text = f.read()
-                self.parse_results(text)
-            if os.path.exists(o2):
-                self.tempfiles.append(o2)
         except Exception as e:
-            raise e
+            logger.error('Execution failure: {}'.format(dfile))
         finally:
-            self.tempfiles.cleanup()
+            self.execution_end = datetime.now()
+
+        if os.path.exists(outfile):
+            self.output_created = True
+            self.tempfiles.append(outfile)
+            with open(outfile, 'r') as f:
+                text = f.read()
+            self.parse_results(text)
+
+        if os.path.exists(o2):
+            self.tempfiles.append(o2)
+
+        self.tempfiles.cleanup()
 
     @property
     def execution_duration(self):
