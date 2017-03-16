@@ -225,7 +225,7 @@ class OutputParser(object):
             4: '95_high_limit',
         }
         i += self.NUM_LINE_SKIPS_PARAMS[self.dtype]
-        while (len(outs[i].split()) > 0):
+        while len(outs[i].split()) > 0:
             vals = outs[i].split()
             self.output['parameters'][vals[0]] = {}
             for j in range(1, len(vals)):
@@ -238,7 +238,7 @@ class OutputParser(object):
     def _lbl_fit_cont_dich(self, outs, i, fit_tbl):
         # Line-by-line: find "Goodness  of  Fit" table
         i += self.NUM_LINE_SKIPS_FIT[self.dtype]
-        while len(outs[i]) > 1:
+        while i < len(outs) and len(outs[i]) > 1:
             vals = outs[i].split()
             for j in range(len(vals)):
                 try:
@@ -258,7 +258,7 @@ class OutputParser(object):
             tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
             rng = range(1, len(outs[i].split()))
 
-        while len(outs[i]) > 0:
+        while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
             for j in rng:  # skip dose, picked up w/ estimated
                 self.output[tbl_names[j]].append(try_float(vals[j]))
@@ -267,7 +267,7 @@ class OutputParser(object):
     def _lbl_pvalue(self, outs, i):
         # Line-by-line: find p-values (continuous)
         i += 2   # next line and blank line
-        while len(outs[i]) > 0:
+        while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
             if vals[1] in ['5a', '6a', '7a']:  # fix exponentials
                 pvalue = '4'
@@ -294,7 +294,7 @@ class OutputParser(object):
         # Line-by-line: find AIC (continuous)
         i += self.NUM_LINE_SKIPS_AIC[self.dtype]
         field = ('fitted', '2', '3', '4', '5')  # continuous is "fitted"
-        while len(outs[i]) > 0:
+        while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
             if vals[0] in field:
                 try:

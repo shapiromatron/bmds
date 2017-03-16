@@ -66,7 +66,10 @@ class BMDModel(object):
         o2 = outfile.replace('.out', '.002')
 
         try:
-            RunProcess([exe, dfile], timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS).call()
+            RunProcess(
+                [exe, dfile], 
+                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
+            ).call()
         except Exception as e:
             logger.error('Execution failure: {}'.format(dfile))
         finally:
@@ -78,6 +81,8 @@ class BMDModel(object):
             with open(outfile, 'r') as f:
                 text = f.read()
             self.parse_results(text)
+        else: 
+            logger.info('Output file not created: {}'.format(dfile))
 
         if os.path.exists(o2):
             self.tempfiles.append(o2)
@@ -137,7 +142,11 @@ class BMDModel(object):
         return dfile.replace('.(d)', '.out')
 
     def parse_results(self, outfile):
-        parser = OutputParser(outfile, self.dtype, self.model_name)
+        try:
+            parser = OutputParser(outfile, self.dtype, self.model_name)
+        except Exception as err :
+            logger.error('Parsing failed: {}'.format(outfile))
+            raise err
         self.outfile = outfile
         self.output = parser.output
         execution_duration = self.execution_duration
