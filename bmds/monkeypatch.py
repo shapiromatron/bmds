@@ -16,10 +16,10 @@ path for remote execution: e.g., the string "http://12.13.145.167".
 
 from datetime import datetime
 import json
-import os
 import platform
 import requests
 import sys
+from simple_settings import settings
 
 from .session import BMDS
 from .models.base import BMDModel
@@ -42,9 +42,6 @@ def _get_payload(models):
 
 if platform.system() != 'Windows':
 
-    host = os.environ.get('BMDS_HOST')
-    user = os.environ.get('BMDS_USERNAME')
-    pw = os.environ.get('BMDS_PASSWORD')
     _request_session = None
     NO_HOST_WARNING = (
         'Using a non-Windows platform; BMDS cannot run natively in this OS.\n'
@@ -56,17 +53,19 @@ if platform.system() != 'Windows':
     )
 
     def _get_requests_session():
-        if host is None or user is None or pw is None:
-            raise RemoteBMDSExcecutionException(NO_HOST_WARNING)
+        if settings.BMDS_HOST is None or \
+           settings.BMDS_USERNAME is None or \
+           settings.BMDS_PASSWORD is None:
+                raise RemoteBMDSExcecutionException(NO_HOST_WARNING)
 
         global _request_session
         if _request_session is None:
             s = requests.Session()
-            s.get('{}/admin/login/'.format(host))
+            s.get('{}/admin/login/'.format(settings.BMDS_HOST))
             csrftoken = s.cookies['csrftoken']
-            s.post('{}/admin/login/'.format(host), {
-                'username': user,
-                'password': pw,
+            s.post('{}/admin/login/'.format(settings.BMDS_HOST), {
+                'username': settings.BMDS_USERNAME,
+                'password': settings.BMDS_PASSWORD,
                 'csrfmiddlewaretoken': csrftoken,
             })
 
@@ -88,7 +87,7 @@ if platform.system() != 'Windows':
         self.execution_start = datetime.now()
         if self.can_be_executed:
             session = _get_requests_session()
-            url = '{}/dfile/'.format(host)
+            url = '{}/dfile/'.format(settings.BMDS_HOST)
             payload = _get_payload([self])
             resp = session.post(url, data=payload)
             result = resp.json()[0]
@@ -113,7 +112,7 @@ if platform.system() != 'Windows':
             return
 
         session = _get_requests_session()
-        url = '{}/dfile/'.format(host)
+        url = '{}/dfile/'.format(settings.BMDS_HOST)
         payload = _get_payload(executable_models)
         resp = session.post(url, data=payload)
 
@@ -125,8 +124,10 @@ if platform.system() != 'Windows':
             _set_outputs(model, result)
 
     # print startup error if host is None
-    if host is None or user is None or pw is None:
-        sys.stderr.write(NO_HOST_WARNING)
+    if settings.BMDS_HOST is None or \
+       settings.BMDS_USERNAME is None or \
+       settings.BMDS_PASSWORD is None:
+            sys.stderr.write(NO_HOST_WARNING)
 
     # monkeypatch
     BMDS.execute = execute_session

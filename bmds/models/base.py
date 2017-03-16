@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import numpy as np
+from simple_settings import settings
 
 from .. import constants, plotting
 from ..parser import OutputParser
@@ -60,7 +61,7 @@ class BMDModel(object):
         try:
             exe = self.get_exe_path()
             dfile = self.write_dfile()
-            RunProcess([exe, dfile], timeout=20).call()
+            RunProcess([exe, dfile], timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS).call()
             outfile = self.get_outfile(dfile)
             o2 = outfile.replace('.out', '.002')
             self.execution_end = datetime.now()

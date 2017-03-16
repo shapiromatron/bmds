@@ -5,7 +5,7 @@ import os
 import sys
 import tempfile
 import threading
-    
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Required for Weibull model with some datasets with negative slope
 SUBPROCESS_FLAGS = 0
 if sys.platform.startswith("win"):
-    SEM_NOGPFAULTERRORBOX = 0x0002 # From MSDN
+    SEM_NOGPFAULTERRORBOX = 0x0002  # From MSDN
     ctypes.windll.kernel32.SetErrorMode(SEM_NOGPFAULTERRORBOX)
 
 
