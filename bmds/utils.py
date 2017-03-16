@@ -67,11 +67,26 @@ class RunProcess(threading.Thread):
         self.p = Popen(self.cmd)
         self.p.wait()
 
+    def handle_failure(self):
+        pass
+
     def call(self):
         self.start()
         self.join(self.timeout)
-
         if self.is_alive():
-            logger.warning('Process stopped; timeout: {}'.format(' '.join(self.cmd)))
             self.p.terminate()
+            self.handle_failure()
             self.join()
+
+
+class RunBMDS(RunProcess):
+    """
+    Custom thread class for running BMDS models. Logs failures when BMDS
+    models are killed, including printing the (d) file.
+    """
+    
+    def handle_failure(self):
+        exe = self.cmd[0]
+        with open(self.cmd[1], 'r') as f:
+            dfile = f.read()
+        logger.warning('BMDS model killed: {}\n{}'.format(exe, dfile))

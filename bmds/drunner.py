@@ -56,7 +56,7 @@ class BatchDfileRunner(object):
                 'outfile': None,
             }
             try:
-                utils.RunProcess(
+                utils.RunBMDS(
                     [exe, dfile],
                     timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
                 ).call()

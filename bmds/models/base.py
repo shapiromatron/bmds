@@ -6,7 +6,7 @@ from simple_settings import settings
 
 from .. import constants, plotting
 from ..parser import OutputParser
-from ..utils import RunProcess, TempFileList
+from ..utils import RunBMDS, TempFileList
 
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class BMDModel(object):
         o2 = outfile.replace('.out', '.002')
 
         try:
-            RunProcess(
+            RunBMDS(
                 [exe, dfile], 
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
             ).call()
