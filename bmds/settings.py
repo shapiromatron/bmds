@@ -16,3 +16,37 @@ if platform.system() != 'Windows':
 
     # The admin password for the BMDS webserver.
     BMDS_PASSWORD = os.environ.get('BMDS_PASSWORD')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        },
+    },
+    'handlers': {
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'bmds.log',
+            'maxBytes': 50 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'default'
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['logfile'],
+            'level': 'INFO',
+        },
+        'requests.packages.urllib3': {
+            'handlers': ['logfile'],
+            'level': 'INFO',
+        }
+    }
+}
+
+SIMPLE_SETTINGS = {
+    'CONFIGURE_LOGGING': True,
+}

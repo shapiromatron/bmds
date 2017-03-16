@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import logging
 import numpy as np
 from simple_settings import settings
 
@@ -8,6 +9,7 @@ from ..parser import OutputParser
 from ..utils import RunProcess, TempFileList
 
 
+logger = logging.getLogger(__name__)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 

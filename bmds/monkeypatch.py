@@ -16,6 +16,7 @@ path for remote execution: e.g., the string "http://12.13.145.167".
 
 from datetime import datetime
 import json
+import logging
 import platform
 import requests
 import sys
@@ -25,6 +26,8 @@ from .session import BMDS
 from .models.base import BMDModel
 from .exceptions import RemoteBMDSExcecutionException
 
+
+logger = logging.getLogger(__name__)
 __all__ = []
 
 
@@ -89,6 +92,7 @@ if platform.system() != 'Windows':
             session = _get_requests_session()
             url = '{}/dfile/'.format(settings.BMDS_HOST)
             payload = _get_payload([self])
+            logger.debug('Submitting payload: {}'.format(payload))
             resp = session.post(url, data=payload)
             result = resp.json()[0]
         else:
@@ -114,6 +118,7 @@ if platform.system() != 'Windows':
         session = _get_requests_session()
         url = '{}/dfile/'.format(settings.BMDS_HOST)
         payload = _get_payload(executable_models)
+        logger.debug('Submitting payload: {}'.format(payload))
         resp = session.post(url, data=payload)
 
         # parse results for each model
