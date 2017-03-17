@@ -83,3 +83,27 @@ def bad_ddataset():
         ns=[10, 10, 10, 10],
         incidences=[0, 0, 0, 0]
     )
+
+
+@pytest.fixture
+def reduced_cdataset():
+    # dataset results in reduced model form fits
+    # Exponential M3 -> M2
+    # Exponential M5 -> M4
+    # Multi/Power -> Linear
+    return bmds.ContinuousDataset(
+        doses=[0.0, 1340.0, 2820.0, 5600.0, 11125.0, 23000.0],
+        ns=[10, 10, 10, 10, 10, 8],
+        means=[29.3, 28.4, 27.2, 26.0, 25.8, 24.5],
+        stdevs=[2.53, 1.9, 2.53, 2.53, 2.21, 1.58]
+    )
+
+
+@pytest.fixture
+def ddataset_requires_dose_drop():
+    # a dataset which requires doses to be dropped before a model can be recommended
+    return bmds.DichotomousDataset(
+        doses=[0.0, 10.0, 20.0, 40.0, 80.0, 120.0],
+        ns=[10, 10, 10, 10, 10, 10],
+        incidences=[0, 0, 3, 4, 6, 0],
+    )

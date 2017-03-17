@@ -32,6 +32,8 @@ def test_default_execution(cdataset, ddataset, cidataset):
         for model in session.models:
             assert model.output_created is True
             assert len(model.outfile) > 0
+            assert model.execution_duration > 0
+            assert 'execution_end_time' in model.output
 
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     _check_session(session, 10)
@@ -163,3 +165,14 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.execute()
     session.recommend()
     assert session.recommended_model_index is None
+
+
+def test_execute_with_dosedrop(ddataset_requires_dose_drop):
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
+                                       dataset=ddataset_requires_dose_drop)
+    session.add_model(bmds.constants.M_Logistic)
+    session.execute_and_recommend(drop_doses=True)
+
+    assert session.recommended_model_index == 0
+    assert session.doses_dropped == 1
+    assert len(session.dataset.ns) == len(session.original_dataset.ns) - 1

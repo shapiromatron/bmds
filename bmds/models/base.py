@@ -1,11 +1,15 @@
+from datetime import datetime
 import os
+import logging
 import numpy as np
+from simple_settings import settings
 
 from .. import constants, plotting
 from ..parser import OutputParser
-from ..utils import RunProcess, TempFileList
+from ..utils import RunBMDS, TempFileList
 
 
+logger = logging.getLogger(__name__)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
 
 
@@ -41,35 +45,60 @@ class BMDModel(object):
         self.overrides = overrides or {}
         self.values = {}
         self.output_created = False
+        self.execution_start = None
+        self.execution_end = None
 
     def execute(self):
         """
         Execute the BMDS model and parse outputs if successful.
         """
+        self.execution_start = datetime.now()
 
         # exit early if execution is not possible
         if not self.can_be_executed:
             self.output_created = False
+            self.execution_end = datetime.now()
             return
 
+        exe = self.get_exe_path()
+        dfile = self.write_dfile()
+        outfile = self.get_outfile(dfile)
+        o2 = outfile.replace('.out', '.002')
+
         try:
-            exe = self.get_exe_path()
-            dfile = self.write_dfile()
-            RunProcess([exe, dfile], timeout=20).call()
-            outfile = self.get_outfile(dfile)
-            o2 = outfile.replace('.out', '.002')
-            if os.path.exists(outfile):
-                self.output_created = True
-                self.tempfiles.append(outfile)
-                with open(outfile, 'r') as f:
-                    text = f.read()
-                self.parse_results(text)
-            if os.path.exists(o2):
-                self.tempfiles.append(o2)
+            RunBMDS(
+                [exe, dfile],
+                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
+            ).call()
         except Exception as e:
-            raise e
+            logger.error('Execution failure: {}'.format(dfile))
         finally:
-            self.tempfiles.cleanup()
+            self.execution_end = datetime.now()
+
+        if os.path.exists(outfile):
+            self.output_created = True
+            self.tempfiles.append(outfile)
+            with open(outfile, 'r') as f:
+                text = f.read()
+            self.parse_results(text)
+        else:
+            logger.info('Output file not created: {}'.format(dfile))
+
+        if os.path.exists(o2):
+            self.tempfiles.append(o2)
+
+        self.tempfiles.cleanup()
+
+    @property
+    def execution_duration(self):
+        """
+        Returns total BMDS execution time, in seconds.
+        """
+        duration = None
+        if self.execution_start and self.execution_end:
+            delta = self.execution_end - self.execution_start
+            duration = delta.total_seconds()
+        return duration
 
     @classmethod
     def get_default(cls):
@@ -113,9 +142,20 @@ class BMDModel(object):
         return dfile.replace('.(d)', '.out')
 
     def parse_results(self, outfile):
-        parser = OutputParser(outfile, self.dtype, self.model_name)
+        try:
+            parser = OutputParser(outfile, self.dtype, self.model_name)
+        except Exception as err :
+            logger.error('Parsing failed: {}'.format(outfile))
+            raise err
         self.outfile = outfile
         self.output = parser.output
+        execution_duration = self.execution_duration
+        if execution_duration is not None:
+            self.output.update(
+                execution_start_time=self.execution_start.isoformat(),
+                execution_end_time=self.execution_end.isoformat(),
+                execution_duration=execution_duration,
+            )
 
     def as_dfile(self):
         """

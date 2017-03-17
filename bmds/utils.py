@@ -1,8 +1,22 @@
+import ctypes
 import logging
 from subprocess import Popen
 import os
+import sys
 import tempfile
 import threading
+
+
+logger = logging.getLogger(__name__)
+
+
+# http://stackoverflow.com/questions/24130623/
+# Don't display the Windows GPF dialog if the invoked program dies.
+# Required for Weibull model with some datasets with negative slope
+SUBPROCESS_FLAGS = 0
+if sys.platform.startswith("win"):
+    SEM_NOGPFAULTERRORBOX = 0x0002  # From MSDN
+    ctypes.windll.kernel32.SetErrorMode(SEM_NOGPFAULTERRORBOX)
 
 
 class classproperty(property):
@@ -53,12 +67,26 @@ class RunProcess(threading.Thread):
         self.p = Popen(self.cmd)
         self.p.wait()
 
+    def handle_failure(self):
+        pass
+
     def call(self):
         self.start()
         self.join(self.timeout)
-
         if self.is_alive():
-            logging.warning("Process stopped; timeout: %s" %
-                            ' '.join(self.cmd))
             self.p.terminate()
+            self.handle_failure()
             self.join()
+
+
+class RunBMDS(RunProcess):
+    """
+    Custom thread class for running BMDS models. Logs failures when BMDS
+    models are killed, including printing the (d) file.
+    """
+    
+    def handle_failure(self):
+        exe = self.cmd[0]
+        with open(self.cmd[1], 'r') as f:
+            dfile = f.read()
+        logger.warning('BMDS model killed: {}\n{}'.format(exe, dfile))

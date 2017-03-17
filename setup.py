@@ -13,6 +13,7 @@ def get_readme():
     with open('README.rst') as f:
         return f.read()
 
+
 requirements = [
     'six',
     'requests',
@@ -21,6 +22,7 @@ requirements = [
     'openpyxl',
     'matplotlib',
     'scipy',
+    'simple-settings',
 ]
 
 test_requirements = [
