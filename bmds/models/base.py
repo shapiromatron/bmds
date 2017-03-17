@@ -67,7 +67,7 @@ class BMDModel(object):
 
         try:
             RunBMDS(
-                [exe, dfile], 
+                [exe, dfile],
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
             ).call()
         except Exception as e:
@@ -81,7 +81,7 @@ class BMDModel(object):
             with open(outfile, 'r') as f:
                 text = f.read()
             self.parse_results(text)
-        else: 
+        else:
             logger.info('Output file not created: {}'.format(dfile))
 
         if os.path.exists(o2):

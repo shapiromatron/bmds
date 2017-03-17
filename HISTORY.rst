@@ -4,30 +4,31 @@ History
 
 v0.7.0 (NEXT)
 -------------------
-* the most parsimonious model is now recommended if a multiple models have the same AIC/BMDL
-* add runtime details to output
-* hide model failure popup when bmds unexpectedly fails  (significant performance boost)
+* Recommend the most parsimonious model, instead of the first model with target AIC/BMDL
+* Add runtime details to output
+* Hide model failure popup when bmds unexpectedly fails  (significant performance boost)
+* Log failures by default, including displaying failed input (d) files
 
 v0.6.0 (2017-03-10)
 -------------------
 * Added new `drop_dose` method to Dataset
-* don't attempt running models when there are too few dose-groups
-* removed doses-dropped parameter from dataset init
+* Do not attempt to execute model when there are too few dose-groups
+* Remove doses-dropped parameter from dataset init
 * Add example notebook running actual data
 
 v0.5.3 (2017-03-02)
 -------------------
 
-* prevent errors when software is run with un-runnable dose-response datasets
-* handle edge-cases for ANOVA calculation failure
-* fix 002 bmds temporary file cleanup
+* Prevent errors when software is run with un-runnable dose-response datasets
+* Handle edge-cases for ANOVA calculation failure
+* Fix 002 bmds temporary file cleanup
 
 v0.5.2 (2017-02-15)
 -------------------
 
-* added custom exceptions for BMDS package
-* explicitly check that BMDS remote-server authentication is successful
-* hotfix - fix error when running continuous models with 3 dose groups
+* Add custom exceptions for BMDS package
+* Explicitly check that BMDS remote-server authentication is successful
+* Hotfix - fix error when running continuous models with 3 dose groups
 
 v0.5.1 (2016-12-23)
 -------------------
