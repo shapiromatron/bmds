@@ -2,7 +2,7 @@
 History
 =======
 
-v0.7.0 (NEXT)
+v0.7.0 (2017-03-17)
 -------------------
 * Recommend the most parsimonious model, instead of the first model with target AIC/BMDL
 * Add new method to the session, ``execute_and_recommend``, with the option to try dropping doses until a model recommendation exists, or the dataset is exhausted
