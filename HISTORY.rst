@@ -5,6 +5,7 @@ History
 v0.7.0 (NEXT)
 -------------------
 * Recommend the most parsimonious model, instead of the first model with target AIC/BMDL
+* Add new method to the session, ``execute_and_recommend``, with the option to try dropping doses until a model recommendation exists, or the dataset is exhausted
 * Add runtime details to output
 * Hide model failure popup when bmds unexpectedly fails  (significant performance boost)
 * Log failures by default, including displaying failed input (d) files

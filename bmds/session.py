@@ -133,6 +133,40 @@ class BMDS(object):
             else None
         return self.recommended_model
 
+    def execute_and_recommend(self, drop_doses=False):
+        """
+        Execute and recommend a best-fitting model. If drop_doses and no model
+        is recommended, drop the highest dose-group and repeat until either:
+
+        1. a model is recommended, or
+        2. the dataset is exhausted (i.e., only 3 dose-groups remain).
+
+        This method adds two new attributes to Session:
+
+        1. original_dataset - the unchanged original dataset. The dataset used
+            on the object is mutated if doses were dropped
+        2. doses_dropped - the number of doses that were dropped
+
+        """
+        original_dataset = deepcopy(self.dataset)
+        doses_dropped = 0
+
+        self.execute()
+        self.recommend()
+
+        if not drop_doses:
+            return
+
+        while self.recommended_model is None and \
+                self.dataset.num_dose_groups > 3:
+            doses_dropped += 1
+            self.dataset.drop_dose()
+            self.execute()
+            self.recommend()
+
+        self.original_dataset = original_dataset
+        self.doses_dropped = doses_dropped
+
     @staticmethod
     def _df_ordered_dict(include_io=True):
         # return an ordered defaultdict list
