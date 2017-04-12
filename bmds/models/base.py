@@ -174,6 +174,7 @@ class BMDModel(object):
         >>> fn = os.path.expanduser('~/Desktop/image.png')
         >>> fig = model.plot()
         >>> fig.savefig(fn)
+        >>> fig.clear()
 
         .. figure:: ../tests/resources/test_exponential_m4_plot.png
            :scale: 80%

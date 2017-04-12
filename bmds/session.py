@@ -245,7 +245,8 @@ class BMDS(object):
                 fn = '{}-{}'.format(prefix, fn)
 
             fig = model.plot()
-            fig.savefig(os.path.join(directory, fn))
+            fig.savefig(os.path.join(directory, fn), dpi=dpi)
+            fig.clear()
 
 
 class BMDS_v231(BMDS):

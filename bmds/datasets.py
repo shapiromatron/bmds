@@ -173,6 +173,7 @@ class DichotomousDataset(Dataset):
         --------
         >>> fig = dataset.plot()
         >>> fig.show()
+        >>> fig.clear()
 
         .. image:: ../tests/resources/test_ddataset_plot.png
            :align: center
@@ -472,6 +473,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         --------
         >>> fig = dataset.plot()
         >>> fig.show()
+        >>> fig.clear()
 
         .. image:: ../tests/resources/test_cidataset_plot.png
            :align: center

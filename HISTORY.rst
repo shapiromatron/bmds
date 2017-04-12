@@ -2,6 +2,11 @@
 History
 =======
 
+v0.7.1 (NEXT)
+-------------------
+* Fix memory leak by closing matplotlib figures
+
+
 v0.7.0 (2017-03-17)
 -------------------
 * Recommend the most parsimonious model, instead of the first model with target AIC/BMDL
