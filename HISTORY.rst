@@ -2,10 +2,11 @@
 History
 =======
 
-v0.7.1 (NEXT)
+v0.8.0 (NEXT)
 -------------------
 * Fix memory leak by closing matplotlib figures
-
+* Added new optional ``dpi`` argument to ``Session.save_plots()``
+* Allow ``**kwargs`` arguments in datasets; these are returned in ``to_dict()``
 
 v0.7.0 (2017-03-17)
 -------------------
