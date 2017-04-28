@@ -11,7 +11,6 @@ cache:
 
 env:
   - TOXENV=py35
-  - TOXENV=py27
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox

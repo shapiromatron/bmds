@@ -24,5 +24,5 @@ docs/_autosummary
 notebooks/*testing.ipynb
 
 # log files created by bmds
-*.log
+*.log*
 log.txt
