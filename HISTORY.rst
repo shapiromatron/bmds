@@ -2,11 +2,17 @@
 History
 =======
 
-v0.8.0 (NEXT)
+v0.8.0 (2017-04-28)
 -------------------
+* **BREAKING CHANGE 💥💥💥**: dropped support for Python 2 and Python ≤ 3.4
+* **PERFORMANCE 🏁🏁🏁**: asyncio_ python 3 standard library used for performance gains
+* Added new :ref:`performance section <performance>` notes on eeking out more speed using multiprocessing_
 * Fix memory leak by closing matplotlib figures
 * Added new optional ``dpi`` argument to ``Session.save_plots()``
 * Allow ``**kwargs`` arguments in datasets; these are returned in ``to_dict()``
+
+.. _asyncio: https://docs.python.org/3/library/asyncio.html
+.. _multiprocessing: https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor
 
 v0.7.0 (2017-03-17)
 -------------------
@@ -18,7 +24,7 @@ v0.7.0 (2017-03-17)
 
 v0.6.0 (2017-03-10)
 -------------------
-* Added new `drop_dose` method to Dataset
+* Added new ``drop_dose`` method to Dataset
 * Do not attempt to execute model when there are too few dose-groups
 * Remove doses-dropped parameter from dataset init
 * Add example notebook running actual data

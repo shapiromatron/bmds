@@ -185,7 +185,7 @@ class Exponential(Continuous):
         #
         # Note: this function has a side-effect of adding the blank out and 002
         # files which are created to be automatically cleaned-up.
-        outfile = super(Exponential, self).get_outfile(dfile)
+        outfile = super().get_outfile(dfile)
         oo2 = outfile.replace('.out', '.002')
         if os.path.exists(outfile):
             self.tempfiles.append(outfile)
