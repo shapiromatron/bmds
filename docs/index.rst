@@ -18,5 +18,6 @@ Table of contents:
 
    quickstart
    installation
+   performance
    api
    history
