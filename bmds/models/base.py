@@ -72,7 +72,13 @@ class BMDModel(object):
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
             ).call()
         except Exception as e:
-            logger.error('Execution failure: {}'.format(dfile))
+            
+            txt = dfile
+            if os.path.exists(dfile):                
+                with open(dfile, 'r') as f:
+                    txt = f.read()
+
+            logger.error('Execution failure: {}'.format(txt))
         finally:
             self.execution_end = datetime.now()
 
