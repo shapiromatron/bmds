@@ -59,7 +59,7 @@ class RunProcess(threading.Thread):
     """
 
     def __init__(self, cmd, timeout=60):
-        threading.Thread.__init__(self)
+        super().__init__()
         self.cmd = cmd
         self.timeout = timeout
 
@@ -84,7 +84,7 @@ class RunBMDS(RunProcess):
     Custom thread class for running BMDS models. Logs failures when BMDS
     models are killed, including printing the (d) file.
     """
-    
+
     def handle_failure(self):
         exe = self.cmd[0]
         with open(self.cmd[1], 'r') as f:

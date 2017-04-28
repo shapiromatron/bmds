@@ -1,3 +1,4 @@
+import asyncio 
 from datetime import datetime
 import os
 import logging
@@ -48,7 +49,7 @@ class BMDModel(object):
         self.execution_start = None
         self.execution_end = None
 
-    def execute(self):
+    async def execute_job(self):
         """
         Execute the BMDS model and parse outputs if successful.
         """
@@ -66,12 +67,18 @@ class BMDModel(object):
         o2 = outfile.replace('.out', '.002')
 
         try:
-            RunBMDS(
+            await RunBMDS(
                 [exe, dfile],
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
             ).call()
         except Exception as e:
-            logger.error('Execution failure: {}'.format(dfile))
+            
+            txt = dfile
+            if os.path.exists(dfile):                
+                with open(dfile, 'r') as f:
+                    txt = f.read()
+
+            logger.error('Execution failure: {}'.format(txt))
         finally:
             self.execution_end = datetime.now()
 
@@ -89,7 +96,11 @@ class BMDModel(object):
 
         self.tempfiles.cleanup()
 
-    @property
+    def execute(self):
+        ioloop = asyncio.get_event_loop()
+        ioloop.run_until_complete(self.execute_job())   
+
+    @property   
     def execution_duration(self):
         """
         Returns total BMDS execution time, in seconds.
@@ -174,6 +185,7 @@ class BMDModel(object):
         >>> fn = os.path.expanduser('~/Desktop/image.png')
         >>> fig = model.plot()
         >>> fig.savefig(fn)
+        >>> fig.clear()
 
         .. figure:: ../tests/resources/test_exponential_m4_plot.png
            :scale: 80%

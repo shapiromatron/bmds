@@ -2,6 +2,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import os
 import pandas as pd
+import asyncio
 
 from . import constants, logic, models, utils
 
@@ -113,9 +114,16 @@ class BMDS(object):
         )
         self.models.append(instance)
 
+    async def execute_models(self):
+        tasks = [
+            asyncio.ensure_future(model.execute_job()) 
+            for model in self.models
+        ]
+        await asyncio.wait(tasks)
+         
     def execute(self):
-        for model in self.models:
-            model.execute()
+        ioloop = asyncio.get_event_loop()
+        ioloop.run_until_complete(self.execute_models())
 
     @property
     def recommendation_enabled(self):
@@ -230,7 +238,9 @@ class BMDS(object):
         filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 
-    def save_plots(self, directory, prefix=None, format='png', recommended_only=False):
+    def save_plots(self, directory, prefix=None,
+                   format='png', dpi=None, recommended_only=False):
+
         directory = os.path.expanduser(directory)
         if not os.path.exists(directory):
             raise ValueError('Directory not found: {}'.format(directory))
@@ -245,7 +255,8 @@ class BMDS(object):
                 fn = '{}-{}'.format(prefix, fn)
 
             fig = model.plot()
-            fig.savefig(os.path.join(directory, fn))
+            fig.savefig(os.path.join(directory, fn), dpi=dpi)
+            fig.clear()
 
 
 class BMDS_v231(BMDS):

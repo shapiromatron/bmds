@@ -54,11 +54,12 @@ class DichotomousDataset(Dataset):
 
     _BMDS_DATASET_TYPE = 1  # group data
 
-    def __init__(self, doses, ns, incidences):
+    def __init__(self, doses, ns, incidences, **kwargs):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences)]
+        self.kwargs = kwargs
         self._sort_by_dose_group()
         self._validate()
 
@@ -124,11 +125,13 @@ class DichotomousDataset(Dataset):
         """
         Returns a dictionary representation of the dataset.
         """
-        return dict(
+        d = dict(
             doses=self.doses,
             ns=self.ns,
             incidences=self.incidences,
         )
+        d.update(self.kwargs)
+        return d
 
     @staticmethod
     def _calculate_plotting(n, incidence):
@@ -173,6 +176,7 @@ class DichotomousDataset(Dataset):
         --------
         >>> fig = dataset.plot()
         >>> fig.show()
+        >>> fig.clear()
 
         .. image:: ../tests/resources/test_ddataset_plot.png
            :align: center
@@ -201,7 +205,7 @@ class ContinuousDataset(Dataset):
 
     A continuous dataset contains a list of 4 identically sized arrays of
     input values, for the dose, number of subjects, mean of response values for
-    dose group, and standard-devation of response for that dose group.
+    dose group, and standard-deviation of response for that dose group.
 
     Example
     -------
@@ -215,11 +219,12 @@ class ContinuousDataset(Dataset):
 
     _BMDS_DATASET_TYPE = 1  # group data
 
-    def __init__(self, doses, ns, means, stdevs):
+    def __init__(self, doses, ns, means, stdevs, **kwargs):
         self.doses = doses
         self.ns = ns
         self.means = means
         self.stdevs = stdevs
+        self.kwargs = kwargs
         self._sort_by_dose_group()
         self._validate()
 
@@ -308,12 +313,14 @@ class ContinuousDataset(Dataset):
         """
         Return a dictionary representation of the dataset.
         """
-        return dict(
+        d = dict(
             doses=self.doses,
             ns=self.ns,
             means=self.means,
             stdevs=self.stdevs,
         )
+        d.update(self.kwargs)
+        return d
 
     @property
     def errorbars(self):
@@ -387,9 +394,10 @@ class ContinuousIndividualDataset(ContinuousDataset):
 
     _BMDS_DATASET_TYPE = 0  # individual data
 
-    def __init__(self, doses, responses):
+    def __init__(self, doses, responses, **kwargs):
         self.individual_doses = doses
         self.responses = responses
+        self.kwargs = kwargs
         self._sort_by_dose_group()
         self.set_summary_data()
         self._validate()
@@ -459,10 +467,12 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         Return a dictionary representation of the dataset.
         """
-        return dict(
+        d = dict(
             individual_doses=self.individual_doses,
             responses=self.responses,
         )
+        d.update(self.kwargs)
+        return d
 
     def plot(self):
         """
@@ -472,6 +482,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         --------
         >>> fig = dataset.plot()
         >>> fig.show()
+        >>> fig.clear()
 
         .. image:: ../tests/resources/test_cidataset_plot.png
            :align: center
