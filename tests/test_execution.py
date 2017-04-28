@@ -38,7 +38,7 @@ def test_default_execution(cdataset, ddataset, cidataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     _check_session(session, 10)
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cidataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS_INDIVIDUAL, dataset=cidataset)
     _check_session(session, 12)
 
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)

@@ -2,6 +2,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import os
 import pandas as pd
+import asyncio
 
 from . import constants, logic, models, utils
 
@@ -113,9 +114,16 @@ class BMDS(object):
         )
         self.models.append(instance)
 
+    async def execute_models(self):
+        tasks = [
+            asyncio.ensure_future(model.execute_job()) 
+            for model in self.models
+        ]
+        await asyncio.wait(tasks)
+         
     def execute(self):
-        for model in self.models:
-            model.execute()
+        ioloop = asyncio.get_event_loop()
+        ioloop.run_until_complete(self.execute_models())
 
     @property
     def recommendation_enabled(self):
