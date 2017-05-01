@@ -63,7 +63,6 @@ if __name__ == '__main__':
 
     # create input datasets
     datasets = create_datasets(inputfn)
-    datasets = datasets[:20]
 
     # create a representative base session which will be used for
     # all subsequent sessions
