@@ -5,6 +5,12 @@ import platform
 # before closing (in seconds)
 BMDS_MODEL_TIMEOUT_SECONDS = 10
 
+# Maximum polynomial used when setting default models; generally only used when
+# the number of dose groups is large in a dataset. This is so that if you have
+# 15 dose-groups you won't try to model using a 14 degree polynomial model.
+# maximum_poly =  min(dataset dose groups - 1, MAXIMUM_POLYNOMIAL_ORDER)
+MAXIMUM_POLYNOMIAL_ORDER = 8
+
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != 'Windows':
 

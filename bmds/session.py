@@ -3,6 +3,7 @@ from collections import OrderedDict
 import os
 import pandas as pd
 import asyncio
+from simple_settings import settings
 
 from . import constants, logic, models, utils
 
@@ -87,14 +88,19 @@ class BMDS(object):
         return len(self.models) > 0
 
     def add_default_models(self, global_overrides=None):
+
+        max_poly_order = min(
+            self.dataset.num_dose_groups,
+            settings.MAXIMUM_POLYNOMIAL_ORDER + 1)
+
         for name in self.model_options[self.dtype].keys():
             overrides = deepcopy(global_overrides) \
                 if global_overrides is not None \
                 else None
 
             if name in constants.VARIABLE_POLYNOMIAL:
-                start_idx = 2 if name == constants.M_Polynomial else 1
-                for i in range(start_idx, min(self.dataset.num_dose_groups, 8)):
+                min_poly_order = 2 if name == constants.M_Polynomial else 1
+                for i in range(min_poly_order, max_poly_order):
                     overrides = {} \
                         if overrides is None \
                         else deepcopy(overrides)
