@@ -116,11 +116,11 @@ class BMDS(object):
 
     async def execute_models(self):
         tasks = [
-            asyncio.ensure_future(model.execute_job()) 
+            asyncio.ensure_future(model.execute_job())
             for model in self.models
         ]
         await asyncio.wait(tasks)
-         
+
     def execute(self):
         ioloop = asyncio.get_event_loop()
         ioloop.run_until_complete(self.execute_models())

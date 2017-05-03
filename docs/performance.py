@@ -1,6 +1,4 @@
 from concurrent.futures import ProcessPoolExecutor
-from copy import deepcopy
-from functools import partial
 import json
 import multiprocessing
 import os
@@ -31,11 +29,12 @@ def create_datasets(fn):
     return datasets
 
 
-def execute(dataset, base_session):
-    # copy a BMDS configured how you'd like to run and execute
-    # the session, returning itself
-    session = deepcopy(base_session)
-    session.dataset = dataset
+def execute(dataset):
+    # configure BMDS session and execute
+    session = bmds.BMDS.latest_version(
+        bmds.constants.CONTINUOUS,
+        dataset=dataset)
+    session.add_default_models()
     session.execute()
     session.recommend()
     return session
@@ -64,18 +63,10 @@ if __name__ == '__main__':
     # create input datasets
     datasets = create_datasets(inputfn)
 
-    # create a representative base session which will be used for
-    # all subsequent sessions
-    base_session = bmds.BMDS.latest_version(
-        bmds.constants.CONTINUOUS,
-        dataset=datasets[0])
-    base_session.add_default_models()
-
     # use n-1 processors for execution
     nprocs = max(1, multiprocessing.cpu_count() - 1)
     with ProcessPoolExecutor(max_workers=nprocs) as executor:
-        results = executor.map(
-            partial(execute, base_session=base_session), datasets)
+        results = executor.map(execute, datasets)
 
     # export all sessions as JSON
     export_as_json(outputfn, list(results))

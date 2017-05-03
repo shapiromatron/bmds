@@ -1,4 +1,4 @@
-import asyncio 
+import asyncio
 from datetime import datetime
 import os
 import logging
@@ -72,9 +72,9 @@ class BMDModel(object):
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
             ).call()
         except Exception as e:
-            
+
             txt = dfile
-            if os.path.exists(dfile):                
+            if os.path.exists(dfile):
                 with open(dfile, 'r') as f:
                     txt = f.read()
 
@@ -98,9 +98,9 @@ class BMDModel(object):
 
     def execute(self):
         ioloop = asyncio.get_event_loop()
-        ioloop.run_until_complete(self.execute_job())   
+        ioloop.run_until_complete(self.execute_job())
 
-    @property   
+    @property
     def execution_duration(self):
         """
         Returns total BMDS execution time, in seconds.
@@ -155,7 +155,7 @@ class BMDModel(object):
     def parse_results(self, outfile):
         try:
             parser = OutputParser(outfile, self.dtype, self.model_name)
-        except Exception as err :
+        except Exception as err:
             logger.error('Parsing failed: {}'.format(outfile))
             raise err
         self.outfile = outfile
