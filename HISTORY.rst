@@ -5,6 +5,7 @@ History
 v0.8.1 (NEXT)
 -------------------
 * Added new setting, ``MAXIMUM_POLYNOMIAL_ORDER``, by default equal to 8
+* Added new setting, ``SUFFICIENTLY_CLOSE_BMDL``, by default equal to 3
 
 v0.8.0 (2017-04-28)
 -------------------

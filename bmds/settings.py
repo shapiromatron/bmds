@@ -11,6 +11,11 @@ BMDS_MODEL_TIMEOUT_SECONDS = 10
 # maximum_poly =  min(dataset dose groups - 1, MAXIMUM_POLYNOMIAL_ORDER)
 MAXIMUM_POLYNOMIAL_ORDER = 8
 
+# In model recommendation; if range of BMDLs is less than 3x different, the
+# model with the smallest AIC will be recommended, otherwise the model with the
+# smallest BMDL will be recommended.
+SUFFICIENTLY_CLOSE_BMDL = 3
+
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != 'Windows':
 

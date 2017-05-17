@@ -1,11 +1,12 @@
 from .. import constants
 from . import rules
 
+import pandas as pd
+from simple_settings import settings
+
 
 class Recommender(object):
     # Recommendation logic for a specified data-type.
-
-    SUFFICIENTLY_CLOSE_BMDL = 3
 
     def __init__(self, dtype, overrides=None):
 
@@ -21,6 +22,7 @@ class Recommender(object):
 
         self.dtype = dtype
         self.rules = self._get_rule_defaults(**rule_args)
+        self.SUFFICIENTLY_CLOSE_BMDL = settings.SUFFICIENTLY_CLOSE_BMDL
 
         if overrides:
             raise NotImplementedError('Overrides not implemented (yet).')
