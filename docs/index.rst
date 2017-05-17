@@ -19,5 +19,6 @@ Table of contents:
    quickstart
    installation
    performance
+   logic
    api
    history

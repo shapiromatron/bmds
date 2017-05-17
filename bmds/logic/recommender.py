@@ -66,7 +66,7 @@ class Recommender(object):
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_NO_CHANGE,
                 threshold=5.,
-                rule_name='BMD/BMDL (warning)',
+                rule_name='BMD to BMDL ratio (warning)',
             ),
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_WARNING,
@@ -172,6 +172,13 @@ class Recommender(object):
 
     def show_rules(self):
         return u'\n'.join([rule.__unicode__() for rule in self.rules])
+
+    def rules_df(self):
+        df = pd.DataFrame(
+            data=[rule.as_row() for rule in self.rules],
+            columns=['rule_name', 'enabled', 'failure_bin', 'threshold'])
+        df = df[df.enabled == True]
+        return df
 
     def _get_bmdl_ratio(self, models):
         """Return BMDL ratio in list of models."""

@@ -38,7 +38,7 @@ def test_default_logic():
     ✕ Variance type [bin=?, threshold=0.1]
     ✕ Variance fit [bin=?, threshold=0.1]
     ✓ GGOF [bin=?, threshold=0.1]
-    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
     ✓ Residual of interest [bin=✓, threshold=2.0]
     ✓ Warnings [bin=✓]
@@ -63,7 +63,7 @@ def test_default_logic():
     ✕ Variance type [bin=?, threshold=0.1]
     ✕ Variance fit [bin=?, threshold=0.1]
     ✓ GGOF [bin=?, threshold=0.05]
-    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
     ✓ Residual of interest [bin=✓, threshold=2.0]
     ✓ Warnings [bin=✓]
@@ -88,7 +88,7 @@ def test_default_logic():
     ✓ Variance type [bin=?, threshold=0.1]
     ✓ Variance fit [bin=?, threshold=0.1]
     ✓ GGOF [bin=?, threshold=0.1]
-    ✓ BMD/BMDL (warning) [bin=✓, threshold=5.0]
+    ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
     ✓ Residual of interest [bin=✓, threshold=2.0]
     ✓ Warnings [bin=✓]
@@ -102,6 +102,18 @@ def test_default_logic():
     ✓ Control stdev [bin=?, threshold=1.5]
     """)
     assert txt == bmds.Recommender(bmds.constants.CONTINUOUS).show_rules()
+
+
+def test_rules_df():
+    # assert dataframe with appropriate shape is created
+    df = bmds.Recommender(bmds.constants.DICHOTOMOUS).rules_df()
+    assert df.shape == (15, 4)
+
+    df = bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).rules_df()
+    assert df.shape == (16, 4)
+
+    df = bmds.Recommender(bmds.constants.CONTINUOUS).rules_df()
+    assert df.shape == (19, 4)
 
 
 def test_apply_logic(cdataset):
