@@ -10,7 +10,7 @@ generated from primarily three different sources:
 2. `ICF BMDS Wizard`_
 3. `Wignall et al. 2014`_
 
-.. _`EPA 2012`: https://www.icf.com/solutions-and-apps/bmds-wizard
+.. _`EPA 2012`: https://www.epa.gov/risk/benchmark-dose-technical-guidance
 .. _`ICF BMDS Wizard`: https://www.icf.com/solutions-and-apps/bmds-wizard
 .. _`Wignall et al. 2014`: http://dx.doi.org/10.1289/ehp.1307539
 
