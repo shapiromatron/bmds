@@ -4,10 +4,11 @@ import os
 import logging
 import numpy as np
 from simple_settings import settings
+import sys
 
 from .. import constants, plotting
 from ..parser import OutputParser
-from ..utils import RunBMDS, TempFileList
+from ..utils import TempFileList
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ class BMDModel(object):
         Execute the BMDS model and parse outputs if successful.
         """
         self.execution_start = datetime.now()
+        self.execution_halted = False
 
         # exit early if execution is not possible
         if not self.can_be_executed:
@@ -66,21 +68,24 @@ class BMDModel(object):
         outfile = self.get_outfile(dfile)
         o2 = outfile.replace('.out', '.002')
 
+        proc = await asyncio.create_subprocess_exec(
+                exe, dfile,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+
         try:
-            await RunBMDS(
-                [exe, dfile],
-                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
-            ).call()
-        except Exception as e:
-
-            txt = dfile
-            if os.path.exists(dfile):
-                with open(dfile, 'r') as f:
-                    txt = f.read()
-
-            logger.error('Execution failure: {}'.format(txt))
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
+        except asyncio.TimeoutError:
+            self.execution_halted = True
+            proc.kill()
+            stdout, stderr = await proc.communicate()
         finally:
             self.execution_end = datetime.now()
+
+        self.stdout = stdout.decode().strip()
+        self.stderr = stderr.decode().strip()
 
         if os.path.exists(outfile):
             self.output_created = True
@@ -89,7 +94,9 @@ class BMDModel(object):
                 text = f.read()
             self.parse_results(text)
         else:
-            logger.info('Output file not created: {}'.format(dfile))
+            with open(dfile, 'r') as f:
+                txt = f.read()
+            logger.info('Output file not created: \n{}\n\n'.format(txt))
 
         if os.path.exists(o2):
             self.tempfiles.append(o2)
@@ -97,8 +104,12 @@ class BMDModel(object):
         self.tempfiles.cleanup()
 
     def execute(self):
-        ioloop = asyncio.get_event_loop()
-        ioloop.run_until_complete(self.execute_job())
+        if sys.platform == 'win32':
+            loop = asyncio.ProactorEventLoop()
+            asyncio.set_event_loop(loop)
+        else:
+            loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.execute_job())
 
     @property
     def execution_duration(self):
@@ -369,6 +380,9 @@ class BMDModel(object):
             has_output=self.output_created,
             dfile=self.as_dfile(),
             outfile=getattr(self, 'outfile', None),
+            execution_halted=getattr(self, 'execution_halted', None),
+            stdout=getattr(self, 'stdout', None),
+            stderr=getattr(self, 'stderr', None),
             output=getattr(self, 'output', None),
             logic_bin=getattr(self, 'logic_bin', None),
             logic_notes=getattr(self, 'logic_notes', None),
@@ -385,6 +399,7 @@ class BMDModel(object):
         d['model_index'].append(_nullify(show_null, idx))
         d['model_version'].append(_nullify(show_null, self.version))
         d['has_output'].append(_nullify(show_null, self.output_created))
+        d['execution_halted'].append(getattr(self, 'execution_halted', None))
 
         # add model outputs
         outputs = {} \
@@ -403,7 +418,7 @@ class BMDModel(object):
         d['Chi2'].append(outputs.get('Chi2', '-'))
         d['df'].append(outputs.get('df', '-'))
         d['residual_of_interest'].append(outputs.get('residual_of_interest', '-'))
-        d['warnings'].append('; '.join(outputs.get('warnings', ['-'])))
+        d['warnings'].append('\n'.join(outputs.get('warnings', ['-'])))
 
         # add logic bin and warnings
         logics = getattr(self, 'logic_notes', {})
@@ -412,11 +427,11 @@ class BMDModel(object):
             else '-'
         d['logic_bin'].append(_nullify(show_null, bin_))
 
-        txt = '; '.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
+        txt = '\n'.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
         d['logic_cautions'].append(_nullify(show_null, txt))
-        txt = '; '.join(logics.get(constants.BIN_WARNING, ['-']))
+        txt = '\n'.join(logics.get(constants.BIN_WARNING, ['-']))
         d['logic_warnings'].append(_nullify(show_null, txt))
-        txt = '; '.join(logics.get(constants.BIN_FAILURE, ['-']))
+        txt = '\n'.join(logics.get(constants.BIN_FAILURE, ['-']))
         d['logic_failures'].append(_nullify(show_null, txt))
 
         # add recommendation and recommendation variable
@@ -432,6 +447,12 @@ class BMDModel(object):
         if 'outfile' in d:
             txt = getattr(self, 'outfile', '-')
             d['outfile'].append(_nullify(show_null, txt))
+        if 'stdout' in d:
+            txt = getattr(self, 'stdout', '-')
+            d['stdout'].append(_nullify(show_null, txt))
+        if 'stderr' in d:
+            txt = getattr(self, 'stderr', '-')
+            d['stderr'].append(_nullify(show_null, txt))
 
 
 class DefaultParams(object):

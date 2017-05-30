@@ -1,9 +1,10 @@
+import asyncio
 from copy import deepcopy
 from collections import OrderedDict
 import os
 import pandas as pd
-import asyncio
 from simple_settings import settings
+import sys
 
 from . import constants, logic, models, utils
 
@@ -122,14 +123,18 @@ class BMDS(object):
 
     async def execute_models(self):
         tasks = [
-            asyncio.ensure_future(model.execute_job())
+            model.execute_job()
             for model in self.models
         ]
         await asyncio.wait(tasks)
 
     def execute(self):
-        ioloop = asyncio.get_event_loop()
-        ioloop.run_until_complete(self.execute_models())
+        if sys.platform == 'win32':
+            loop = asyncio.ProactorEventLoop()
+            asyncio.set_event_loop(loop)
+        else:
+            loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.execute_models())
 
     @property
     def recommendation_enabled(self):
@@ -186,7 +191,7 @@ class BMDS(object):
         # return an ordered defaultdict list
         keys = [
             'dataset_index', 'model_name', 'model_index',
-            'model_version', 'has_output',
+            'model_version', 'has_output', 'execution_halted',
 
             'BMD', 'BMDL', 'BMDU', 'CSF',
             'AIC', 'pvalue1', 'pvalue2', 'pvalue3', 'pvalue4',
@@ -198,7 +203,7 @@ class BMDS(object):
         ]
 
         if include_io:
-            keys.extend(['dfile', 'outfile'])
+            keys.extend(['dfile', 'outfile', 'stdout', 'stderr'])
 
         return OrderedDict([(key, list()) for key in keys])
 

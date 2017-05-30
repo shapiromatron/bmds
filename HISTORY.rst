@@ -4,9 +4,13 @@ History
 
 v0.8.1 (NEXT)
 -------------------
+* Use ``asyncio.create_subprocess_exec`` instead of custom Thread implementation for running BMDS models
+* Add new output to capture if BMDS model killed (``execution_halted``) based on Timeout; added to all output formats
+* Capture ``stdout`` and ``stderr`` for models which successfully complete  (in variables appropriately named ``stdout`` and ``stderr``); added to dict and data-frame outputs
 * Added new setting, ``MAXIMUM_POLYNOMIAL_ORDER``, by default equal to 8
 * Added new setting, ``SUFFICIENTLY_CLOSE_BMDL``, by default equal to 3
 * Documented model recommendation logic
+* Delimit text messages (logic-failures, warnings) by newline instead of semicolon
 
 v0.8.0 (2017-04-28)
 -------------------
