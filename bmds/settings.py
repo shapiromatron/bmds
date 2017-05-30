@@ -34,6 +34,9 @@ LOGGING = {
     'formatters': {
         'default': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        },        
+        'simple': {
+            'format': '%(levelname)s %(message)s'
         },
     },
     'handlers': {
@@ -44,6 +47,11 @@ LOGGING = {
             'maxBytes': 50 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'default'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'loggers': {
