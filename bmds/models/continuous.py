@@ -195,15 +195,19 @@ class Exponential(Continuous):
         fn = self.output_prefix + fn
         return os.path.join(path, fn)
 
+    def set_adverse_direction(self):
+        return 1 if self.dataset.is_increasing else -1
+
     def as_dfile(self):
         self._set_values()
         params = self._dfile_print_parameters(
             'alpha', 'rho', 'a', 'b', 'c', 'd')
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {}{}'.format(
-                self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length,
-                self.exp_run_settings),
+            self.exp_run_settings.format(
+                self.dataset._BMDS_DATASET_TYPE,
+                self.dataset.dataset_length,
+                self.set_adverse_direction()),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'bmd_calculation',
@@ -221,7 +225,7 @@ class Exponential_M2_17(Exponential):
     bmds_version_dir = 'BMDS231'
     exe = 'exponential'
     exe_plot = 'Expo_CPlot'
-    exp_run_settings = ' 0 1000 11 0 1'
+    exp_run_settings = '{} {} {} 1000 11 0 1'
     version = 1.7
     date = '12/10/2009'
     defaults = {
@@ -271,7 +275,7 @@ class Exponential_M2_110(Exponential_M2_19):
 class Exponential_M3_17(Exponential_M2_17):
     minimum_dose_groups = 3
     model_name = 'Exponential-M3'
-    exp_run_settings = ' 0 0100 22 0 1'
+    exp_run_settings = '{} {} {} 0100 22 0 1'
     output_prefix = 'M3'
 
     def get_ys(self, xs):
@@ -300,7 +304,7 @@ class Exponential_M3_110(Exponential_M3_19):
 class Exponential_M4_17(Exponential_M2_17):
     minimum_dose_groups = 3
     model_name = 'Exponential-M4'
-    exp_run_settings = ' 0 0010 33 0 1'
+    exp_run_settings = '{} {} {} 0010 33 0 1'
     output_prefix = 'M4'
 
     def get_ys(self, xs):
@@ -328,7 +332,7 @@ class Exponential_M4_110(Exponential_M4_19):
 class Exponential_M5_17(Exponential_M2_17):
     minimum_dose_groups = 4
     model_name = 'Exponential-M5'
-    exp_run_settings = ' 0 0001 44 0 1'
+    exp_run_settings = '{} {} {} 0001 44 0 1'
     output_prefix = 'M5'
 
     def get_ys(self, xs):

@@ -9,9 +9,10 @@ v0.8.1 (NEXT)
 * Capture ``stdout`` and ``stderr`` for models which successfully complete  (in variables appropriately named ``stdout`` and ``stderr``); added to dict and data-frame outputs
 * Added new setting, ``MAXIMUM_POLYNOMIAL_ORDER``, by default equal to 8
 * Added new setting, ``SUFFICIENTLY_CLOSE_BMDL``, by default equal to 3
-* Documented model recommendation logic
 * Delimit text messages (logic-failures, warnings) by newline instead of semicolon
 * Add BMDS version and python BMDS version to session dictionary outputs
+* Set exponential model direction based on dataset instead of letting model guess- this should fix failures where exponential models write "Error in closing opened file" to stdout
+* Improved documentation on model recommendation logic
 
 v0.8.0 (2017-04-28)
 -------------------
