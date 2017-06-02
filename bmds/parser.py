@@ -260,12 +260,14 @@ class OutputParser(object):
             rng = range(len(outs[i].split()))
         elif table_name == 'estimated':
             tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
-            rng = range(1, len(outs[i].split()))  # skip dose, picked up w/ estimated
+            rng = range(len(outs[i].split()))
 
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
-            for j in rng:
-                self.output[tbl_names[j]].append(try_float(vals[j]))
+            # defensive code; parsing can fail if there's not enough text between
+            if len(vals) == len(tbl_names):
+                for j in rng:
+                    self.output[tbl_names[j]].append(try_float(vals[j]))
             i += 1
 
     def _lbl_pvalue(self, outs, i):

@@ -205,7 +205,7 @@ class BMDModel(object):
         try:
             parser = OutputParser(outfile, self.dtype, self.model_name)
         except Exception as err:
-            logger.error('Parsing failed: {}'.format(outfile))
+            logger.error('Parsing failed: \n\n{}\n\n{}\n'.format(self.as_dfile(), outfile))
             raise err
         return parser.output
 
