@@ -11,6 +11,7 @@ v0.8.1 (NEXT)
 * Added new setting, ``SUFFICIENTLY_CLOSE_BMDL``, by default equal to 3
 * Documented model recommendation logic
 * Delimit text messages (logic-failures, warnings) by newline instead of semicolon
+* Add BMDS version and python BMDS version to session dictionary outputs
 
 v0.8.0 (2017-04-28)
 -------------------

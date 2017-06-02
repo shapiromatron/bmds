@@ -6,7 +6,7 @@ import pandas as pd
 from simple_settings import settings
 import sys
 
-from . import constants, logic, models, utils
+from . import __version__, constants, logic, models, utils
 
 
 __all__ = ('BMDS', )
@@ -236,6 +236,8 @@ class BMDS(object):
 
     def to_dict(self, dataset_index):
         return dict(
+            bmds_version=self.version,
+            bmds_python_version=__version__,
             dataset_index=dataset_index,
             dataset=self.dataset.to_dict(),
             models=[model.to_dict(i) for i, model in enumerate(self.models)],
