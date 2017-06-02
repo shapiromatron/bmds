@@ -2,6 +2,7 @@ import os
 import inspect
 
 import bmds
+from simple_settings import settings
 
 from .fixtures import *  # noqa
 
@@ -165,6 +166,12 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.execute()
     session.recommend()
     assert session.recommended_model_index is None
+
+    # assert that the execution_halted flag is appropriately set
+    halted = [model.execution_halted for model in session.models]
+    assert halted[7] is True and session.models[7].name == 'Gamma'
+    assert str(halted) == '[False, False, False, False, False, False, False, True, False, False]'
+    assert session.models[7].execution_duration > settings.BMDS_MODEL_TIMEOUT_SECONDS
 
 
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
