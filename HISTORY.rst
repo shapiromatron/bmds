@@ -14,6 +14,7 @@ v0.8.1 (NEXT)
 * Set exponential model direction based on dataset instead of letting model guess- this should fix failures where exponential models write "Error in closing opened file" to stdout
 * Improved documentation on model recommendation logic
 * Revise ``ContinuousDataset.is_increasing`` for better edge-case checks
+* Capture observed fit dose and response for exponential continuous individual models; which allows calculation for a residual of interest
 
 v0.8.0 (2017-04-28)
 -------------------

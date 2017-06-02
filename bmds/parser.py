@@ -120,7 +120,9 @@ class OutputParser(object):
                 if outs[i] == r'                     Parameter Estimates':
                     self._lbl_parameter(outs, i)
                 elif outs[i] == r'     Dose      N         Obs Mean     Obs Std Dev':  # noqa
-                    self._lbl_fit_exp(outs, i, 'observed')
+                    self._lbl_fit_exp(outs, i, 'observed_summary')
+                elif outs[i] == r'     Dose      Obs Mean':  # noqa
+                    self._lbl_fit_exp(outs, i, 'observed_individual')
                 elif outs[i] == r'      Dose      Est Mean      Est Std     Scaled Residual':  # noqa
                     self._lbl_fit_exp(outs, i, 'estimated')
                 elif outs[i] == r'     Test          -2*log(Likelihood Ratio)       D. F.         p-value':  # noqa
@@ -250,17 +252,19 @@ class OutputParser(object):
     def _lbl_fit_exp(self, outs, i, table_name):
         # Line-by-line: find "Goodness  of  Fit" table - exponential - observed
         i += 2   # next line and dotted lines
-
-        if table_name == 'observed':
+        if table_name == 'observed_summary':
             tbl_names = ('fit_dose', 'fit_size', 'fit_observed', 'fit_stdev')
+            rng = range(len(outs[i].split()))
+        elif table_name == 'observed_individual':
+            tbl_names = ('fit_dose', 'fit_observed')
             rng = range(len(outs[i].split()))
         elif table_name == 'estimated':
             tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
-            rng = range(1, len(outs[i].split()))
+            rng = range(1, len(outs[i].split()))  # skip dose, picked up w/ estimated
 
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
-            for j in rng:  # skip dose, picked up w/ estimated
+            for j in rng:
                 self.output[tbl_names[j]].append(try_float(vals[j]))
             i += 1
 
