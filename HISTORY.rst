@@ -13,6 +13,7 @@ v0.8.1 (NEXT)
 * Add BMDS version and python BMDS version to session dictionary outputs
 * Set exponential model direction based on dataset instead of letting model guess- this should fix failures where exponential models write "Error in closing opened file" to stdout
 * Improved documentation on model recommendation logic
+* Revise ``ContinuousDataset.is_increasing`` for better edge-case checks
 
 v0.8.0 (2017-04-28)
 -------------------

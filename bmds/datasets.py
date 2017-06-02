@@ -251,13 +251,11 @@ class ContinuousDataset(Dataset):
 
     @property
     def is_increasing(self):
-        inc = 0
-        for i in range(len(self.means) - 1):
-            if self.means[i + 1] > self.means[i]:
-                inc += 1
-            else:
-                inc -= 1
-        return inc >= 0
+        # increasing or decreasing with respect to control?
+        change = 0.
+        for i in range(1, len(self.means)):
+            change += self.means[i] - self.means[0]
+        return change >= 0
 
     def drop_dose(self):
         """
