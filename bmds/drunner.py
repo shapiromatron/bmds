@@ -93,7 +93,7 @@ class BatchDfileRunner(object):
                 self.tempfiles.append(oo2)
             self.tempfiles.cleanup()
 
-        self.outputs.append(dict(
+        await self.outputs.append(dict(
             status=status,
             output=output,
             stdout=stdout,
