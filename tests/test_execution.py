@@ -174,6 +174,35 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     assert session.models[7].execution_duration > settings.BMDS_MODEL_TIMEOUT_SECONDS
 
 
+def test_capture_stdout_stderr():
+    ds = bmds.ContinuousIndividualDataset(
+        doses=[
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0.004743, 0.004743, 0.004743, 0.014997, 0.014997, 0.014997,
+            0.047425, 0.047425, 0.047425, 0.149972, 0.149972, 0.149972,
+            0.474254, 0.474254, 0.474254, 1.499723, 1.499723, 1.499723,
+            4.742541, 4.742541, 4.742541, 14.997233, 14.997233, 14.997233,
+            47.425414, 47.425414, 47.425414, 149.972327, 149.972327, 149.972327,
+        ],
+        responses = [
+            1.646863, 4.986250, 2.403875, 0.000000, 0.000000, 2.137981,
+            0.000000, 2.150713, 0.000000, 0.000000, 0.000000, 0.000000,
+            0.000000, 0.000000, 1.484629, 0.000000, 0.000000, 2.994855,
+            2.048114, 2.992167, 1.403586, 1.196975, 9.256213, 2.370792,
+            1.248945, 1.945991, 1.408758, 7.263181, 4.323784, 7.475415,
+            6.236755, 8.723263, 10.625180, 0.000000, 50.784622, 0.000000,
+            0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
+        ]
+    )
+
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=ds)
+    session.add_model(bmds.constants.M_ExponentialM5)
+    session.execute()
+    model = session.models[0]
+    assert model.stdout == ''
+    assert 'Error in closing opened files.' in model.stderr
+
+
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
                                        dataset=ddataset_requires_dose_drop)
