@@ -64,22 +64,14 @@ class BMDModel(object):
         # If status is RunStatus.SUCCESS, then three required fields:
         #   - stdout, stderr, output
         execution_end = datetime.now()
-        output_created = False
         if status is RunStatus.SUCCESS:
             output_text = kwargs['output']
             self.output_created = output_text is not None
             self.stdout = kwargs['stdout'].decode().strip()
             self.stderr = kwargs['stderr'].decode().strip()
-            if output_created:
+            if self.output_created:
                 self.outfile = output_text
                 self.output = self.parse_outfile(output_text)
-                execution_duration = self.execution_duration
-                if execution_duration is not None:
-                    self.output.update(
-                        execution_start_time=self.execution_start.isoformat(),
-                        execution_end_time=execution_end.isoformat(),
-                        execution_duration=execution_duration,
-                    )
 
         elif status is RunStatus.FAILURE:
             self.execution_halted = True
@@ -88,6 +80,13 @@ class BMDModel(object):
             pass
 
         self.execution_end = execution_end
+
+        if hasattr(self, 'output'):
+            self.output.update(
+                execution_start_time=self.execution_start.isoformat(),
+                execution_end_time=execution_end.isoformat(),
+                execution_duration=self.execution_duration,
+            )
 
     async def execute_job(self):
         """
