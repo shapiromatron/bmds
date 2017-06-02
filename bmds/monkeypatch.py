@@ -23,7 +23,7 @@ import sys
 from simple_settings import settings
 
 from .session import BMDS
-from .models.base import BMDModel
+from .models.base import BMDModel, RunStatus
 from .exceptions import RemoteBMDSExcecutionException
 
 
@@ -80,11 +80,6 @@ if platform.system() != 'Windows':
 
         return _request_session
 
-    def _set_outputs(model, result):
-        model.output_created = result['output_created']
-        if model.output_created:
-            model.parse_results(result['outfile'])
-
     def execute_model(self):
         # execute single model
         self.execution_start = datetime.now()
@@ -94,12 +89,13 @@ if platform.system() != 'Windows':
             payload = _get_payload([self])
             logger.debug('Submitting payload: {}'.format(payload))
             resp = session.post(url, data=payload)
-            result = resp.json()[0]
+            results = resp.json()[0]
+            if results['status'] == RunStatus.SUCCESS:
+                self._set_job_outputs(RunStatus.SUCCESS, **results)
+            elif results['status'] == RunStatus.FAILURE:
+                self._set_job_outputs(RunStatus.FAILURE)
         else:
-            result = {'output_created': False}
-
-        self.execution_end = datetime.now()
-        _set_outputs(self, result)
+            self._set_job_outputs(RunStatus.DID_NOT_RUN)
 
     def execute_session(self):
         # submit data
@@ -110,7 +106,7 @@ if platform.system() != 'Windows':
             if model.can_be_executed:
                 executable_models.append(model)
             else:
-                _set_outputs(model, {'output_created': False})
+                model._set_job_outputs(RunStatus.DID_NOT_RUN)
 
         if len(executable_models) == 0:
             return
@@ -122,11 +118,12 @@ if platform.system() != 'Windows':
         resp = session.post(url, data=payload)
 
         # parse results for each model
-        end_time = datetime.now()
         jsoned = resp.json()
-        for model, result in zip(executable_models, jsoned):
-            model.execution_end = end_time
-            _set_outputs(model, result)
+        for model, results in zip(executable_models, jsoned):
+            if results['status'] == RunStatus.SUCCESS:
+                model._set_job_outputs(RunStatus.SUCCESS, **results)
+            elif results['status'] == RunStatus.FAILURE:
+                model._set_job_outputs(RunStatus.FAILURE)
 
     # print startup error if host is None
     if settings.BMDS_HOST is None or \

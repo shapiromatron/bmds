@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from enum import IntEnum
 import os
 import logging
 import numpy as np
@@ -13,6 +14,12 @@ from ..utils import TempFileList
 
 logger = logging.getLogger(__name__)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
+
+
+class RunStatus(IntEnum):
+    SUCCESS = 1
+    FAILURE = 2
+    DID_NOT_RUN = 3
 
 
 class BMDModel(object):
@@ -50,18 +57,42 @@ class BMDModel(object):
         self.execution_start = None
         self.execution_end = None
 
+    def _set_job_outputs(self, status, **kwargs):
+        # If status is RunStatus.SUCCESS, then three required fields:
+        #   - stdout, stderr, output
+        execution_end = datetime.now()
+        output_created = False
+        stdout = ''
+        stderr = ''
+        if status is RunStatus.SUCCESS:
+            execution_halted = False
+            output_created = kwargs['output'] is not None
+            stdout = kwargs['stdout'].decode().strip()
+            stderr = kwargs['stderr'].decode().strip()
+            if output_created:
+                self.parse_results(kwargs['output'])
+
+        elif status is RunStatus.FAILURE:
+            execution_halted = True
+
+        elif status is RunStatus.DID_NOT_RUN:
+            execution_halted = False
+
+        self.execution_end = execution_end
+        self.execution_halted = execution_halted
+        self.output_created = output_created
+        self.stdout = stdout
+        self.stderr = stderr
+
     async def execute_job(self):
         """
         Execute the BMDS model and parse outputs if successful.
         """
         self.execution_start = datetime.now()
-        self.execution_halted = False
 
         # exit early if execution is not possible
         if not self.can_be_executed:
-            self.output_created = False
-            self.execution_end = datetime.now()
-            return
+            return self._set_job_outputs(RunStatus.DID_NOT_RUN)
 
         exe = self.get_exe_path()
         dfile = self.write_dfile()
@@ -69,39 +100,41 @@ class BMDModel(object):
         o2 = outfile.replace('.out', '.002')
 
         proc = await asyncio.create_subprocess_exec(
-                exe, dfile,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE)
+            exe, dfile,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
 
         try:
             stdout, stderr = await asyncio.wait_for(
                 proc.communicate(),
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
+
+            output = None
+            if os.path.exists(outfile):
+                with open(outfile, 'r') as f:
+                    output = f.read()
+
+            self._set_job_outputs(
+                RunStatus.SUCCESS, stdout=stdout, stderr=stderr,
+                output=output)
+
         except asyncio.TimeoutError:
-            self.execution_halted = True
             proc.kill()
             stdout, stderr = await proc.communicate()
+            self._set_job_outputs(RunStatus.FAILURE)
+
         finally:
-            self.execution_end = datetime.now()
+            if os.path.exists(outfile):
+                self.tempfiles.append(outfile)
+            else:
+                with open(dfile, 'r') as f:
+                    txt = f.read()
+                logger.info('Output file not created: \n{}\n\n'.format(txt))
 
-        self.stdout = stdout.decode().strip()
-        self.stderr = stderr.decode().strip()
+            if os.path.exists(o2):
+                self.tempfiles.append(o2)
 
-        if os.path.exists(outfile):
-            self.output_created = True
-            self.tempfiles.append(outfile)
-            with open(outfile, 'r') as f:
-                text = f.read()
-            self.parse_results(text)
-        else:
-            with open(dfile, 'r') as f:
-                txt = f.read()
-            logger.info('Output file not created: \n{}\n\n'.format(txt))
-
-        if os.path.exists(o2):
-            self.tempfiles.append(o2)
-
-        self.tempfiles.cleanup()
+            self.tempfiles.cleanup()
 
     def execute(self):
         if sys.platform == 'win32':

@@ -4,6 +4,7 @@ from simple_settings import settings
 import sys
 
 from . import utils, session
+from .models.base import RunStatus
 
 
 class BatchDfileRunner(object):
@@ -55,42 +56,49 @@ class BatchDfileRunner(object):
         with open(dfile, 'w') as f:
             f.write(obj['dfile'])
 
-        output = {
-            'output_created': False,
-            'execution_halted': False,
-            'outfile': None,
-        }
+        outfile = self.get_outfile(dfile, obj['model_name'])
+        oo2 = outfile.replace('.out', '.002')
 
         proc = await asyncio.create_subprocess_exec(
-                exe, dfile,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE)
+            exe, dfile,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        output = None
+        stdout = ''
+        stderr = ''
+
         try:
             stdout, stderr = await asyncio.wait_for(
                 proc.communicate(),
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
 
+            if os.path.exists(outfile):
+                with open(outfile, 'r') as f:
+                    output = f.read()
+
+            status = RunStatus.SUCCESS.value
+            stdout = stdout.decode().strip()
+            stderr = stderr.decode().strip()
+
         except asyncio.TimeoutError:
             proc.kill()
-            output['execution_halted'] = True
+            status = RunStatus.FAILURE.value
             stdout, stderr = await proc.communicate()
 
-        outfile = self.get_outfile(dfile, obj['model_name'])
-        oo2 = outfile.replace('.out', '.002')
-        if os.path.exists(outfile):
-            self.tempfiles.append(outfile)
-            output['output_created'] = True
-            with open(outfile, 'r') as f:
-                output['outfile'] = f.read()
-        if os.path.exists(oo2):
-            self.tempfiles.append(oo2)
+        finally:
+            if os.path.exists(outfile):
+                self.tempfiles.append(outfile)
+            if os.path.exists(oo2):
+                self.tempfiles.append(oo2)
+            self.tempfiles.cleanup()
 
-        output['stdout'] = stdout.decode().strip()
-        output['stderr'] = stderr.decode().strip()
-
-        self.tempfiles.cleanup()
-        self.outputs.append(output)
-
+        self.outputs.append(dict(
+            status=status,
+            output=output,
+            stdout=stdout,
+            stderr=stderr,
+        ))
 
     async def execute_jobs(self, objects):
         await asyncio.wait([
