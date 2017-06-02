@@ -80,6 +80,15 @@ if platform.system() != 'Windows':
 
         return _request_session
 
+    def _set_results(model, results=None):
+        if results is None:
+            model._set_job_outputs(RunStatus.DID_NOT_RUN)
+        else:
+            if results['status'] == RunStatus.SUCCESS:
+                model._set_job_outputs(RunStatus.SUCCESS, **results)
+            elif results['status'] == RunStatus.FAILURE:
+                model._set_job_outputs(RunStatus.FAILURE)
+
     def execute_model(self):
         # execute single model
         self.execution_start = datetime.now()
@@ -90,12 +99,9 @@ if platform.system() != 'Windows':
             logger.debug('Submitting payload: {}'.format(payload))
             resp = session.post(url, data=payload)
             results = resp.json()[0]
-            if results['status'] == RunStatus.SUCCESS:
-                self._set_job_outputs(RunStatus.SUCCESS, **results)
-            elif results['status'] == RunStatus.FAILURE:
-                self._set_job_outputs(RunStatus.FAILURE)
         else:
-            self._set_job_outputs(RunStatus.DID_NOT_RUN)
+            results = None
+        _set_results(self, results)
 
     def execute_session(self):
         # submit data
@@ -106,7 +112,7 @@ if platform.system() != 'Windows':
             if model.can_be_executed:
                 executable_models.append(model)
             else:
-                model._set_job_outputs(RunStatus.DID_NOT_RUN)
+                _set_results(model)
 
         if len(executable_models) == 0:
             return
@@ -120,10 +126,7 @@ if platform.system() != 'Windows':
         # parse results for each model
         jsoned = resp.json()
         for model, results in zip(executable_models, jsoned):
-            if results['status'] == RunStatus.SUCCESS:
-                model._set_job_outputs(RunStatus.SUCCESS, **results)
-            elif results['status'] == RunStatus.FAILURE:
-                model._set_job_outputs(RunStatus.FAILURE)
+            _set_results(model, results)
 
     # print startup error if host is None
     if settings.BMDS_HOST is None or \
