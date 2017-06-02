@@ -54,35 +54,40 @@ class BMDModel(object):
         self.overrides = overrides or {}
         self.values = {}
         self.output_created = False
+        self.execution_halted = False
         self.execution_start = None
         self.execution_end = None
+        self.stdout = ''
+        self.stderr = ''
 
     def _set_job_outputs(self, status, **kwargs):
         # If status is RunStatus.SUCCESS, then three required fields:
         #   - stdout, stderr, output
         execution_end = datetime.now()
         output_created = False
-        stdout = ''
-        stderr = ''
         if status is RunStatus.SUCCESS:
-            execution_halted = False
-            output_created = kwargs['output'] is not None
-            stdout = kwargs['stdout'].decode().strip()
-            stderr = kwargs['stderr'].decode().strip()
+            output_text = kwargs['output']
+            self.output_created = output_text is not None
+            self.stdout = kwargs['stdout'].decode().strip()
+            self.stderr = kwargs['stderr'].decode().strip()
             if output_created:
-                self.parse_results(kwargs['output'])
+                self.outfile = output_text
+                self.output = self.parse_outfile(output_text)
+                execution_duration = self.execution_duration
+                if execution_duration is not None:
+                    self.output.update(
+                        execution_start_time=self.execution_start.isoformat(),
+                        execution_end_time=execution_end.isoformat(),
+                        execution_duration=execution_duration,
+                    )
 
         elif status is RunStatus.FAILURE:
-            execution_halted = True
+            self.execution_halted = True
 
         elif status is RunStatus.DID_NOT_RUN:
-            execution_halted = False
+            pass
 
         self.execution_end = execution_end
-        self.execution_halted = execution_halted
-        self.output_created = output_created
-        self.stdout = stdout
-        self.stderr = stderr
 
     async def execute_job(self):
         """
@@ -196,21 +201,14 @@ class BMDModel(object):
     def get_outfile(self, dfile):
         return dfile.replace('.(d)', '.out')
 
-    def parse_results(self, outfile):
+    def parse_outfile(self, outfile):
+        # returned parsed output dictionary
         try:
             parser = OutputParser(outfile, self.dtype, self.model_name)
         except Exception as err:
             logger.error('Parsing failed: {}'.format(outfile))
             raise err
-        self.outfile = outfile
-        self.output = parser.output
-        execution_duration = self.execution_duration
-        if execution_duration is not None:
-            self.output.update(
-                execution_start_time=self.execution_start.isoformat(),
-                execution_end_time=self.execution_end.isoformat(),
-                execution_duration=execution_duration,
-            )
+        return parser.output
 
     def as_dfile(self):
         """
@@ -412,10 +410,10 @@ class BMDModel(object):
             model_version=self.version,
             has_output=self.output_created,
             dfile=self.as_dfile(),
+            execution_halted=self.execution_halted,
+            stdout=self.stdout,
+            stderr=self.stderr,
             outfile=getattr(self, 'outfile', None),
-            execution_halted=getattr(self, 'execution_halted', None),
-            stdout=getattr(self, 'stdout', None),
-            stderr=getattr(self, 'stderr', None),
             output=getattr(self, 'output', None),
             logic_bin=getattr(self, 'logic_bin', None),
             logic_notes=getattr(self, 'logic_notes', None),
