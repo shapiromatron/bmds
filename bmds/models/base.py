@@ -147,6 +147,7 @@ class BMDModel(object):
         else:
             loop = asyncio.get_event_loop()
         loop.run_until_complete(self.execute_job())
+        loop.close()
 
     @property
     def execution_duration(self):

@@ -18,8 +18,6 @@ class BatchDfileRunner(object):
     def __init__(self, inputs):
         self.tempfiles = utils.TempFileList()
         self.inputs = inputs
-        self.outputs = []
-        self.execute()
 
     def get_outfile(self, dfile, model_name):
         outfile = dfile.replace('.(d)', '.out')
@@ -91,19 +89,15 @@ class BatchDfileRunner(object):
                 self.tempfiles.append(outfile)
             if os.path.exists(oo2):
                 self.tempfiles.append(oo2)
-            self.tempfiles.cleanup()
 
-        await self.outputs.append(dict(
+        self.tempfiles.cleanup()
+
+        return dict(
             status=status,
             output=output,
             stdout=stdout,
             stderr=stderr,
-        ))
-
-    async def execute_jobs(self, objects):
-        await asyncio.wait([
-            self.execute_job(obj) for obj in objects
-        ])
+        )
 
     def execute(self):
         if sys.platform == 'win32':
@@ -111,5 +105,13 @@ class BatchDfileRunner(object):
             asyncio.set_event_loop(loop)
         else:
             loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.execute_jobs(self.inputs))
-        return self.outputs
+
+        future = asyncio.gather(*[
+            self.execute_job(obj)
+            for obj in self.inputs
+        ])
+
+        results = loop.run_until_complete(future)
+        loop.close()
+
+        return results

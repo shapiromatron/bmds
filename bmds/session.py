@@ -135,6 +135,7 @@ class BMDS(object):
         else:
             loop = asyncio.get_event_loop()
         loop.run_until_complete(self.execute_models())
+        loop.close()
 
     @property
     def recommendation_enabled(self):
