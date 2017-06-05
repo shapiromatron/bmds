@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import inspect
 
@@ -33,25 +34,30 @@ def test_default_execution(cdataset, ddataset, cidataset):
         for model in session.models:
             assert model.output_created is True
             assert len(model.outfile) > 0
-            assert model.execution_duration > 0
+            assert model.execution_duration >= 0
             assert 'execution_end_time' in model.output
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS,
+                                       dataset=cdataset)
     _check_session(session, 10)
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS_INDIVIDUAL, dataset=cidataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS_INDIVIDUAL,
+                                       dataset=cidataset)
     _check_session(session, 12)
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
+                                       dataset=ddataset)
     _check_session(session, 10)
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER,
+                                       dataset=ddataset)
     _check_session(session, 3)
 
 
 def test_parameter_overrides(cdataset):
     # assert to overrides are used
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS,
+                                       dataset=cdataset)
     session.add_model(bmds.constants.M_Polynomial)
     session.add_model(bmds.constants.M_Polynomial,
                       overrides={'constant_variance': 1, 'degree_poly': 3})
@@ -100,7 +106,8 @@ def test_tiny_datasets():
 
 
 def test_continuous_restrictions(cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS,
+                                       dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
     session.add_model(bmds.constants.M_Power, overrides={'restrict_power': 0})
     session.add_model(bmds.constants.M_Hill)
@@ -115,17 +122,19 @@ def test_continuous_restrictions(cdataset):
     for m in session.models:
         assert m.output_created is True
 
-    assert 'The power is restricted to be greater than or equal to 1' in power1.outfile
+    assert 'The power is restricted to be greater than or equal to 1' in power1.outfile  # noqa
     assert 'The power is not restricted' in power2.outfile
     assert 'Power parameter restricted to be greater than 1' in hill1.outfile
     assert 'Power parameter is not restricted' in hill2.outfile
 
 
 def test_dichotomous_restrictions(ddataset):
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
+                                       dataset=ddataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Weibull)
-        session.add_model(bmds.constants.M_Weibull, overrides={'restrict_power': 0})
+        session.add_model(bmds.constants.M_Weibull,
+                          overrides={'restrict_power': 0})
 
     session.execute()
     weibull1 = session.models[0]
@@ -155,13 +164,15 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     # ensure library doesn't fail with a terrible dataset that should never
     # be executed in the first place (which causes BMDS to throw NaN)
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=bad_cdataset)
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS,
+                                       dataset=bad_cdataset)
     session.add_default_models()
     session.execute()
     session.recommend()
     assert session.recommended_model_index is None
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
+                                       dataset=bad_ddataset)
     session.add_default_models()
     session.execute()
     session.recommend()
@@ -169,9 +180,12 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
 
     # assert that the execution_halted flag is appropriately set
     halted = [model.execution_halted for model in session.models]
+    str_halted = '[False, False, False, False, False, False, False, True, False, False]'  # noqa
     assert halted[7] is True and session.models[7].name == 'Gamma'
-    assert str(halted) == '[False, False, False, False, False, False, False, True, False, False]'
-    assert session.models[7].execution_duration > settings.BMDS_MODEL_TIMEOUT_SECONDS
+    assert str(halted) == str_halted
+    total_time = session.models[7].execution_duration
+    timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
+    assert np.isclose(total_time, timeout) or total_time > timeout
 
 
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
