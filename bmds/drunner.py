@@ -1,13 +1,12 @@
-import asyncio
 import os
 from simple_settings import settings
-import sys
+import subprocess
 
 from . import utils, session
 from .models.base import RunStatus
 
 
-class BatchDfileRunner(object):
+class BatchDfileRunner:
     """
     Batch-execute a list of pre-created d-files.
 
@@ -39,7 +38,7 @@ class BatchDfileRunner(object):
         outfile = os.path.join(path, prefix + fn)
         return outfile
 
-    async def execute_job(self, obj):
+    def execute_job(self, obj):
         """
         Execute the BMDS model and parse outputs if successful.
         """
@@ -57,18 +56,17 @@ class BatchDfileRunner(object):
         outfile = self.get_outfile(dfile, obj['model_name'])
         oo2 = outfile.replace('.out', '.002')
 
-        proc = await asyncio.create_subprocess_exec(
-            exe, dfile,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+        proc = subprocess.Popen(
+            [exe, dfile],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
 
         output = None
         stdout = ''
         stderr = ''
 
         try:
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(),
+            stdout, stderr = proc.communicate(
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
 
             if os.path.exists(outfile):
@@ -79,10 +77,10 @@ class BatchDfileRunner(object):
             stdout = stdout.decode().strip()
             stderr = stderr.decode().strip()
 
-        except asyncio.TimeoutError:
+        except subprocess.TimeoutExpired:
             proc.kill()
             status = RunStatus.FAILURE.value
-            stdout, stderr = await proc.communicate()
+            stdout, stderr = proc.communicate()
 
         finally:
             if os.path.exists(outfile):
@@ -100,18 +98,4 @@ class BatchDfileRunner(object):
         )
 
     def execute(self):
-        if sys.platform == 'win32':
-            loop = asyncio.ProactorEventLoop()
-            asyncio.set_event_loop(loop)
-        else:
-            loop = asyncio.get_event_loop()
-
-        future = asyncio.gather(*[
-            self.execute_job(obj)
-            for obj in self.inputs
-        ])
-
-        results = loop.run_until_complete(future)
-        loop.close()
-
-        return results
+        return list(map(self.execute_job, self.inputs))
