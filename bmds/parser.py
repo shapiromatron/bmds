@@ -253,11 +253,11 @@ class OutputParser(object):
         # Line-by-line: find "Goodness  of  Fit" table - exponential - observed
         i += 2   # next line and dotted lines
         if table_name == 'observed_summary':
-            tbl_names = ('fit_dose', 'fit_size', 'fit_observed', 'fit_stdev')
+            tbl_names = (1, 'fit_dose', 'fit_size', 'fit_observed', 'fit_stdev')
             rng = range(len(outs[i].split()))
         elif table_name == 'observed_individual':
             tbl_names = ('fit_dose', 'fit_observed')
-            rng = range(len(outs[i].split()))
+            rng = range(1, len(outs[i].split()))
         elif table_name == 'estimated':
             tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
             rng = range(len(outs[i].split()))
@@ -265,6 +265,7 @@ class OutputParser(object):
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
             # defensive code; parsing can fail if there's not enough text between
+            # remove once BMDS 1.7 is released?
             if len(vals) == len(tbl_names):
                 for j in rng:
                     self.output[tbl_names[j]].append(try_float(vals[j]))
