@@ -79,12 +79,26 @@ def test_dfile_outputs():
 def test_is_increasing():
     dummy4 = [1, 2, 3, 4]
 
-    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4)
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4,
+                                means=dummy4, stdevs=dummy4)
     assert ds.is_increasing is True
 
     rev = list(reversed(dummy4))
-    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=rev, stdevs=dummy4)
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4,
+                                means=rev, stdevs=dummy4)
     assert ds.is_increasing is False
+
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4,
+                                means=[1, 2, 3, 0], stdevs=dummy4)
+    assert ds.is_increasing is True
+
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4,
+                                means=[1, 3, 2, 1], stdevs=dummy4)
+    assert ds.is_increasing is True
+
+    ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4,
+                                means=[0, 2, -1, 0], stdevs=dummy4)
+    assert ds.is_increasing is True
 
 
 def test_dose_drops(cidataset):

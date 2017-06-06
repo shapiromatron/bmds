@@ -1,10 +1,12 @@
+import asyncio
 from copy import deepcopy
 from collections import OrderedDict
 import os
 import pandas as pd
-import asyncio
+from simple_settings import settings
+import sys
 
-from . import constants, logic, models, utils
+from . import __version__, constants, logic, models, utils
 
 
 __all__ = ('BMDS', )
@@ -87,14 +89,19 @@ class BMDS(object):
         return len(self.models) > 0
 
     def add_default_models(self, global_overrides=None):
+
+        max_poly_order = min(
+            self.dataset.num_dose_groups,
+            settings.MAXIMUM_POLYNOMIAL_ORDER + 1)
+
         for name in self.model_options[self.dtype].keys():
             overrides = deepcopy(global_overrides) \
                 if global_overrides is not None \
                 else None
 
             if name in constants.VARIABLE_POLYNOMIAL:
-                start_idx = 2 if name == constants.M_Polynomial else 1
-                for i in range(start_idx, min(self.dataset.num_dose_groups, 8)):
+                min_poly_order = 2 if name == constants.M_Polynomial else 1
+                for i in range(min_poly_order, max_poly_order):
                     overrides = {} \
                         if overrides is None \
                         else deepcopy(overrides)
@@ -116,14 +123,19 @@ class BMDS(object):
 
     async def execute_models(self):
         tasks = [
-            asyncio.ensure_future(model.execute_job())
+            model.execute_job()
             for model in self.models
         ]
         await asyncio.wait(tasks)
 
     def execute(self):
-        ioloop = asyncio.get_event_loop()
-        ioloop.run_until_complete(self.execute_models())
+        if sys.platform == 'win32':
+            loop = asyncio.ProactorEventLoop()
+            asyncio.set_event_loop(loop)
+        else:
+            loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.execute_models())
+        loop.close()
 
     @property
     def recommendation_enabled(self):
@@ -180,7 +192,7 @@ class BMDS(object):
         # return an ordered defaultdict list
         keys = [
             'dataset_index', 'model_name', 'model_index',
-            'model_version', 'has_output',
+            'model_version', 'has_output', 'execution_halted',
 
             'BMD', 'BMDL', 'BMDU', 'CSF',
             'AIC', 'pvalue1', 'pvalue2', 'pvalue3', 'pvalue4',
@@ -192,7 +204,7 @@ class BMDS(object):
         ]
 
         if include_io:
-            keys.extend(['dfile', 'outfile'])
+            keys.extend(['dfile', 'outfile', 'stdout', 'stderr'])
 
         return OrderedDict([(key, list()) for key in keys])
 
@@ -225,6 +237,8 @@ class BMDS(object):
 
     def to_dict(self, dataset_index):
         return dict(
+            bmds_version=self.version,
+            bmds_python_version=__version__,
             dataset_index=dataset_index,
             dataset=self.dataset.to_dict(),
             models=[model.to_dict(i) for i, model in enumerate(self.models)],

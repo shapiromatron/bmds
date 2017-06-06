@@ -2,6 +2,24 @@
 History
 =======
 
+v0.8.1 (2017-06-06)
+-------------------
+* Use ``asyncio.create_subprocess_exec`` instead of custom Thread implementation for running BMDS models
+* Add new output to capture if BMDS model killed (``execution_halted``) based on Timeout; added to all output formats
+* Capture ``stdout`` and ``stderr`` for models which successfully complete  (in variables appropriately named ``stdout`` and ``stderr``); added to dict and data-frame outputs
+* Added new setting, ``MAXIMUM_POLYNOMIAL_ORDER``, by default equal to 8
+* Added new setting, ``SUFFICIENTLY_CLOSE_BMDL``, by default equal to 3
+* Delimit text messages (logic-failures, warnings) by newline instead of semicolon
+* Add BMDS version and python BMDS version to session dictionary outputs
+* Set exponential model direction based on dataset instead of letting model guess- this should fix failures where exponential models write "Error in closing opened file" to stdout
+* Improved documentation on model recommendation logic
+* Revise ``ContinuousDataset.is_increasing`` for better edge-case checks
+* Capture observed fit dose and response for exponential continuous individual models; which allows calculation for a residual of interest
+* Added Appveyor_ for testing on Windows
+
+.. _Appveyor: https://ci.appveyor.com/project/shapiromatron/bmds
+
+
 v0.8.0 (2017-04-28)
 -------------------
 * **BREAKING CHANGE 💥💥💥**: dropped support for Python 2 and Python ≤ 3.4

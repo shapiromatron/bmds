@@ -15,17 +15,27 @@ class Rule(object):
 
     def __unicode__(self):
         enabled = u'✓' if self.enabled else u'✕'
-        binmoji = constants.BINMOJI[self.failure_bin]
         threshold = '' if math.isnan(self.threshold) \
             else ', threshold={}'.format(self.threshold)
         return u'{0} {1} [bin={2}{3}]'.format(
-            enabled, self.rule_name, binmoji, threshold)
+            enabled, self.rule_name, self.binmoji, threshold)
 
     def check(self, dataset, output):
         if self.enabled:
             return self.apply_rule(dataset, output)
         else:
             return self.return_pass()
+
+    @property
+    def binmoji(self):
+        return constants.BINMOJI[self.failure_bin]
+
+    @property
+    def bin_text(self):
+        return constants.BIN_TEXT[self.failure_bin]
+
+    def as_row(self):
+        return [self.rule_name, self.enabled, self.bin_text, self.threshold]
 
     def return_pass(self):
         return constants.BIN_NO_CHANGE, None

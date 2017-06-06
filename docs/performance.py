@@ -1,6 +1,7 @@
-from concurrent.futures import ProcessPoolExecutor
+# -*- coding: utf-8 -*-
+
+from datetime import datetime
 import json
-import multiprocessing
 import os
 import sys
 
@@ -22,33 +23,35 @@ def create_datasets(fn):
         raw_datasets = json.load(f)
 
     datasets = []
-    for raw_dataset in raw_datasets:
-        dataset = bmds.ContinuousDataset(**raw_dataset)
+    for raw_dataset in raw_datasets['datasets']:
+        dataset = bmds.ContinuousIndividualDataset(**raw_dataset)
         datasets.append(dataset)
 
     return datasets
 
 
-def execute(dataset):
-    # configure BMDS session and execute
+def execute(idx, dataset):
     session = bmds.BMDS.latest_version(
-        bmds.constants.CONTINUOUS,
+        bmds.constants.CONTINUOUS_INDIVIDUAL,
         dataset=dataset)
     session.add_default_models()
-    session.execute()
-    session.recommend()
+    try:
+        session.execute()
+        session.recommend()
+    except Exception as e:
+        print('Exception: {} {}'.format(idx, dataset.kwargs.get('id')))
+        raise e
     return session
 
 
-def export_as_json(fn, sessions):
-    # add sessions to a bmds.SessionBatch object and return JSON output
+def export(sessions, fn):
+    # add sessions to a bmds.SessionBatch object; return JSON and excel outputs
     batch = bmds.SessionBatch()
     batch.extend(sessions)
     batch.to_json(fn, indent=2)
+    batch.to_excel(fn + '.xlsx')
 
 
-# must start multiprocessor in main-body in Windows
-# https://docs.python.org/3/library/multiprocessing.html
 if __name__ == '__main__':
 
     # check that we're getting the correct input arguments
@@ -63,10 +66,19 @@ if __name__ == '__main__':
     # create input datasets
     datasets = create_datasets(inputfn)
 
-    # use n-1 processors for execution
-    nprocs = max(1, multiprocessing.cpu_count() - 1)
-    with ProcessPoolExecutor(max_workers=nprocs) as executor:
-        results = executor.map(execute, datasets)
+    # execute
+    start = datetime.now()
+    results = [
+        execute(idx, dataset)
+        for idx, dataset in enumerate(datasets)
+    ]
+    end = datetime.now()
 
-    # export all sessions as JSON
-    export_as_json(outputfn, list(results))
+    # print some runtime benchmarks
+    total_seconds = (end - start).total_seconds()
+    total_minutes = total_seconds / 60
+    print('Runtime: {:.2f} min for {} datasets'.format(total_minutes, len(datasets)))
+    print('{:.2f} seconds per model'.format(total_seconds / len(datasets)))
+
+    # export session results
+    export(results, outputfn)

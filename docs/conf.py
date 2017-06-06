@@ -12,7 +12,7 @@ autosummary_generate = True
 
 master_doc = 'index'
 project = u'BMDS'
-copyright = u'2016, Andy Shapiro'
+copyright = u'2017, Andy Shapiro'
 author = u'Andy Shapiro'
 
 language = None

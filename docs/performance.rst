@@ -9,22 +9,21 @@ except with lots more data or it wouldn't be worth it:
 
 .. code-block:: json
 
-   [
-    {
-        "id": 6,
-        "doses": [0.0, 1340.0, 2820.0, 5600.0, 11125.0, 23000.0],
-        "ns": [10, 10, 10, 10, 10, 8],
-        "means": [29.3, 28.4, 27.2, 26.0, 25.8, 24.5],
-        "stdevs": [2.53, 1.9,  2.53, 2.53, 2.21, 1.58]
-    },
-    {
-        "id": 9,
-        "doses": [0.0, 20.0, 40.0, 80.0, 170.0, 320.0],
-        "ns": [10, 10, 10, 10, 10, 10],
-        "means": [35.79, 36.69, 37.84, 44.2, 48.03, 58.4],
-        "stdevs": [0.56, 0.36, 0.51, 0.27, 0.89, 1.4]
-    }
-  ]
+    [
+        "datasets": [
+            {
+                "id": 6,
+                "doses": [
+                    0, 0, 0.1, 0.1, 1, 1, 10,
+                    10, 100, 100, 300, 300, 500, 500
+                ],
+                "responses": [
+                    8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509,
+                    9.1556, 9.6821, 9.8256, 10.2095, 10.2222, 12.0382, 11.0567
+                ]
+            }
+        ]
+    ]
 
 Then, create a script like this for parallel execution. Note that you can set
 the ``base_session`` here to define custom models or recommendation logic,
