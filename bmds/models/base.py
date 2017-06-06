@@ -67,8 +67,8 @@ class BMDModel(object):
         if status is RunStatus.SUCCESS:
             output_text = kwargs['output']
             self.output_created = output_text is not None
-            self.stdout = kwargs['stdout'].decode().strip()
-            self.stderr = kwargs['stderr'].decode().strip()
+            self.stdout = kwargs['stdout']
+            self.stderr = kwargs['stderr']
             if self.output_created:
                 self.outfile = output_text
                 self.output = self.parse_outfile(output_text)
@@ -119,7 +119,9 @@ class BMDModel(object):
                     output = f.read()
 
             self._set_job_outputs(
-                RunStatus.SUCCESS, stdout=stdout, stderr=stderr,
+                RunStatus.SUCCESS,
+                stdout=stdout.decode().strip(),
+                stderr=stderr.decode().strip(),
                 output=output)
 
         except asyncio.TimeoutError:

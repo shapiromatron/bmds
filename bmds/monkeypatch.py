@@ -84,9 +84,10 @@ if platform.system() != 'Windows':
         if results is None:
             model._set_job_outputs(RunStatus.DID_NOT_RUN)
         else:
-            if results['status'] == RunStatus.SUCCESS:
+            status = results.pop('status')
+            if status == RunStatus.SUCCESS:
                 model._set_job_outputs(RunStatus.SUCCESS, **results)
-            elif results['status'] == RunStatus.FAILURE:
+            elif status == RunStatus.FAILURE:
                 model._set_job_outputs(RunStatus.FAILURE)
 
     def execute_model(self):
