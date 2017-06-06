@@ -25,10 +25,6 @@ requirements = [
     'simple-settings',
 ]
 
-test_requirements = [
-    'pytest',
-]
-
 setup(
     name='bmds',
     version=get_version(),
@@ -40,7 +36,23 @@ setup(
     license='MIT',
     packages=find_packages(exclude=['tests']),
     install_requires=requirements,
-    tests_require=test_requirements,
+    tests_require=['pytest-runner', 'pytest', 'pytest-mpl'],
+    # List additional groups of dependencies here
+    # (e.g. development dependencies).
+    # You can install these using the following syntax, for example:
+    # $ pip install -e .[dev,test]
+    extras_require={
+        'dev': [
+            'wheel',
+            'sphinx',
+            'watchdog',
+        ],
+        'test': [
+            'pytest',
+            'pytest-runner',
+            'pytest-mpl',
+        ],
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[

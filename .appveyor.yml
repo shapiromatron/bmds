@@ -1,0 +1,13 @@
+version: 1.0.{build}
+
+build: off
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python36"
+
+install:
+  - "%PYTHON%\\python.exe -m pip install .[test]"
+
+test_script:
+  - "%PYTHON%\\python.exe setup.py test"
