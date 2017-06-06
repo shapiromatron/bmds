@@ -2,7 +2,7 @@
 History
 =======
 
-v0.8.1 (NEXT)
+v0.8.1 (2017-06-06)
 -------------------
 * Use ``asyncio.create_subprocess_exec`` instead of custom Thread implementation for running BMDS models
 * Add new output to capture if BMDS model killed (``execution_halted``) based on Timeout; added to all output formats
@@ -15,6 +15,10 @@ v0.8.1 (NEXT)
 * Improved documentation on model recommendation logic
 * Revise ``ContinuousDataset.is_increasing`` for better edge-case checks
 * Capture observed fit dose and response for exponential continuous individual models; which allows calculation for a residual of interest
+* Added Appveyor_ for testing on Windows
+
+.. _Appveyor: https://ci.appveyor.com/project/shapiromatron/bmds
+
 
 v0.8.0 (2017-04-28)
 -------------------
