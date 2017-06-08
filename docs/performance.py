@@ -78,7 +78,7 @@ if __name__ == '__main__':
     total_seconds = (end - start).total_seconds()
     total_minutes = total_seconds / 60
     print('Runtime: {:.2f} min for {} datasets'.format(total_minutes, len(datasets)))
-    print('{:.2f} seconds per model'.format(total_seconds / len(datasets)))
+    print('{:.2f} seconds per dataset'.format(total_seconds / len(datasets)))
 
     # export session results
     export(results, outputfn)
