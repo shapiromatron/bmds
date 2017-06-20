@@ -4,6 +4,7 @@ import pandas as pd
 from six import string_types
 
 from .session import BMDS
+from .reporter import Reporter
 
 
 class SessionBatch(list):
@@ -161,6 +162,44 @@ class SessionBatch(list):
         if isinstance(filename, string_types):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
+
+    def to_docx(self, filename=None,
+                input_dataset=True, summary_table=True,
+                recommended_model=True, all_models=False):
+        """
+        Write batch sessions to a Word file.
+
+
+        Parameters
+        ----------
+        filename : str or None
+            If provided, the file is saved to this location, otherwise this
+            method returns a docx.Document
+        input_dataset : bool
+            Include input dataset data table
+        summary_table : bool
+            Include model summary table
+        recommended_model : bool
+            Include the recommended model output and dose-response plot, if
+            one exists
+        all_models : bool
+            Include all models output and dose-response plots
+
+        Returns
+        -------
+        bmds.Reporter
+            The bmds.Reporter object.
+
+        """
+        rep = Reporter()
+        for model in self:
+            rep.add_session(self, input_dataset, summary_table,
+                            recommended_model, all_models)
+
+        if filename:
+            rep.save(filename)
+
+        return rep
 
     def save_plots(self, directory, format='png', recommended_only=False):
         """
