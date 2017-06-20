@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from io import BytesIO
 import docx
 from docx.shared import Inches
@@ -12,9 +12,41 @@ StyleGuide = namedtuple('StyleGuide', [
     'table',
     'tbl_header',
     'tbl_body',
+    'tbl_footnote',
     'outfile',
     'header_level'
 ])
+
+
+def float_formatter(value):
+    if np.isclose(value, 0.):
+        tmpl = '{}'
+    elif value < 0.001:
+        tmpl = '{:.1E}'
+    else:
+        tmpl = '{:.3f}'
+    return tmpl.format(value)
+
+
+class TableFootnote(OrderedDict):
+    def __init__(self):
+        super().__init__()
+        self.ascii_char = 96
+
+    def add_footnote(self, p, text):
+        if text not in self:
+            self.ascii_char += 1
+            self[text] = chr(self.ascii_char)
+        self._add_footnote_character(p, self[text])
+
+    def _add_footnote_character(self, p, symbol):
+        run = p.add_run(symbol)
+        run.font.superscript = True
+
+    def add_footnote_text(self, p):
+        for text, char in self.items():
+            self._add_footnote_character(p, char)
+            p.add_run(' {}\n'.format(text))
 
 
 class Reporter:
@@ -50,7 +82,7 @@ class Reporter:
 
         if styles is None:
             styles = StyleGuide('bmdsTbl', 'bmdsTblHeader', 'bmdsTblBody',
-                                'bmdsOutputFile', 1)
+                                'bmdsTblFootnote', 'bmdsOutputFile', 1)
 
         self.styles = styles
         self.doc = docx.Document(template)
@@ -172,21 +204,32 @@ class Reporter:
             style = self.styles.tbl_body
 
         if isinstance(value, float):
-            if np.isclose(value, 0.):
-                tmpl = '{}'
-            elif value < 0.001:
-                tmpl = '{:.1E}'
-            else:
-                tmpl = '{:.3f}'
-            value = tmpl.format(value)
+            value = float_formatter(value)
 
         cell.paragraphs[0].text = str(value)
         cell.paragraphs[0].style = style
+
+    _VARIANCE_FOOTNOTE_TEMPLATE = '{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {}).'  # noqa
+
+    def _get_variance_footnote(self, models):
+        text = None
+        for model in models:
+            if model.has_successfully_executed:
+                text = self._VARIANCE_FOOTNOTE_TEMPLATE.format(
+                    model.get_variance_model_name(),
+                    float_formatter(model.output['p_value2']),
+                    float_formatter(model.output['p_value3'])
+                )
+                break
+        if text is None:
+            text = 'Model variance undetermined'
+        return text
 
     def _add_session_summary_table(self, session):
         self.doc.add_heading('Summary table', self.styles.header_level + 1)
         hdr = self.styles.tbl_header
         model_groups = session._group_models()
+        footnotes = TableFootnote()
 
         if session.dtype in constants.CONTINUOUS_DTYPES:
             tbl = self.doc.add_table(len(model_groups) + 2, 6,
@@ -200,6 +243,10 @@ class Reporter:
             self._write_cell(tbl.cell(1, 3), 'AIC', style=hdr)
             self._write_cell(tbl.cell(0, 4), 'BMD', style=hdr)
             self._write_cell(tbl.cell(0, 5), 'BMDL', style=hdr)
+
+            # add header footnote:
+            p = tbl.cell(0, 0).paragraphs[0]
+            footnotes.add_footnote(p, self._get_variance_footnote(session.models))
 
             # merge header columns
             tbl.cell(0, 0).merge(tbl.cell(1, 0))
@@ -230,6 +277,10 @@ class Reporter:
         for i, model_group in enumerate(model_groups):
             self._to_docx_summary_row(model_group, tbl, i + 2)
 
+        # write footnote
+        if len(footnotes) > 0:
+            p = self.doc.add_paragraph(style=self.styles.tbl_footnote)
+            footnotes.add_footnote_text(p)
 
     def _to_docx_summary_row(self, model_group, tbl, idx):
 

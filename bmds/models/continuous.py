@@ -15,6 +15,11 @@ class Continuous(BMDModel):
         return 0 if (self.dataset.anova is None or
                      self.dataset.anova[2].TEST <= 0.1) else 1
 
+    def get_variance_model_name(self):
+        return 'Modeled variance' \
+            if self.values['constant_variance'] == 0 \
+            else 'Constant variance'
+
 
 class Polynomial_216(Continuous):
     minimum_dose_groups = 2
