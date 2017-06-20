@@ -19,6 +19,7 @@ requirements = [
     'requests',
     'numpy',
     'pandas',
+    'python-docx>=0.8.6',
     'openpyxl',
     'matplotlib',
     'scipy',
