@@ -8,11 +8,6 @@ import os
 from . import constants, datasets, models
 
 
-# - add documentation
-# - update changelog
-# - improve summary table
-
-
 StyleGuide = namedtuple('StyleGuide', [
     'table',
     'tbl_header',
@@ -191,9 +186,10 @@ class Reporter:
     def _add_session_summary_table(self, session):
         self.doc.add_heading('Summary table', self.styles.header_level + 1)
         hdr = self.styles.tbl_header
+        model_groups = session._group_models()
 
         if session.dtype in constants.CONTINUOUS_DTYPES:
-            tbl = self.doc.add_table(len(session.models) + 2, 6,
+            tbl = self.doc.add_table(len(model_groups) + 2, 6,
                                      style=self.styles.table)
 
             # write headers
@@ -213,7 +209,7 @@ class Reporter:
             tbl.cell(0, 5).merge(tbl.cell(1, 5))
 
         else:
-            tbl = self.doc.add_table(len(session.models) + 2, 5,
+            tbl = self.doc.add_table(len(model_groups) + 2, 5,
                                      style=self.styles.table)
 
             # write headers
@@ -231,15 +227,21 @@ class Reporter:
             tbl.cell(0, 4).merge(tbl.cell(1, 4))
 
         # write body
-        for i, model in enumerate(session.models):
-            self._to_docx_summary_row(model, tbl, i + 2)
+        for i, model_group in enumerate(model_groups):
+            self._to_docx_summary_row(model_group, tbl, i + 2)
 
-    def _to_docx_summary_row(self, model, tbl, idx):
 
+    def _to_docx_summary_row(self, model_group, tbl, idx):
+
+        model = model_group[0]
         output = getattr(model, 'output', {})
+        model_names = ', \n'.join([
+            model.name for model in model_group
+        ])
+
         if isinstance(model, models.Dichotomous):
 
-            self._write_cell(tbl.cell(idx, 0), model.name)
+            self._write_cell(tbl.cell(idx, 0), model_names)
             self._write_cell(tbl.cell(idx, 1), output.get('p_value4', '-'))
             self._write_cell(tbl.cell(idx, 2), output.get('AIC', '-'))
             self._write_cell(tbl.cell(idx, 3), output.get('BMD', '-'))
@@ -247,7 +249,7 @@ class Reporter:
 
         elif isinstance(model, models.Continuous):
 
-            self._write_cell(tbl.cell(idx, 0), model.name)
+            self._write_cell(tbl.cell(idx, 0), model_names)
             self._write_cell(tbl.cell(idx, 1), output.get('p_value2', '-'))
             self._write_cell(tbl.cell(idx, 2), output.get('p_value4', '-'))
             self._write_cell(tbl.cell(idx, 3), output.get('AIC', '-'))

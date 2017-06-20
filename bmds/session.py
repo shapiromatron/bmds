@@ -308,10 +308,50 @@ class BMDS(object):
         rep = reporter.Reporter()
         rep.add_session(self, title, input_dataset, summary_table,
                         recommended_model, all_models)
+
         if filename:
             rep.save(filename)
 
         return rep
+
+    def _group_models(self):
+        """
+        If AIC and BMD are numeric and identical, then treat models as
+        identical. Returns a list of lists. The outer list is a list of related
+        models, the inner list contains each individual model, sorted by the
+        number of parameters in ascending order.
+
+        This is required because in some cases, a higher-order model may not use
+        some parameters and can effectively collapse to a lower order model
+        (for example, a 2nd order polynomial and power model may collapse to a
+        linear model). In summary outputs, we may want to present all models in
+        one row, since they are the same model effectively.
+        """
+        od = OrderedDict()
+
+        # Add models to appropriate list. We only aggregate models which
+        # completed successfully and have a valid AIC and BMD.
+        for i, model in enumerate(self.models):
+            output = getattr(model, 'output', {})
+            if output.get('AIC') and output.get('BMD') and output['BMD'] > 0:
+                key = '{}-{}'.format(output['AIC'], output['BMD'])
+                if key in od:
+                    od[key].append(model)
+                else:
+                    od[key] = [model]
+            else:
+                od[i] = [model]
+
+        # Sort each list by the number of parameters
+        def _get_num_params(model):
+            return len(model.output['parameters']) \
+                if hasattr(model, 'output') and 'parameters' in model.output \
+                else 0
+
+        for key, _models in od.items():
+            _models.sort(key=_get_num_params)
+
+        return list(od.values())
 
 
 class BMDS_v231(BMDS):
