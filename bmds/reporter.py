@@ -24,27 +24,31 @@ StyleGuide = namedtuple('StyleGuide', [
 
 class Reporter:
 
-    def __init__(self, tmpl=None, styles=None):
+    def __init__(self, template=None, styles=None):
         """
         Create a new Microsoft Word document (.docx) reporter object.
 
 
         Parameters
         ----------
-        tmpl : str (filename) or docx.Document object, or None. If None, the
-               default built-in template is used.
+        template : str, docx.Document instance, or None.
+            If str, the path the word template to be used.
+            If a docx.Document object, this object is used.
+            If None, the default template is used.
 
-        styles : Instance of StyleGuide, or None. Determines which styles to
-                 apply for each component in document. If None, then the
-                 default StyleGuide is used.
+        styles : Instance of StyleGuide, or None.
+            Determines which styles to apply for each component in document.
+            If None, then the default StyleGuide is used. Note that if a custom
+            template is specified, a StyleGuide should generally also be
+            specified.
 
         Returns
         -------
         None.
         """
 
-        if tmpl is None:
-            tmpl = os.path.join(
+        if template is None:
+            template = os.path.join(
                 os.path.dirname(__file__),
                 'templates/base.docx'
             )
@@ -54,11 +58,36 @@ class Reporter:
                                 'bmdsOutputFile', 1)
 
         self.styles = styles
-        self.doc = docx.Document(tmpl)
+        self.doc = docx.Document(template)
 
     def add_session(self, session, title=None,
                     input_dataset=True, summary_table=True,
                     recommended_model=True, all_models=False):
+        """
+        Add an existing session to a Word report.
+
+
+        Parameters
+        ----------
+        session : bmds.Session
+            BMDS session to be included in reporting
+        title : str or None
+            Title to be used to refer to the session. If one is not provided, a
+            default value is used.
+        input_dataset : bool
+            Include input dataset data table
+        summary_table : bool
+            Include model summary table
+        recommended_model : bool
+            Include the recommended model output and dose-response plot, if
+            one exists
+        all_models : bool
+            Include all models output and dose-response plots
+
+        Returns
+        -------
+        None.
+        """
 
         if title is None:
             title = 'BMDS output results'
@@ -79,8 +108,18 @@ class Reporter:
         elif all_models:
             self._add_all_models(session, except_recommended=False)
 
-    def save(self, path):
-        self.doc.save(path)
+    def save(self, filename):
+        """
+        Save document to a file.
+
+
+        Parameters
+        ----------
+        filename : str
+            The output string filename
+
+        """
+        self.doc.save(os.path.expanduser(filename))
 
     def _add_dataset(self, dataset):
 

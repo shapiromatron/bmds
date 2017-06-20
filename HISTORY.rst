@@ -2,6 +2,14 @@
 History
 =======
 
+v0.9.0 (NEXT)
+-------------
+* Added new ``Reporter`` class for creating Microsoft Word reports, as well as a default template for creating Word files. The reports may contain:
+    - a table for the input dataset (on by default)
+    - a summary table of model summary results (on by default)
+    - the recommended model output file and figure (on by default)
+    - all executed model output files and figures (off by default)
+
 v0.8.1 (2017-06-06)
 -------------------
 * Use ``asyncio.create_subprocess_exec`` instead of custom Thread implementation for running BMDS models

@@ -6,7 +6,7 @@ import pandas as pd
 from simple_settings import settings
 import sys
 
-from . import __version__, constants, logic, models, utils
+from . import __version__, constants, logic, models, utils, reporter
 
 
 __all__ = ('BMDS', )
@@ -50,8 +50,10 @@ class BMDS(object):
 
     @classmethod
     def latest_version(cls, *args, **kwargs):
-        # return the latest version of BMDS. If arguments are provided, create
-        # an instance and return, otherwise return the class
+        """
+        Return the class of the latest version of the BMDS. If additional
+        arguments are provided, an instance of this class is generated.
+        """
         cls = list(cls.versions.values())[-1]
         if len(args) > 0 or len(kwargs) > 0:
             return cls(*args, **kwargs)
@@ -271,6 +273,45 @@ class BMDS(object):
             fig = model.plot()
             fig.savefig(os.path.join(directory, fn), dpi=dpi)
             fig.clear()
+
+    def to_docx(self, filename=None, title=None,
+                input_dataset=True, summary_table=True,
+                recommended_model=True, all_models=False):
+        """
+        Write session outputs to a Word file.
+
+
+        Parameters
+        ----------
+        filename : str or None
+            If provided, the file is saved to this location, otherwise this
+            method returns a docx.Document
+        title : str or None
+            Title to be used to refer to the session. If one is not provided, a
+            default value is used
+        input_dataset : bool
+            Include input dataset data table
+        summary_table : bool
+            Include model summary table
+        recommended_model : bool
+            Include the recommended model output and dose-response plot, if
+            one exists
+        all_models : bool
+            Include all models output and dose-response plots
+
+        Returns
+        -------
+        bmds.Reporter
+            The bmds.Reporter object.
+
+        """
+        rep = reporter.Reporter()
+        rep.add_session(self, title, input_dataset, summary_table,
+                        recommended_model, all_models)
+        if filename:
+            rep.save(filename)
+
+        return rep
 
 
 class BMDS_v231(BMDS):

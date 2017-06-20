@@ -7,7 +7,24 @@ BMDS module.
 BMDS session
 ------------
 
-.. automodule:: bmds.session
+A BMDS sessions is the primary input for BMDS. It generally contains a dataset,
+a collection of models, and optionally logic on which model was recommended as
+a best fitting model. Each BMDS session object is related to a specific BMDS
+model version.  To get the latest version BMDS Session, you can use the :func:`bmds.session.BMDS.latest_version` method.
+
+.. autoclass:: bmds.session.BMDS
+    :members:
+
+.. autoclass:: bmds.session.BMDS_v231
+    :members:
+
+.. autoclass:: bmds.session.BMDS_v240
+    :members:
+
+.. autoclass:: bmds.session.BMDS_v260
+    :members:
+
+.. autoclass:: bmds.session.BMDS_v2601
     :members:
 
 
@@ -41,3 +58,18 @@ Batch runs using SessionBatch
 
 .. automodule:: bmds.batch
     :members:
+
+Reporting in Word
+-----------------
+
+Sending BMDS results from a session is also possible.
+
+To save a single Session to a Word file, use the
+:func:`bmds.session.BMDS.to_docx` method.
+
+To save multiple sessions to a Word file, use a :class:`bmds.reporter.Reporter`
+object. This also allows a custom Word template and custom Word styles to be
+applied to outputs.
+
+.. autoclass:: bmds.reporter.Reporter
+    :members: __init__, add_session, save
