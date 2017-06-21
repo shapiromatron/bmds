@@ -4,8 +4,9 @@ import docx
 from docx.shared import Inches
 import numpy as np
 import os
+import re
 
-from . import constants, datasets, models
+from . import constants, datasets
 
 
 StyleGuide = namedtuple('StyleGuide', [
@@ -18,10 +19,10 @@ StyleGuide = namedtuple('StyleGuide', [
 ])
 
 
-def float_formatter(value):
+def default_float_formatter(value):
     if np.isclose(value, 0.):
         tmpl = '{}'
-    elif value < 0.001:
+    elif abs(value) < 0.001:
         tmpl = '{:.1E}'
     else:
         tmpl = '{:.3f}'
@@ -210,13 +211,15 @@ class Reporter:
                 w = 0.75 if i == 0 else (6.5 - 0.75) / dataset.num_dose_groups
                 self._set_col_width(col, w)
 
-    def _write_cell(self, cell, value, style=None):
+    def _write_cell(self, cell, value, style=None, float_formatter=None):
 
         if style is None:
             style = self.styles.tbl_body
 
         if isinstance(value, float):
-            value = float_formatter(value)
+            if float_formatter is None:
+                float_formatter = default_float_formatter
+                value = float_formatter(value)
 
         cell.paragraphs[0].text = str(value)
         cell.paragraphs[0].style = style
@@ -229,13 +232,22 @@ class Reporter:
             if model.has_successfully_executed:
                 text = self._VARIANCE_FOOTNOTE_TEMPLATE.format(
                     model.get_variance_model_name(),
-                    float_formatter(model.output['p_value2']),
-                    float_formatter(model.output['p_value3'])
+                    default_float_formatter(model.output['p_value2']),
+                    default_float_formatter(model.output['p_value3']),
                 )
                 break
         if text is None:
             text = 'Model variance undetermined'
         return text
+
+    def _get_summary_comments(self, session):
+        if session.recommended_model is None:
+            return 'No model was recommended as a best-fitting model.'
+        else:
+            return '{} recommended as best-fitting model on the basis of the lowest {}.'.format(
+                session.recommended_model.name,
+                session.recommended_model.recommended_variable
+            )
 
     def _add_session_summary_table(self, session):
         self.doc.add_heading('Summary table', self.styles.header_level + 1)
@@ -243,81 +255,88 @@ class Reporter:
         model_groups = session._group_models()
         footnotes = TableFootnote()
 
+        tbl = self.doc.add_table(len(model_groups) + 2, 6,
+                                 style=self.styles.table)
+
+        # write headers
+        self._write_cell(tbl.cell(0, 0), 'Model', style=hdr)
+        self._write_cell(tbl.cell(0, 1), 'Goodness of fit', style=hdr)
+        self._write_cell(tbl.cell(1, 1), '', style=hdr)  # set style
+        self._write_cell(tbl.cell(1, 2), 'AIC', style=hdr)
+        self._write_cell(tbl.cell(0, 3), 'BMD', style=hdr)
+        self._write_cell(tbl.cell(0, 4), 'BMDL', style=hdr)
+        self._write_cell(tbl.cell(0, 5), 'Comments', style=hdr)
+
+        p = tbl.cell(1, 1).paragraphs[0]
+        p.add_run('p').italic = True
+        p.add_run('-value')
+
+        # add variance footnote to table header if appropriate
         if session.dtype in constants.CONTINUOUS_DTYPES:
-            tbl = self.doc.add_table(len(model_groups) + 2, 6,
-                                     style=self.styles.table)
-
-            # write headers
-            self._write_cell(tbl.cell(0, 0), 'Model', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Variance p-value', style=hdr)
-            self._write_cell(tbl.cell(0, 2), 'Goodness of fit', style=hdr)
-            self._write_cell(tbl.cell(1, 2), 'p-value', style=hdr)
-            self._write_cell(tbl.cell(1, 3), 'AIC', style=hdr)
-            self._write_cell(tbl.cell(0, 4), 'BMD', style=hdr)
-            self._write_cell(tbl.cell(0, 5), 'BMDL', style=hdr)
-
-            # add header footnote:
             p = tbl.cell(0, 0).paragraphs[0]
             footnotes.add_footnote(p, self._get_variance_footnote(session.models))
 
-            # merge header columns
-            tbl.cell(0, 0).merge(tbl.cell(1, 0))
-            tbl.cell(0, 1).merge(tbl.cell(1, 1))
-            tbl.cell(0, 2).merge(tbl.cell(0, 3))
-            tbl.cell(0, 4).merge(tbl.cell(1, 4))
-            tbl.cell(0, 5).merge(tbl.cell(1, 5))
-
-        else:
-            tbl = self.doc.add_table(len(model_groups) + 2, 5,
-                                     style=self.styles.table)
-
-            # write headers
-            self._write_cell(tbl.cell(0, 0), 'Model', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Goodness of fit', style=hdr)
-            self._write_cell(tbl.cell(1, 1), 'p-value', style=hdr)
-            self._write_cell(tbl.cell(1, 2), 'AIC', style=hdr)
-            self._write_cell(tbl.cell(0, 3), 'BMD', style=hdr)
-            self._write_cell(tbl.cell(0, 4), 'BMDL', style=hdr)
-
-            # merge header columns
-            tbl.cell(0, 0).merge(tbl.cell(1, 0))
-            tbl.cell(0, 1).merge(tbl.cell(0, 2))
-            tbl.cell(0, 3).merge(tbl.cell(1, 3))
-            tbl.cell(0, 4).merge(tbl.cell(1, 4))
+        # merge header columns
+        tbl.cell(0, 0).merge(tbl.cell(1, 0))
+        tbl.cell(0, 1).merge(tbl.cell(0, 2))
+        tbl.cell(0, 3).merge(tbl.cell(1, 3))
+        tbl.cell(0, 4).merge(tbl.cell(1, 4))
+        tbl.cell(0, 5).merge(tbl.cell(1, 5))
 
         # write body
         for i, model_group in enumerate(model_groups):
-            self._to_docx_summary_row(model_group, tbl, i + 2)
+            self._to_docx_summary_row(model_group, tbl, i + 2, footnotes)
+
+        # write comments
+        self._write_cell(tbl.cell(2, 5), self._get_summary_comments(session))
+        tbl.cell(2, 5).merge(tbl.cell(len(model_groups) + 1, 5))
+
+        # set column width
+        widths = [1.75, 0.8, 0.8, 0.7, 0.7, 1.75]
+        for width, col in zip(widths, tbl.columns):
+            self._set_col_width(col, width)
 
         # write footnote
         if len(footnotes) > 0:
             p = self.doc.add_paragraph(style=self.styles.tbl_footnote)
             footnotes.add_footnote_text(p)
 
-    def _to_docx_summary_row(self, model_group, tbl, idx):
+    def _to_docx_summary_row(self, model_group, tbl, idx, footnotes):
 
         model = model_group[0]
         output = getattr(model, 'output', {})
-        model_names = ', \n'.join([
-            model.name for model in model_group
-        ])
+        self._write_cell(tbl.cell(idx, 0), '')  # temp; set style
+        self._write_cell(tbl.cell(idx, 1), output.get('p_value4', '-'))
+        self._write_cell(tbl.cell(idx, 2), output.get('AIC', '-'))
+        self._write_cell(tbl.cell(idx, 3), output.get('BMD', '-'))
+        self._write_cell(tbl.cell(idx, 4), output.get('BMDL', '-'))
 
-        if isinstance(model, models.Dichotomous):
+        p = tbl.cell(idx, 0).paragraphs[0]
+        p.add_run(self._pretty_names(model_group[0].name))
+        if model_group[0].recommended:
+            footnotes.add_footnote(p, 'Recommended model')
+        if len(model_group) > 1:
+            p.add_run(' (equivalent models include {})'.format(
+                self._get_collapsed_model_names(model_group[1:])))
 
-            self._write_cell(tbl.cell(idx, 0), model_names)
-            self._write_cell(tbl.cell(idx, 1), output.get('p_value4', '-'))
-            self._write_cell(tbl.cell(idx, 2), output.get('AIC', '-'))
-            self._write_cell(tbl.cell(idx, 3), output.get('BMD', '-'))
-            self._write_cell(tbl.cell(idx, 4), output.get('BMDL', '-'))
+    def _pretty_names(self, name):
+        name = name.replace('-', ' ')
+        return re.sub(r'( \d+)', '\g<1>°', name)
 
-        elif isinstance(model, models.Continuous):
+    def _get_collapsed_model_names(self, models):
+        names = [model.name for model in models]
 
-            self._write_cell(tbl.cell(idx, 0), model_names)
-            self._write_cell(tbl.cell(idx, 1), output.get('p_value2', '-'))
-            self._write_cell(tbl.cell(idx, 2), output.get('p_value4', '-'))
-            self._write_cell(tbl.cell(idx, 3), output.get('AIC', '-'))
-            self._write_cell(tbl.cell(idx, 4), output.get('BMD', '-'))
-            self._write_cell(tbl.cell(idx, 5), output.get('BMDL', '-'))
+        search_phrases = ['Polynomial-', 'Multistage-Cancer-', 'Multistage-']
+        for phrase in search_phrases:
+            if phrase in ''.join(names):
+                not_poly = [name for name in names if phrase not in name]
+                poly = [name for name in names if phrase in name]
+                rem_poly = ', '.join(poly[1:]).replace(phrase, '')
+                not_poly.append(poly[0])
+                not_poly.append(rem_poly)
+                names = not_poly
+
+        return self._pretty_names(', '.join(names))
 
     def _model_to_docx(self, model):
         if model.has_successfully_executed:
