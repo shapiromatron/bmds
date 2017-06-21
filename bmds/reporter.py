@@ -55,7 +55,6 @@ class Reporter:
         """
         Create a new Microsoft Word document (.docx) reporter object.
 
-
         Parameters
         ----------
         template : str, docx.Document instance, or None.
@@ -92,7 +91,6 @@ class Reporter:
                     recommended_model=True, all_models=False):
         """
         Add an existing session to a Word report.
-
 
         Parameters
         ----------
@@ -139,7 +137,6 @@ class Reporter:
         """
         Save document to a file.
 
-
         Parameters
         ----------
         filename : str
@@ -148,6 +145,10 @@ class Reporter:
         """
         self.doc.save(os.path.expanduser(filename))
 
+    def _set_col_width(self, column, size_in_inches):
+        for cell in column.cells:
+            cell.width = Inches(size_in_inches)
+
     def _add_dataset(self, dataset):
 
         self.doc.add_heading('Input dataset', self.styles.header_level + 1)
@@ -155,48 +156,59 @@ class Reporter:
 
         if isinstance(dataset, datasets.DichotomousDataset):
 
-            tbl = self.doc.add_table(dataset.num_dose_groups + 1, 3,
+            tbl = self.doc.add_table(2, dataset.num_dose_groups + 1,
                                      style=self.styles.table)
 
             self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Incidence', style=hdr)
-            self._write_cell(tbl.cell(0, 2), 'Number of animals', style=hdr)
+            self._write_cell(tbl.cell(1, 0), 'Response', style=hdr)
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.incidences,
                                          dataset.ns)):
-                self._write_cell(tbl.cell(i + 1, 0), vals[0])
-                self._write_cell(tbl.cell(i + 1, 1), vals[1])
-                self._write_cell(tbl.cell(i + 1, 2), vals[2])
+                self._write_cell(tbl.cell(0, i + 1), vals[0])
+                self._write_cell(tbl.cell(1, i + 1),
+                                 '{}/{}'.format(vals[1], vals[2]))
 
-        elif isinstance(dataset, datasets.ContinuousDataset):
+            for i, col in enumerate(tbl.columns):
+                w = 0.75 if i == 0 else (6.5 - 0.75) / dataset.num_dose_groups
+                self._set_col_width(col, w)
 
-            tbl = self.doc.add_table(dataset.num_dose_groups + 1, 4,
+        elif isinstance(dataset, datasets.ContinuousIndividualDataset):
+
+            tbl = self.doc.add_table(dataset.num_dose_groups + 1, 2,
                                      style=self.styles.table)
 
             self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Number of animals', style=hdr)
-            self._write_cell(tbl.cell(0, 2), 'Mean', style=hdr)
-            self._write_cell(tbl.cell(0, 3), 'Standard deviation', style=hdr)
+            self._write_cell(tbl.cell(0, 1), 'Responses', style=hdr)
+
+            for i, vals in enumerate(zip(dataset.doses,
+                                         dataset.get_responses_by_dose())):
+                resps = ', '.join([str(v) for v in vals[1]])
+                self._write_cell(tbl.cell(i + 1, 0), vals[0])
+                self._write_cell(tbl.cell(i + 1, 1), resps)
+
+            self._set_col_width(tbl.columns[0], 1.0)
+            self._set_col_width(tbl.columns[1], 5.5)
+
+        elif isinstance(dataset, datasets.ContinuousDataset):
+
+            tbl = self.doc.add_table(3, dataset.num_dose_groups + 1,
+                                     style=self.styles.table)
+
+            self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
+            self._write_cell(tbl.cell(1, 0), 'N', style=hdr)
+            self._write_cell(tbl.cell(2, 0), 'Mean ± SD', style=hdr)
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.ns,
                                          dataset.means,
                                          dataset.stdevs)):
-                self._write_cell(tbl.cell(i + 1, 0), vals[0])
-                self._write_cell(tbl.cell(i + 1, 1), vals[1])
-                self._write_cell(tbl.cell(i + 1, 2), vals[2])
-                self._write_cell(tbl.cell(i + 1, 3), vals[3])
+                self._write_cell(tbl.cell(0, i + 1), vals[0])
+                self._write_cell(tbl.cell(1, i + 1), vals[1])
+                self._write_cell(tbl.cell(2, i + 1),
+                                 '{} ± {}'.format(vals[2], vals[3]))
 
-        elif isinstance(dataset, datasets.ContinuousIndividualDataset):
-
-            tbl = self.doc.add_table(dataset.dataset_length + 1, 2,
-                                     style=self.styles.table)
-
-            self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Response', style=hdr)
-            for i, vals in enumerate(zip(dataset.individual_doses,
-                                         dataset.responses)):
-                self._write_cell(tbl.cell(i + 1, 0), vals[0])
-                self._write_cell(tbl.cell(i + 1, 1), vals[1])
+            for i, col in enumerate(tbl.columns):
+                w = 0.75 if i == 0 else (6.5 - 0.75) / dataset.num_dose_groups
+                self._set_col_width(col, w)
 
     def _write_cell(self, cell, value, style=None):
 

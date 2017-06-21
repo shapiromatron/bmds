@@ -457,6 +457,14 @@ class ContinuousIndividualDataset(ContinuousDataset):
             rows.append('%f %f' % (dose, response))
         return '\n'.join(rows)
 
+    def get_responses_by_dose(self):
+        doses = np.array(self.individual_doses)
+        resps = np.array(self.responses)
+        return sorted([
+            resps[doses == dose].tolist()
+            for dose in self.doses
+        ])
+
     @property
     def dataset_length(self):
         return len(self.individual_doses)
