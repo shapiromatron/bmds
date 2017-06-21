@@ -276,10 +276,10 @@ class BMDS(object):
 
     def to_docx(self, filename=None, title=None,
                 input_dataset=True, summary_table=True,
-                recommended_model=True, all_models=False):
+                recommendation_details=True, recommended_model=True,
+                all_models=False):
         """
         Write session outputs to a Word file.
-
 
         Parameters
         ----------
@@ -293,6 +293,8 @@ class BMDS(object):
             Include input dataset data table
         summary_table : bool
             Include model summary table
+        recommendation_details : bool
+            Include model recommendation details table
         recommended_model : bool
             Include the recommended model output and dose-response plot, if
             one exists
@@ -307,7 +309,7 @@ class BMDS(object):
         """
         rep = reporter.Reporter()
         rep.add_session(self, title, input_dataset, summary_table,
-                        recommended_model, all_models)
+                        recommendation_details, recommended_model, all_models)
 
         if filename:
             rep.save(filename)
@@ -356,10 +358,12 @@ class BMDS(object):
 
 class BMDS_v231(BMDS):
     version = constants.BMDS231
+    version_pretty = 'BMDS v2.3.1'
 
 
 class BMDS_v240(BMDS_v231):
     version = constants.BMDS240
+    version_pretty = 'BMDS v2.4.0'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -398,6 +402,7 @@ class BMDS_v240(BMDS_v231):
 
 class BMDS_v260(BMDS_v240):
     version = constants.BMDS260
+    version_pretty = 'BMDS v2.6.0'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -437,6 +442,7 @@ class BMDS_v260(BMDS_v240):
 
 class BMDS_v2601(BMDS_v260):
     version = constants.BMDS2601
+    version_pretty = 'BMDS v2.6.0.1'
 
 
 _BMDS_VERSIONS = OrderedDict((

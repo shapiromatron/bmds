@@ -455,10 +455,7 @@ class BMDModel(object):
 
         # add logic bin and warnings
         logics = getattr(self, 'logic_notes', {})
-        bin_ = constants.BIN_TEXT[self.logic_bin] \
-            if hasattr(self, 'logic_bin') \
-            else '-'
-        d['logic_bin'].append(_nullify(show_null, bin_))
+        d['logic_bin'].append(_nullify(show_null, self.get_logic_bin_text()))
 
         txt = '\n'.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
         d['logic_cautions'].append(_nullify(show_null, txt))
@@ -486,6 +483,11 @@ class BMDModel(object):
         if 'stderr' in d:
             txt = getattr(self, 'stderr', '-')
             d['stderr'].append(_nullify(show_null, txt))
+
+    def get_logic_bin_text(self):
+        return constants.BIN_TEXT[self.logic_bin] \
+            if hasattr(self, 'logic_bin') \
+            else '-'
 
 
 class DefaultParams(object):

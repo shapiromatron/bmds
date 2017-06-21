@@ -44,10 +44,11 @@ class TableFootnote(OrderedDict):
         run = p.add_run(symbol)
         run.font.superscript = True
 
-    def add_footnote_text(self, p):
+    def add_footnote_text(self, doc, style):
         for text, char in self.items():
+            p = doc.add_paragraph('', style=style)
             self._add_footnote_character(p, char)
-            p.add_run(' {}\n'.format(text))
+            p.add_run(' {}'.format(text))
 
 
 class Reporter:
@@ -87,9 +88,15 @@ class Reporter:
         self.styles = styles
         self.doc = docx.Document(template)
 
+        # remove first paragraph if it's blank
+        if len(self.doc.paragraphs) > 0 and \
+                self.doc.paragraphs[0].text == '':
+            self.doc._body._body.remove(self.doc.paragraphs[0]._p)
+
     def add_session(self, session, title=None,
                     input_dataset=True, summary_table=True,
-                    recommended_model=True, all_models=False):
+                    recommendation_details=True, recommended_model=True,
+                    all_models=False):
         """
         Add an existing session to a Word report.
 
@@ -104,6 +111,8 @@ class Reporter:
             Include input dataset data table
         summary_table : bool
             Include model summary table
+        recommendation_details : bool
+            Include model recommendation details table
         recommended_model : bool
             Include the recommended model output and dose-response plot, if
             one exists
@@ -119,20 +128,32 @@ class Reporter:
             title = 'BMDS output results'
 
         self.doc.add_heading(title, self.styles.header_level)
+        self.doc.add_paragraph('BMDS version: {}'.format(session.version_pretty))
 
         if input_dataset:
             self._add_dataset(session.dataset)
+            self.doc.add_paragraph()
 
         if summary_table:
             self._add_session_summary_table(session)
+            self.doc.add_paragraph()
+
+        if recommendation_details:
+            self._add_recommendation_details_table(session)
+            self.doc.add_paragraph()
 
         if recommended_model and all_models:
             self._add_recommended_model(session)
             self._add_all_models(session, except_recommended=True)
+            self.doc.add_paragraph()
         elif recommended_model:
             self._add_recommended_model(session)
+            self.doc.add_paragraph()
         elif all_models:
             self._add_all_models(session, except_recommended=False)
+            self.doc.add_paragraph()
+
+        self.doc.add_page_break()
 
     def save(self, filename):
         """
@@ -285,7 +306,17 @@ class Reporter:
 
         # write body
         for i, model_group in enumerate(model_groups):
-            self._to_docx_summary_row(model_group, tbl, i + 2, footnotes)
+            idx = i + 2
+            model = model_group[0]
+            output = getattr(model, 'output', {})
+            self._write_cell(tbl.cell(idx, 0), '')  # temp; set style
+            self._write_cell(tbl.cell(idx, 1), output.get('p_value4', '-'))
+            self._write_cell(tbl.cell(idx, 2), output.get('AIC', '-'))
+            self._write_cell(tbl.cell(idx, 3), output.get('BMD', '-'))
+            self._write_cell(tbl.cell(idx, 4), output.get('BMDL', '-'))
+
+            self._write_model_name(tbl.cell(idx, 0).paragraphs[0],
+                                   model_group, footnotes)
 
         # write comments
         self._write_cell(tbl.cell(2, 5), self._get_summary_comments(session))
@@ -298,45 +329,92 @@ class Reporter:
 
         # write footnote
         if len(footnotes) > 0:
-            p = self.doc.add_paragraph(style=self.styles.tbl_footnote)
-            footnotes.add_footnote_text(p)
+            footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
 
-    def _to_docx_summary_row(self, model_group, tbl, idx, footnotes):
+    def _add_recommendation_details_table(self, session):
+        self.doc.add_heading('Model recommendation details',
+                             self.styles.header_level + 1)
+        hdr = self.styles.tbl_header
+        model_groups = session._group_models()
 
-        model = model_group[0]
-        output = getattr(model, 'output', {})
-        self._write_cell(tbl.cell(idx, 0), '')  # temp; set style
-        self._write_cell(tbl.cell(idx, 1), output.get('p_value4', '-'))
-        self._write_cell(tbl.cell(idx, 2), output.get('AIC', '-'))
-        self._write_cell(tbl.cell(idx, 3), output.get('BMD', '-'))
-        self._write_cell(tbl.cell(idx, 4), output.get('BMDL', '-'))
+        tbl = self.doc.add_table(len(model_groups) + 1, 3,
+                                 style=self.styles.table)
 
-        p = tbl.cell(idx, 0).paragraphs[0]
-        p.add_run(self._pretty_names(model_group[0].name))
-        if model_group[0].recommended:
+        # write headers
+        self._write_cell(tbl.cell(0, 0), 'Model', style=hdr)
+        self._write_cell(tbl.cell(0, 1), 'Bin', style=hdr)
+        self._write_cell(tbl.cell(0, 2), 'Notes', style=hdr)
+
+        def write_warnings(cell, txt, notes):
+            p = cell.add_paragraph('')
+            p.add_run(txt).bold = True
+
+            if len(notes) == 0:
+                cell.add_paragraph('  -')
+            else:
+                for note in notes:
+                    cell.add_paragraph('• {}'.format(note))
+
+        # write body
+        for i, model_group in enumerate(model_groups):
+            idx = i + 1
+            model = model_group[0]
+            bin = model.get_logic_bin_text().title()
+            self._write_cell(tbl.cell(idx, 0), '')  # temp; set style
+            self._write_model_name(tbl.cell(idx, 0).paragraphs[0], model_group)
+            self._write_cell(tbl.cell(idx, 1), bin)
+
+            cell = tbl.cell(idx, 2)
+            if not model.logic_notes[0] and \
+                    not model.logic_notes[1] and \
+                    not model.logic_notes[2]:
+                cell.paragraphs[0].text = '-'
+            else:
+                cell._element.remove(cell.paragraphs[0]._p)
+                if model.logic_notes[2]:
+                    write_warnings(cell, 'Failures', model.logic_notes[2])
+                if model.logic_notes[1]:
+                    write_warnings(cell, 'Warnings', model.logic_notes[1])
+                if model.logic_notes[0]:
+                    write_warnings(cell, 'Cautions', model.logic_notes[0])
+
+            for p in cell.paragraphs:
+                p.style = self.styles.tbl_body
+
+        # set column width
+        widths = [1.75, 0.75, 4]
+        for width, col in zip(widths, tbl.columns):
+            self._set_col_width(col, width)
+
+    def _write_model_name(self, p, model_group, footnotes=None):
+
+        def pretty(name):
+            name = name.replace('-', ' ')
+            return re.sub(r'( \d+)', '\g<1>°', name)
+
+        def collapse_names(models):
+            names = [model.name for model in models]
+
+            search_phrases = ['Polynomial-', 'Multistage-Cancer-', 'Multistage-']
+            for phrase in search_phrases:
+                if phrase in ''.join(names):
+                    not_poly = [name for name in names if phrase not in name]
+                    poly = [name for name in names if phrase in name]
+                    rem_poly = ', '.join(poly[1:]).replace(phrase, '')
+                    not_poly.append(poly[0])
+                    not_poly.append(rem_poly)
+                    names = not_poly
+
+            return ', '.join(names)
+
+        p.add_run(pretty(model_group[0].name))
+
+        if model_group[0].recommended and footnotes:
             footnotes.add_footnote(p, 'Recommended model')
+
         if len(model_group) > 1:
-            p.add_run(' (equivalent models include {})'.format(
-                self._get_collapsed_model_names(model_group[1:])))
-
-    def _pretty_names(self, name):
-        name = name.replace('-', ' ')
-        return re.sub(r'( \d+)', '\g<1>°', name)
-
-    def _get_collapsed_model_names(self, models):
-        names = [model.name for model in models]
-
-        search_phrases = ['Polynomial-', 'Multistage-Cancer-', 'Multistage-']
-        for phrase in search_phrases:
-            if phrase in ''.join(names):
-                not_poly = [name for name in names if phrase not in name]
-                poly = [name for name in names if phrase in name]
-                rem_poly = ', '.join(poly[1:]).replace(phrase, '')
-                not_poly.append(poly[0])
-                not_poly.append(rem_poly)
-                names = not_poly
-
-        return self._pretty_names(', '.join(names))
+            names = pretty(collapse_names(model_group[1:]))
+            p.add_run(' (equivalent models include {})'.format(names))
 
     def _model_to_docx(self, model):
         if model.has_successfully_executed:

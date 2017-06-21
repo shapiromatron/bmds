@@ -165,10 +165,10 @@ class SessionBatch(list):
 
     def to_docx(self, filename=None,
                 input_dataset=True, summary_table=True,
-                recommended_model=True, all_models=False):
+                recommendation_details=True, recommended_model=True,
+                all_models=False):
         """
         Write batch sessions to a Word file.
-
 
         Parameters
         ----------
@@ -179,6 +179,8 @@ class SessionBatch(list):
             Include input dataset data table
         summary_table : bool
             Include model summary table
+        recommendation_details : bool
+            Include model recommendation details table
         recommended_model : bool
             Include the recommended model output and dose-response plot, if
             one exists
@@ -194,7 +196,8 @@ class SessionBatch(list):
         rep = Reporter()
         for model in self:
             rep.add_session(self, input_dataset, summary_table,
-                            recommended_model, all_models)
+                            recommendation_details, recommended_model,
+                            all_models)
 
         if filename:
             rep.save(filename)
