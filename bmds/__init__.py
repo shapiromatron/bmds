@@ -1,4 +1,4 @@
-__version__ = '0.8.1'
+__version__ = '0.9.0'
 
 import os  # noqa
 os.environ.setdefault('SIMPLE_SETTINGS', 'bmds.settings')
