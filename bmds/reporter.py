@@ -336,6 +336,7 @@ class Reporter:
                              self.styles.header_level + 1)
         hdr = self.styles.tbl_header
         model_groups = session._group_models()
+        footnotes = TableFootnote()
 
         tbl = self.doc.add_table(len(model_groups) + 1, 3,
                                  style=self.styles.table)
@@ -361,7 +362,8 @@ class Reporter:
             model = model_group[0]
             bin = model.get_logic_bin_text().title()
             self._write_cell(tbl.cell(idx, 0), '')  # temp; set style
-            self._write_model_name(tbl.cell(idx, 0).paragraphs[0], model_group)
+            self._write_model_name(tbl.cell(idx, 0).paragraphs[0], model_group,
+                                   footnotes)
             self._write_cell(tbl.cell(idx, 1), bin)
 
             cell = tbl.cell(idx, 2)
@@ -386,7 +388,11 @@ class Reporter:
         for width, col in zip(widths, tbl.columns):
             self._set_col_width(col, width)
 
-    def _write_model_name(self, p, model_group, footnotes=None):
+        # write footnote
+        if len(footnotes) > 0:
+            footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
+
+    def _write_model_name(self, p, model_group, footnotes):
 
         def pretty(name):
             name = name.replace('-', ' ')
@@ -409,7 +415,7 @@ class Reporter:
 
         p.add_run(pretty(model_group[0].name))
 
-        if model_group[0].recommended and footnotes:
+        if model_group[0].recommended:
             footnotes.add_footnote(p, 'Recommended model')
 
         if len(model_group) > 1:
