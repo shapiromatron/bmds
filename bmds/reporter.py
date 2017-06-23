@@ -9,7 +9,7 @@ import re
 from . import constants, datasets
 
 
-StyleGuide = namedtuple('StyleGuide', [
+ReporterStyleGuide = namedtuple('ReporterStyleGuide', [
     'table',
     'tbl_header',
     'tbl_body',
@@ -64,11 +64,11 @@ class Reporter:
             If a docx.Document object, this object is used.
             If None, the default template is used.
 
-        styles : Instance of StyleGuide, or None.
+        styles : Instance of ReporterStyleGuide, or None.
             Determines which styles to apply for each component in document.
-            If None, then the default StyleGuide is used. Note that if a custom
-            template is specified, a StyleGuide should generally also be
-            specified.
+            If None, then the default ReporterStyleGuide is used. Note that if
+            a custom template is specified, a ReporterStyleGuide should
+            generally also be specified.
 
         Returns
         -------
@@ -82,8 +82,9 @@ class Reporter:
             )
 
         if styles is None:
-            styles = StyleGuide('bmdsTbl', 'bmdsTblHeader', 'bmdsTblBody',
                                 'bmdsTblFootnote', 'bmdsOutputFile', 1)
+            styles = ReporterStyleGuide(
+                'bmdsTbl', 'bmdsTblHeader', 'bmdsTblBody',
 
         self.styles = styles
         self.doc = docx.Document(template)
