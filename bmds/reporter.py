@@ -21,13 +21,14 @@ ReporterStyleGuide = namedtuple('ReporterStyleGuide', [
 
 
 def default_float_formatter(value):
-    if np.isclose(value, 0.):
-        tmpl = '{}'
+    if isinstance(value, str):
+        return value
+    elif np.isclose(value, int(value)):
+        return str(int(value))
     elif abs(value) < 0.001:
-        tmpl = '{:.1E}'
+        return '{:.1E}'.format(value)
     else:
-        tmpl = '{:.3f}'
-    return tmpl.format(value)
+        return '{:.3f}'.format(value).rstrip('0')
 
 
 class TableFootnote(OrderedDict):
@@ -180,6 +181,7 @@ class Reporter:
 
         self.doc.add_paragraph('Input dataset', self.styles.header_2)
         hdr = self.styles.tbl_header
+        ff = default_float_formatter
 
         if isinstance(dataset, datasets.DichotomousDataset):
 
@@ -210,7 +212,7 @@ class Reporter:
 
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.get_responses_by_dose())):
-                resps = ', '.join([str(v) for v in vals[1]])
+                resps = ', '.join([ff(v) for v in vals[1]])
                 self._write_cell(tbl.cell(i + 1, 0), vals[0])
                 self._write_cell(tbl.cell(i + 1, 1), resps)
 
@@ -232,7 +234,7 @@ class Reporter:
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
                 self._write_cell(tbl.cell(1, i + 1), vals[1])
                 self._write_cell(tbl.cell(2, i + 1),
-                                 '{} ± {}'.format(vals[2], vals[3]))
+                                 '{} ± {}'.format(ff(vals[2]), ff(vals[3])))
 
             for i, col in enumerate(tbl.columns):
                 w = 0.75 if i == 0 else \
