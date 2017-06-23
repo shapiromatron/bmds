@@ -409,16 +409,26 @@ class Reporter:
 
         def collapse_names(models):
             names = [model.name for model in models]
-
-            search_phrases = ['Polynomial-', 'Multistage-Cancer-', 'Multistage-']
+            search_phrases = [
+                'Polynomial-',
+                'Multistage-Cancer-',
+                'Multistage-'
+            ]
             for phrase in search_phrases:
                 if phrase in ''.join(names):
-                    not_poly = [name for name in names if phrase not in name]
-                    poly = [name for name in names if phrase in name]
-                    rem_poly = ', '.join(poly[1:]).replace(phrase, '')
-                    not_poly.append(poly[0])
-                    not_poly.append(rem_poly)
-                    names = not_poly
+                    full_phrase = [
+                        name for name in names
+                        if phrase not in name
+                    ]
+                    matches = [
+                        name for name in names
+                        if phrase in name
+                    ]
+                    full_phrase.append(matches[0])
+                    if len(matches) > 1:
+                        remainders = ', '.join(matches[1:]).replace(phrase, '')
+                        full_phrase.append(remainders)
+                    names = full_phrase
 
             return ', '.join(names)
 
