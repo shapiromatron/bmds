@@ -92,7 +92,9 @@ class Reporter:
             )
 
         self.styles = styles
-        self.doc = docx.Document(template)
+        self.doc = docx.Document(template) \
+            if isinstance(template, str) \
+            else template
 
         # remove first paragraph if it's blank
         if len(self.doc.paragraphs) > 0 and \
