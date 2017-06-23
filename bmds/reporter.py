@@ -54,6 +54,8 @@ class TableFootnote(OrderedDict):
 
 class Reporter:
 
+    PORTRAIT_WIDTH = 6.5  # available width to use for tables
+
     def __init__(self, template=None, styles=None):
         """
         Create a new Microsoft Word document (.docx) reporter object.
@@ -194,7 +196,8 @@ class Reporter:
                                  '{}/{}'.format(vals[1], vals[2]))
 
             for i, col in enumerate(tbl.columns):
-                w = 0.75 if i == 0 else (6.5 - 0.75) / dataset.num_dose_groups
+                w = 0.75 if i == 0 else \
+                    (self.PORTRAIT_WIDTH - 0.75) / dataset.num_dose_groups
                 self._set_col_width(col, w)
 
         elif isinstance(dataset, datasets.ContinuousIndividualDataset):
@@ -232,7 +235,8 @@ class Reporter:
                                  '{} ± {}'.format(vals[2], vals[3]))
 
             for i, col in enumerate(tbl.columns):
-                w = 0.75 if i == 0 else (6.5 - 0.75) / dataset.num_dose_groups
+                w = 0.75 if i == 0 else \
+                    (self.PORTRAIT_WIDTH - 0.75) / dataset.num_dose_groups
                 self._set_col_width(col, w)
 
     def _write_cell(self, cell, value, style=None, float_formatter=None):
