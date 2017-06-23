@@ -15,7 +15,8 @@ ReporterStyleGuide = namedtuple('ReporterStyleGuide', [
     'tbl_body',
     'tbl_footnote',
     'outfile',
-    'header_level'
+    'header_1',
+    'header_2',
 ])
 
 
@@ -82,9 +83,10 @@ class Reporter:
             )
 
         if styles is None:
-                                'bmdsTblFootnote', 'bmdsOutputFile', 1)
             styles = ReporterStyleGuide(
                 'bmdsTbl', 'bmdsTblHeader', 'bmdsTblBody',
+                'bmdsTblFootnote', 'bmdsOutputFile', 'Heading 1', 'Heading 2'
+            )
 
         self.styles = styles
         self.doc = docx.Document(template)
@@ -128,7 +130,7 @@ class Reporter:
         if title is None:
             title = 'BMDS output results'
 
-        self.doc.add_heading(title, self.styles.header_level)
+        self.doc.add_paragraph(title, self.styles.header_1)
         self.doc.add_paragraph('BMDS version: {}'.format(session.version_pretty))
 
         if input_dataset:
@@ -174,7 +176,7 @@ class Reporter:
 
     def _add_dataset(self, dataset):
 
-        self.doc.add_heading('Input dataset', self.styles.header_level + 1)
+        self.doc.add_paragraph('Input dataset', self.styles.header_2)
         hdr = self.styles.tbl_header
 
         if isinstance(dataset, datasets.DichotomousDataset):
@@ -272,7 +274,7 @@ class Reporter:
             )
 
     def _add_session_summary_table(self, session):
-        self.doc.add_heading('Summary table', self.styles.header_level + 1)
+        self.doc.add_paragraph('Summary table', self.styles.header_2)
         hdr = self.styles.tbl_header
         model_groups = session._group_models()
         footnotes = TableFootnote()
@@ -333,8 +335,8 @@ class Reporter:
             footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
 
     def _add_recommendation_details_table(self, session):
-        self.doc.add_heading('Model recommendation details',
-                             self.styles.header_level + 1)
+        self.doc.add_paragraph('Model recommendation details',
+                             self.styles.header_2)
         hdr = self.styles.tbl_header
         model_groups = session._group_models()
         footnotes = TableFootnote()
@@ -438,7 +440,7 @@ class Reporter:
             self.doc.add_paragraph('No .OUT file was created.')
 
     def _add_recommended_model(self, session):
-        self.doc.add_heading('Recommended model', self.styles.header_level + 1)
+        self.doc.add_paragraph('Recommended model', self.styles.header_2)
         if hasattr(session, 'recommended_model') and \
                 session.recommended_model is not None:
             self._model_to_docx(session.recommended_model)
@@ -449,11 +451,9 @@ class Reporter:
 
     def _add_all_models(self, session, except_recommended=False):
         if except_recommended:
-            self.doc.add_heading('All other models',
-                                 self.styles.header_level + 1)
+            self.doc.add_paragraph('All other models', self.styles.header_2)
         else:
-            self.doc.add_heading('All model outputs',
-                                 self.styles.header_level + 1)
+            self.doc.add_paragraph('All model outputs', self.styles.header_2)
 
         for model in session.models:
 
