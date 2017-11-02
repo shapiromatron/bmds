@@ -3,7 +3,7 @@ import platform
 
 # How long should the system wait for a BMDS model execution to complete
 # before closing (in seconds)
-BMDS_MODEL_TIMEOUT_SECONDS = 10
+BMDS_MODEL_TIMEOUT_SECONDS = 30
 
 # Maximum polynomial used when setting default models; generally only used when
 # the number of dose groups is large in a dataset. This is so that if you have
@@ -34,7 +34,7 @@ LOGGING = {
     'formatters': {
         'default': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
-        },        
+        },
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
