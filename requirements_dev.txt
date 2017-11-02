@@ -1,9 +1,9 @@
 pip==9.0.1
-wheel==0.29.0
-tox==2.5.0
+wheel==0.30.0
+tox==2.9.1
 
 Sphinx==1.5.5
 watchdog==0.8.3
 
-pytest==3.0.5
-pytest-mpl==0.7
+pytest==3.2.3
+pytest-mpl==0.9

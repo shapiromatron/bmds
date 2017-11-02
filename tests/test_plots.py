@@ -1,6 +1,7 @@
 from .fixtures import *  # noqa
 
 from bmds import models
+import pytest
 
 
 # dataset tests
