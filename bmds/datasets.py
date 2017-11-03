@@ -190,8 +190,10 @@ class DichotomousDataset(Dataset):
         self._set_plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Fraction affected')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self._means, yerr=[self._lls, self._uls],
             **plotting.DATASET_POINT_FORMAT)
@@ -349,8 +351,10 @@ class ContinuousDataset(Dataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Response')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self.means, yerr=self.errorbars,
             **plotting.DATASET_POINT_FORMAT)
@@ -501,8 +505,10 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Response')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.scatter(
             self.individual_doses, self.responses,
             **plotting.DATASET_INDIVIDUAL_FORMAT)
