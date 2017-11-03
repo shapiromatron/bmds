@@ -270,17 +270,13 @@ class BMDModel(object):
                    xmin=0,
                    xmax=(bmd - xdomain[0]) / xrng,
                    **plotting.BMD_LINE_FORMAT)
-        ax.axhline(ys[1],
-                   xmin=0,
-                   xmax=(bmdl - xdomain[0]) / xrng,
-                   **plotting.BMD_LINE_FORMAT)
         ax.axvline(bmd,
                    ymin=0,
                    ymax=(ys[0] - ydomain[0]) / yrng,
                    **plotting.BMD_LINE_FORMAT)
         ax.axvline(bmdl,
                    ymin=0,
-                   ymax=(ys[1] - ydomain[0]) / yrng,
+                   ymax=(ys[0] - ydomain[0]) / yrng,
                    **plotting.BMD_LINE_FORMAT)
         ax.text(bmd + xrng * 0.01,
                 ydomain[0] + yrng * 0.02,
