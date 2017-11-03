@@ -185,19 +185,24 @@ class Reporter:
         hdr = self.styles.tbl_header
         ff = default_float_formatter
 
+        dose_units_text = dataset._get_dose_units_text()
+        response_units_text = dataset._get_response_units_text()
+
         if isinstance(dataset, datasets.DichotomousDataset):
 
             tbl = self.doc.add_table(2, dataset.num_dose_groups + 1,
                                      style=self.styles.table)
 
-            self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
-            self._write_cell(tbl.cell(1, 0), 'Response', style=hdr)
+            self._write_cell(tbl.cell(0, 0), 'Dose' + dose_units_text, style=hdr)
+            self._write_cell(tbl.cell(1, 0), 'Affected / Total (%)' + response_units_text, style=hdr)
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.incidences,
                                          dataset.ns)):
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
-                self._write_cell(tbl.cell(1, i + 1),
-                                 '{}/{}'.format(vals[1], vals[2]))
+                self._write_cell(
+                    tbl.cell(1, i + 1),
+                    '{}/{}\n({:.1%})'.format(vals[1], vals[2], vals[1] / float(vals[2]))
+                )
 
             for i, col in enumerate(tbl.columns):
                 w = 0.75 if i == 0 else \
@@ -209,8 +214,8 @@ class Reporter:
             tbl = self.doc.add_table(dataset.num_dose_groups + 1, 2,
                                      style=self.styles.table)
 
-            self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
-            self._write_cell(tbl.cell(0, 1), 'Responses', style=hdr)
+            self._write_cell(tbl.cell(0, 0), 'Dose' + dose_units_text, style=hdr)
+            self._write_cell(tbl.cell(0, 1), 'Responses' + response_units_text, style=hdr)
 
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.get_responses_by_dose())):
@@ -226,9 +231,9 @@ class Reporter:
             tbl = self.doc.add_table(3, dataset.num_dose_groups + 1,
                                      style=self.styles.table)
 
-            self._write_cell(tbl.cell(0, 0), 'Dose', style=hdr)
+            self._write_cell(tbl.cell(0, 0), 'Dose' + dose_units_text, style=hdr)
             self._write_cell(tbl.cell(1, 0), 'N', style=hdr)
-            self._write_cell(tbl.cell(2, 0), 'Mean ± SD', style=hdr)
+            self._write_cell(tbl.cell(2, 0), 'Mean ± SD' + response_units_text, style=hdr)
             for i, vals in enumerate(zip(dataset.doses,
                                          dataset.ns,
                                          dataset.means,
@@ -291,12 +296,14 @@ class Reporter:
                                  style=self.styles.table)
 
         # write headers
+        dose_units_text = session.dataset._get_dose_units_text()
+
         self._write_cell(tbl.cell(0, 0), 'Model', style=hdr)
         self._write_cell(tbl.cell(0, 1), 'Goodness of fit', style=hdr)
         self._write_cell(tbl.cell(1, 1), '', style=hdr)  # set style
         self._write_cell(tbl.cell(1, 2), 'AIC', style=hdr)
-        self._write_cell(tbl.cell(0, 3), 'BMD', style=hdr)
-        self._write_cell(tbl.cell(0, 4), 'BMDL', style=hdr)
+        self._write_cell(tbl.cell(0, 3), 'BMD' + dose_units_text, style=hdr)
+        self._write_cell(tbl.cell(0, 4), 'BMDL' + dose_units_text, style=hdr)
         self._write_cell(tbl.cell(0, 5), 'Comments', style=hdr)
 
         p = tbl.cell(1, 1).paragraphs[0]

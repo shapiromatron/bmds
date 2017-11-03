@@ -34,6 +34,16 @@ class Dataset(object):
     def num_dose_groups(self):
         return len(set(self.doses))
 
+    def _get_dose_units_text(self):
+        return ' ({})'.format(self.kwargs['dose_units']) \
+            if 'dose_units' in self.kwargs \
+            else ''
+
+    def _get_response_units_text(self):
+        return ' ({})'.format(self.kwargs['response_units']) \
+            if 'response_units' in self.kwargs \
+            else ''
+
 
 class DichotomousDataset(Dataset):
     """

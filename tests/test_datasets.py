@@ -192,3 +192,19 @@ def test_extra_kwargs(cdataset, cidataset, ddataset):
         id=None)
 
     assert 'id' in ds.to_dict()
+
+
+def test_dataset_units_text(cdataset):
+    assert cdataset._get_dose_units_text() == ''
+    assert cdataset._get_response_units_text() == ''
+
+    ds = bmds.ContinuousDataset(
+        doses=[0, 10, 50, 150, 400],
+        ns=[111, 142, 143, 93, 42],
+        means=[2.112, 2.095, 1.956, 1.587, 1.254],
+        stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
+        dose_units='μg/m³',
+        response_units='mg/kg',
+    )
+    assert ds._get_dose_units_text() == ' (μg/m³)'
+    assert ds._get_response_units_text() == ' (mg/kg)'

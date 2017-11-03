@@ -10,6 +10,14 @@ def test_reporter(cdataset, ddataset, cidataset):
 
     reporter1 = bmds.Reporter()
 
+    for ds in [cdataset, ddataset, cidataset]:
+        ds.kwargs.update(
+            xlabel='Dose (μg/m³)',
+            ylabel='Relative liver weight (mg/kg)',
+            dose_units='μg/m³',
+            response_units='mg/kg',
+        )
+
     sessions = [
         bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset),
         bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset),
