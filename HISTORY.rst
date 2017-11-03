@@ -2,14 +2,16 @@
 History
 =======
 
-v0.9.0 (2017-06-21)
--------------------
+v0.9.0 (NEXT)
+-------------
 * Added new ``Reporter`` class for creating Microsoft Word reports, as well as a default template for creating Word files. The reports may contain:
     - a table for the input dataset (on by default)
     - a summary table of model summary results (on by default)
     - a summary table of model recommendation notes (on by default)
     - the recommended model output file and figure (on by default)
     - all executed model output files and figures (off by default)
+* Increased BMDS_MODEL_TIMEOUT_SECONDS from 10 to 30 seconds
+
 
 v0.8.1 (2017-06-06)
 -------------------
