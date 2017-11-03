@@ -44,6 +44,9 @@ class Dataset(object):
             if 'response_units' in self.kwargs \
             else ''
 
+    def _get_dataset_name(self):
+        return self.kwargs.get('dataset_name', 'BMDS output results')
+
 
 class DichotomousDataset(Dataset):
     """

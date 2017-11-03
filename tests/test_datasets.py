@@ -194,10 +194,13 @@ def test_extra_kwargs(cdataset, cidataset, ddataset):
     assert 'id' in ds.to_dict()
 
 
-def test_dataset_units_text(cdataset):
+def test_dataset_reporting_options(cdataset):
+    # test defaults
     assert cdataset._get_dose_units_text() == ''
     assert cdataset._get_response_units_text() == ''
+    assert cdataset._get_dataset_name() == 'BMDS output results'
 
+    # test overrides
     ds = bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[111, 142, 143, 93, 42],
@@ -205,6 +208,8 @@ def test_dataset_units_text(cdataset):
         stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
         dose_units='μg/m³',
         response_units='mg/kg',
+        dataset_name='Smith 2017: Relative Liver Weight in Male SD Rats',
     )
+    assert ds._get_dataset_name() == 'Smith 2017: Relative Liver Weight in Male SD Rats'
     assert ds._get_dose_units_text() == ' (μg/m³)'
     assert ds._get_response_units_text() == ' (mg/kg)'

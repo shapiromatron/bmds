@@ -286,9 +286,6 @@ class BMDS(object):
         filename : str or None
             If provided, the file is saved to this location, otherwise this
             method returns a docx.Document
-        title : str or None
-            Title to be used to refer to the session. If one is not provided, a
-            default value is used
         input_dataset : bool
             Include input dataset data table
         summary_table : bool
@@ -308,7 +305,7 @@ class BMDS(object):
 
         """
         rep = reporter.Reporter()
-        rep.add_session(self, title, input_dataset, summary_table,
+        rep.add_session(self, input_dataset, summary_table,
                         recommendation_details, recommended_model, all_models)
 
         if filename:

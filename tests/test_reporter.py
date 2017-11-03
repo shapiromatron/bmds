@@ -12,6 +12,7 @@ def test_reporter(cdataset, ddataset, cidataset):
 
     for ds in [cdataset, ddataset, cidataset]:
         ds.kwargs.update(
+            dataset_name='Smith 2017: Relative Liver Weight in Male SD Rats',
             xlabel='Dose (μg/m³)',
             ylabel='Relative liver weight (mg/kg)',
             dose_units='μg/m³',

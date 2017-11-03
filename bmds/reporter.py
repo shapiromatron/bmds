@@ -101,7 +101,7 @@ class Reporter:
                 self.doc.paragraphs[0].text == '':
             self.doc._body._body.remove(self.doc.paragraphs[0]._p)
 
-    def add_session(self, session, title=None,
+    def add_session(self, session,
                     input_dataset=True, summary_table=True,
                     recommendation_details=True, recommended_model=True,
                     all_models=False):
@@ -112,9 +112,6 @@ class Reporter:
         ----------
         session : bmds.Session
             BMDS session to be included in reporting
-        title : str or None
-            Title to be used to refer to the session. If one is not provided, a
-            default value is used.
         input_dataset : bool
             Include input dataset data table
         summary_table : bool
@@ -132,10 +129,7 @@ class Reporter:
         None.
         """
 
-        if title is None:
-            title = 'BMDS output results'
-
-        self.doc.add_paragraph(title, self.styles.header_1)
+        self.doc.add_paragraph(session.dataset._get_dataset_name(), self.styles.header_1)
         self.doc.add_paragraph('BMDS version: {}'.format(session.version_pretty))
 
         if input_dataset:
