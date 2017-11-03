@@ -3,11 +3,18 @@ import os
 import numpy as np
 
 from .base import BMDModel, DefaultParams
+from .. import constants
 
 
 class Continuous(BMDModel):
     dtype = 'C'  # for parsing output; therefore C is equivalent to CI
     possible_bmr = ('Abs. Dev.', 'Std. Dev.', 'Rel. Dev.', 'Point', 'Extra')
+
+    def get_bmr_text(self):
+        return '{} {}'.format(
+            self.values['bmr'],
+            constants.BMR_INVERTED_CROSSALK[self.dtype][self.values['bmr_type']],
+        )
 
     def set_constant_variance_value(self):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho

@@ -10,6 +10,12 @@ class Dichotomous(BMDModel):
     dtype = constants.DICHOTOMOUS
     possible_bmr = ('Extra', 'Added')
 
+    def get_bmr_text(self):
+        return '{:.0%} {} risk'.format(
+            self.values['bmr'],
+            constants.BMR_INVERTED_CROSSALK[self.dtype][self.values['bmr_type']],
+        )
+
 
 class DichotomousCancer(Dichotomous):
     dtype = constants.DICHOTOMOUS_CANCER

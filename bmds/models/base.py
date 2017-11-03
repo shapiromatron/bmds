@@ -242,19 +242,30 @@ class BMDModel(object):
         """
         fig = self.dataset.plot()
         ax = fig.gca()
-        ax.set_title(self.name)
+        ax.set_title('{}\n{}, {}'.format(
+            self.dataset._get_dataset_name(),
+            self.name,
+            self.get_bmr_text(),
+        ))
         if self.has_successfully_executed:
             self._set_x_range(ax)
             ax.plot(
                 self._xs, self.get_ys(self._xs),
+                label=self.name,
                 **plotting.LINE_FORMAT)
             self._add_bmr_lines(ax)
         else:
             self._add_plot_failure(ax)
+
+        ax.legend(**settings.LEGEND_OPTS)
+
         return fig
 
     def get_ys(self, xs):
         raise NotImplementedError('Abstract base method; requires implementation.')
+
+    def get_bmr_text(self):
+        raise NotImplementedError()
 
     def _add_bmr_lines(self, ax):
         # add BMD and BMDL lines to plot.
@@ -269,6 +280,7 @@ class BMDModel(object):
         ax.axhline(ys[0],
                    xmin=0,
                    xmax=(bmd - xdomain[0]) / xrng,
+                   label='BMR, BMD, BMDL',
                    **plotting.BMD_LINE_FORMAT)
         ax.axvline(bmd,
                    ymin=0,

@@ -1,5 +1,6 @@
 from collections import defaultdict
 import numpy as np
+from simple_settings import settings
 from scipy import stats
 
 from . import plotting
@@ -209,8 +210,11 @@ class DichotomousDataset(Dataset):
         ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self._means, yerr=[self._lls, self._uls],
+            label='Fraction affected ± 95% CI',
             **plotting.DATASET_POINT_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig
 
 
@@ -337,6 +341,7 @@ class ContinuousDataset(Dataset):
 
     @property
     def errorbars(self):
+        # 95% confidence interval
         if not hasattr(self, '_errorbars'):
             self._errorbars = [
                 stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
@@ -370,8 +375,11 @@ class ContinuousDataset(Dataset):
         ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self.means, yerr=self.errorbars,
+            label='Mean ± 95% CI',
             **plotting.DATASET_POINT_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig
 
 
@@ -524,6 +532,9 @@ class ContinuousIndividualDataset(ContinuousDataset):
         ax.set_ylabel(ylabel)
         ax.scatter(
             self.individual_doses, self.responses,
+            label='Data',
             **plotting.DATASET_INDIVIDUAL_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig
