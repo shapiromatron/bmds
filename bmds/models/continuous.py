@@ -28,6 +28,7 @@ class Continuous(BMDModel):
             else 'Constant variance'
 
 
+# POLYNOMIAL
 class Polynomial_216(Continuous):
     minimum_dose_groups = 2
     model_name = 'Polynomial'
@@ -120,6 +121,13 @@ class Polynomial_220(Polynomial_217):
     date = '10/22/2014'
 
 
+class Polynomial_221(Polynomial_220):
+    bmds_version_dir = 'BMDS270'
+    version = 2.21
+    date = '03/14/2017'
+
+
+# LINEAR
 class Linear_216(Polynomial_216):
     minimum_dose_groups = 2
     model_name = 'Linear'
@@ -185,6 +193,13 @@ class Linear_220(Linear_217):
     date = '10/22/2014'
 
 
+class Linear_221(Linear_220):
+    bmds_version_dir = 'BMDS270'
+    version = 2.21
+    date = '03/14/2017'
+
+
+# EXPONENTIAL M2
 class Exponential(Continuous):
 
     def _get_model_name(self):
@@ -284,6 +299,13 @@ class Exponential_M2_110(Exponential_M2_19):
     date = '01/12/2015'
 
 
+class Exponential_M2_111(Exponential_M2_110):
+    bmds_version_dir = 'BMDS270'
+    version = 1.11
+    date = '03/14/2017'
+
+
+# EXPONENTIAL M3
 class Exponential_M3_17(Exponential_M2_17):
     minimum_dose_groups = 3
     model_name = 'Exponential-M3'
@@ -313,6 +335,13 @@ class Exponential_M3_110(Exponential_M3_19):
     date = '01/12/2015'
 
 
+class Exponential_M3_111(Exponential_M3_110):
+    bmds_version_dir = 'BMDS270'
+    version = 1.11
+    date = '03/14/2017'
+
+
+# EXPONENTIAL M4
 class Exponential_M4_17(Exponential_M2_17):
     minimum_dose_groups = 3
     model_name = 'Exponential-M4'
@@ -341,6 +370,13 @@ class Exponential_M4_110(Exponential_M4_19):
     date = '01/12/2015'
 
 
+class Exponential_M4_111(Exponential_M4_110):
+    bmds_version_dir = 'BMDS270'
+    version = 1.11
+    date = '03/14/2017'
+
+
+# EXPONENTIAL M5
 class Exponential_M5_17(Exponential_M2_17):
     minimum_dose_groups = 4
     model_name = 'Exponential-M5'
@@ -370,6 +406,13 @@ class Exponential_M5_110(Exponential_M5_19):
     date = '01/12/2015'
 
 
+class Exponential_M5_111(Exponential_M5_110):
+    bmds_version_dir = 'BMDS270'
+    version = 1.11
+    date = '03/14/2017'
+
+
+# POWER
 class Power_216(Continuous):
     minimum_dose_groups = 3
     model_name = 'Power'
@@ -438,6 +481,13 @@ class Power_218(Power_217):
     date = '05/19/2014'
 
 
+class Power_219(Power_218):
+    bmds_version_dir = 'BMDS270'
+    version = 2.19
+    date = '03/14/2017'
+
+
+# HILL
 class Hill_216(Continuous):
     minimum_dose_groups = 4
     model_name = 'Hill'
@@ -500,3 +550,9 @@ class Hill_217(Hill_216):
     date = '01/28/2013'
     defaults = deepcopy(Hill_216.defaults)
     defaults['max_iterations']['d'] = 500
+
+
+class Hill_218(Hill_217):
+    bmds_version_dir = 'BMDS270'
+    version = 2.18
+    date = '03/14/2017'

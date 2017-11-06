@@ -442,9 +442,50 @@ class BMDS_v2601(BMDS_v260):
     version_pretty = 'BMDS v2.6.0.1'
 
 
+class BMDS_v270(BMDS_v2601):
+    version = constants.BMDS270
+    version_pretty = 'BMDS v2.7.0'
+    model_options = {
+        constants.DICHOTOMOUS: OrderedDict([
+            (constants.M_Logistic, models.Logistic_215),
+            (constants.M_LogLogistic, models.LogLogistic_215),
+            (constants.M_Probit, models.Probit_34),
+            (constants.M_LogProbit, models.LogProbit_34),
+            (constants.M_Multistage, models.Multistage_34),
+            (constants.M_Gamma, models.Gamma_217),
+            (constants.M_Weibull, models.Weibull_217),
+            (constants.M_DichotomousHill, models.DichotomousHill_13),
+        ]),
+        constants.DICHOTOMOUS_CANCER: OrderedDict([
+            (constants.M_MultistageCancer, models.MultistageCancer_34),
+        ]),
+        constants.CONTINUOUS: OrderedDict([
+            (constants.M_Linear, models.Linear_221),
+            (constants.M_Polynomial, models.Polynomial_221),
+            (constants.M_Power, models.Power_219),
+            (constants.M_Hill, models.Hill_218),
+            (constants.M_ExponentialM2, models.Exponential_M2_111),
+            (constants.M_ExponentialM3, models.Exponential_M3_111),
+            (constants.M_ExponentialM4, models.Exponential_M4_111),
+            (constants.M_ExponentialM5, models.Exponential_M5_111),
+        ]),
+        constants.CONTINUOUS_INDIVIDUAL: OrderedDict([
+            (constants.M_Linear, models.Linear_221),
+            (constants.M_Polynomial, models.Polynomial_221),
+            (constants.M_Power, models.Power_219),
+            (constants.M_Hill, models.Hill_218),
+            (constants.M_ExponentialM2, models.Exponential_M2_111),
+            (constants.M_ExponentialM3, models.Exponential_M3_111),
+            (constants.M_ExponentialM4, models.Exponential_M4_111),
+            (constants.M_ExponentialM5, models.Exponential_M5_111),
+        ]),
+    }
+
+
 _BMDS_VERSIONS = OrderedDict((
     (constants.BMDS231, BMDS_v231),
     (constants.BMDS240, BMDS_v240),
     (constants.BMDS260, BMDS_v260),
     (constants.BMDS2601, BMDS_v2601),
+    (constants.BMDS270, BMDS_v270),
 ))

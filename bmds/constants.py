@@ -25,6 +25,7 @@ BMDS231 = 'BMDS231'
 BMDS240 = 'BMDS240'
 BMDS260 = 'BMDS260'
 BMDS2601 = 'BMDS2601'
+BMDS270 = 'BMDS270'
 
 # model names
 M_Weibull = 'Weibull'
