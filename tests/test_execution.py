@@ -4,6 +4,7 @@ import inspect
 
 import bmds
 from simple_settings import settings
+from simple_settings.utils import settings_stub
 
 from .fixtures import *  # noqa
 
@@ -27,31 +28,99 @@ def test_executable_path():
 def test_default_execution(cdataset, ddataset, cidataset):
     # All models execute given valid inputs
 
-    def _check_session(session, num_models):
-        session.add_default_models()
-        assert len(session.models) == num_models
-        session.execute()
-        for model in session.models:
-            assert model.output_created is True
-            assert len(model.outfile) > 0
-            assert model.execution_duration >= 0
-            assert 'execution_end_time' in model.output
+    # CONTINUOUS
+    session = bmds.BMDS.latest_version(
+        bmds.constants.CONTINUOUS,
+        dataset=cdataset)
+    session.add_default_models()
+    assert len(session.models) == 10
+    session.execute()
+    for model in session.models:
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS,
-                                       dataset=cdataset)
-    _check_session(session, 10)
+        # check correct completion
+        assert model.output_created is True
+        assert len(model.outfile) > 0
+        assert model.execution_duration >= 0
+        assert 'execution_end_time' in model.output
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS_INDIVIDUAL,
-                                       dataset=cidataset)
-    _check_session(session, 12)
+    # check BMDU are created (v2.7)
+    actual = np.array([m.output['BMDU'] for m in session.models])
+    expected = np.array([
+        112.485, 112.485, 112.485, 112.485, 112.485,
+        79.6883, 87.6812, 87.6812, 65.4371, 81.3828
+    ])
+    assert np.isclose(actual, expected).all()
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
-                                       dataset=ddataset)
-    _check_session(session, 10)
+    # CONTINUOUS INDIVIDUAL
+    session = bmds.BMDS.latest_version(
+        bmds.constants.CONTINUOUS_INDIVIDUAL,
+        dataset=cidataset)
+    session.add_default_models()
+    assert len(session.models) == 12
+    session.execute()
+    for model in session.models:
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER,
-                                       dataset=ddataset)
-    _check_session(session, 3)
+        # check correct completion
+        assert model.output_created is True
+        assert len(model.outfile) > 0
+        assert model.execution_duration >= 0
+        assert 'execution_end_time' in model.output
+
+    # check BMDU are created (v2.7)
+    actual = np.array([m.output['BMDU'] for m in session.models])
+    expected = np.array([
+        878.068, 878.068, 878.068, 878.068, 878.068, 878.068, 878.068,
+        2500000000.0, 880.338, 880.338, 5000000.0, 5000000.0
+    ])
+    assert np.isclose(actual, expected).all()
+
+    # DICHOTOMOUS
+    session = bmds.BMDS.latest_version(
+        bmds.constants.DICHOTOMOUS,
+        dataset=ddataset)
+    session.add_default_models()
+    assert len(session.models) == 10
+    session.execute()
+    for model in session.models:
+
+        # check correct completion
+        assert model.output_created is True
+        assert len(model.outfile) > 0
+        assert model.execution_duration >= 0
+        assert 'execution_end_time' in model.output
+
+    # check BMDU are created (v2.7)
+    actual = np.array([m.output['BMDU'] for m in session.models])
+    expected = np.array([
+        23.6386, 29.105, 23.2359, 29.4044, 22.8424,
+        24.6612, 26.3032, 28.1727, 29.1446, -999
+    ])
+    assert np.isclose(actual, expected).all()
+
+    # DICHOTOMOUS CANCER
+    session = bmds.BMDS.latest_version(
+        bmds.constants.DICHOTOMOUS_CANCER,
+        dataset=ddataset)
+    session.add_default_models()
+    assert len(session.models) == 3
+    session.execute()
+    for model in session.models:
+
+        # check correct completion
+        assert model.output_created is True
+        assert len(model.outfile) > 0
+        assert model.execution_duration >= 0
+        assert 'execution_end_time' in model.output
+
+    # check BMDU are created (v2.7)
+    actual = np.array([m.output['BMDU'] for m in session.models])
+    expected = np.array([22.8424, 24.6612, 26.3032])
+    assert np.isclose(actual, expected).all()
+
+    # confirm cancer slope factor exists
+    actual = np.array([m.output['CSF'] for m in session.models])
+    expected = np.array([0.0129348, 0.0108767, 0.0108578])
+    assert np.isclose(actual, expected).all()
 
 
 def test_parameter_overrides(cdataset):
@@ -171,21 +240,24 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.recommend()
     assert session.recommended_model_index is None
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
-                                       dataset=bad_ddataset)
-    session.add_default_models()
-    session.execute()
-    session.recommend()
-    assert session.recommended_model_index is None
+    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=3):
+        # works in later versions; fix to this version
+        BMDSv2601 = bmds.BMDS.versions['BMDS2601']
+        session = BMDSv2601(bmds.constants.DICHOTOMOUS,
+                            dataset=bad_ddataset)
+        session.add_default_models()
+        session.execute()
+        session.recommend()
+        assert session.recommended_model_index is None
 
-    # assert that the execution_halted flag is appropriately set
-    halted = [model.execution_halted for model in session.models]
-    str_halted = '[False, False, False, False, False, False, False, True, False, False]'  # noqa
-    assert halted[7] is True and session.models[7].name == 'Gamma'
-    assert str(halted) == str_halted
-    total_time = session.models[7].execution_duration
-    timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
-    assert np.isclose(total_time, timeout) or total_time > timeout
+        # assert that the execution_halted flag is appropriately set
+        halted = [model.execution_halted for model in session.models]
+        str_halted = '[False, False, False, False, False, False, False, True, False, False]'  # noqa
+        assert halted[7] is True and session.models[7].name == 'Gamma'
+        assert str(halted) == str_halted
+        total_time = session.models[7].execution_duration
+        timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
+        assert np.isclose(total_time, timeout) or total_time > timeout
 
 
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):

@@ -1,5 +1,6 @@
 from collections import defaultdict
 import numpy as np
+from simple_settings import settings
 from scipy import stats
 
 from . import plotting
@@ -33,6 +34,19 @@ class Dataset(object):
     @property
     def num_dose_groups(self):
         return len(set(self.doses))
+
+    def _get_dose_units_text(self):
+        return ' ({})'.format(self.kwargs['dose_units']) \
+            if 'dose_units' in self.kwargs \
+            else ''
+
+    def _get_response_units_text(self):
+        return ' ({})'.format(self.kwargs['response_units']) \
+            if 'response_units' in self.kwargs \
+            else ''
+
+    def _get_dataset_name(self):
+        return self.kwargs.get('dataset_name', 'BMDS output results')
 
 
 class DichotomousDataset(Dataset):
@@ -190,12 +204,17 @@ class DichotomousDataset(Dataset):
         self._set_plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Fraction affected')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self._means, yerr=[self._lls, self._uls],
+            label='Fraction affected ± 95% CI',
             **plotting.DATASET_POINT_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig
 
 
@@ -322,6 +341,7 @@ class ContinuousDataset(Dataset):
 
     @property
     def errorbars(self):
+        # 95% confidence interval
         if not hasattr(self, '_errorbars'):
             self._errorbars = [
                 stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
@@ -349,12 +369,17 @@ class ContinuousDataset(Dataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Response')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses, self.means, yerr=self.errorbars,
+            label='Mean ± 95% CI',
             **plotting.DATASET_POINT_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig
 
 
@@ -457,6 +482,14 @@ class ContinuousIndividualDataset(ContinuousDataset):
             rows.append('%f %f' % (dose, response))
         return '\n'.join(rows)
 
+    def get_responses_by_dose(self):
+        doses = np.array(self.individual_doses)
+        resps = np.array(self.responses)
+        return sorted([
+            resps[doses == dose].tolist()
+            for dose in self.doses
+        ])
+
     @property
     def dataset_length(self):
         return len(self.individual_doses)
@@ -493,10 +526,15 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
+        xlabel = self.kwargs.get('xlabel', 'Dose')
+        ylabel = self.kwargs.get('ylabel', 'Response')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.scatter(
             self.individual_doses, self.responses,
+            label='Data',
             **plotting.DATASET_INDIVIDUAL_FORMAT)
         ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
         return fig

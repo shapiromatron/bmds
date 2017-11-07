@@ -163,7 +163,7 @@ class OutputParser(object):
             'BMD': r'(?<!Setting )BMD = +(%s)' % self.re_num,
             'BMDL': r'BMDL = +(%s)' % self.re_num,
             'BMDU': r'BMDU = +(%s)' % self.re_num,
-            'CSF': r'Multistage Cancer Slope Factor = +(%s)' % self.re_num,
+            'CSF': r'Cancer Slope Factor = +(%s)' % self.re_num,
             'AIC': r'AIC: +(%s)' % (self.re_num),
             'model_version': r'Version: ([\d\.]+);',
             'model_date': r'Date: ([\d/]+)',

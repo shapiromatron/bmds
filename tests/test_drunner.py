@@ -19,4 +19,3 @@ def test_drunner(cdataset):
     assert len(outputs) == 2
     assert 'BMD =        99.9419' in outputs[0]['output']
     assert 'BMD = 99.9419' in outputs[1]['output']
-

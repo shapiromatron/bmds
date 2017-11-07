@@ -1,4 +1,4 @@
-__version__ = '0.8.1'
+__version__ = '0.9.0'
 
 import os  # noqa
 os.environ.setdefault('SIMPLE_SETTINGS', 'bmds.settings')
@@ -8,6 +8,7 @@ from .datasets import *  # noqa
 from .logic import *  # noqa
 from .drunner import *  # noqa
 from .batch import SessionBatch # noqa
+from .reporter import Reporter, ReporterStyleGuide  # noqa
 from .plotting import *  # noqa
 
 from . import constants, models  # noqa

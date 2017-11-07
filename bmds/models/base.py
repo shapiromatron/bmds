@@ -242,19 +242,30 @@ class BMDModel(object):
         """
         fig = self.dataset.plot()
         ax = fig.gca()
-        ax.set_title(self.name)
+        ax.set_title('{}\n{}, {}'.format(
+            self.dataset._get_dataset_name(),
+            self.name,
+            self.get_bmr_text(),
+        ))
         if self.has_successfully_executed:
             self._set_x_range(ax)
             ax.plot(
                 self._xs, self.get_ys(self._xs),
+                label=self.name,
                 **plotting.LINE_FORMAT)
             self._add_bmr_lines(ax)
         else:
             self._add_plot_failure(ax)
+
+        ax.legend(**settings.LEGEND_OPTS)
+
         return fig
 
     def get_ys(self, xs):
         raise NotImplementedError('Abstract base method; requires implementation.')
+
+    def get_bmr_text(self):
+        raise NotImplementedError()
 
     def _add_bmr_lines(self, ax):
         # add BMD and BMDL lines to plot.
@@ -269,10 +280,7 @@ class BMDModel(object):
         ax.axhline(ys[0],
                    xmin=0,
                    xmax=(bmd - xdomain[0]) / xrng,
-                   **plotting.BMD_LINE_FORMAT)
-        ax.axhline(ys[1],
-                   xmin=0,
-                   xmax=(bmdl - xdomain[0]) / xrng,
+                   label='BMR, BMD, BMDL',
                    **plotting.BMD_LINE_FORMAT)
         ax.axvline(bmd,
                    ymin=0,
@@ -280,7 +288,7 @@ class BMDModel(object):
                    **plotting.BMD_LINE_FORMAT)
         ax.axvline(bmdl,
                    ymin=0,
-                   ymax=(ys[1] - ydomain[0]) / yrng,
+                   ymax=(ys[0] - ydomain[0]) / yrng,
                    **plotting.BMD_LINE_FORMAT)
         ax.text(bmd + xrng * 0.01,
                 ydomain[0] + yrng * 0.02,
@@ -455,10 +463,7 @@ class BMDModel(object):
 
         # add logic bin and warnings
         logics = getattr(self, 'logic_notes', {})
-        bin_ = constants.BIN_TEXT[self.logic_bin] \
-            if hasattr(self, 'logic_bin') \
-            else '-'
-        d['logic_bin'].append(_nullify(show_null, bin_))
+        d['logic_bin'].append(_nullify(show_null, self.get_logic_bin_text()))
 
         txt = '\n'.join(logics.get(constants.BIN_NO_CHANGE, ['-']))
         d['logic_cautions'].append(_nullify(show_null, txt))
@@ -486,6 +491,11 @@ class BMDModel(object):
         if 'stderr' in d:
             txt = getattr(self, 'stderr', '-')
             d['stderr'].append(_nullify(show_null, txt))
+
+    def get_logic_bin_text(self):
+        return constants.BIN_TEXT[self.logic_bin] \
+            if hasattr(self, 'logic_bin') \
+            else '-'
 
 
 class DefaultParams(object):

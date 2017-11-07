@@ -6,7 +6,7 @@ import pandas as pd
 from simple_settings import settings
 import sys
 
-from . import __version__, constants, logic, models, utils
+from . import __version__, constants, logic, models, utils, reporter
 
 
 __all__ = ('BMDS', )
@@ -50,8 +50,10 @@ class BMDS(object):
 
     @classmethod
     def latest_version(cls, *args, **kwargs):
-        # return the latest version of BMDS. If arguments are provided, create
-        # an instance and return, otherwise return the class
+        """
+        Return the class of the latest version of the BMDS. If additional
+        arguments are provided, an instance of this class is generated.
+        """
         cls = list(cls.versions.values())[-1]
         if len(args) > 0 or len(kwargs) > 0:
             return cls(*args, **kwargs)
@@ -272,13 +274,93 @@ class BMDS(object):
             fig.savefig(os.path.join(directory, fn), dpi=dpi)
             fig.clear()
 
+    def to_docx(self, filename=None, title=None,
+                input_dataset=True, summary_table=True,
+                recommendation_details=True, recommended_model=True,
+                all_models=False):
+        """
+        Write session outputs to a Word file.
+
+        Parameters
+        ----------
+        filename : str or None
+            If provided, the file is saved to this location, otherwise this
+            method returns a docx.Document
+        input_dataset : bool
+            Include input dataset data table
+        summary_table : bool
+            Include model summary table
+        recommendation_details : bool
+            Include model recommendation details table
+        recommended_model : bool
+            Include the recommended model output and dose-response plot, if
+            one exists
+        all_models : bool
+            Include all models output and dose-response plots
+
+        Returns
+        -------
+        bmds.Reporter
+            The bmds.Reporter object.
+
+        """
+        rep = reporter.Reporter()
+        rep.add_session(self, input_dataset, summary_table,
+                        recommendation_details, recommended_model, all_models)
+
+        if filename:
+            rep.save(filename)
+
+        return rep
+
+    def _group_models(self):
+        """
+        If AIC and BMD are numeric and identical, then treat models as
+        identical. Returns a list of lists. The outer list is a list of related
+        models, the inner list contains each individual model, sorted by the
+        number of parameters in ascending order.
+
+        This is required because in some cases, a higher-order model may not use
+        some parameters and can effectively collapse to a lower order model
+        (for example, a 2nd order polynomial and power model may collapse to a
+        linear model). In summary outputs, we may want to present all models in
+        one row, since they are the same model effectively.
+        """
+        od = OrderedDict()
+
+        # Add models to appropriate list. We only aggregate models which
+        # completed successfully and have a valid AIC and BMD.
+        for i, model in enumerate(self.models):
+            output = getattr(model, 'output', {})
+            if output.get('AIC') and output.get('BMD') and output['BMD'] > 0:
+                key = '{}-{}'.format(output['AIC'], output['BMD'])
+                if key in od:
+                    od[key].append(model)
+                else:
+                    od[key] = [model]
+            else:
+                od[i] = [model]
+
+        # Sort each list by the number of parameters
+        def _get_num_params(model):
+            return len(model.output['parameters']) \
+                if hasattr(model, 'output') and 'parameters' in model.output \
+                else 0
+
+        for key, _models in od.items():
+            _models.sort(key=_get_num_params)
+
+        return list(od.values())
+
 
 class BMDS_v231(BMDS):
     version = constants.BMDS231
+    version_pretty = 'BMDS v2.3.1'
 
 
 class BMDS_v240(BMDS_v231):
     version = constants.BMDS240
+    version_pretty = 'BMDS v2.4.0'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -317,6 +399,7 @@ class BMDS_v240(BMDS_v231):
 
 class BMDS_v260(BMDS_v240):
     version = constants.BMDS260
+    version_pretty = 'BMDS v2.6.0'
     model_options = {
         constants.DICHOTOMOUS: OrderedDict([
             (constants.M_Logistic, models.Logistic_214),
@@ -356,6 +439,47 @@ class BMDS_v260(BMDS_v240):
 
 class BMDS_v2601(BMDS_v260):
     version = constants.BMDS2601
+    version_pretty = 'BMDS v2.6.0.1'
+
+
+class BMDS_v270(BMDS_v2601):
+    version = constants.BMDS270
+    version_pretty = 'BMDS v2.7.0'
+    model_options = {
+        constants.DICHOTOMOUS: OrderedDict([
+            (constants.M_Logistic, models.Logistic_215),
+            (constants.M_LogLogistic, models.LogLogistic_215),
+            (constants.M_Probit, models.Probit_34),
+            (constants.M_LogProbit, models.LogProbit_34),
+            (constants.M_Multistage, models.Multistage_34),
+            (constants.M_Gamma, models.Gamma_217),
+            (constants.M_Weibull, models.Weibull_217),
+            (constants.M_DichotomousHill, models.DichotomousHill_13),
+        ]),
+        constants.DICHOTOMOUS_CANCER: OrderedDict([
+            (constants.M_MultistageCancer, models.MultistageCancer_34),
+        ]),
+        constants.CONTINUOUS: OrderedDict([
+            (constants.M_Linear, models.Linear_221),
+            (constants.M_Polynomial, models.Polynomial_221),
+            (constants.M_Power, models.Power_219),
+            (constants.M_Hill, models.Hill_218),
+            (constants.M_ExponentialM2, models.Exponential_M2_111),
+            (constants.M_ExponentialM3, models.Exponential_M3_111),
+            (constants.M_ExponentialM4, models.Exponential_M4_111),
+            (constants.M_ExponentialM5, models.Exponential_M5_111),
+        ]),
+        constants.CONTINUOUS_INDIVIDUAL: OrderedDict([
+            (constants.M_Linear, models.Linear_221),
+            (constants.M_Polynomial, models.Polynomial_221),
+            (constants.M_Power, models.Power_219),
+            (constants.M_Hill, models.Hill_218),
+            (constants.M_ExponentialM2, models.Exponential_M2_111),
+            (constants.M_ExponentialM3, models.Exponential_M3_111),
+            (constants.M_ExponentialM4, models.Exponential_M4_111),
+            (constants.M_ExponentialM5, models.Exponential_M5_111),
+        ]),
+    }
 
 
 _BMDS_VERSIONS = OrderedDict((
@@ -363,4 +487,5 @@ _BMDS_VERSIONS = OrderedDict((
     (constants.BMDS240, BMDS_v240),
     (constants.BMDS260, BMDS_v260),
     (constants.BMDS2601, BMDS_v2601),
+    (constants.BMDS270, BMDS_v270),
 ))

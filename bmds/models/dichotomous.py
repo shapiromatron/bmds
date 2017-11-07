@@ -10,12 +10,19 @@ class Dichotomous(BMDModel):
     dtype = constants.DICHOTOMOUS
     possible_bmr = ('Extra', 'Added')
 
+    def get_bmr_text(self):
+        return '{:.0%} {} risk'.format(
+            self.values['bmr'],
+            constants.BMR_INVERTED_CROSSALK[self.dtype][self.values['bmr_type']],
+        )
+
 
 class DichotomousCancer(Dichotomous):
     dtype = constants.DICHOTOMOUS_CANCER
     possible_bmr = ('Extra', 'Added')
 
 
+# MULTISTAGE
 class Multistage_32(Dichotomous):
     minimum_dose_groups = 2
     model_name = 'Multistage'
@@ -103,6 +110,7 @@ class Multistage_34(Multistage_33):
     date = '05/02/2014'
 
 
+# MULTISTAGE CANCER
 class MultistageCancer_19(DichotomousCancer):
     minimum_dose_groups = 2
     model_name = 'Multistage-Cancer'
@@ -155,7 +163,7 @@ class MultistageCancer_19(DichotomousCancer):
 
         return '\n'.join([
             self._dfile_print_header_rows(),
-            '{} {}'.format(self.dataset.dataset_length , degree_poly),
+            '{} {}'.format(self.dataset.dataset_length, degree_poly),
             self._dfile_print_options(
                 'max_iterations', 'relative_fn_conv', 'parameter_conv',
                 'bmdl_curve_calculation', 'restrict_beta',
@@ -184,6 +192,13 @@ class MultistageCancer_110(MultistageCancer_19):
     defaults['max_iterations']['d'] = 500
 
 
+class MultistageCancer_34(MultistageCancer_19):
+    bmds_version_dir = 'BMDS270'
+    version = 3.4
+    date = '05/02/2014'
+
+
+# WEIBULL
 class Weibull_215(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'Weibull'
@@ -244,6 +259,13 @@ class Weibull_216(Weibull_215):
     defaults['max_iterations']['d'] = 500
 
 
+class Weibull_217(Weibull_216):
+    bmds_version_dir = 'BMDS270'
+    version = 2.17
+    date = '06/23/2017'
+
+
+# LOGPROBIT
 class LogProbit_32(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'LogProbit'
@@ -303,6 +325,13 @@ class LogProbit_33(LogProbit_32):
     defaults['max_iterations']['d'] = 500
 
 
+class LogProbit_34(LogProbit_33):
+    bmds_version_dir = 'BMDS270'
+    version = 3.4
+    date = '05/21/2017'
+
+
+# PROBIT
 class Probit_32(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'Probit'
@@ -361,6 +390,13 @@ class Probit_33(Probit_32):
     defaults['max_iterations']['d'] = 500
 
 
+class Probit_34(Probit_33):
+    bmds_version_dir = 'BMDS270'
+    version = 3.4
+    date = '05/21/2017'
+
+
+# GAMMA
 class Gamma_215(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'Gamma'
@@ -419,6 +455,13 @@ class Gamma_216(Gamma_215):
     defaults['max_iterations']['d'] = 500
 
 
+class Gamma_217(Gamma_216):
+    bmds_version_dir = 'BMDS270'
+    version = 2.17
+    date = '06/22/2017'
+
+
+# LOGLOGISTIC
 class LogLogistic_213(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'LogLogistic'
@@ -479,6 +522,13 @@ class LogLogistic_214(LogLogistic_213):
     defaults['max_iterations']['d'] = 500
 
 
+class LogLogistic_215(LogLogistic_214):
+    bmds_version_dir = 'BMDS270'
+    version = 2.15
+    date = '03/20/2017'
+
+
+# LOGISTIC
 class Logistic_213(Dichotomous):
     minimum_dose_groups = 3
     model_name = 'Logistic'
@@ -537,6 +587,13 @@ class Logistic_214(Logistic_213):
     defaults['max_iterations']['d'] = 500
 
 
+class Logistic_215(Logistic_214):
+    bmds_version_dir = 'BMDS270'
+    version = 2.15
+    date = '03/20/2017'
+
+
+# DICHOTOMOUS HILL
 class DichotomousHill_13(Dichotomous):
     minimum_dose_groups = 4
     model_name = 'Dichotomous-Hill'

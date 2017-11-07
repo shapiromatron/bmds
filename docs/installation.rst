@@ -74,6 +74,12 @@ To run a specific test, use::
 
     py.test -k test_my_special_test_name
 
+Some tests also create export files, which can be manually inspected to ensure
+that they're in the proper format. By default, tests do not create manual
+export files, though all other aspects of the API are executed to ensure that
+they method calls work as expected. To enable creation of the output files for
+inspection, set the environment variable ``BMDS_CREATE_OUTPUTS=TRUE``.
+
 There's a built in Makefile command, ``make dev`` that creates a tmux
 application which auto-update the documentation; check out the ``Makefile`` for
 a list of other built-in actions.

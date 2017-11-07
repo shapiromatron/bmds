@@ -3,7 +3,7 @@ import platform
 
 # How long should the system wait for a BMDS model execution to complete
 # before closing (in seconds)
-BMDS_MODEL_TIMEOUT_SECONDS = 10
+BMDS_MODEL_TIMEOUT_SECONDS = 30
 
 # Maximum polynomial used when setting default models; generally only used when
 # the number of dose groups is large in a dataset. This is so that if you have
@@ -15,6 +15,14 @@ MAXIMUM_POLYNOMIAL_ORDER = 8
 # model with the smallest AIC will be recommended, otherwise the model with the
 # smallest BMDL will be recommended.
 SUFFICIENTLY_CLOSE_BMDL = 3
+
+# Legend options applied to all plots which are generated in the software
+LEGEND_OPTS = dict(
+    loc='best',
+    fontsize=8,
+    fancybox=True,
+    frameon=True,
+)
 
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != 'Windows':
@@ -34,7 +42,7 @@ LOGGING = {
     'formatters': {
         'default': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
-        },        
+        },
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
