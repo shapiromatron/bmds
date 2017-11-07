@@ -4,6 +4,7 @@ import inspect
 
 import bmds
 from simple_settings import settings
+from simple_settings.utils import settings_stub
 
 from .fixtures import *  # noqa
 
@@ -239,21 +240,24 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.recommend()
     assert session.recommended_model_index is None
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS,
-                                       dataset=bad_ddataset)
-    session.add_default_models()
-    session.execute()
-    session.recommend()
-    assert session.recommended_model_index is None
+    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=3):
+        # works in later versions; fix to this version
+        BMDSv2601 = bmds.BMDS.versions['BMDS2601']
+        session = BMDSv2601(bmds.constants.DICHOTOMOUS,
+                            dataset=bad_ddataset)
+        session.add_default_models()
+        session.execute()
+        session.recommend()
+        assert session.recommended_model_index is None
 
-    # assert that the execution_halted flag is appropriately set
-    halted = [model.execution_halted for model in session.models]
-    str_halted = '[False, False, False, False, False, False, False, True, False, False]'  # noqa
-    assert halted[7] is True and session.models[7].name == 'Gamma'
-    assert str(halted) == str_halted
-    total_time = session.models[7].execution_duration
-    timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
-    assert np.isclose(total_time, timeout) or total_time > timeout
+        # assert that the execution_halted flag is appropriately set
+        halted = [model.execution_halted for model in session.models]
+        str_halted = '[False, False, False, False, False, False, False, True, False, False]'  # noqa
+        assert halted[7] is True and session.models[7].name == 'Gamma'
+        assert str(halted) == str_halted
+        total_time = session.models[7].execution_duration
+        timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
+        assert np.isclose(total_time, timeout) or total_time > timeout
 
 
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
