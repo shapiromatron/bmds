@@ -2,8 +2,8 @@
 History
 =======
 
-v0.9.0 (NEXT)
--------------
+v0.9.0 (2017-11-07)
+-------------------
 * Add BMDS version 2.7
 * Added new ``Reporter`` class for creating Microsoft Word reports, as well as a default template for creating Word files. The reports may contain:
     - a table for the input dataset (on by default)
