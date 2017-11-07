@@ -11,9 +11,6 @@ BMDS Python interface
 .. image:: https://ci.appveyor.com/api/projects/status/9vuiyl71io1xu8h7?svg=true
         :target: https://ci.appveyor.com/project/shapiromatron/bmds
 
-.. image:: https://img.shields.io/travis/shapiromatron/bmds.svg
-        :target: https://travis-ci.org/shapiromatron/bmds
-
 .. image:: https://readthedocs.org/projects/bmds/badge/?version=latest
         :target: https://bmds.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
