@@ -195,9 +195,10 @@ class SessionBatch(list):
         """
         rep = Reporter()
         for model in self:
-            rep.add_session(self, input_dataset, summary_table,
-                            recommendation_details, recommended_model,
-                            all_models)
+            rep.add_session(
+                model, input_dataset, summary_table,
+                recommendation_details, recommended_model,
+                all_models)
 
         if filename:
             rep.save(filename)
