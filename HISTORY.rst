@@ -2,6 +2,12 @@
 History
 =======
 
+v0.9.1 (NEXT)
+-------------------
+* Hotfix - batch word reporter
+* Used default 300 dpi for printing figures in Word reports
+
+
 v0.9.0 (2017-11-07)
 -------------------
 * Add BMDS version 2.7
