@@ -26,15 +26,8 @@ LEGEND_OPTS = dict(
 
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != 'Windows':
-
-    # The URL for the BMDS webserver
-    BMDS_HOST = os.environ.get('BMDS_HOST')
-
-    # The admin username for the BMDS webserver.
-    BMDS_USERNAME = os.environ.get('BMDS_USERNAME')
-
-    # The admin password for the BMDS webserver.
-    BMDS_PASSWORD = os.environ.get('BMDS_PASSWORD')
+    BMDS_REQUEST_URL = os.environ.get('BMDS_REQUEST_URL')
+    BMDS_TOKEN = os.environ.get('BMDS_TOKEN')
 
 LOGGING = {
     'version': 1,
