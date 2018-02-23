@@ -21,7 +21,7 @@ requirements = [
     'pandas',
     'python-docx>=0.8.6',
     'openpyxl',
-    'matplotlib',
+    'matplotlib>=2.1.2',
     'scipy',
     'simple-settings',
 ]

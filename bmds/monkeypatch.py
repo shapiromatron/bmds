@@ -30,15 +30,13 @@ __all__ = []
 
 
 def _get_payload(models):
-    return dict(
-        inputs=json.dumps([
-            dict(
-                bmds_version=model.bmds_version_dir,
-                model_name=model.model_name,
-                dfile=model.as_dfile(),
-            ) for model in models
-        ])
-    )
+    return json.dumps(dict(inputs=[
+        dict(
+            bmds_version=model.bmds_version_dir,
+            model_name=model.model_name,
+            dfile=model.as_dfile(),
+        ) for model in models]
+    ))
 
 
 if platform.system() != 'Windows':
@@ -60,7 +58,8 @@ if platform.system() != 'Windows':
         global _request_session
         if _request_session is None:
             s = requests.Session()
-            s.headers.update(Authorization='Token {}'.format(settings.BMDS_TOKEN))
+            s.headers['Authorization'] = 'Token {}'.format(settings.BMDS_TOKEN)
+            s.headers['Content-Type'] = 'application/json'
             s._BMDS_REQUEST_URL = settings.BMDS_REQUEST_URL
             _request_session = s
 
