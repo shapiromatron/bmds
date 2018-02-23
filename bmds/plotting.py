@@ -38,5 +38,5 @@ FAILURE_MESSAGE_FORMAT = dict(
 def create_empty_figure():
     plt.style.use('seaborn-darkgrid')
     mpl.rcParams.update({'font.size': 10})
-    fig, ax = plt.subplots(figsize=PLOT_FIGSIZE)
+    fig, ax = plt.subplots(figsize=PLOT_FIGSIZE, dpi=300)
     return fig

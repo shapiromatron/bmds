@@ -23,10 +23,12 @@ An example continuous summary dataset:
         stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
     )
 
-    # create a BMD session and add default BMD models
+    # create a BMD session
     session = bmds.BMDS.latest_version(
         bmds.constants.CONTINUOUS,
         dataset=dataset)
+
+    # add all default models
     session.add_default_models()
 
     # execute the session
@@ -62,3 +64,43 @@ To use a dichotomous dataset, only a few things change:
         dataset=dataset)
 
 To run multiple datasets, you can use a ``SessionBatch``.
+
+
+Frequently Asked Questions
+--------------------------
+
+1. How can I specify another BMR on ALL default models?
+
+.. code-block:: python
+
+    # get BMR types for dataset type selected
+    bmr_types = bmds.constants.BMR_CROSSWALK[bmds.constants.CONTINUOUS]
+
+    # create session
+    session = bmds.BMDS.latest_version(
+        bmds.constants.CONTINUOUS,
+        dataset=dataset)
+
+    # add overrides to all models
+    overrides = {
+        'bmr': 0.1,
+        'bmr_type': bmr_types['Rel. Dev.']
+    }
+    session.add_default_models(global_overrides=overrides)
+
+2. How can I specify other settings on a particular model?
+
+.. code-block:: python
+
+    # get BMR types for dataset type selected
+    bmr_types = bmds.constants.BMR_CROSSWALK[bmds.constants.CONTINUOUS]
+
+    # add model and overrides
+    session.add_model(
+        bmds.constants.M_Polynomial,
+        overrides={
+            'constant_variance': 1,
+            'degree_poly': 3,
+            'bmr': 2.5,
+            'bmr_type': bmr_types['Abs. Dev.']
+    })
