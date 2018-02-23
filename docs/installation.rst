@@ -9,23 +9,10 @@ installing the scientific python stack on Windows, and BMDS on Mac/Linux.
 Installing on Windows
 ~~~~~~~~~~~~~~~~~~~~~
 
-Installing scientific python numpy_ and scipy_ can be tricky on Windows, and
-both are required for using the BMDS package. Here are two options, and recommended steps:
+Requires Python 3.5+. When installing on windows, using Anaconda_ is recommended for simplicity,
+but using a standard install within Python virtual environment will also work.
 
-1. Use Anaconda_.
-2. Use Python 3.5+ and virtual environments. If you choose this method:
-    - Download the appropriate `numpy and scipy binaries`_
-    - Create a new virtual environment
-    - In the virtual environment, run the commands (with proper paths)::
-
-        pip install C:\Users\...\Downloads\numpy.whl
-        pip install C:\Users\...\Downloads\scipy.whl
-        pip install bmds
-
-.. _numpy: http://www.numpy.org/
-.. _scipy: https://www.scipy.org/
 .. _Anaconda: https://www.continuum.io/
-.. _`numpy and scipy binaries`: http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 .. _mac-install:
 
@@ -40,9 +27,8 @@ variables to specify the `BMDS server`_  URL and login credentials:
 
 .. code-block:: bash
 
-    export "BMDS_HOST=http://bmds-server.com"
-    export "BMDS_USERNAME=myusername"
-    export "BMDS_PASSWORD=mysecret"
+    export "BMDS_REQUEST_URL=http://bmds-server.com/api/dfile/"
+    export "BMDS_TOKEN=abcdefghijklmnopqrstuvwxyz"
 
 .. note::
 

@@ -58,8 +58,11 @@ if platform.system() != 'Windows':
         global _request_session
         if _request_session is None:
             s = requests.Session()
-            s.headers['Authorization'] = 'Token {}'.format(settings.BMDS_TOKEN)
-            s.headers['Content-Type'] = 'application/json'
+            s.headers.update({
+                'Authorization': 'Token {}'.format(settings.BMDS_TOKEN),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            })
             s._BMDS_REQUEST_URL = settings.BMDS_REQUEST_URL
             _request_session = s
 

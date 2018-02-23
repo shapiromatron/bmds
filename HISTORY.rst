@@ -2,10 +2,13 @@
 History
 =======
 
-v0.9.1 (NEXT)
+v0.9.1 (2018-02-22)
 -------------------
 * Hotfix - batch word reporter
 * Used default 300 dpi for printing figures in Word reports
+* Use token for authentication for remote bmds execution monkeypatch instead of login (paired with updated `bmds-server`_)
+
+.. _`bmds-server`: https://bmds-server.readthedocs.io/
 
 
 v0.9.0 (2017-11-07)
