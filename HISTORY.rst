@@ -2,6 +2,11 @@
 History
 =======
 
+v0.9.2 (NEXT)
+-------------
+* Update documentation on default model recommendation logic
+
+
 v0.9.1 (2018-02-22)
 -------------------
 * Hotfix - batch word reporter
