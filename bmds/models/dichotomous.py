@@ -112,13 +112,12 @@ class Multistage_34(Multistage_33):
 
 # QUANTAL LINEAR
 class QuantalLinear_32(Multistage_32):
-    model_name = 'Quantal Linear'
     defaults = deepcopy(Multistage_32.defaults)
     defaults['degree_poly'] = DefaultParams.degree_poly(d=1)
 
     @property
     def name(self):
-        return self.model_name
+        return 'Quantal linear'
 
 
 class QuantalLinear_33(QuantalLinear_32):

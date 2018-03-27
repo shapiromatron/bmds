@@ -27,7 +27,9 @@ def test_default_model_additions(cdataset, ddataset):
         return len([m for m in session.models if m.model_name == 'Polynomial'])
 
     def num_multis(session):
-        return len([m for m in session.models if 'Multistage' in m.model_name])
+        for m in session.models:
+            m._set_values()
+        return len([m for m in session.models if 'Multistage' in m.name])
 
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
