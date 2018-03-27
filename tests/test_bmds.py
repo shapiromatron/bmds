@@ -26,18 +26,40 @@ def test_default_model_additions(cdataset, ddataset):
     def num_polys(session):
         return len([m for m in session.models if m.model_name == 'Polynomial'])
 
+    def num_multis(session):
+        return len([m for m in session.models if 'Multistage' in m.model_name])
+
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
     assert len(session.models) == 10
-    assert num_polys(session) == min(cdataset.num_dose_groups, 8) - 2
+
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session.add_default_models()
+    assert len(session.models) == 10
+
+    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
+    session.add_default_models()
+    assert len(session.models) == 3
 
     for i in range(3, 9):
         array = range(i)
-        print(array)
-        ds = bmds.ContinuousDataset(doses=array, ns=array, means=array, stdevs=array)
-        session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=ds)
+
+        # expected [2-8]
+        cds = bmds.ContinuousDataset(doses=array, ns=array, means=array, stdevs=array)
+        session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cds)
         session.add_default_models()
-        assert num_polys(session) == min(ds.num_dose_groups, 8) - 2
+        assert num_polys(session) == min(cds.num_dose_groups, 8) - 2
+
+        # expected [2-8]
+        dds = bmds.DichotomousDataset(doses=array, ns=array, incidences=array)
+        session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=dds)
+        session.add_default_models()
+        assert num_multis(session) == min(dds.num_dose_groups, 8) - 2
+
+        # expected [1-8]
+        session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=dds)
+        session.add_default_models()
+        assert num_multis(session) == min(dds.num_dose_groups, 8) - 1
 
 
 def test_group_models(cdataset):

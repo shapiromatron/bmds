@@ -2,8 +2,9 @@
 History
 =======
 
-v0.9.2 (NEXT)
+v0.10.0 (NEXT)
 -------------
+* Add Quantal linear as a default model instead of Mulstage-1
 * Update documentation on default model recommendation logic
 
 

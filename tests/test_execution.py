@@ -22,7 +22,6 @@ def test_executable_path():
         if inspect.isclass(obj):
             if obj not in parents and issubclass(obj, parents):
                 exe = obj.get_exe_path()
-                print(obj.__name__, exe)
                 assert os.path.exists(exe)
 
 

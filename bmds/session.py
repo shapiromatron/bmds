@@ -102,7 +102,7 @@ class BMDS(object):
                 else None
 
             if name in constants.VARIABLE_POLYNOMIAL:
-                min_poly_order = 2 if name == constants.M_Polynomial else 1
+                min_poly_order = 1 if name == constants.M_MultistageCancer else 2
                 for i in range(min_poly_order, max_poly_order):
                     overrides = {} \
                         if overrides is None \
@@ -367,6 +367,7 @@ class BMDS_v240(BMDS_v231):
             (constants.M_LogLogistic, models.LogLogistic_214),
             (constants.M_Probit, models.Probit_33),
             (constants.M_LogProbit, models.LogProbit_33),
+            (constants.M_QuantalLinear, models.QuantalLinear_33),
             (constants.M_Multistage, models.Multistage_33),
             (constants.M_Gamma, models.Gamma_216),
             (constants.M_Weibull, models.Weibull_216),
@@ -406,6 +407,7 @@ class BMDS_v260(BMDS_v240):
             (constants.M_LogLogistic, models.LogLogistic_214),
             (constants.M_Probit, models.Probit_33),
             (constants.M_LogProbit, models.LogProbit_33),
+            (constants.M_QuantalLinear, models.QuantalLinear_34),
             (constants.M_Multistage, models.Multistage_34),
             (constants.M_Gamma, models.Gamma_216),
             (constants.M_Weibull, models.Weibull_216),
@@ -451,6 +453,7 @@ class BMDS_v270(BMDS_v2601):
             (constants.M_LogLogistic, models.LogLogistic_215),
             (constants.M_Probit, models.Probit_34),
             (constants.M_LogProbit, models.LogProbit_34),
+            (constants.M_QuantalLinear, models.QuantalLinear_34),
             (constants.M_Multistage, models.Multistage_34),
             (constants.M_Gamma, models.Gamma_217),
             (constants.M_Weibull, models.Weibull_217),
