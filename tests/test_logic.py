@@ -338,3 +338,22 @@ def test_parsimonious_recommendation(reduced_cdataset):
     ]
     assert len(models) == 6
     assert bmds.Recommender._get_parsimonious_model(models).name == 'Linear'
+
+
+def test_no_bmdl():
+    # this model is valid but returns a BMDL of 0; confirm it can be recommended
+    ds = bmds.DichotomousDataset(
+        doses=[0, 4.9, 30, 96, 290],
+        ns=[289, 311, 315, 302, 70],
+        incidences=[289, 309, 315, 302, 70]
+    )
+    session = bmds.BMDS.latest_version(
+        bmds.constants.DICHOTOMOUS,
+        dataset=ds)
+    session.add_model(
+        bmds.constants.M_Multistage,
+        overrides={'degree_poly': 3}
+    )
+    session.execute_and_recommend()
+    assert session.models[0].output['BMDL'] == 0
+    assert session.recommended_model == session.models[0]

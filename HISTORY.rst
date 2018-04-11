@@ -6,6 +6,7 @@ v0.10.0 (NEXT)
 -------------
 * Add Quantal linear as a default model instead of Mulstage-1
 * Update documentation on default model recommendation logic
+* Fix special case where all BMDLs are 0 for model recommendations
 
 
 v0.9.1 (2018-02-22)
