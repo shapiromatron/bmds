@@ -13,7 +13,7 @@ def test_drunner(cdataset):
         bmds.models.Linear_220(cdataset),
         bmds.models.Power_218(cdataset)
     ])
-    inputs = json.loads(payload['inputs'])
+    inputs = json.loads(payload)['inputs']
     runner = bmds.BatchDfileRunner(inputs)
     outputs = runner.execute()
     assert len(outputs) == 2

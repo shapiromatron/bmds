@@ -37,7 +37,6 @@ def test_Linear_217(cdataset):
     model = bmds.models.Linear_217(cdataset)
     dfile = model.as_dfile()
     expected = 'Linear\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1\n1 5 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 0 0.95\n-9999 -9999 -9999 -9999\n0\n-9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 111 2.112000 0.235000\n10.000000 142 2.095000 0.209000\n50.000000 143 1.956000 0.231000\n150.000000 93 1.587000 0.263000\n400.000000 42 1.254000 0.159000'  # noqa
-    print(dfile)
     assert dfile == expected
 
 

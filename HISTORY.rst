@@ -2,6 +2,13 @@
 History
 =======
 
+v0.10.0 (NEXT)
+-------------
+* Add Quantal linear as a default model instead of Multistage-1
+* Update documentation on default model recommendation logic
+* Fix special case where all BMDLs are 0 for model recommendations
+
+
 v0.9.1 (2018-02-22)
 -------------------
 * Hotfix - batch word reporter

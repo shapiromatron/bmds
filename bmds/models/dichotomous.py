@@ -110,6 +110,30 @@ class Multistage_34(Multistage_33):
     date = '05/02/2014'
 
 
+# QUANTAL LINEAR
+class QuantalLinear_32(Multistage_32):
+    defaults = deepcopy(Multistage_32.defaults)
+    defaults['degree_poly'] = DefaultParams.degree_poly(d=1)
+
+    @property
+    def name(self):
+        return 'Quantal linear'
+
+
+class QuantalLinear_33(QuantalLinear_32):
+    bmds_version_dir = 'BMDS240'
+    version = 3.3
+    date = '02/28/2013'
+    defaults = deepcopy(QuantalLinear_32.defaults)
+    defaults['max_iterations']['d'] = 500
+
+
+class QuantalLinear_34(QuantalLinear_33):
+    bmds_version_dir = 'BMDS260'
+    version = 3.4
+    date = '05/02/2014'
+
+
 # MULTISTAGE CANCER
 class MultistageCancer_19(DichotomousCancer):
     minimum_dose_groups = 2

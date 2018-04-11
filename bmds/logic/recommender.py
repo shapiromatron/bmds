@@ -187,7 +187,8 @@ class Recommender(object):
             for model in models
             if model.output['BMDL'] > 0
         ]
-        return max(bmdls) / min(bmdls)
+
+        return max(bmdls) / min(bmdls) if len(bmdls) > 0 else 0
 
     @staticmethod
     def _get_recommended_models(models, fld_name):
