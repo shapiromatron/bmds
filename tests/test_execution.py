@@ -6,6 +6,7 @@ import bmds
 from bmds import models
 from simple_settings import settings
 from simple_settings.utils import settings_stub
+import pytest
 
 from .fixtures import *  # noqa
 
@@ -260,6 +261,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
         assert np.isclose(total_time, timeout) or total_time > timeout
 
 
+@pytest.mark.skip(reason='timeout failure is unreliable')
 def test_timeout():
     # confirm that timeout setting works as expected; slow dataset provided
     # by CEBS team on 2017-11-12. Only slow in BMDS version 2.6; fixed in 2.7.
