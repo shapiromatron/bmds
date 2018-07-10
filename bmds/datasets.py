@@ -218,6 +218,35 @@ class DichotomousDataset(Dataset):
         return fig
 
 
+class DichotomousCancerDataset(DichotomousDataset):
+    """
+    Dataset object for dichotomous cancer datasets.
+
+    A dichotomous cancer dataset contains a list of 3 identically sized arrays of
+    input values, for the dose, number of subjects, and incidences (subjects
+    with a positive response).
+
+    Example
+    -------
+    >>> dataset = bmds.DichotomousCancerDataset(
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14]
+        )
+    """
+
+    def _validate(self):
+        length = len(self.doses)
+        if not all(len(lst) == length for lst in [self.doses, self.ns, self.incidences]):
+            raise ValueError("All input lists must be same length")
+
+        if length != len(set(self.doses)):
+            raise ValueError("Doses are not unique")
+
+        if self.num_dose_groups < 2:
+            raise ValueError("Must have 2 or more dose groups after dropping doses")
+
+
 class ContinuousDataset(Dataset):
     """
     Dataset object for continuous datasets.

@@ -2,7 +2,12 @@
 History
 =======
 
-v0.10.0 (2017-04-11)
+v0.11.0 (2018-07-09)
+--------------------
+* Add new `DichotomousCancerDataset` which only needs 2 dose-groups
+
+
+v0.10.0 (2018-04-11)
 --------------------
 * Add Quantal linear as a default model instead of Multistage-1
 * Update documentation on default model recommendation logic

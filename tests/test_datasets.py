@@ -8,6 +8,7 @@ from .fixtures import *  # noqa
 
 def test_dataset_validation():
     # make dummy datasets
+    dummy2 = [1, 2]
     dummy3 = [1, 2, 3]
     dummy4 = [1, 2, 3, 4]
     dummy3_dups = [0, 0, 1]
@@ -15,6 +16,8 @@ def test_dataset_validation():
     # these should be valid
     bmds.DichotomousDataset(
         doses=dummy3, ns=dummy3, incidences=dummy3)
+    bmds.DichotomousCancerDataset(
+        doses=dummy2, ns=dummy2, incidences=dummy2)
     bmds.ContinuousDataset(
         doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3)
     bmds.ContinuousIndividualDataset(
@@ -22,9 +25,16 @@ def test_dataset_validation():
 
     # these should raise errors
     with pytest.raises((IndexError, ValueError)):
+
+        # insufficient number of dose groups
+        bmds.DichotomousDataset(
+            doses=dummy2, ns=dummy2, incidences=dummy2)
+        bmds.ContinuousDataset(
+            doses=dummy2, ns=dummy2, means=dummy2, stdevs=dummy2)
+
         # different sized lists
         bmds.DichotomousDataset(
-            doses=dummy3, ns=dummy3, incidences=dummy3)
+            doses=dummy4, ns=dummy3, incidences=dummy3)
         bmds.ContinuousDataset(
             doses=dummy4, ns=dummy3, means=dummy3, stdevs=dummy3)
         bmds.ContinuousIndividualDataset(

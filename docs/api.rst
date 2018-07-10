@@ -37,10 +37,14 @@ A single dataset object is required for each BMD session. There are three
 dataset types implemented currently:
 
 - :class:`bmds.datasets.DichotomousDataset`
+- :class:`bmds.datasets.DichotomousCancerDataset`
 - :class:`bmds.datasets.ContinuousDataset`
 - :class:`bmds.datasets.ContinuousIndividualDataset`
 
 .. autoclass:: bmds.datasets.DichotomousDataset
+    :members:
+
+.. autoclass:: bmds.datasets.DichotomousCancerDataset
     :members:
 
 .. autoclass:: bmds.datasets.ContinuousDataset
