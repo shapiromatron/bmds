@@ -8,6 +8,7 @@ from .anova import AnovaTests
 
 __all__ = [
     'DichotomousDataset',
+    'DichotomousCancerDataset',
     'ContinuousDataset',
     'ContinuousIndividualDataset',
 ]
