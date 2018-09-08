@@ -30,8 +30,8 @@ def test_batch(cdataset, ddataset):
     df2 = batch.to_df(include_io=False, recommended_only=False)
 
     # check include_io
-    assert 'dfile' in df1.columns and 'dfile' not in df2.columns
-    assert 'outfile' in df1.columns and 'outfile' not in df2.columns
+    assert "dfile" in df1.columns and "dfile" not in df2.columns
+    assert "outfile" in df1.columns and "outfile" not in df2.columns
 
     # check recommended_only
     assert df1.shape[0] == 3 and df2.shape[0] == 23
@@ -42,6 +42,6 @@ def test_batch(cdataset, ddataset):
 
     # check dataset export, model exported, and recommendation is correct.
     first = dictionaries[0]
-    assert first['dataset']['doses'][-1] == 400
-    assert first['recommended_model_index'] is None
-    assert np.isclose(first['models'][0]['output']['BMD'], 99.9419)
+    assert first["dataset"]["doses"][-1] == 400
+    assert first["recommended_model_index"] is None
+    assert np.isclose(first["models"][0]["output"]["BMD"], 99.9419)

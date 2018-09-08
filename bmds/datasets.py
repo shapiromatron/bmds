@@ -7,10 +7,10 @@ from . import plotting
 from .anova import AnovaTests
 
 __all__ = [
-    'DichotomousDataset',
-    'DichotomousCancerDataset',
-    'ContinuousDataset',
-    'ContinuousIndividualDataset',
+    "DichotomousDataset",
+    "DichotomousCancerDataset",
+    "ContinuousDataset",
+    "ContinuousIndividualDataset",
 ]
 
 
@@ -18,36 +18,36 @@ class Dataset(object):
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
-        raise NotImplemented('Abstract method; requires implementation')
+        raise NotImplemented("Abstract method; requires implementation")
 
     def as_dfile(self):
-        raise NotImplemented('Abstract method; requires implementation')
+        raise NotImplemented("Abstract method; requires implementation")
 
     def to_dict(self):
-        raise NotImplemented('Abstract method; requires implementation')
+        raise NotImplemented("Abstract method; requires implementation")
 
     def plot(self):
-        raise NotImplemented('Abstract method; requires implementation')
+        raise NotImplemented("Abstract method; requires implementation")
 
     def drop_dose(self):
-        raise NotImplemented('Abstract method; requires implementation')
+        raise NotImplemented("Abstract method; requires implementation")
 
     @property
     def num_dose_groups(self):
         return len(set(self.doses))
 
     def _get_dose_units_text(self):
-        return ' ({})'.format(self.kwargs['dose_units']) \
-            if 'dose_units' in self.kwargs \
-            else ''
+        return " ({})".format(self.kwargs["dose_units"]) if "dose_units" in self.kwargs else ""
 
     def _get_response_units_text(self):
-        return ' ({})'.format(self.kwargs['response_units']) \
-            if 'response_units' in self.kwargs \
-            else ''
+        return (
+            " ({})".format(self.kwargs["response_units"])
+            if "response_units" in self.kwargs
+            else ""
+        )
 
     def _get_dataset_name(self):
-        return self.kwargs.get('dataset_name', 'BMDS output results')
+        return self.kwargs.get("dataset_name", "BMDS output results")
 
 
 class DichotomousDataset(Dataset):
@@ -80,30 +80,28 @@ class DichotomousDataset(Dataset):
 
     def _sort_by_dose_group(self):
         # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.doses).argsort(kind='mergesort')
-        for fld in ('doses', 'ns', 'incidences', 'remainings'):
+        indexes = np.array(self.doses).argsort(kind="mergesort")
+        for fld in ("doses", "ns", "incidences", "remainings"):
             arr = getattr(self, fld)
             setattr(self, fld, np.array(arr)[indexes].tolist())
         self._validate()
 
     def _validate(self):
         length = len(self.doses)
-        if not all(
-                len(lst) == length for lst in
-                [self.doses, self.ns, self.incidences]):
-            raise ValueError('All input lists must be same length')
+        if not all(len(lst) == length for lst in [self.doses, self.ns, self.incidences]):
+            raise ValueError("All input lists must be same length")
 
         if length != len(set(self.doses)):
-            raise ValueError('Doses are not unique')
+            raise ValueError("Doses are not unique")
 
         if self.num_dose_groups < 3:
-            raise ValueError('Must have 3 or more dose groups after dropping doses')
+            raise ValueError("Must have 3 or more dose groups after dropping doses")
 
     def drop_dose(self):
         """
         Drop the maximum dose and related response values.
         """
-        for fld in ('doses', 'ns', 'incidences', 'remainings'):
+        for fld in ("doses", "ns", "incidences", "remainings"):
             arr = getattr(self, fld)[:-1]
             setattr(self, fld, arr)
         self._validate()
@@ -121,13 +119,12 @@ class DichotomousDataset(Dataset):
         5.690000 3 47
         29.750000 14 35
         """
-        rows = ['Dose Incidence NEGATIVE_RESPONSE']
+        rows = ["Dose Incidence NEGATIVE_RESPONSE"]
         for i, v in enumerate(self.doses):
             if i >= self.num_dose_groups:
                 continue
-            rows.append('%f %d %d' % (
-                self.doses[i], self.incidences[i], self.remainings[i]))
-        return '\n'.join(rows)
+            rows.append("%f %d %d" % (self.doses[i], self.incidences[i], self.remainings[i]))
+        return "\n".join(rows)
 
     @property
     def dataset_length(self):
@@ -140,11 +137,7 @@ class DichotomousDataset(Dataset):
         """
         Returns a dictionary representation of the dataset.
         """
-        d = dict(
-            doses=self.doses,
-            ns=self.ns,
-            incidences=self.incidences,
-        )
+        d = dict(doses=self.doses, ns=self.ns, incidences=self.incidences)
         d.update(self.kwargs)
         return d
 
@@ -169,19 +162,20 @@ class DichotomousDataset(Dataset):
         p = incidence / float(n)
         z = stats.norm.ppf(0.975)
         q = 1. - p
-        ll = ((2 * n * p + 2 * z - 1) - z *
-              np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))) / (2 * (n + 2 * z))
-        ul = ((2 * n * p + 2 * z + 1) + z *
-              np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (2 * (n + 2 * z))
+        ll = (
+            (2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))
+        ) / (2 * (n + 2 * z))
+        ul = (
+            (2 * n * p + 2 * z + 1) + z * np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))
+        ) / (2 * (n + 2 * z))
         return p, ll, ul
 
     def _set_plot_data(self):
-        if hasattr(self, '_means'):
+        if hasattr(self, "_means"):
             return
-        self._means, self._lls, self._uls = zip(*[
-            self._calculate_plotting(i, j)
-            for i, j in zip(self.ns, self.incidences)
-        ])
+        self._means, self._lls, self._uls = zip(
+            *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
+        )
 
     def plot(self):
         """
@@ -205,14 +199,17 @@ class DichotomousDataset(Dataset):
         self._set_plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get('xlabel', 'Dose')
-        ylabel = self.kwargs.get('ylabel', 'Fraction affected')
+        xlabel = self.kwargs.get("xlabel", "Dose")
+        ylabel = self.kwargs.get("ylabel", "Fraction affected")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
-            self.doses, self._means, yerr=[self._lls, self._uls],
-            label='Fraction affected ± 95% CI',
-            **plotting.DATASET_POINT_FORMAT)
+            self.doses,
+            self._means,
+            yerr=[self._lls, self._uls],
+            label="Fraction affected ± 95% CI",
+            **plotting.DATASET_POINT_FORMAT,
+        )
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
@@ -279,24 +276,22 @@ class ContinuousDataset(Dataset):
 
     def _sort_by_dose_group(self):
         # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.doses).argsort(kind='mergesort')
-        for fld in ('doses', 'ns', 'means', 'stdevs'):
+        indexes = np.array(self.doses).argsort(kind="mergesort")
+        for fld in ("doses", "ns", "means", "stdevs"):
             arr = getattr(self, fld)
             setattr(self, fld, np.array(arr)[indexes].tolist())
         self._validate()
 
     def _validate(self):
         length = len(self.doses)
-        if not all(
-                len(lst) == length for lst in
-                [self.doses, self.ns, self.means, self.stdevs]):
-            raise ValueError('All input lists must be same length')
+        if not all(len(lst) == length for lst in [self.doses, self.ns, self.means, self.stdevs]):
+            raise ValueError("All input lists must be same length")
 
         if length != len(set(self.doses)):
-            raise ValueError('Doses are not unique')
+            raise ValueError("Doses are not unique")
 
         if self.num_dose_groups < 3:
-            raise ValueError('Must have 3 or more dose groups after dropping doses')
+            raise ValueError("Must have 3 or more dose groups after dropping doses")
 
     @property
     def is_increasing(self):
@@ -310,7 +305,7 @@ class ContinuousDataset(Dataset):
         """
         Drop the maximum dose and related response values.
         """
-        for fld in ('doses', 'ns', 'means', 'stdevs'):
+        for fld in ("doses", "ns", "means", "stdevs"):
             arr = getattr(self, fld)[:-1]
             setattr(self, fld, arr)
         self._validate()
@@ -319,17 +314,18 @@ class ContinuousDataset(Dataset):
         """
         Return the dataset representation in BMDS .(d) file.
         """
-        rows = ['Dose NumAnimals Response Stdev']
+        rows = ["Dose NumAnimals Response Stdev"]
         for i, v in enumerate(self.doses):
             if i >= self.num_dose_groups:
                 continue
-            rows.append('%f %d %f %f' % (
-                self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
-        return '\n'.join(rows)
+            rows.append(
+                "%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i])
+            )
+        return "\n".join(rows)
 
     @property
     def variances(self):
-        if not hasattr(self, '_variances'):
+        if not hasattr(self, "_variances"):
             stds = np.array(self.stdevs)
             self._variances = np.power(stds, 2).tolist()
         return self._variances
@@ -337,13 +333,15 @@ class ContinuousDataset(Dataset):
     @property
     def anova(self):
         # Either be a tuple of 3 Test objects, or None if anova failed
-        if not hasattr(self, '_anova'):
+        if not hasattr(self, "_anova"):
             try:
                 num_params = 3  # assume linear model
                 (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                    self.num_dose_groups, self.ns, self.means, self.variances)
+                    self.num_dose_groups, self.ns, self.means, self.variances
+                )
                 tests = AnovaTests.get_anova_c3_tests(
-                    num_params, self.num_dose_groups, A1, A2, A3, AR)
+                    num_params, self.num_dose_groups, A1, A2, A3, AR
+                )
             except ValueError:
                 tests = None
             self._anova = tests
@@ -360,19 +358,14 @@ class ContinuousDataset(Dataset):
         """
         Return a dictionary representation of the dataset.
         """
-        d = dict(
-            doses=self.doses,
-            ns=self.ns,
-            means=self.means,
-            stdevs=self.stdevs,
-        )
+        d = dict(doses=self.doses, ns=self.ns, means=self.means, stdevs=self.stdevs)
         d.update(self.kwargs)
         return d
 
     @property
     def errorbars(self):
         # 95% confidence interval
-        if not hasattr(self, '_errorbars'):
+        if not hasattr(self, "_errorbars"):
             self._errorbars = [
                 stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
                 for stdev, n in zip(self.stdevs, self.ns)
@@ -399,14 +392,17 @@ class ContinuousDataset(Dataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get('xlabel', 'Dose')
-        ylabel = self.kwargs.get('ylabel', 'Response')
+        xlabel = self.kwargs.get("xlabel", "Dose")
+        ylabel = self.kwargs.get("ylabel", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
-            self.doses, self.means, yerr=self.errorbars,
-            label='Mean ± 95% CI',
-            **plotting.DATASET_POINT_FORMAT)
+            self.doses,
+            self.means,
+            yerr=self.errorbars,
+            label="Mean ± 95% CI",
+            **plotting.DATASET_POINT_FORMAT,
+        )
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
@@ -457,20 +453,18 @@ class ContinuousIndividualDataset(ContinuousDataset):
 
     def _sort_by_dose_group(self):
         # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.individual_doses).argsort(kind='mergesort')
-        for fld in ('individual_doses', 'responses'):
+        indexes = np.array(self.individual_doses).argsort(kind="mergesort")
+        for fld in ("individual_doses", "responses"):
             arr = getattr(self, fld)
             setattr(self, fld, np.array(arr)[indexes].tolist())
 
     def _validate(self):
         length = len(self.individual_doses)
-        if not all(
-                len(lst) == length for lst in
-                [self.individual_doses, self.responses]):
-            raise ValueError('All input lists must be same length')
+        if not all(len(lst) == length for lst in [self.individual_doses, self.responses]):
+            raise ValueError("All input lists must be same length")
 
         if self.num_dose_groups < 3:
-            raise ValueError('Must have 3 or more doses after dropping doses')
+            raise ValueError("Must have 3 or more doses after dropping doses")
 
     def set_summary_data(self):
         doses = list(set(self.individual_doses))
@@ -494,7 +488,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         doses = np.array(self.individual_doses)
         responses = np.array(self.responses)
-        mask = (doses != doses.max())
+        mask = doses != doses.max()
         self.individual_doses = doses[mask].tolist()
         self.responses = responses[mask].tolist()
         self.set_summary_data()
@@ -504,21 +498,18 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         Return the dataset representation in BMDS .(d) file.
         """
-        rows = ['Dose Response']
+        rows = ["Dose Response"]
         for dose, response in zip(self.individual_doses, self.responses):
             dose_idx = self.doses.index(dose)
             if dose_idx >= self.num_dose_groups:
                 continue
-            rows.append('%f %f' % (dose, response))
-        return '\n'.join(rows)
+            rows.append("%f %f" % (dose, response))
+        return "\n".join(rows)
 
     def get_responses_by_dose(self):
         doses = np.array(self.individual_doses)
         resps = np.array(self.responses)
-        return sorted([
-            resps[doses == dose].tolist()
-            for dose in self.doses
-        ])
+        return sorted([resps[doses == dose].tolist() for dose in self.doses])
 
     @property
     def dataset_length(self):
@@ -528,10 +519,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         Return a dictionary representation of the dataset.
         """
-        d = dict(
-            individual_doses=self.individual_doses,
-            responses=self.responses,
-        )
+        d = dict(individual_doses=self.individual_doses, responses=self.responses)
         d.update(self.kwargs)
         return d
 
@@ -556,14 +544,16 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get('xlabel', 'Dose')
-        ylabel = self.kwargs.get('ylabel', 'Response')
+        xlabel = self.kwargs.get("xlabel", "Dose")
+        ylabel = self.kwargs.get("ylabel", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.scatter(
-            self.individual_doses, self.responses,
-            label='Data',
-            **plotting.DATASET_INDIVIDUAL_FORMAT)
+            self.individual_doses,
+            self.responses,
+            label="Data",
+            **plotting.DATASET_INDIVIDUAL_FORMAT,
+        )
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)

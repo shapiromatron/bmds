@@ -19,11 +19,11 @@ class BatchDfileRunner:
         self.inputs = inputs
 
     def get_outfile(self, dfile, model_name):
-        outfile = dfile.replace('.(d)', '.out')
-        oo2 = outfile.replace('.out', '.002')
+        outfile = dfile.replace(".(d)", ".out")
+        oo2 = outfile.replace(".out", ".002")
 
         # if not exponential, exit early
-        if 'exponential' not in model_name.lower():
+        if "exponential" not in model_name.lower():
             return outfile
 
         # side-effect- cleanup other files created by exponential
@@ -33,7 +33,7 @@ class BatchDfileRunner:
             self.tempfiles.append(oo2)
 
         # get exponential model prefix
-        prefix = model_name.split('-')[1]
+        prefix = model_name.split("-")[1]
         path, fn = os.path.split(outfile)
         outfile = os.path.join(path, prefix + fn)
         return outfile
@@ -44,33 +44,27 @@ class BatchDfileRunner:
         """
 
         # get executable path
-        exe = session.BMDS\
-            .get_model(obj['bmds_version'], obj['model_name'])\
-            .get_exe_path()
+        exe = session.BMDS.get_model(obj["bmds_version"], obj["model_name"]).get_exe_path()
 
         # write dfile
-        dfile = self.tempfiles.get_tempfile(prefix='bmds-dfile-', suffix='.(d)')
-        with open(dfile, 'w') as f:
-            f.write(obj['dfile'])
+        dfile = self.tempfiles.get_tempfile(prefix="bmds-dfile-", suffix=".(d)")
+        with open(dfile, "w") as f:
+            f.write(obj["dfile"])
 
-        outfile = self.get_outfile(dfile, obj['model_name'])
-        oo2 = outfile.replace('.out', '.002')
+        outfile = self.get_outfile(dfile, obj["model_name"])
+        oo2 = outfile.replace(".out", ".002")
 
-        proc = subprocess.Popen(
-            [exe, dfile],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+        proc = subprocess.Popen([exe, dfile], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         output = None
-        stdout = ''
-        stderr = ''
+        stdout = ""
+        stderr = ""
 
         try:
-            stdout, stderr = proc.communicate(
-                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
+            stdout, stderr = proc.communicate(timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS)
 
             if os.path.exists(outfile):
-                with open(outfile, 'r') as f:
+                with open(outfile, "r") as f:
                     output = f.read()
 
             status = RunStatus.SUCCESS.value
@@ -90,12 +84,7 @@ class BatchDfileRunner:
 
         self.tempfiles.cleanup()
 
-        return dict(
-            status=status,
-            output=output,
-            stdout=stdout,
-            stderr=stderr,
-        )
+        return dict(status=status, output=output, stdout=stdout, stderr=stderr)
 
     def execute(self):
         return list(map(self.execute_job, self.inputs))

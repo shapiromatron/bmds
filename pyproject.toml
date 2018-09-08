@@ -1,0 +1,15 @@
+[tool.black]
+line-length = 98
+py36 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.tox
+  | \.venv
+  | _build
+  | bin
+  | docs
+  | notebooks
+)/
+'''

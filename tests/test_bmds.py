@@ -6,10 +6,9 @@ from .fixtures import *  # noqa
 
 
 class TestBMDS(unittest.TestCase):
-
     def test_get_bmds_versions(self):
         versions = sorted(bmds.BMDS.get_versions())
-        expected = sorted(['BMDS231', 'BMDS240', 'BMDS260', 'BMDS2601', 'BMDS270'])
+        expected = sorted(["BMDS231", "BMDS240", "BMDS260", "BMDS2601", "BMDS270"])
         self.assertListEqual(versions, expected)
 
     def test_latest_bmds(self):
@@ -22,14 +21,13 @@ class TestBMDS(unittest.TestCase):
 
 
 def test_default_model_additions(cdataset, ddataset):
-
     def num_polys(session):
-        return len([m for m in session.models if m.model_name == 'Polynomial'])
+        return len([m for m in session.models if m.model_name == "Polynomial"])
 
     def num_multis(session):
         for m in session.models:
             m._set_values()
-        return len([m for m in session.models if 'Multistage' in m.name])
+        return len([m for m in session.models if "Multistage" in m.name])
 
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
@@ -72,21 +70,9 @@ def test_group_models(cdataset):
     assert len(session._group_models()) == len(session.models)
 
     # expected index output order ([1, 0], [2])
-    session.models[0].output = {
-        'BMD': 1,
-        'AIC': 2,
-        'parameters': [1, 2, 3]
-    }
-    session.models[1].output = {
-        'BMD': 1,
-        'AIC': 2,
-        'parameters': [1, 2]
-    }
-    session.models[2].output = {
-        'BMD': 3,
-        'AIC': 2,
-        'parameters': [1, 2, 3]
-    }
+    session.models[0].output = {"BMD": 1, "AIC": 2, "parameters": [1, 2, 3]}
+    session.models[1].output = {"BMD": 1, "AIC": 2, "parameters": [1, 2]}
+    session.models[2].output = {"BMD": 3, "AIC": 2, "parameters": [1, 2, 3]}
     session.models = session.models[:3]
     groups = session._group_models()
     assert len(groups) == 2

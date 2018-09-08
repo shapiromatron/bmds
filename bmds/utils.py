@@ -25,7 +25,7 @@ class classproperty(property):
 class TempFileList(list):
     # Maintains a list of temporary files and cleans up after itself
 
-    def get_tempfile(self, prefix='', suffix='.txt'):
+    def get_tempfile(self, prefix="", suffix=".txt"):
         fd, fn = tempfile.mkstemp(prefix=prefix, suffix=suffix)
         os.close(fd)
         self.append(fn)

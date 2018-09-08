@@ -74,9 +74,9 @@ Continuous datasets
 +--------------------------------+-------------------------------------------------------------------------------------------------------------+-------------------------+--------------------------------+
 | Residual of interest existence | The residual at the dose-group closest to the BMD (i.e., the residual of interest) exists.                  | N/A                     | Nonviable                      |
 +--------------------------------+-------------------------------------------------------------------------------------------------------------+-------------------------+--------------------------------+
-| Variance model selection       | The variance model used is appropriate (p-value 3 > N).                                                     | 0.1                     | Nonviable                      |
+| Variance model selection       | The variance model used is appropriate (p-value 2 > N).                                                     | 0.1                     | Nonviable                      |
 +--------------------------------+-------------------------------------------------------------------------------------------------------------+-------------------------+--------------------------------+
-| Variance model fit             | The variance model fits the data sufficiently well (p-value 2 > N).                                         | 0.1                     | Nonviable                      |
+| Variance model fit             | The variance model fits the data sufficiently well (p-value 3 > N).                                         | 0.1                     | Nonviable                      |
 +--------------------------------+-------------------------------------------------------------------------------------------------------------+-------------------------+--------------------------------+
 | Global goodness of fit (GGOF)  | The mean-model fits the data sufficiently well (p-value 4 > N).                                             | 0.1                     | Nonviable                      |
 +--------------------------------+-------------------------------------------------------------------------------------------------------------+-------------------------+--------------------------------+
