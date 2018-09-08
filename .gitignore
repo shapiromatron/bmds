@@ -26,3 +26,8 @@ notebooks/*testing.ipynb
 # log files created by bmds
 *.log*
 log.txt
+
+# dev settings
+.env
+Pipfile.lock
+.vscode

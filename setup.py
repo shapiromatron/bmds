@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 
 def get_version():
-    regex = r"""^__version__ = '(.*)'$"""
+    regex = r"""^__version__ = "(.*)"$"""
     with open("bmds/__init__.py", "r") as f:
         text = f.read()
     return re.findall(regex, text, re.MULTILINE)[0]
