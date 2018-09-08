@@ -38,12 +38,8 @@ class Recommender(object):
             rules.BmduExists(failure_bin=constants.BIN_NO_CHANGE, enabled=cancer_only),
             rules.AicExists(failure_bin=constants.BIN_FAILURE),
             rules.RoiExists(failure_bin=constants.BIN_WARNING),
-            rules.CorrectVarianceModel(
-                failure_bin=constants.BIN_WARNING, threshold=0.1, enabled=continous_only
-            ),
-            rules.VarianceFit(
-                failure_bin=constants.BIN_WARNING, threshold=0.1, enabled=continous_only
-            ),
+            rules.CorrectVarianceModel(failure_bin=constants.BIN_WARNING, enabled=continous_only),
+            rules.VarianceModelFit(failure_bin=constants.BIN_WARNING, enabled=continous_only),
             rules.GlobalFit(failure_bin=constants.BIN_WARNING, threshold=ggof_threshold),
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_NO_CHANGE,

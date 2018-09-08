@@ -36,8 +36,8 @@ def test_default_logic():
     ✕ BMDU exists [bin=✓]
     ✓ AIC exists [bin=✕]
     ✓ Residual of interest exists [bin=?]
-    ✕ Variance type [bin=?, threshold=0.1]
-    ✕ Variance fit [bin=?, threshold=0.1]
+    ✕ Variance type [bin=?]
+    ✕ Variance fit [bin=?]
     ✓ GGOF [bin=?, threshold=0.1]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
@@ -63,8 +63,8 @@ def test_default_logic():
     ✓ BMDU exists [bin=✓]
     ✓ AIC exists [bin=✕]
     ✓ Residual of interest exists [bin=?]
-    ✕ Variance type [bin=?, threshold=0.1]
-    ✕ Variance fit [bin=?, threshold=0.1]
+    ✕ Variance type [bin=?]
+    ✕ Variance fit [bin=?]
     ✓ GGOF [bin=?, threshold=0.05]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
@@ -90,8 +90,8 @@ def test_default_logic():
     ✕ BMDU exists [bin=✓]
     ✓ AIC exists [bin=✕]
     ✓ Residual of interest exists [bin=?]
-    ✓ Variance type [bin=?, threshold=0.1]
-    ✓ Variance fit [bin=?, threshold=0.1]
+    ✓ Variance type [bin=?]
+    ✓ Variance fit [bin=?]
     ✓ GGOF [bin=?, threshold=0.1]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
@@ -203,7 +203,7 @@ def test_warnings(cdataset):
         assert msg == expected
 
 
-def test_variance_model(cdataset):
+def test_correct_variance_model(cdataset):
     rule = rules.CorrectVarianceModel(bmds.constants.BIN_FAILURE)
 
     outputs = [
@@ -240,6 +240,44 @@ def test_variance_model(cdataset):
         assert msg == expected
 
 
+def test_variance_model_fit(cdataset):
+    rule = rules.VarianceModelFit(bmds.constants.BIN_FAILURE)
+
+    # test succcess
+    outputs = [
+        {"parameters": {}, "p_value2": 0.10, "p_value3": "<0.0001"},
+        {"parameters": {"rho": {"value": 1}}, "p_value2": "<0.0001", "p_value3": 0.10},
+    ]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    # test failures
+    outputs = [
+        (
+            {"parameters": {}, "p_value2": 0.05},
+            "Variance model poorly fits dataset (p-value 2 = 0.05)",
+        ),
+        (
+            {"parameters": {}, "p_value2": "<0.0001"},
+            "Variance model poorly fits dataset (p-value 2 = 0.0001)",
+        ),
+        (
+            {"parameters": {"rho": {"value": 1}}, "p_value3": 0.05},
+            "Variance model poorly fits dataset (p-value 3 = 0.05)",
+        ),
+        (
+            {"parameters": {"rho": {"value": 1}}, "p_value3": "<0.0001"},
+            "Variance model poorly fits dataset (p-value 3 = 0.0001)",
+        ),
+    ]
+    for output, expected in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+        assert msg == expected
+
+
 def test_error_messages(cdataset):
     # Check that error messages are what want them to be.
     # NOTE - Warnings and CorrectVarianceModel rules checked their special tests
@@ -260,15 +298,10 @@ def test_error_messages(cdataset):
     # check greater than fields
     rule_classes = [
         (
-            rules.VarianceFit,
-            {"p_value3": 0.09},
-            "Variance model fit p-value is less than threshold (0.09 < 0.1)",
-        ),
-        (
             rules.GlobalFit,
             {"p_value4": 0.09},
             "Goodness of fit p-value is less than threshold (0.09 < 0.1)",
-        ),
+        )
     ]
     for rule_class, outputs, expected in rule_classes:
         rule = rule_class(bmds.constants.BIN_FAILURE, threshold=0.1)

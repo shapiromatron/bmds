@@ -115,12 +115,6 @@ class ShouldBeGreaterThan(Rule):
         return "{} is less than threshold ({:.3} < {})".format(name, float(val), threshold)
 
 
-class VarianceFit(ShouldBeGreaterThan):
-    default_rule_name = "Variance fit"
-    field_name = "p_value3"
-    field_name_verbose = "Variance model fit p-value"
-
-
 class GlobalFit(ShouldBeGreaterThan):
     default_rule_name = "GGOF"
     field_name = "p_value4"
@@ -255,11 +249,12 @@ class CorrectVarianceModel(Rule):
     default_rule_name = "Variance type"
 
     def apply_rule(self, dataset, output):
-        # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
-        # 1 = constant variance => Var(i) = alpha*mean(i)
         if "parameters" not in output:
             return self.return_pass()
 
+        # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+        # 1 = constant variance => Var(i) = alpha*mean(i)
+        # if rho is a parameter, then variance model 0 is applied
         rho = output["parameters"].get("rho")
         constant_variance = 0 if rho else 1
 
@@ -269,16 +264,50 @@ class CorrectVarianceModel(Rule):
 
         msg = None
         if self._is_valid_number(p_value2):
-            if constant_variance == 1 and p_value2 <= 0.1:
+            if constant_variance == 1 and p_value2 < 0.1:
                 msg = "Incorrect variance model (p-value 2 = {}), constant variance selected".format(
                     p_value2
                 )
-            elif constant_variance == 0 and p_value2 >= 0.1:
+            elif constant_variance == 0 and p_value2 > 0.1:
                 msg = "Incorrect variance model (p-value 2 = {}), modeled variance selected".format(
                     p_value2
                 )
         else:
             msg = "Correct variance model cannot be determined (p-value 2 = {})".format(p_value2)
+
+        if msg:
+            return self.failure_bin, msg
+        else:
+            return self.return_pass()
+
+
+class VarianceModelFit(Rule):
+    default_rule_name = "Variance fit"
+
+    def apply_rule(self, dataset, output):
+        if "parameters" not in output:
+            return self.return_pass()
+
+        # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+        # 1 = constant variance => Var(i) = alpha*mean(i)
+        # if rho is a parameter, then variance model 0 is applied
+        rho = output["parameters"].get("rho")
+        constant_variance = 0 if rho else 1
+
+        p_value2 = output.get("p_value2")
+        if p_value2 == "<0.0001":
+            p_value2 = 0.0001
+
+        p_value3 = output.get("p_value3")
+        if p_value3 == "<0.0001":
+            p_value3 = 0.0001
+
+        msg = None
+        if self._is_valid_number(p_value2) and constant_variance == 1 and p_value2 < 0.1:
+            msg = "Variance model poorly fits dataset (p-value 2 = {})".format(p_value2)
+
+        if self._is_valid_number(p_value3) and constant_variance == 0 and p_value3 < 0.1:
+            msg = "Variance model poorly fits dataset (p-value 3 = {})".format(p_value3)
 
         if msg:
             return self.failure_bin, msg
