@@ -2,10 +2,12 @@
 History
 =======
 
-v0.11.0 (2018-07-09)
+v0.11.0 (2018-09-09)
 --------------------
+* Used black and flake8 to enforce code style
+* Support Python3.7
+* Updated model recommendation rules
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
-
 
 v0.10.0 (2018-04-11)
 --------------------
