@@ -315,6 +315,21 @@ class VarianceModelFit(Rule):
             return self.return_pass()
 
 
+class NoDegreesOfFreedom(Rule):
+    """
+    Check to ensure at least one degree of freedom exist to prevent recommendation of an
+    overfit model.
+    """
+
+    default_rule_name = "Degrees of freedom"
+
+    def apply_rule(self, dataset, output):
+        df = output.get("df", 1)
+        if df == 0:
+            return self.failure_bin, "No degrees of freedom"
+        return self.return_pass()
+
+
 class Warnings(Rule):
     # Test fails if any warnings exist.
     default_rule_name = "Warnings"

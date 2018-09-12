@@ -2,13 +2,13 @@
 History
 =======
 
-v0.11.0 (2018-09-09)
+v0.11.0 (2018-09-14)
 --------------------
-* Make residual of interest value failure change bin by default
+* Make residual of interest value failure nonviable bin by default
+* Added degrees of freedom check (failure nonviable bin by default)
 * Modify decision logic for variance model fit rule to align with BMDS Wizard
 * Used black and flake8 to enforce code style
 * Support Python3.7
-* Updated model recommendation rules
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
 
 v0.10.0 (2018-04-11)

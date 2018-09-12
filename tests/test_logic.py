@@ -42,6 +42,7 @@ def test_default_logic():
     ✓ Residual of interest [bin=?, threshold=2.0]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
     ✓ High BMDL [bin=?, threshold=1.0]
@@ -69,6 +70,7 @@ def test_default_logic():
     ✓ Residual of interest [bin=?, threshold=2.0]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
     ✓ High BMDL [bin=?, threshold=1.0]
@@ -96,6 +98,7 @@ def test_default_logic():
     ✓ Residual of interest [bin=?, threshold=2.0]
     ✓ BMD to BMDL ratio (warning) [bin=✓, threshold=5.0]
     ✓ BMD to BMDL ratio [bin=?, threshold=20.0]
+    ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
     ✓ High BMDL [bin=?, threshold=1.0]
@@ -113,13 +116,13 @@ def test_default_logic():
 def test_rules_df():
     # assert dataframe with appropriate shape is created
     df = bmds.Recommender(bmds.constants.DICHOTOMOUS).rules_df()
-    assert df.shape == (15, 4)
-
-    df = bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).rules_df()
     assert df.shape == (16, 4)
 
+    df = bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).rules_df()
+    assert df.shape == (17, 4)
+
     df = bmds.Recommender(bmds.constants.CONTINUOUS).rules_df()
-    assert df.shape == (19, 4)
+    assert df.shape == (20, 4)
 
 
 def test_apply_logic(cdataset):
@@ -179,6 +182,22 @@ def test_less_than(cdataset):
     for output in outputs:
         bin, msg = rule.apply_rule(cdataset, output)
         assert bin == bmds.constants.BIN_FAILURE
+
+
+def test_degrees_freedom(cdataset):
+    rule = rules.NoDegreesOfFreedom(bmds.constants.BIN_FAILURE)
+
+    outputs = [{"df": 1}, {}]
+    for output in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [({"df": 0}, "No degrees of freedom"), ({"df": 0.0}, "No degrees of freedom")]
+    for output, expected in outputs:
+        bin, msg = rule.apply_rule(cdataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+        assert msg == expected
 
 
 def test_warnings(cdataset):
