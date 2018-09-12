@@ -4,6 +4,7 @@ History
 
 v0.11.0 (2018-09-09)
 --------------------
+* Make residual of interest value failure change bin by default
 * Modify decision logic for variance model fit rule to align with BMDS Wizard
 * Used black and flake8 to enforce code style
 * Support Python3.7

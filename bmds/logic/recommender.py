@@ -47,7 +47,7 @@ class Recommender(object):
                 rule_name="BMD to BMDL ratio (warning)",
             ),
             rules.BmdBmdlRatio(failure_bin=constants.BIN_WARNING, threshold=20.),
-            rules.RoiFit(failure_bin=constants.BIN_NO_CHANGE, threshold=2.),
+            rules.RoiFit(failure_bin=constants.BIN_WARNING, threshold=2.),
             rules.Warnings(failure_bin=constants.BIN_NO_CHANGE),
             rules.HighBmd(failure_bin=constants.BIN_NO_CHANGE, threshold=1.),
             rules.HighBmdl(failure_bin=constants.BIN_WARNING, threshold=1.),
