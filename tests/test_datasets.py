@@ -172,7 +172,8 @@ def test_correct_variance_model(cdataset):
         session.add_model(bmds.constants.M_Power)
     session.execute()
     model = session.models[0]
-    calc_pvalue2 = cdataset.anova[1].TEST
+    anova = cdataset.anova()
+    calc_pvalue2 = anova[1].TEST
     correct_pvalue2 = model.output["p_value2"]
     # large tolerance due to reporting in text-file
     atol = 1e-3

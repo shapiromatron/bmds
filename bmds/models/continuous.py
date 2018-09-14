@@ -17,9 +17,11 @@ class Continuous(BMDModel):
         )
 
     def set_constant_variance_value(self):
+        # set constant variance if p-test 2 >= 0.1, otherwise use modeled variance
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
         # 1 = constant variance => Var(i) = alpha*mean(i)
-        return 0 if (self.dataset.anova is None or self.dataset.anova[2].TEST <= 0.1) else 1
+        anova = self.dataset.anova()
+        return 0 if (anova is None or anova[1].TEST < 0.1) else 1
 
     def get_variance_model_name(self):
         return (

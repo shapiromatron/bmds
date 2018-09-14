@@ -10,6 +10,7 @@ v0.11.0 (2018-09-14)
 * Used black and flake8 to enforce code style
 * Support Python3.7
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
+* Fix bug with ANOVA implementation being cached with dropped doses
 
 v0.10.0 (2018-04-11)
 --------------------

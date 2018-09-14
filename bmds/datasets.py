@@ -330,29 +330,26 @@ class ContinuousDataset(Dataset):
             self._variances = np.power(stds, 2).tolist()
         return self._variances
 
-    @property
     def anova(self):
-        # Either be a tuple of 3 Test objects, or None if anova failed
-        if not hasattr(self, "_anova"):
-            try:
-                num_params = 3  # assume linear model
-                (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                    self.num_dose_groups, self.ns, self.means, self.variances
-                )
-                tests = AnovaTests.get_anova_c3_tests(
-                    num_params, self.num_dose_groups, A1, A2, A3, AR
-                )
-            except ValueError:
-                tests = None
-            self._anova = tests
-        return self._anova
+        # Returns either a tuple of 3 Test objects, or None if anova failed
+        try:
+            num_params = 3  # assume linear model
+            (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
+                self.num_dose_groups, self.ns, self.means, self.variances
+            )
+            tests = AnovaTests.get_anova_c3_tests(
+                num_params, self.num_dose_groups, A1, A2, A3, AR
+            )
+        except ValueError:
+            tests = None
+        return tests
 
     @property
     def dataset_length(self):
         return self.num_dose_groups
 
     def get_anova_report(self):
-        return AnovaTests.output_3tests(self.anova)
+        return AnovaTests.output_3tests(self.anova())
 
     def to_dict(self):
         """
