@@ -33,9 +33,9 @@ clean: clean-build clean-pyc clean-test ## remove all build, test and Python art
 
 
 clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
+	rm -rf build/
+	rm -rf dist/
+	rm -rf .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
@@ -66,7 +66,6 @@ test:
 	#
 	py.test tests
 
-
 test-all: ## run tests on every Python version with tox
 	tox
 
@@ -78,16 +77,11 @@ docs: ## generate Sphinx HTML documentation, including API docs
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.py;*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+release: dist ## package and upload a release
+	twine upload dist/*
 	git tag -a "$(shell python setup.py --version)" -m ""
 	git push --tags
 
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python setup.py sdist bdist_wheel
 	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install

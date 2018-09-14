@@ -15,6 +15,9 @@ BMDS Python interface
         :target: https://bmds.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://zenodo.org/badge/61229626.svg
+   :target: https://zenodo.org/badge/latestdoi/61229626
+
 This Python package is designed to run the U.S. EPA BMDS_ software from a python
 interface. The toolkit is currently used in the following projects:
 
