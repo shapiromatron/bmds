@@ -67,11 +67,23 @@ class BMDS(object):
     }
 
     def __init__(self, dtype, dataset=None):
+        """
+        Attributes:
+            dtype (str): dataset type
+            models (List[Models]): list of BMDS models to be included
+            dataset (Dataset): A BMDS dataset, mutable if doses are dropped
+            original_dataset (Dataset): The unchanged original dataset.
+            doses_dropped (int): the number of doses dropped in current session
+            doses_dropped_sessions (Dict[int, Session): history of prior sessions
+        """
         self.dtype = dtype
         if self.dtype not in constants.DTYPES:
             raise ValueError("Invalid data type")
         self.models = []
         self.dataset = dataset
+        self.original_dataset = deepcopy(self.dataset)
+        self.doses_dropped = 0
+        self.doses_dropped_sessions = {}
 
     @property
     def model_options(self):
@@ -141,6 +153,15 @@ class BMDS(object):
         )
         return self.recommended_model
 
+    def clone(self):
+        """
+        Clone Session. If there are doses dropped from prior sessions, these prior sessions
+        are removed from the clone.
+        """
+        clone = deepcopy(self)
+        clone.doses_dropped_sessions = {}
+        return clone
+
     def execute_and_recommend(self, drop_doses=False):
         """
         Execute and recommend a best-fitting model. If drop_doses and no model
@@ -149,40 +170,28 @@ class BMDS(object):
         1. a model is recommended, or
         2. the dataset is exhausted (i.e., only 3 dose-groups remain).
 
-        If doses are dropped, three new attributes are added to Session:
-
-        1. original_dataset: Dataset - the unchanged original dataset. The dataset used
-            on the object is mutated if doses were dropped
-        2. doses_dropped: int - the number of doses that were dropped
-        3. doses_dropped_models: Dict[int, List[Models]] - the number of doses dropped and model
-                                 results for each type a model was not recommended.
-
+        The session instance is equal to the final run which was executed; if doses were dropped
+        all previous sessions are saved in self.doses_dropped_sessions.
         """
-        original_dataset = deepcopy(self.dataset)
-        doses_dropped = 0
-
         self.execute()
         self.recommend()
 
         if not drop_doses:
             return
 
-        self.doses_dropped_models = {}
         while self.recommended_model is None and self.dataset.num_dose_groups > 3:
-            self.doses_dropped_models[doses_dropped] = deepcopy(self.models)
-            doses_dropped += 1
+            self.doses_dropped_sessions[self.doses_dropped] = self.clone()
             self.dataset.drop_dose()
             self.execute()
             self.recommend()
-
-        self.original_dataset = original_dataset
-        self.doses_dropped = doses_dropped
+            self.doses_dropped += 1
 
     @staticmethod
     def _df_ordered_dict(include_io=True):
         # return an ordered defaultdict list
         keys = [
             "dataset_index",
+            "doses_dropped",
             "model_name",
             "model_index",
             "model_version",
@@ -215,9 +224,22 @@ class BMDS(object):
         return OrderedDict([(key, list()) for key in keys])
 
     def _add_to_to_ordered_dict(self, d, dataset_index, recommended_only=False):
+        """
+        Save a session to an ordered dictionary. In some cases, a single session may include
+        a final session, as well as other BMDS executions where doses were dropped. This
+        will include all sessions.
+        """
+        if self.doses_dropped_sessions:
+            for key in sorted(list(self.doses_dropped_sessions.keys())):
+                session = self.doses_dropped_sessions[key]
+                session._add_single_session_to_to_ordered_dict(d, dataset_index, recommended_only)
+        self._add_single_session_to_to_ordered_dict(d, dataset_index, recommended_only)
 
+    def _add_single_session_to_to_ordered_dict(self, d, dataset_index, recommended_only):
+        """
+        Save a single session to an ordered dictionary.
+        """
         for model_index, model in enumerate(self.models):
-
             # determine if model should be presented, or if a null-model should
             # be presented (if no model is recommended.)
             show_null = False
@@ -239,6 +261,7 @@ class BMDS(object):
                         continue
 
             d["dataset_index"].append(dataset_index)
+            d["doses_dropped"].append(self.doses_dropped)
             model._to_df(d, model_index, show_null)
 
     def to_dict(self, dataset_index):

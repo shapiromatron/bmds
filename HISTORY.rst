@@ -12,6 +12,7 @@ v0.11.0 (2018-09-14)
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
 * Fix bug with ANOVA implementation being cached with dropped doses
 * Save history of models executed when dropping doses
+* Update reporting (xlsx) to include prior sessions when doses are dropped
 
 v0.10.0 (2018-04-11)
 --------------------
