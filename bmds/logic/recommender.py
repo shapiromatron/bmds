@@ -8,7 +8,7 @@ from simple_settings import settings
 class Recommender(object):
     # Recommendation logic for a specified data-type.
 
-    def __init__(self, dtype, overrides=None):
+    def __init__(self, dtype):
 
         rule_args = dict()
         if dtype == constants.DICHOTOMOUS:
@@ -23,9 +23,6 @@ class Recommender(object):
         self.dtype = dtype
         self.rules = self._get_rule_defaults(**rule_args)
         self.SUFFICIENTLY_CLOSE_BMDL = settings.SUFFICIENTLY_CLOSE_BMDL
-
-        if overrides:
-            raise NotImplementedError("Overrides not implemented (yet).")
 
     @classmethod
     def _get_rule_defaults(cls, continuous=False, cancer=False):
