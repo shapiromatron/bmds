@@ -132,7 +132,7 @@ class Reporter:
         self.doc.add_paragraph("BMDS version: {}".format(session.version_pretty))
 
         if input_dataset:
-            self._add_dataset(session.dataset)
+            self._add_dataset(session)
             self.doc.add_paragraph()
 
         if summary_table:
@@ -172,7 +172,24 @@ class Reporter:
         for cell in column.cells:
             cell.width = Inches(size_in_inches)
 
-    def _add_dataset(self, dataset):
+    def _add_dataset(self, session):
+
+        footnotes = TableFootnote()
+        dataset = session.original_dataset
+
+        # only add doses dropped footnote if modeling led to successful results
+        dose_dropped_footnote_text = "Dose group removed in BMD modeling session"
+        if session.doses_dropped > 0 and session.recommended_model is not None:
+            doses_dropped = list(
+                reversed(
+                    [
+                        idx < session.doses_dropped
+                        for idx, _ in enumerate(range(dataset.num_dose_groups))
+                    ]
+                )
+            )
+        else:
+            doses_dropped = [False] * dataset.num_dose_groups
 
         self.doc.add_paragraph("Input dataset", self.styles.header_2)
         hdr = self.styles.tbl_header
@@ -189,8 +206,13 @@ class Reporter:
             self._write_cell(
                 tbl.cell(1, 0), "Affected / Total (%)" + response_units_text, style=hdr
             )
-            for i, vals in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
+            for i, vals in enumerate(
+                zip(dataset.doses, dataset.incidences, dataset.ns, doses_dropped)
+            ):
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
+                if vals[3]:
+                    p = tbl.cell(0, i + 1).paragraphs[0]
+                    footnotes.add_footnote(p, dose_dropped_footnote_text)
                 self._write_cell(
                     tbl.cell(1, i + 1),
                     "{}/{}\n({:.1%})".format(vals[1], vals[2], vals[1] / float(vals[2])),
@@ -207,9 +229,14 @@ class Reporter:
             self._write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, style=hdr)
             self._write_cell(tbl.cell(0, 1), "Responses" + response_units_text, style=hdr)
 
-            for i, vals in enumerate(zip(dataset.doses, dataset.get_responses_by_dose())):
+            for i, vals in enumerate(
+                zip(dataset.doses, dataset.get_responses_by_dose(), doses_dropped)
+            ):
                 resps = ", ".join([ff(v) for v in vals[1]])
                 self._write_cell(tbl.cell(i + 1, 0), vals[0])
+                if vals[2]:
+                    p = tbl.cell(i + 1, 0).paragraphs[0]
+                    footnotes.add_footnote(p, dose_dropped_footnote_text)
                 self._write_cell(tbl.cell(i + 1, 1), resps)
 
             self._set_col_width(tbl.columns[0], 1.0)
@@ -223,15 +250,22 @@ class Reporter:
             self._write_cell(tbl.cell(1, 0), "N", style=hdr)
             self._write_cell(tbl.cell(2, 0), "Mean ± SD" + response_units_text, style=hdr)
             for i, vals in enumerate(
-                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
+                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs, doses_dropped)
             ):
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
+                if vals[4]:
+                    p = tbl.cell(0, i + 1).paragraphs[0]
+                    footnotes.add_footnote(p, dose_dropped_footnote_text)
                 self._write_cell(tbl.cell(1, i + 1), vals[1])
                 self._write_cell(tbl.cell(2, i + 1), "{} ± {}".format(ff(vals[2]), ff(vals[3])))
 
             for i, col in enumerate(tbl.columns):
                 w = 0.75 if i == 0 else (self.PORTRAIT_WIDTH - 0.75) / dataset.num_dose_groups
                 self._set_col_width(col, w)
+
+        # write footnote
+        if len(footnotes) > 0:
+            footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
 
     def _write_cell(self, cell, value, style=None, float_formatter=None):
 
@@ -264,17 +298,30 @@ class Reporter:
             text = "Model variance undetermined"
         return text
 
-    def _get_summary_comments(self, session):
+    def _get_summary_comments(self, base_session, session):
         if session.recommended_model is None:
-            return "No model was recommended as a best-fitting model."
+            txt = "No model was recommended as a best-fitting model."
+            if base_session.doses_dropped > 0:
+                txt += " Doses were dropped until there were only 3 remaining dose-groups."
+            return txt
         else:
             return "{} recommended as best-fitting model on the basis of the lowest {}.".format(
                 session.recommended_model.name, session.recommended_model.recommended_variable
             )
 
-    def _add_session_summary_table(self, session):
+    def _get_session_for_table(self, base_session):
+        """
+        Only present session for modeling when doses were dropped if it's succesful;
+        otherwise show the original modeling session.
+        """
+        if base_session.recommended_model is None and base_session.doses_dropped > 0:
+            return base_session.doses_dropped_sessions[0]
+        return base_session
+
+    def _add_session_summary_table(self, base_session):
         self.doc.add_paragraph("Summary table", self.styles.header_2)
         hdr = self.styles.tbl_header
+        session = self._get_session_for_table(base_session)
         model_groups = session._group_models()
         footnotes = TableFootnote()
 
@@ -321,7 +368,7 @@ class Reporter:
             self._write_model_name(tbl.cell(idx, 0).paragraphs[0], model_group, footnotes)
 
         # write comments
-        self._write_cell(tbl.cell(2, 5), self._get_summary_comments(session))
+        self._write_cell(tbl.cell(2, 5), self._get_summary_comments(base_session, session))
         tbl.cell(2, 5).merge(tbl.cell(len(model_groups) + 1, 5))
 
         # set column width
@@ -333,9 +380,10 @@ class Reporter:
         if len(footnotes) > 0:
             footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
 
-    def _add_recommendation_details_table(self, session):
+    def _add_recommendation_details_table(self, base_session):
         self.doc.add_paragraph("Model recommendation details", self.styles.header_2)
         hdr = self.styles.tbl_header
+        session = self._get_session_for_table(base_session)
         model_groups = session._group_models()
         footnotes = TableFootnote()
 
