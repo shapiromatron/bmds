@@ -45,7 +45,7 @@ def test_default_logic():
     ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
-    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ High BMDL [bin=✓, threshold=1.0]
     ✓ Low BMD (warning) [bin=✓, threshold=3.0]
     ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
     ✓ Low BMD [bin=?, threshold=10.0]
@@ -73,7 +73,7 @@ def test_default_logic():
     ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
-    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ High BMDL [bin=✓, threshold=1.0]
     ✓ Low BMD (warning) [bin=✓, threshold=3.0]
     ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
     ✓ Low BMD [bin=?, threshold=10.0]
@@ -101,7 +101,7 @@ def test_default_logic():
     ✓ Degrees of freedom [bin=?]
     ✓ Warnings [bin=✓]
     ✓ High BMD [bin=✓, threshold=1.0]
-    ✓ High BMDL [bin=?, threshold=1.0]
+    ✓ High BMDL [bin=✓, threshold=1.0]
     ✓ Low BMD (warning) [bin=✓, threshold=3.0]
     ✓ Low BMDL (warning) [bin=✓, threshold=3.0]
     ✓ Low BMD [bin=?, threshold=10.0]
@@ -193,7 +193,10 @@ def test_degrees_freedom(cdataset):
         assert bin == bmds.constants.BIN_NO_CHANGE
         assert msg is None
 
-    outputs = [({"df": 0}, "No degrees of freedom"), ({"df": 0.0}, "No degrees of freedom")]
+    outputs = [
+        ({"df": 0}, "Zero degrees of freedom; saturated model"),
+        ({"df": 0.0}, "Zero degrees of freedom; saturated model"),
+    ]
     for output, expected in outputs:
         bin, msg = rule.apply_rule(cdataset, output)
         assert bin == bmds.constants.BIN_FAILURE

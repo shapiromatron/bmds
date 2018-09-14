@@ -241,7 +241,7 @@ class ControlStdevResiduals(ShouldBeLessThan):
                 and modeled > 0
                 and actual > 0
             ):
-                return max(abs(modeled / actual), abs(actual / modeled))
+                return abs(modeled / actual)
 
 
 class CorrectVarianceModel(Rule):
@@ -326,7 +326,7 @@ class NoDegreesOfFreedom(Rule):
     def apply_rule(self, dataset, output):
         df = output.get("df", 1)
         if df == 0:
-            return self.failure_bin, "No degrees of freedom"
+            return self.failure_bin, "Zero degrees of freedom; saturated model"
         return self.return_pass()
 
 

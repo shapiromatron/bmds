@@ -48,7 +48,7 @@ class Recommender(object):
             rules.NoDegreesOfFreedom(failure_bin=constants.BIN_WARNING),
             rules.Warnings(failure_bin=constants.BIN_NO_CHANGE),
             rules.HighBmd(failure_bin=constants.BIN_NO_CHANGE, threshold=1.),
-            rules.HighBmdl(failure_bin=constants.BIN_WARNING, threshold=1.),
+            rules.HighBmdl(failure_bin=constants.BIN_NO_CHANGE, threshold=1.),
             rules.LowBmd(
                 failure_bin=constants.BIN_NO_CHANGE, threshold=3., rule_name="Low BMD (warning)"
             ),
