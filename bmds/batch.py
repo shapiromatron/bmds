@@ -75,13 +75,13 @@ class SessionBatch(list):
 
         """
         d = self.to_dicts()
-        if hasattr(filename, 'write'):
+        if hasattr(filename, "write"):
             json.dump(d, filename, indent=indent)
         elif isinstance(filename, string_types):
-            with open(os.path.expanduser(filename), 'w') as f:
+            with open(os.path.expanduser(filename), "w") as f:
                 json.dump(d, f, indent=indent)
         else:
-            raise ValueError('Unknown filename or file-object')
+            raise ValueError("Unknown filename or file-object")
 
     def to_df(self, recommended_only=False, include_io=True):
         """
@@ -110,7 +110,7 @@ class SessionBatch(list):
         ]
         return pd.DataFrame(od)
 
-    def to_csv(self, filename, delimiter=',', recommended_only=False, include_io=True):
+    def to_csv(self, filename, delimiter=",", recommended_only=False, include_io=True):
         """
         Return a CSV for each model and dataset.
 
@@ -163,10 +163,15 @@ class SessionBatch(list):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 
-    def to_docx(self, filename=None,
-                input_dataset=True, summary_table=True,
-                recommendation_details=True, recommended_model=True,
-                all_models=False):
+    def to_docx(
+        self,
+        filename=None,
+        input_dataset=True,
+        summary_table=True,
+        recommendation_details=True,
+        recommended_model=True,
+        all_models=False,
+    ):
         """
         Write batch sessions to a Word file.
 
@@ -196,16 +201,20 @@ class SessionBatch(list):
         rep = Reporter()
         for model in self:
             rep.add_session(
-                model, input_dataset, summary_table,
-                recommendation_details, recommended_model,
-                all_models)
+                model,
+                input_dataset,
+                summary_table,
+                recommendation_details,
+                recommended_model,
+                all_models,
+            )
 
         if filename:
             rep.save(filename)
 
         return rep
 
-    def save_plots(self, directory, format='png', recommended_only=False):
+    def save_plots(self, directory, format="png", recommended_only=False):
         """
         Save images of dose-response curve-fits for each model.
 
@@ -227,7 +236,5 @@ class SessionBatch(list):
         """
         for i, session in enumerate(self):
             session.save_plots(
-                directory,
-                prefix=str(i),
-                format=format,
-                recommended_only=recommended_only)
+                directory, prefix=str(i), format=format, recommended_only=recommended_only
+            )

@@ -3,7 +3,6 @@ from scipy import stats
 
 
 class Test(object):
-
     def __init__(self):
         self.DF = -1
         self.CDF = -1
@@ -14,7 +13,6 @@ class Test(object):
 
 
 class AnovaTests(object):
-
     @staticmethod
     def compute_likelihoods(n_obs, ns, ym, yd):
         Ntot = ns[0]
@@ -23,8 +21,8 @@ class AnovaTests(object):
         for i in range(1, n_obs):
             sigma2 += yd[i] * (ns[i] - 1)
         sigma2 = sigma2 / Ntot
-        lkA1 = - Ntot * (1.0 + log(sigma2)) / 2.0
-        lkA2 = - ns[0] * log(yd[0] * (ns[0] - 1) / ns[0]) / 2.0 - Ntot / 2.0
+        lkA1 = -Ntot * (1.0 + log(sigma2)) / 2.0
+        lkA2 = -ns[0] * log(yd[0] * (ns[0] - 1) / ns[0]) / 2.0 - Ntot / 2.0
         for i in range(1, n_obs):
             lkA2 -= ns[i] * log(yd[i] * (ns[i] - 1) / ns[i]) / 2.0
         ybar = ym[0] * ns[0]
@@ -33,8 +31,7 @@ class AnovaTests(object):
         ybar = ybar / Ntot
         sigma2 = yd[0] * (ns[0] - 1) + ns[0] * (ym[0] - ybar) * (ym[0] - ybar)
         for i in range(1, n_obs):
-            sigma2 += yd[i] * (ns[i] - 1) + \
-                ns[i] * (ym[i] - ybar) * (ym[i] - ybar)
+            sigma2 += yd[i] * (ns[i] - 1) + ns[i] * (ym[i] - ybar) * (ym[i] - ybar)
         sigma2 = sigma2 / Ntot
         lkR = -Ntot * (1.0 + log(sigma2)) / 2.0
         lkA3 = lkA1
@@ -80,7 +77,7 @@ class AnovaTests(object):
 
         for anova in anovaList:
             anova.AIC = -2 * (anova.SS - anova.DF)
-            if (anova.MSE >= 0.0 and anova.CDF > 0):
+            if anova.MSE >= 0.0 and anova.CDF > 0:
                 anova.TEST = 1 - stats.chi2.cdf(anova.MSE, anova.CDF)
 
         # Only return test 1, test 2 and test 3 in the order
@@ -89,13 +86,14 @@ class AnovaTests(object):
     @staticmethod
     def output_3tests(tests):
         if tests is None:
-            return 'ANOVA cannot be calculated for this dataset.'
+            return "ANOVA cannot be calculated for this dataset."
 
         outputs = [
-            '                     Tests of Interest    ',
-            '   Test    -2*log(Likelihood Ratio)  Test df        p-value    ',
+            "                     Tests of Interest    ",
+            "   Test    -2*log(Likelihood Ratio)  Test df        p-value    ",
         ]
         for i, test in enumerate(tests):
-            outputs.append('   Test %d %20.6g %10d %16.4g' % (
-                i + 1, test.MSE, test.CDF, test.TEST))
-        return '\n'.join(outputs)
+            outputs.append(
+                "   Test %d %20.6g %10d %16.4g" % (i + 1, test.MSE, test.CDF, test.TEST)
+            )
+        return "\n".join(outputs)

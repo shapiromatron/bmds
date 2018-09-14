@@ -17,56 +17,35 @@ MAXIMUM_POLYNOMIAL_ORDER = 8
 SUFFICIENTLY_CLOSE_BMDL = 3
 
 # Legend options applied to all plots which are generated in the software
-LEGEND_OPTS = dict(
-    loc='best',
-    fontsize=8,
-    fancybox=True,
-    frameon=True,
-)
+LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
 
 # Only required if running BMDS on a non-Windows computer
-if platform.system() != 'Windows':
-    BMDS_REQUEST_URL = os.environ.get('BMDS_REQUEST_URL')
-    BMDS_TOKEN = os.environ.get('BMDS_TOKEN')
+if platform.system() != "Windows":
+    BMDS_REQUEST_URL = os.environ.get("BMDS_REQUEST_URL")
+    BMDS_TOKEN = os.environ.get("BMDS_TOKEN")
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+        "simple": {"format": "%(levelname)s %(message)s"},
     },
-    'handlers': {
-        'logfile': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'bmds.log',
-            'maxBytes': 50 * 1024 * 1024,
-            'backupCount': 10,
-            'formatter': 'default'
+    "handlers": {
+        "logfile": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "bmds.log",
+            "maxBytes": 50 * 1024 * 1024,
+            "backupCount": 10,
+            "formatter": "default",
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "simple"},
     },
-    'loggers': {
-        '': {
-            'handlers': ['logfile'],
-            'level': 'INFO',
-        },
-        'requests.packages.urllib3': {
-            'handlers': ['logfile'],
-            'level': 'INFO',
-        }
-    }
+    "loggers": {
+        "": {"handlers": ["logfile"], "level": "INFO"},
+        "requests.packages.urllib3": {"handlers": ["logfile"], "level": "INFO"},
+    },
 }
 
-SIMPLE_SETTINGS = {
-    'CONFIGURE_LOGGING': True,
-}
+SIMPLE_SETTINGS = {"CONFIGURE_LOGGING": True}

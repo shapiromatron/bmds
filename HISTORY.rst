@@ -2,7 +2,24 @@
 History
 =======
 
-v0.10.0 (2017-04-11)
+v0.11.0 (2018-09-14)
+--------------------
+* Used black and flake8 to enforce code style
+* Support Python3.7
+* Add new `DichotomousCancerDataset` which only needs 2 dose-groups
+* Fix bug with ANOVA implementation being cached with dropped doses
+* Save history of models executed when dropping doses
+* Decision logic:
+    * Made residual of interest value failure is nonviable bin by default
+    * Added degrees of freedom check (failure is nonviable bin by default)
+    * Modified decision logic for variance model fit rule to align with BMDS Wizard
+    * Modified high BMDL default logic less restrictive to be consistent with BMDS Wizard
+    * Modified implementation of ControlStdevResiduals consistent with BMDS Wizard
+* Reporting:
+    * Update reporting (xlsx) to include prior sessions when doses are dropped
+    * Update reporting (docx) to better document sessions where doses are dropped
+
+v0.10.0 (2018-04-11)
 --------------------
 * Add Quantal linear as a default model instead of Multistage-1
 * Update documentation on default model recommendation logic

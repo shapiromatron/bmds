@@ -2,7 +2,7 @@ import re
 
 from . import constants
 
-EXPONENTIAL = 'E'
+EXPONENTIAL = "E"
 CTYPES = [constants.CONTINUOUS, constants.CONTINUOUS_INDIVIDUAL, EXPONENTIAL]
 
 
@@ -16,7 +16,7 @@ def try_float(v):
 class OutputParser(object):
 
     # regex for finding numeric values
-    re_num = r'[/+/-]?[0-9]+[/.]*[0-9]*[Ee+-]*[0-9]*'
+    re_num = r"[/+/-]?[0-9]+[/.]*[0-9]*[Ee+-]*[0-9]*"
 
     # line-skips by dataset type
     NUM_LINE_SKIPS_PARAMS = {
@@ -42,7 +42,7 @@ class OutputParser(object):
 
     def __init__(self, output_text, dtype, model_name):
         assert dtype in constants.DTYPES
-        if 'exponential' in model_name.lower():
+        if "exponential" in model_name.lower():
             dtype = EXPONENTIAL
 
         self.dtype = dtype
@@ -62,32 +62,32 @@ class OutputParser(object):
 
     def _set_default_values(self):
         # set name
-        self.output['model_name'] = self.model_name
+        self.output["model_name"] = self.model_name
 
         # initial setup
-        vals = ('Chi2', 'df', 'p_value4', 'residual_of_interest')
+        vals = ("Chi2", "df", "p_value4", "residual_of_interest")
         for val in vals:
             self.output[val] = -999
 
     def _import_line_by_line(self):
         if self.dtype in constants.DICHOTOMOUS_DTYPES:
             fit_tbl = (
-                'fit_dose',
-                'fit_est_prob',
-                'fit_estimated',
-                'fit_observed',
-                'fit_size',
-                'fit_residuals',
+                "fit_dose",
+                "fit_est_prob",
+                "fit_estimated",
+                "fit_observed",
+                "fit_size",
+                "fit_residuals",
             )
         elif self.dtype in CTYPES:
             fit_tbl = (
-                'fit_dose',
-                'fit_size',
-                'fit_observed',
-                'fit_estimated',
-                'fit_stdev',
-                'fit_est_stdev',
-                'fit_residuals'
+                "fit_dose",
+                "fit_size",
+                "fit_observed",
+                "fit_estimated",
+                "fit_stdev",
+                "fit_est_stdev",
+                "fit_residuals",
             )
 
         # set empty tables
@@ -99,54 +99,78 @@ class OutputParser(object):
         if self.dtype in constants.DICHOTOMOUS_DTYPES:
             self._import_dich_vals()
             for i in range(len(outs)):
-                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
+                if (
+                    outs[i]
+                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
+                ):  # noqa
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r'     Dose     Est._Prob.    Expected    Observed     Size       Residual':  # noqa
+                elif (
+                    outs[i]
+                    == r"     Dose     Est._Prob.    Expected    Observed     Size       Residual"
+                ):  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
         elif self.dtype in constants.CONTINUOUS_DTYPES:
             for i in range(len(outs)):
-                if outs[i] == r'       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit':  # noqa
+                if (
+                    outs[i]
+                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
+                ):  # noqa
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r' Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res.':  # noqa
+                elif (
+                    outs[i]
+                    == r" Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res."
+                ):  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
-                elif outs[i] == r'   Test    -2*log(Likelihood Ratio)  Test df        p-value    ':  # noqa
+                elif (
+                    outs[i] == r"   Test    -2*log(Likelihood Ratio)  Test df        p-value    "
+                ):  # noqa
                     self._lbl_pvalue(outs, i)
-                elif outs[i] == r"            Model      Log(likelihood)   # Param's      AIC":  # noqa
+                elif (
+                    outs[i] == r"            Model      Log(likelihood)   # Param's      AIC"
+                ):  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
         elif self.dtype == EXPONENTIAL:
             for i in range(len(outs)):
-                if outs[i] == r'                     Parameter Estimates':
+                if outs[i] == r"                     Parameter Estimates":
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r'     Dose      N         Obs Mean     Obs Std Dev':  # noqa
-                    self._lbl_fit_exp(outs, i, 'observed_summary')
-                elif outs[i] == r'     Dose      Obs Mean':  # noqa
-                    self._lbl_fit_exp(outs, i, 'observed_individual')
-                elif outs[i] == r'      Dose      Est Mean      Est Std     Scaled Residual':  # noqa
-                    self._lbl_fit_exp(outs, i, 'estimated')
-                elif outs[i] == r'     Test          -2*log(Likelihood Ratio)       D. F.         p-value':  # noqa
+                elif outs[i] == r"     Dose      N         Obs Mean     Obs Std Dev":  # noqa
+                    self._lbl_fit_exp(outs, i, "observed_summary")
+                elif outs[i] == r"     Dose      Obs Mean":  # noqa
+                    self._lbl_fit_exp(outs, i, "observed_individual")
+                elif (
+                    outs[i] == r"      Dose      Est Mean      Est Std     Scaled Residual"
+                ):  # noqa
+                    self._lbl_fit_exp(outs, i, "estimated")
+                elif (
+                    outs[i]
+                    == r"     Test          -2*log(Likelihood Ratio)       D. F.         p-value"
+                ):  # noqa
                     self._lbl_pvalue(outs, i)
-                elif outs[i] == r"                     Model      Log(likelihood)      DF         AIC":  # noqa
+                elif (
+                    outs[i]
+                    == r"                     Model      Log(likelihood)      DF         AIC"
+                ):  # noqa
                     self._lbl_aic_cont_exp(outs, i)
 
     def _cleanup_nans(self):
         # standardize possible errors
-        fields = ('AIC', 'p_value1', 'p_value2', 'p_value3', 'p_value4')
+        fields = ("AIC", "p_value1", "p_value2", "p_value3", "p_value4")
         for field in fields:
-            if field in self.output and self.output[field] in ['NA', 'N/A']:
+            if field in self.output and self.output[field] in ["NA", "N/A"]:
                 self.output[field] = -999
 
     def _calc_residual_of_interest(self):
-        bmd = self.output['BMD']
-        if bmd > 0 and len(self.output['fit_dose']) > 0:
-            diff = abs(self.output['fit_dose'][0] - bmd)
-            r = self.output['fit_residuals'][0]
-            for j, val in enumerate(self.output['fit_dose']):
+        bmd = self.output["BMD"]
+        if bmd > 0 and len(self.output["fit_dose"]) > 0:
+            diff = abs(self.output["fit_dose"][0] - bmd)
+            r = self.output["fit_residuals"][0]
+            for j, val in enumerate(self.output["fit_dose"]):
                 if abs(val - bmd) < diff:
                     diff = abs(val - bmd)
-                    r = self.output['fit_residuals'][j]
-            self.output['residual_of_interest'] = r
+                    r = self.output["fit_residuals"][j]
+            self.output["residual_of_interest"] = r
 
     def _import_single_searches(self):
         """
@@ -160,13 +184,13 @@ class OutputParser(object):
         searches = {
             # (?<!Setting ) is a special case for preventing
             # "Setting BMD = 100*(maximum dose)" matches
-            'BMD': r'(?<!Setting )BMD = +(%s)' % self.re_num,
-            'BMDL': r'BMDL = +(%s)' % self.re_num,
-            'BMDU': r'BMDU = +(%s)' % self.re_num,
-            'CSF': r'Cancer Slope Factor = +(%s)' % self.re_num,
-            'AIC': r'AIC: +(%s)' % (self.re_num),
-            'model_version': r'Version: ([\d\.]+);',
-            'model_date': r'Date: ([\d/]+)',
+            "BMD": r"(?<!Setting )BMD = +(%s)" % self.re_num,
+            "BMDL": r"BMDL = +(%s)" % self.re_num,
+            "BMDU": r"BMDU = +(%s)" % self.re_num,
+            "CSF": r"Cancer Slope Factor = +(%s)" % self.re_num,
+            "AIC": r"AIC: +(%s)" % (self.re_num),
+            "model_version": r"Version: ([\d\.]+);",
+            "model_date": r"Date: ([\d/]+)",
         }
         for search in searches:
             m = re.search(searches[search], self.output_text)
@@ -186,20 +210,20 @@ class OutputParser(object):
         warning is found then it will be appended to the warnings list.
         """
         warnings = (
-            r'Warning: BMDL computation is at best imprecise for these data',
-            r'THE MODEL HAS PROBABLY NOT CONVERGED!!!',
-            'THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!',
-            r'BMR value is not in the range of the mean function',
-            r'BMD = 100\*\(maximum dose\)',
-            r'BMDL computation failed\.',
-            'Warning:  optimum may not have been found.  Bad completion code in Optimization routine.',  # noqa
-            'Warning: Likelihood for fitted model larger than the Likelihood for model A3.',  # noqa
+            r"Warning: BMDL computation is at best imprecise for these data",
+            r"THE MODEL HAS PROBABLY NOT CONVERGED!!!",
+            "THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!",
+            r"BMR value is not in the range of the mean function",
+            r"BMD = 100\*\(maximum dose\)",
+            r"BMDL computation failed\.",
+            "Warning:  optimum may not have been found.  Bad completion code in Optimization routine.",  # noqa
+            "Warning: Likelihood for fitted model larger than the Likelihood for model A3.",  # noqa
         )
-        self.output['warnings'] = []
+        self.output["warnings"] = []
         for warning in warnings:
             m = re.search(warning, self.output_text)
             if m:
-                self.output['warnings'].append(m.group())
+                self.output["warnings"].append(m.group())
 
     def _import_dich_vals(self):
         """
@@ -209,9 +233,13 @@ class OutputParser(object):
         return up to three possible matches for the Chi^2, degrees of freedom,
         and p-value.
         """
-        m = re.search(r'Chi\^2 = ({0}|\w+) +d.f. = +({0}|\w+) +P-value = +({0}|\w+)'.format(self.re_num),  # noqa
-                      self.output_text)
-        cw = {1: "Chi2", 2: 'df', 3: 'p_value4'}
+        m = re.search(
+            r"Chi\^2 = ({0}|\w+) +d.f. = +({0}|\w+) +P-value = +({0}|\w+)".format(
+                self.re_num
+            ),  # noqa
+            self.output_text,
+        )
+        cw = {1: "Chi2", 2: "df", 3: "p_value4"}
         for val in cw:
             try:
                 self.output[cw[val]] = float(m.group(val))
@@ -219,22 +247,17 @@ class OutputParser(object):
                 self.output[cw[val]] = -999
 
     def _lbl_parameter(self, outs, i):
-        self.output['parameters'] = {}
-        cw = {
-            1: 'estimate',
-            2: 'stdev',
-            3: '95_low_limit',
-            4: '95_high_limit',
-        }
+        self.output["parameters"] = {}
+        cw = {1: "estimate", 2: "stdev", 3: "95_low_limit", 4: "95_high_limit"}
         i += self.NUM_LINE_SKIPS_PARAMS[self.dtype]
         while len(outs[i].split()) > 0:
             vals = outs[i].split()
-            self.output['parameters'][vals[0]] = {}
+            self.output["parameters"][vals[0]] = {}
             for j in range(1, len(vals)):
                 try:
-                    self.output['parameters'][vals[0]][cw[j]] = float(vals[j])
+                    self.output["parameters"][vals[0]][cw[j]] = float(vals[j])
                 except:
-                    self.output['parameters'][vals[0]][cw[j]] = vals[j]
+                    self.output["parameters"][vals[0]][cw[j]] = vals[j]
             i += 1
 
     def _lbl_fit_cont_dich(self, outs, i, fit_tbl):
@@ -251,15 +274,15 @@ class OutputParser(object):
 
     def _lbl_fit_exp(self, outs, i, table_name):
         # Line-by-line: find "Goodness  of  Fit" table - exponential - observed
-        i += 2   # next line and dotted lines
-        if table_name == 'observed_summary':
-            tbl_names = (1, 'fit_dose', 'fit_size', 'fit_observed', 'fit_stdev')
+        i += 2  # next line and dotted lines
+        if table_name == "observed_summary":
+            tbl_names = (1, "fit_dose", "fit_size", "fit_observed", "fit_stdev")
             rng = range(len(outs[i].split()))
-        elif table_name == 'observed_individual':
-            tbl_names = ('fit_dose', 'fit_observed')
+        elif table_name == "observed_individual":
+            tbl_names = ("fit_dose", "fit_observed")
             rng = range(1, len(outs[i].split()))
-        elif table_name == 'estimated':
-            tbl_names = ('fit_dose', 'fit_estimated', 'fit_est_stdev', 'fit_residuals')  # noqa
+        elif table_name == "estimated":
+            tbl_names = ("fit_dose", "fit_estimated", "fit_est_stdev", "fit_residuals")  # noqa
             rng = range(len(outs[i].split()))
 
         while i < len(outs) and len(outs[i]) > 0:
@@ -273,39 +296,39 @@ class OutputParser(object):
 
     def _lbl_pvalue(self, outs, i):
         # Line-by-line: find p-values (continuous)
-        i += 2   # next line and blank line
+        i += 2  # next line and blank line
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
-            if vals[1] in ['5a', '6a', '7a']:  # fix exponentials
-                pvalue = '4'
+            if vals[1] in ["5a", "6a", "7a"]:  # fix exponentials
+                pvalue = "4"
             else:
                 pvalue = vals[1]
 
-            if vals[4] == '<':
-                self.output['p_value' + pvalue] = '<0.0001'
+            if vals[4] == "<":
+                self.output["p_value" + pvalue] = "<0.0001"
             else:
                 try:
-                    self.output['p_value' + pvalue] = float(vals[4])
+                    self.output["p_value" + pvalue] = float(vals[4])
                 except:
-                    if vals[4] == '<.0001':
-                        self.output['p_value' + pvalue] = '<0.0001'
+                    if vals[4] == "<.0001":
+                        self.output["p_value" + pvalue] = "<0.0001"
                     else:
-                        self.output['p_value' + pvalue] = vals[4]
+                        self.output["p_value" + pvalue] = vals[4]
 
-            if pvalue == '4':
-                self.output['Chi2'] = try_float(vals[2])
-                self.output['df'] = try_float(vals[3])
+            if pvalue == "4":
+                self.output["Chi2"] = try_float(vals[2])
+                self.output["df"] = try_float(vals[3])
             i += 1
 
     def _lbl_aic_cont_exp(self, outs, i):
         # Line-by-line: find AIC (continuous)
         i += self.NUM_LINE_SKIPS_AIC[self.dtype]
-        field = ('fitted', '2', '3', '4', '5')  # continuous is "fitted"
+        field = ("fitted", "2", "3", "4", "5")  # continuous is "fitted"
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
             if vals[0] in field:
                 try:
-                    self.output['AIC'] = float(vals[3])
+                    self.output["AIC"] = float(vals[3])
                 except:
-                    self.output['AIC'] = vals[3]
+                    self.output["AIC"] = vals[3]
             i += 1
