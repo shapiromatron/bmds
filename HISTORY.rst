@@ -11,6 +11,7 @@ v0.11.0 (2018-09-14)
 * Support Python3.7
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
 * Fix bug with ANOVA implementation being cached with dropped doses
+* Save history of models executed when dropping doses
 
 v0.10.0 (2018-04-11)
 --------------------

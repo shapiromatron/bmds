@@ -104,3 +104,20 @@ Frequently Asked Questions
             'bmr': 2.5,
             'bmr_type': bmr_types['Abs. Dev.']
     })
+
+3. How can I modify the default decision logic?
+
+.. code-block:: python
+
+    # create session and add default models
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=dataset)
+    session.add_default_models()
+
+    # modify default logic to fail if bmd or bmdl threshold is >=3
+    session.add_recommender()
+    for rule in session.recommender.rules:
+        if isinstance(rule, bmds.rules.LowBmd) or isinstance(rule, bmds.rules.LowBmdl):
+            rule.threshold = 3.
+
+    # execute
+    session.execute_and_recommend(drop_doses=True)

@@ -127,8 +127,8 @@ class BMDS(object):
     def recommendation_enabled(self):
         return hasattr(self, "recommended_model")
 
-    def add_recommender(self, overrides=None):
-        self.recommender = logic.Recommender(self.dtype, overrides)
+    def add_recommender(self):
+        self.recommender = logic.Recommender(self.dtype)
 
     def recommend(self):
         if not hasattr(self, "recommender"):
@@ -149,11 +149,13 @@ class BMDS(object):
         1. a model is recommended, or
         2. the dataset is exhausted (i.e., only 3 dose-groups remain).
 
-        This method adds two new attributes to Session:
+        If doses are dropped, three new attributes are added to Session:
 
-        1. original_dataset - the unchanged original dataset. The dataset used
+        1. original_dataset: Dataset - the unchanged original dataset. The dataset used
             on the object is mutated if doses were dropped
-        2. doses_dropped - the number of doses that were dropped
+        2. doses_dropped: int - the number of doses that were dropped
+        3. doses_dropped_models: Dict[int, List[Models]] - the number of doses dropped and model
+                                 results for each type a model was not recommended.
 
         """
         original_dataset = deepcopy(self.dataset)
@@ -165,7 +167,9 @@ class BMDS(object):
         if not drop_doses:
             return
 
+        self.doses_dropped_models = {}
         while self.recommended_model is None and self.dataset.num_dose_groups > 3:
+            self.doses_dropped_models[doses_dropped] = deepcopy(self.models)
             doses_dropped += 1
             self.dataset.drop_dose()
             self.execute()
