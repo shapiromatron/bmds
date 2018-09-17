@@ -11,4 +11,4 @@ install: pip install pipenv && pipenv install --dev --skip-lock
 script:
 - pipenv run black --check .
 - pipenv run flake8 --config .flake8 --statistics .
-- pipenv run bash -c 'cd project && py.test'
+- pipenv run py.test
