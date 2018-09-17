@@ -241,9 +241,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
 
         # assert that the execution_halted flag is appropriately set
         halted = [model.execution_halted for model in session.models]
-        str_halted = (
-            "[False, False, False, False, False, False, False, True, False, False]"
-        )  # noqa
+        str_halted = "[False, False, False, False, False, False, False, True, False, False]"  # noqa
         assert halted[7] is True and session.models[7].name == "Gamma"
         assert str(halted) == str_halted
         total_time = session.models[7].execution_duration

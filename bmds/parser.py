@@ -101,25 +101,25 @@ class OutputParser(object):
             for i in range(len(outs)):
                 if (
                     outs[i]
-                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
-                ):  # noqa
+                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"  # noqa: E501,W503
+                ):
                     self._lbl_parameter(outs, i)
                 elif (
                     outs[i]
-                    == r"     Dose     Est._Prob.    Expected    Observed     Size       Residual"
-                ):  # noqa
+                    == r"     Dose     Est._Prob.    Expected    Observed     Size       Residual"  # noqa: E501,W503
+                ):
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
         elif self.dtype in constants.CONTINUOUS_DTYPES:
             for i in range(len(outs)):
                 if (
                     outs[i]
-                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
-                ):  # noqa
+                    == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"  # noqa: E501,W503
+                ):
                     self._lbl_parameter(outs, i)
                 elif (
                     outs[i]
-                    == r" Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res."
+                    == r" Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res."  # noqa: E501,W503
                 ):  # noqa
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
                 elif (
@@ -145,13 +145,13 @@ class OutputParser(object):
                     self._lbl_fit_exp(outs, i, "estimated")
                 elif (
                     outs[i]
-                    == r"     Test          -2*log(Likelihood Ratio)       D. F.         p-value"
-                ):  # noqa
+                    == r"     Test          -2*log(Likelihood Ratio)       D. F.         p-value"  # noqa W503
+                ):
                     self._lbl_pvalue(outs, i)
                 elif (
                     outs[i]
-                    == r"                     Model      Log(likelihood)      DF         AIC"
-                ):  # noqa
+                    == r"                     Model      Log(likelihood)      DF         AIC"  # noqa W503
+                ):
                     self._lbl_aic_cont_exp(outs, i)
 
     def _cleanup_nans(self):
@@ -197,7 +197,7 @@ class OutputParser(object):
             if m:
                 try:
                     self.output[search] = float(m.group(1))
-                except:
+                except Exception:
                     self.output[search] = m.group(1)
             else:
                 self.output[search] = -999
@@ -243,7 +243,7 @@ class OutputParser(object):
         for val in cw:
             try:
                 self.output[cw[val]] = float(m.group(val))
-            except:
+            except Exception:
                 self.output[cw[val]] = -999
 
     def _lbl_parameter(self, outs, i):
@@ -256,7 +256,7 @@ class OutputParser(object):
             for j in range(1, len(vals)):
                 try:
                     self.output["parameters"][vals[0]][cw[j]] = float(vals[j])
-                except:
+                except Exception:
                     self.output["parameters"][vals[0]][cw[j]] = vals[j]
             i += 1
 
@@ -268,7 +268,7 @@ class OutputParser(object):
             for j in range(len(vals)):
                 try:
                     self.output[fit_tbl[j]].append(float(vals[j]))
-                except:
+                except Exception:
                     self.output[fit_tbl[j]].append(vals[j])
             i += 1
 
@@ -309,7 +309,7 @@ class OutputParser(object):
             else:
                 try:
                     self.output["p_value" + pvalue] = float(vals[4])
-                except:
+                except Exception:
                     if vals[4] == "<.0001":
                         self.output["p_value" + pvalue] = "<0.0001"
                     else:
@@ -329,6 +329,6 @@ class OutputParser(object):
             if vals[0] in field:
                 try:
                     self.output["AIC"] = float(vals[3])
-                except:
+                except Exception:
                     self.output["AIC"] = vals[3]
             i += 1

@@ -12,8 +12,7 @@ class Dichotomous(BMDModel):
 
     def get_bmr_text(self):
         return "{:.0%} {} risk".format(
-            self.values["bmr"],
-            constants.BMR_INVERTED_CROSSALK[self.dtype][self.values["bmr_type"]],
+            self.values["bmr"], constants.BMR_INVERTED_CROSSALK[self.dtype][self.values["bmr_type"]]
         )
 
 

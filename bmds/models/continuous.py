@@ -12,8 +12,7 @@ class Continuous(BMDModel):
 
     def get_bmr_text(self):
         return "{} {}".format(
-            self.values["bmr"],
-            constants.BMR_INVERTED_CROSSALK[self.dtype][self.values["bmr_type"]],
+            self.values["bmr"], constants.BMR_INVERTED_CROSSALK[self.dtype][self.values["bmr_type"]]
         )
 
     def set_constant_variance_value(self):
@@ -24,9 +23,7 @@ class Continuous(BMDModel):
         return 0 if (anova is None or anova[1].TEST < 0.1) else 1
 
     def get_variance_model_name(self):
-        return (
-            "Modeled variance" if self.values["constant_variance"] == 0 else "Constant variance"
-        )
+        return "Modeled variance" if self.values["constant_variance"] == 0 else "Constant variance"
 
 
 # POLYNOMIAL

@@ -46,9 +46,7 @@ class Rule(object):
 
     def _is_valid_number(self, val):
         # Ensure number is an int or float, not equal to special case -999.
-        return (
-            val is not None and val != -999 and (isinstance(val, int) or isinstance(val, float))
-        )
+        return val is not None and val != -999 and (isinstance(val, int) or isinstance(val, float))
 
 
 class NumericValueExists(Rule):
@@ -224,9 +222,9 @@ class ControlStdevResiduals(ShouldBeLessThan):
     def get_value(self, dataset, output):
         if (
             output.get("fit_est_stdev")
-            and output.get("fit_stdev")
-            and len(output["fit_est_stdev"]) > 0
-            and len(output["fit_stdev"]) > 0
+            and output.get("fit_stdev")  # noqa W503
+            and len(output["fit_est_stdev"]) > 0  # noqa W503
+            and len(output["fit_stdev"]) > 0  # noqa W503
         ):
 
             try:
@@ -237,9 +235,9 @@ class ControlStdevResiduals(ShouldBeLessThan):
 
             if (
                 self._is_valid_number(modeled)
-                and self._is_valid_number(actual)
-                and modeled > 0
-                and actual > 0
+                and self._is_valid_number(actual)  # noqa W503
+                and modeled > 0  # noqa W503
+                and actual > 0  # noqa W503
             ):
                 return abs(modeled / actual)
 
@@ -265,7 +263,7 @@ class CorrectVarianceModel(Rule):
         msg = None
         if self._is_valid_number(p_value2):
             if constant_variance == 1 and p_value2 < 0.1:
-                msg = "Incorrect variance model (p-value 2 = {}), constant variance selected".format(
+                msg = "Incorrect variance model (p-value 2 = {}), constant variance selected".format(  # noqa E501
                     p_value2
                 )
             elif constant_variance == 0 and p_value2 > 0.1:

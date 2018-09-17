@@ -93,7 +93,5 @@ class AnovaTests(object):
             "   Test    -2*log(Likelihood Ratio)  Test df        p-value    ",
         ]
         for i, test in enumerate(tests):
-            outputs.append(
-                "   Test %d %20.6g %10d %16.4g" % (i + 1, test.MSE, test.CDF, test.TEST)
-            )
+            outputs.append("   Test %d %20.6g %10d %16.4g" % (i + 1, test.MSE, test.CDF, test.TEST))
         return "\n".join(outputs)

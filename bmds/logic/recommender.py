@@ -123,7 +123,7 @@ class Recommender(object):
             data=[rule.as_row() for rule in self.rules],
             columns=["rule_name", "enabled", "failure_bin", "threshold"],
         )
-        df = df[df.enabled == True]
+        df = df[df.enabled == True]  # noqa: E712
         return df
 
     def _get_bmdl_ratio(self, models):

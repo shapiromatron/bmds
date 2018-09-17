@@ -358,9 +358,7 @@ class BMDModel(object):
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter
         # names, in the proper order.
-        if (self.dtype in constants.CONTINUOUS_DTYPES) and (
-            self.values["constant_variance"] == 1
-        ):
+        if (self.dtype in constants.CONTINUOUS_DTYPES) and (self.values["constant_variance"] == 1):
             self.values["rho"] = ("s", 0)  # for specified to equal 0
         specifieds = []
         initials = []
@@ -511,12 +509,7 @@ class DefaultParams(object):
         "d": 1,
         "n": "BMD calculation",
     }
-    dose_drop = {
-        "c": constants.FC_OTHER,
-        "t": constants.FT_DROPDOSE,
-        "d": 0,
-        "n": "Doses to drop",
-    }
+    dose_drop = {"c": constants.FC_OTHER, "t": constants.FT_DROPDOSE, "d": 0, "n": "Doses to drop"}
     constant_variance = {
         "c": constants.FC_OTHER,
         "t": constants.FT_BOOL,

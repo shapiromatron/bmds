@@ -12,6 +12,11 @@ watchdog = "==0.8.3"
 pytest = "==3.2.3"
 pytest-mpl = "==0.9"
 Sphinx = "==1.5.5"
+black = "*"
+"flake8" = "*"
+
+[pipenv]
+allow_prereleases = true
 
 [requires]
 python_version = "3.7"
