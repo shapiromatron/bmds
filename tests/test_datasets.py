@@ -42,7 +42,7 @@ def test_ci_summary_stats(cidataset):
         cidataset.means, [9.9264, 10.1889, 10.17755, 10.3571, 10.0275, 11.4933, 10.85275]
     ).all()
     assert np.isclose(
-        cidataset.stdevs, [0.87969, 0.90166, 0.50089, 0.85590, 0.42833, 0.83734, 0.690373]
+        cidataset.stdevs, [0.87969, 0.90166, 0.50089, 0.85590, 0.42833, 0.83734, 0.690_373]
     ).all()
 
 
@@ -139,7 +139,9 @@ def test_dose_drops(cidataset):
     )
     dcdataset.drop_dose()
     dcdataset.drop_dose()
-    assert dcdataset.as_dfile() == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48"  # noqa
+    assert (
+        dcdataset.as_dfile() == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48"
+    )  # noqa
     with pytest.raises(ValueError):
         dcdataset.drop_dose()
 

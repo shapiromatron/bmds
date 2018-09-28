@@ -38,27 +38,27 @@ class Recommender(object):
             rules.CorrectVarianceModel(failure_bin=constants.BIN_WARNING, enabled=continous_only),
             rules.VarianceModelFit(failure_bin=constants.BIN_WARNING, enabled=continous_only),
             rules.GlobalFit(failure_bin=constants.BIN_WARNING, threshold=ggof_threshold),
-            rules.RoiFit(failure_bin=constants.BIN_WARNING, threshold=2.),
+            rules.RoiFit(failure_bin=constants.BIN_WARNING, threshold=2.0),
             rules.BmdBmdlRatio(
                 failure_bin=constants.BIN_NO_CHANGE,
-                threshold=5.,
+                threshold=5.0,
                 rule_name="BMD to BMDL ratio (warning)",
             ),
-            rules.BmdBmdlRatio(failure_bin=constants.BIN_WARNING, threshold=20.),
+            rules.BmdBmdlRatio(failure_bin=constants.BIN_WARNING, threshold=20.0),
             rules.NoDegreesOfFreedom(failure_bin=constants.BIN_WARNING),
             rules.Warnings(failure_bin=constants.BIN_NO_CHANGE),
-            rules.HighBmd(failure_bin=constants.BIN_NO_CHANGE, threshold=1.),
-            rules.HighBmdl(failure_bin=constants.BIN_NO_CHANGE, threshold=1.),
+            rules.HighBmd(failure_bin=constants.BIN_NO_CHANGE, threshold=1.0),
+            rules.HighBmdl(failure_bin=constants.BIN_NO_CHANGE, threshold=1.0),
             rules.LowBmd(
-                failure_bin=constants.BIN_NO_CHANGE, threshold=3., rule_name="Low BMD (warning)"
+                failure_bin=constants.BIN_NO_CHANGE, threshold=3.0, rule_name="Low BMD (warning)"
             ),
             rules.LowBmdl(
-                failure_bin=constants.BIN_NO_CHANGE, threshold=3., rule_name="Low BMDL (warning)"
+                failure_bin=constants.BIN_NO_CHANGE, threshold=3.0, rule_name="Low BMDL (warning)"
             ),
-            rules.LowBmd(failure_bin=constants.BIN_WARNING, threshold=10.),
-            rules.LowBmdl(failure_bin=constants.BIN_WARNING, threshold=10.),
+            rules.LowBmd(failure_bin=constants.BIN_WARNING, threshold=10.0),
+            rules.LowBmdl(failure_bin=constants.BIN_WARNING, threshold=10.0),
             rules.ControlResidual(
-                failure_bin=constants.BIN_WARNING, threshold=2., enabled=continous_only
+                failure_bin=constants.BIN_WARNING, threshold=2.0, enabled=continous_only
             ),
             rules.ControlStdevResiduals(
                 failure_bin=constants.BIN_WARNING, threshold=1.5, enabled=continous_only

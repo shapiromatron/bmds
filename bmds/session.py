@@ -179,7 +179,10 @@ class BMDS(object):
         if not drop_doses:
             return
 
-        while self.recommended_model is None and self.dataset.num_dose_groups > self.dataset.MINIMUM_DOSE_GROUPS:
+        while (
+            self.recommended_model is None
+            and self.dataset.num_dose_groups > self.dataset.MINIMUM_DOSE_GROUPS  # noqa: W503
+        ):
             self.doses_dropped_sessions[self.doses_dropped] = self.clone()
             self.dataset.drop_dose()
             self.execute()

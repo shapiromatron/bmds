@@ -402,7 +402,7 @@ def test_parsimonious_recommendation(reduced_cdataset):
     assert bmds.Recommender._get_parsimonious_model(models).name == "Exponential-M4"
 
     # linear < (polynomial, power)
-    models = [model for model in session.models if model.output["AIC"] == 159.370875]
+    models = [model for model in session.models if model.output["AIC"] == 159.370_875]
     assert len(models) == 6
     assert bmds.Recommender._get_parsimonious_model(models).name == "Linear"
 
