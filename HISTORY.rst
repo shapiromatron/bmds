@@ -5,6 +5,9 @@ History
 v0.11.1 (NEXT)
 --------------------
 * Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
+* Re-enable `Travis CI`_ for linting and linux-based tests
+
+_`Travis CI`: https://travis-ci.org/shapiromatron/bmds
 
 
 v0.11.0 (2018-09-14)
