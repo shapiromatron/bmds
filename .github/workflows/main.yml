@@ -4,11 +4,12 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6]
+        python-version: [3.6, 3.7]
+        os: ["ubuntu-18.04", "windows-2019"]
 
     steps:
       - uses: actions/checkout@v1
@@ -20,7 +21,7 @@ jobs:
         run: |
           pip install -U pip
           pip install -e .[test]
-      - name: Test with pytest
+      - name: Test with pytest (using BMDS webserver)
         env:
           BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
