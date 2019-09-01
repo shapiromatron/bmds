@@ -21,7 +21,7 @@ jobs:
         run: |
           pip install -U pip
           pip install -e .[test]
-      - name: Test with pytest (using BMDS webserver)
+      - name: Test with pytest
         env:
           BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
