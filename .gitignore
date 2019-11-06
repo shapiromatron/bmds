@@ -31,3 +31,6 @@ log.txt
 .env
 Pipfile.lock
 .vscode
+
+venv/
+.mypy_cache/
