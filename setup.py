@@ -46,6 +46,11 @@ setup(
         "dev": ["wheel", "sphinx", "watchdog"],
         "test": ["pytest", "pytest-runner", "pytest-mpl"],
     },
+    entry_points={
+        'console_scripts': [
+            'bmds3_test = bmds.bmds3.execute:bmds3_test'
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[
