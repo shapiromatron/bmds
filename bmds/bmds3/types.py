@@ -1,7 +1,6 @@
 import ctypes
 from enum import Enum
 
-
 class BMDSInputType_t(Enum):
     unused = 0
     eCont_2 = 1  # Individual dose-responses
@@ -9,9 +8,8 @@ class BMDSInputType_t(Enum):
     eDich_3 = 3 # Regular dichotomous dose-responses
     eDich_4 = 4  # Dichotomous d-r with covariate (e.g., nested)
 
-
 class cGoFRow_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("dose", ctypes.c_double),
         ("obsMean", ctypes.c_double),
         ("obsStDev", ctypes.c_double),
@@ -25,9 +23,8 @@ class cGoFRow_t(ctypes.Structure):
         ("ebUpper", ctypes.c_double),
     ]
 
-
 class dGoF_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("chiSquare", ctypes.c_double),
         ("pvalue", ctypes.c_double),
         ("pzRow", ctypes.POINTER(cGoFRow_t)),
@@ -37,7 +34,7 @@ class dGoF_t(ctypes.Structure):
 
 
 class BMDSInputData_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("dose", ctypes.c_double),
         ("response", ctypes.c_double), # Mean value for summary data
         ("groupSize", ctypes.c_double),
@@ -46,7 +43,7 @@ class BMDSInputData_t(ctypes.Structure):
 
 
 class Prior(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("type", ctypes.c_double), # 0= None (frequentist), 1=  normal (Bayesian), 2= log-normal (Bayesian)
         ("initalValue", ctypes.c_double),
         ("stdDev", ctypes.c_double), # Only used for type= 1 or 2
@@ -56,7 +53,7 @@ class Prior(ctypes.Structure):
 
 
 class BMDS_D_Opts1_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("bmr", ctypes.c_double),
         ("alpha", ctypes.c_double),
         ("background", ctypes.c_double),
@@ -64,14 +61,15 @@ class BMDS_D_Opts1_t(ctypes.Structure):
 
 
 class BMDS_D_Opts2_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("bmrType", ctypes.c_int),
         ("degree", ctypes.c_int),  # Polynomial degree for the multistage model
     ]
 
 
+
 class dGoF_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("dose", ctypes.c_double),
         ("estProb", ctypes.c_double),  # Model-estimated probability for dose
         ("expected", ctypes.c_double), # Expected dose-response according to the model
@@ -84,7 +82,7 @@ class dGoF_t(ctypes.Structure):
 
 
 class DichotomousDeviance_t(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("llFull", ctypes.c_double), # Full model log-likelihood
         ("llReduced", ctypes.c_double), # Reduced model log-likelihood
         ("devFit", ctypes.c_double), # Fit model deviance
@@ -100,7 +98,7 @@ class DichotomousDeviance_t(ctypes.Structure):
 
 
 class BMD_ANAL(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ("model_id", ctypes.POINTER(ctypes.c_char)),
         ("MAP", ctypes.c_double), # Equals the -LL for frequentist runs
         ("BMD", ctypes.c_double),
@@ -117,8 +115,26 @@ class BMD_ANAL(ctypes.Structure):
         ("nCDF", ctypes.c_int),     # Requested number of aCDF elements to return
     ]
 
+def create_bmd_analysis(num_dg: int) -> BMD_ANAL:
+    CDF_TABLE_SIZE = 99
+    MY_MAX_PARMS = 16
+
+    _dGoF_t = dGoF_t()
+    _dGoF_t.pzRow = (cGoFRow_t * num_dg)()
+
+    analysis = BMD_ANAL()
+    analysis.PARMS = (ctypes.c_double * MY_MAX_PARMS)()
+    analysis.boundedParms = (ctypes.c_bool * MY_MAX_PARMS)()
+    analysis.aCDF = (ctypes.c_double * CDF_TABLE_SIZE)()
+    analysis.deviance = (DichotomousDeviance_t * num_dg)()
+    analysis.gof = ctypes.pointer(_dGoF_t)
+    analysis.nCDF = CDF_TABLE_SIZE
+
+    return analysis
+
+
 class PRIOR(ctypes.Structure):
-    _fields = [
+    _fields_ = [
       ("type", ctypes.c_double), # 0= None (frequentist), 1=  normal (Bayesian), 2= log-normal (Bayesian)
       ("initalValue", ctypes.c_double),
       ("stdDev", ctypes.c_double), # Only used for type= 1 or 2

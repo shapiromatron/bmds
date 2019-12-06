@@ -17,41 +17,38 @@ def get_dll_absolute_path() -> str:
 
 
 def bmds3_test():
-    """
-    To run:
-    1) rerun the install script `pip install -e .`
-    2) Try using the new CLI `bmds3_test`
-
-    I'd probably pull all of this out into a jupyter notebook to play around with until we figure
-    out what sticks...
-
-    You can also use `import pdb; pdb.set_trace()` which can be pretty handy.
-    """
-    print('starting test')
     dll = ctypes.cdll.LoadLibrary(get_dll_absolute_path())
     dfunc = dll.run_dmodel2
 
-    _DModelID_t = (ctypes.c_int * 1)()
-    _DModelID_t[0] = 3
+    _DModelID_t = (ctypes.c_int * 1)(3)
+    _p_inputType = (ctypes.c_int * 1)(3)
+    # one row for each dose-group
+    _BMDSInputData_t = (types.BMDSInputData_t * 4)(
+        types.BMDSInputData_t( 0.0,  0, 50, 0),
+        types.BMDSInputData_t( 2.0,  4, 50, 0),
+        types.BMDSInputData_t( 5.0, 11, 50, 0),
+        types.BMDSInputData_t(30.0, 13, 50, 0)
+    )
+    _BMD_ANAL = types.create_bmd_analysis(num_dg=4)
+    # logistic has two parameters, this is the prior for each of the params
+    _PRIOR = (types.PRIOR*2)(
+        types.PRIOR(0, -2, 1, -18, 18),
+        types.PRIOR(0, 0.1, 1, 1, 100)
+    )
+    _BMDS_D_Opts1_t = types.BMDS_D_Opts1_t(0.1, 0.05, -9999)
+    _BMDS_D_Opts2_t = types.BMDS_D_Opts2_t(1, 0)
+    _p_n = (ctypes.c_int * 1)(1)
 
-    _BMD_ANAL = types.BMD_ANAL()
-
-    _p_inputType = (ctypes.c_int * 1)()
-    _p_inputType[0] = 3
-
-    _BMDSInputData_t = 3
-
-    _PRIOR = types.PRIOR()
-    data = [0, 0, 0, 0, 0]
-    _PRIOR.data = (ctypes.c_double * len(data))(*data)
-
-    # TODO: RESUME HERE
     try:
         dfunc(
-            ctypes.pointer(ctypes.c_int(3)),
+            ctypes.pointer(_DModelID_t),
             ctypes.pointer(_BMD_ANAL),
-            ctypes.pointer(types.BMDSInputType_t.eDich_3),      # todo change to ctypes array?
-            # ....
+            ctypes.pointer(_p_inputType),
+            _BMDSInputData_t,
+            ctypes.pointer(_PRIOR),
+            ctypes.pointer(_BMDS_D_Opts1_t),
+            ctypes.pointer(_BMDS_D_Opts2_t),
+            ctypes.pointer(_p_n)
         )
-    except TypeError:
+    except OSError:
         print('This is as far as I got....')
