@@ -303,7 +303,7 @@ class Exponential_M2_17(Exponential):
     output_prefix = "M2"
 
     def get_ys(self, xs):
-        sign = 1. if self.dataset.is_increasing else -1.
+        sign = 1.0 if self.dataset.is_increasing else -1.0
         a = self._get_param("a")
         b = self._get_param("b")
         ys = a * np.exp(sign * b * xs)
@@ -338,7 +338,7 @@ class Exponential_M3_17(Exponential_M2_17):
     output_prefix = "M3"
 
     def get_ys(self, xs):
-        sign = 1. if self.dataset.is_increasing else -1.
+        sign = 1.0 if self.dataset.is_increasing else -1.0
         a = self._get_param("a")
         b = self._get_param("b")
         d = self._get_param("d")
@@ -377,7 +377,7 @@ class Exponential_M4_17(Exponential_M2_17):
         a = self._get_param("a")
         b = self._get_param("b")
         c = self._get_param("c")
-        ys = a * (c - (c - 1.) * np.exp(-1. * b * xs))
+        ys = a * (c - (c - 1.0) * np.exp(-1.0 * b * xs))
         return ys
 
 
@@ -413,7 +413,7 @@ class Exponential_M5_17(Exponential_M2_17):
         b = self._get_param("b")
         c = self._get_param("c")
         d = self._get_param("d")
-        ys = a * (c - (c - 1.) * np.exp(-1. * np.power(b * xs, d)))
+        ys = a * (c - (c - 1.0) * np.exp(-1.0 * np.power(b * xs, d)))
         return ys
 
 

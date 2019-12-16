@@ -281,8 +281,8 @@ class Reporter:
         cell.paragraphs[0].style = style
 
     _VARIANCE_FOOTNOTE_TEMPLATE = (
-        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."
-    )  # noqa
+        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."  # noqa
+    )
 
     def _get_variance_footnote(self, models):
         text = None

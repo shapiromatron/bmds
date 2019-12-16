@@ -161,7 +161,7 @@ class DichotomousDataset(Dataset):
         """
         p = incidence / float(n)
         z = stats.norm.ppf(0.975)
-        q = 1. - p
+        q = 1.0 - p
         ll = (
             (2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))
         ) / (2 * (n + 2 * z))
@@ -296,7 +296,7 @@ class ContinuousDataset(Dataset):
     @property
     def is_increasing(self):
         # increasing or decreasing with respect to control?
-        change = 0.
+        change = 0.0
         for i in range(1, len(self.means)):
             change += self.means[i] - self.means[0]
         return change >= 0

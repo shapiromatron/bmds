@@ -532,13 +532,13 @@ class DefaultParams(object):
     relative_fn_conv = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
-        "d": 1.0E-08,
+        "d": 1.0e-08,
         "n": "Relative function",
     }
     parameter_conv = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
-        "d": 1.0E-08,
+        "d": 1.0e-08,
         "n": "Parameter",
     }
     confidence_level = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0.95}
