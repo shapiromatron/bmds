@@ -2,6 +2,77 @@ import ctypes
 from enum import Enum
 
 
+BMDS_BLANK_VALUE = -9999
+NUM_PRIOR_COLS = 5
+CDF_TABLE_SIZE = 99
+MY_MAX_PARMS = 16
+
+
+class VarType_t(Enum):
+    eVarTypeNone = 0
+    eConstant = 1
+    eModeled = 2
+
+
+class BMDS_C_Options_t(ctypes.Structure):
+    __fields__ = [
+        ("bmr", ctypes.c_double),
+        ("alpha", ctypes.c_double),
+        ("background", ctypes.c_double),
+        ("tailProb", ctypes.c_double),  # Valid only for hybrid bmr type
+        ("bmrType", ctypes.c_int),
+        ("degree", ctypes.c_int),  # Valid for polynomial type models; for exponential, identifies the submodel
+        ("adverseDirection", ctypes.c_int),  # Direction of adversity: 0=auto, 1=up, -1=down
+        ("restriction", ctypes.c_int),  # Restriction on parameters for certain models
+        ("varType", ctypes.c_int),  # VarType_t
+        ("bLognormal", ctypes.c_bool),  # Valid only for continuous models
+        ("bUserParmInit", ctypes.c_bool),  # Use specified priors instead of calculated values
+    ]
+
+
+class CModelID_t(Enum):
+    eExp2 = 2
+    eExp3 = 3
+    eExp4 = 4
+    eExp5 = 5
+    eHill = 6
+    ePoly = 7
+    ePow = 8
+
+
+class DModelID_t(Enum):
+    eDHill = 1
+    eGamma = 2
+    eLogistic = 3
+    eLogLogistic = 4
+    eLogProbit = 5
+    eMultistage = 6
+    eProbit = 7
+    eQLinear = 8
+    eWeibull = 9
+
+
+class BMDSPrior_t(Enum):
+    eNone = 0
+    eNormal = 1
+    eLognormal = 2
+
+
+class BMRType_t(Enum):
+    eAbsoluteDev = 1
+    eStandardDev = 2
+    eRelativeDev = 3
+    ePointEstimate = 4
+    eExtra = 5  # Not used
+    eHybrid_Extra = 6
+    eHybrid_Added = 7
+
+
+class RiskType_t(Enum):
+    eExtraRisk = 1
+    eAddedRisk = 2
+
+
 class BMDSInputType_t(Enum):
     unused = 0
     eCont_2 = 1  # Individual dose-responses
@@ -26,11 +97,24 @@ class cGoFRow_t(ctypes.Structure):
     ]
 
 
+class GoFRow_t(ctypes.Structure):
+    _fields_ = [
+        ("dose", ctypes.c_double),
+        ("estProb", ctypes.c_double),  # Model-estimated probability for dose
+        ("expected", ctypes.c_double),  # Expected dose-response according to the model
+        ("observed", ctypes.c_double),
+        ("size", ctypes.c_double),
+        ("scaledResidual", ctypes.c_double),
+        ("ebLower", ctypes.c_double),  # Error bar lower bound
+        ("ebUpper", ctypes.c_double),  # Error bar upper bound
+    ]
+
+
 class dGoF_t(ctypes.Structure):
     _fields_ = [
         ("chiSquare", ctypes.c_double),
         ("pvalue", ctypes.c_double),
-        ("pzRow", ctypes.POINTER(cGoFRow_t)),
+        ("pzRow", ctypes.POINTER(GoFRow_t)),
         ("df", ctypes.c_int),
         ("n", ctypes.c_int),
     ]
@@ -73,19 +157,6 @@ class BMDS_D_Opts2_t(ctypes.Structure):
     ]
 
 
-class dGoF_t(ctypes.Structure):
-    _fields_ = [
-        ("dose", ctypes.c_double),
-        ("estProb", ctypes.c_double),  # Model-estimated probability for dose
-        ("expected", ctypes.c_double),  # Expected dose-response according to the model
-        ("observed", ctypes.c_double),
-        ("size", ctypes.c_double),
-        ("scaledResidual", ctypes.c_double),
-        ("ebLower", ctypes.c_double),  # Error bar lower bound
-        ("ebUpper", ctypes.c_double),  # Error bar upper bound
-    ]
-
-
 class DichotomousDeviance_t(ctypes.Structure):
     _fields_ = [
         ("llFull", ctypes.c_double),  # Full model log-likelihood
@@ -122,24 +193,6 @@ class BMD_ANAL(ctypes.Structure):
         ("nparms", ctypes.c_int),
         ("nCDF", ctypes.c_int),  # Requested number of aCDF elements to return
     ]
-
-
-def create_bmd_analysis(num_dg: int) -> BMD_ANAL:
-    CDF_TABLE_SIZE = 99
-    MY_MAX_PARMS = 16
-
-    _dGoF_t = dGoF_t()
-    _dGoF_t.pzRow = (cGoFRow_t * num_dg)()
-
-    analysis = BMD_ANAL()
-    analysis.PARMS = (ctypes.c_double * MY_MAX_PARMS)()
-    analysis.boundedParms = (ctypes.c_bool * MY_MAX_PARMS)()
-    analysis.aCDF = (ctypes.c_double * CDF_TABLE_SIZE)()
-    analysis.deviance = (DichotomousDeviance_t * num_dg)()
-    analysis.gof = ctypes.pointer(_dGoF_t)
-    analysis.nCDF = CDF_TABLE_SIZE
-
-    return analysis
 
 
 class PRIOR(ctypes.Structure):
