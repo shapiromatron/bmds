@@ -6,6 +6,8 @@ BMDS_BLANK_VALUE = -9999
 NUM_PRIOR_COLS = 5
 CDF_TABLE_SIZE = 99
 MY_MAX_PARMS = 16
+NUM_LIKELIHOODS_OF_INTEREST = 5
+NUM_TESTS_OF_INTEREST = 4
 
 
 class VarType_t(Enum):
@@ -192,6 +194,55 @@ class BMD_ANAL(ctypes.Structure):
         ("boundedParms", ctypes.POINTER(ctypes.c_bool)),
         ("nparms", ctypes.c_int),
         ("nCDF", ctypes.c_int),  # Requested number of aCDF elements to return
+    ]
+
+
+class LLRow_t(ctypes.Structure):
+    _fields_ = [
+        ("ll", ctypes.c_double),  # Log-likelihood
+        ("aic", ctypes.c_double),
+        ("model", ctypes.c_int),  # Data model number for test
+        ("nParms", ctypes.c_int),  # Count of model parameters
+    ]
+
+
+class TestRow_t(ctypes.Structure):
+    _fields_ = [
+        ("deviance", ctypes.c_double),  # -2*log-likelihood ratio
+        ("pvalue", ctypes.c_double),  # test p-value
+        ("testNumber", ctypes.c_int),
+        ("df", ctypes.c_int),  # test degrees of freedom
+    ]
+
+
+class ContinuousDeviance_t(ctypes.Structure):
+    _fields_ = [
+        ("llRows", ctypes.POINTER(LLRow_t)),
+        ("testRows", ctypes.POINTER(TestRow_t)),
+    ]
+
+
+class BMD_C_ANAL(ctypes.Structure):
+    _fields_ = [
+        ("model_id", ctypes.POINTER(ctypes.c_char)),
+        ("PARMS", ctypes.POINTER(ctypes.c_double)),
+        ("deviance", ContinuousDeviance_t),
+        ("gofRow", ctypes.POINTER(cGoFRow_t)),  # Goodness of Fit
+        ("boundedParms", ctypes.POINTER(ctypes.c_bool)),
+        ("MAP", ctypes.c_double),
+        ("BMD", ctypes.c_double),
+        ("BMDL", ctypes.c_double),
+        ("BMDU", ctypes.c_double),
+        ("AIC", ctypes.c_double),
+        ("BIC_Equiv", ctypes.c_double),  # BIC equivalent for Bayesian runs
+        ("ll_const", ctypes.c_double),  # LL "additive" constant term
+        (
+            "aCDF",
+            ctypes.POINTER(ctypes.c_double)
+        ),  # Array of cumulative density function values for BMD
+        ("nCDF", ctypes.c_int),  # Requested number of aCDF elements to return
+        ("nparms", ctypes.c_int),
+        ("bAdverseUp", ctypes.c_bool),
     ]
 
 
