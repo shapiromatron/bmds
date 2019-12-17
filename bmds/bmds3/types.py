@@ -1,4 +1,5 @@
 import ctypes
+from typing import Union
 from enum import Enum
 
 
@@ -252,8 +253,11 @@ class PRIOR(ctypes.Structure):
             "type",
             ctypes.c_double,
         ),  # 0= None (frequentist), 1=  normal (Bayesian), 2= log-normal (Bayesian)
-        ("initalValue", ctypes.c_double),
+        ("initialValue", ctypes.c_double),
         ("stdDev", ctypes.c_double),  # Only used for type= 1 or 2
         ("minValue", ctypes.c_double),
         ("maxValue", ctypes.c_double),
     ]
+
+
+RESULT_TYPES = Union[BMD_ANAL, BMD_C_ANAL]

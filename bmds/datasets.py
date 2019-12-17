@@ -1,10 +1,15 @@
+import ctypes
 from collections import defaultdict
+from typing import Tuple
+
 import numpy as np
 from simple_settings import settings
 from scipy import stats
 
 from . import plotting
 from .anova import AnovaTests
+from .bmds3 import types
+
 
 __all__ = [
     "DichotomousDataset",
@@ -14,7 +19,7 @@ __all__ = [
 ]
 
 
-class Dataset(object):
+class Dataset:
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
@@ -48,6 +53,9 @@ class Dataset(object):
 
     def _get_dataset_name(self):
         return self.kwargs.get("dataset_name", "BMDS output results")
+
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        raise NotImplementedError("Requires implementation")
 
 
 class DichotomousDataset(Dataset):
@@ -214,6 +222,28 @@ class DichotomousDataset(Dataset):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
+
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        num_dg = len(self.doses)
+        datasets = (types.BMDSInputData_t * num_dg)(
+            *[
+                types.BMDSInputData_t(dose, n, incidence, 0.0)
+                for dose, n, incidence in zip(self.doses, self.ns, self.incidences)
+            ]
+        )
+
+        _dGoF_t = types.dGoF_t()
+        _dGoF_t.pzRow = (types.GoFRow_t * num_dg)()
+
+        analysis = types.BMD_ANAL()
+        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
+        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
+        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
+        analysis.deviance = (types.DichotomousDeviance_t * num_dg)()
+        analysis.gof = ctypes.pointer(_dGoF_t)
+        analysis.nCDF = types.CDF_TABLE_SIZE
+
+        return datasets, analysis
 
 
 class DichotomousCancerDataset(DichotomousDataset):

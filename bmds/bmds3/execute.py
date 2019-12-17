@@ -1,103 +1,10 @@
 import ctypes
-from pathlib import Path
-import platform
 from typing import Collection, Tuple
 
 from . import types
-
-
-def get_dichotomous_dll_absolute_path() -> str:
-    path = Path(__file__).absolute().parents[0]
-    bits = platform.architecture()[0]
-    if "64" in bits:
-        return str(path / "bmds_models_x64.dll")
-    elif "32" in bits:
-        return str(path / "bmds_models.dll")
-    else:
-        raise OSError(f"Unknown architecture: {bits}")
-
-
-def get_continuous_dll_absolute_path() -> str:
-    path = Path(__file__).absolute().parents[0]
-    bits = platform.architecture()[0]
-    if "64" in bits:
-        return str(path / "cmodels_x64.dll")
-    elif "32" in bits:
-        return str(path / "cmodels.dll")
-    else:
-        raise OSError(f"Unknown architecture: {bits}")
-
-
-def prepare_dichotomous_data(
-    doses: Collection[float], ns: Collection[int], incidences: Collection[int]
-) -> Tuple[ctypes.Array, types.BMD_ANAL]:
-    """
-    Given a dataset, create the required input/output data slots required for model execution.
-
-    Args:
-        doses (Collection[float]): [description]
-        ns (Collection[int]): [description]
-        incidences (Collection[int]): [description]
-
-    Returns:
-        Tuple[ctypes.Array[types.BMDSInputData_t], types.BMD_ANAL]: [description]
-    """
-    num_dg = len(doses)
-    datasets = (types.BMDSInputData_t * num_dg)(*[
-        types.BMDSInputData_t(dose, n, incidence, 0.0)
-        for dose, n, incidence in zip(doses, ns, incidences)
-    ])
-
-    _dGoF_t = types.dGoF_t()
-    _dGoF_t.pzRow = (types.GoFRow_t * num_dg)()
-
-    analysis = types.BMD_ANAL()
-    analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
-    analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
-    analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
-    analysis.deviance = (types.DichotomousDeviance_t * num_dg)()
-    analysis.gof = ctypes.pointer(_dGoF_t)
-    analysis.nCDF = types.CDF_TABLE_SIZE
-
-    return datasets, analysis
-
-
-def dichotomous_test():
-    dll = ctypes.cdll.LoadLibrary(get_dichotomous_dll_absolute_path())
-    dfunc = dll.run_dmodel2
-
-    model_id = (ctypes.c_int * 1)(types.DModelID_t.eLogistic.value)
-    model_type = (ctypes.c_int * 1)(types.DModelID_t.eLogistic.value)
-
-    # one row for each dose-group
-    dataset, results = prepare_dichotomous_data(
-        doses=[0, 20, 50, 100],
-        ns=[50, 50, 50, 50],
-        incidences=[0, 4, 11, 13]
-    )
-    n = ctypes.c_int(len(dataset))
-
-    # logistic has two parameters, this is the prior for each of the params
-    priors_ = [
-        types.PRIOR(type=0, initalValue=-2, stdDev=1, minValue=-18, maxValue=18),
-        types.PRIOR(type=0, initalValue=0.1, stdDev=1, minValue=1, maxValue=100)
-    ]
-    priors = (types.PRIOR * len(priors_))(*priors_)
-
-    d_opts1 = types.BMDS_D_Opts1_t(bmr=0.1, alpha=0.05, background=-9999)
-    d_opts2 = types.BMDS_D_Opts2_t(bmrType=types.BMRType_t.eAbsoluteDev.value, degree=0)
-
-    dfunc(
-        model_id,
-        ctypes.pointer(results),
-        model_type,
-        dataset,
-        priors,
-        ctypes.pointer(d_opts1),
-        ctypes.pointer(d_opts2),
-        ctypes.pointer(n),
-    )
-    print(f'Dichotomous: BMDL: {results.BMDL:.3f} BMD: {results.BMD:.3f} BMDU: {results.BMDU:.3f}')
+from ..utils import get_dll_func
+from ..datasets import DichotomousDataset
+from .models import dichotomous
 
 
 def prepare_continuous_data(
@@ -139,8 +46,7 @@ def prepare_continuous_data(
 
 
 def continuous_test():
-    dll = ctypes.cdll.LoadLibrary(get_continuous_dll_absolute_path())
-    cfunc = dll.run_cmodel
+    func = get_dll_func(bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel")
 
     model_id = (ctypes.c_int * 1)(types.CModelID_t.ePow.value)
     model_type = (ctypes.c_int * 1)(types.CModelID_t.ePow.value)
@@ -156,11 +62,11 @@ def continuous_test():
 
     # using default priors
     priors_ = [
-        types.PRIOR(type=0, initalValue=1, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initalValue=3.71e-03, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initalValue=9.2965, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initalValue=1.77258, stdDev=1, minValue=1, maxValue=1000),
-        types.PRIOR(type=0, initalValue=1.93612, stdDev=1, minValue=-1000, maxValue=1000),
+        types.PRIOR(type=0, initialValue=1, stdDev=1, minValue=0, maxValue=1e8),
+        types.PRIOR(type=0, initialValue=3.71e-03, stdDev=1, minValue=0, maxValue=1e8),
+        types.PRIOR(type=0, initialValue=9.2965, stdDev=1, minValue=0, maxValue=1e8),
+        types.PRIOR(type=0, initialValue=1.77258, stdDev=1, minValue=1, maxValue=1000),
+        types.PRIOR(type=0, initialValue=1.93612, stdDev=1, minValue=-1000, maxValue=1000),
     ]
     priors = (types.PRIOR * len(priors_))(*priors_)
 
@@ -178,7 +84,7 @@ def continuous_test():
         bUserParmInit=False,
     )
 
-    cfunc(
+    func(
         model_id,
         ctypes.pointer(results),
         model_type,
@@ -192,5 +98,22 @@ def continuous_test():
 
 
 def bmds3_test():
-    dichotomous_test()
+    dataset = DichotomousDataset(
+        doses=[0, 20, 50, 100],
+        ns=[50, 50, 50, 50],
+        incidences=[0, 4, 11, 13]
+    )
+    models = [
+        dichotomous.Logistic(),
+        dichotomous.LogLogistic(),
+        dichotomous.Probit(),
+        dichotomous.LogProbit(),
+        dichotomous.Gamma(),
+        dichotomous.QuantalLinear(),
+        dichotomous.Weibull(),
+        dichotomous.DichotomousHill(),
+    ]
+    for model in models:
+        print(model.execute_dll(dataset))
+
     continuous_test()
