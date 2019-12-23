@@ -1,6 +1,7 @@
 import ctypes
 from typing import Union
 from enum import Enum
+from textwrap import dedent
 
 
 BMDS_BLANK_VALUE = -9999
@@ -246,6 +247,13 @@ class BMD_C_ANAL(ctypes.Structure):
         ("bAdverseUp", ctypes.c_bool),
     ]
 
+    def __str__(self):
+        return dedent(f'''\
+        model_id: {self.model_id[0].decode('utf8')} nparms: {self.nparms}
+        BMDL: {self.BMDL:.3f}  BMD: {self.BMD:.3f} BMDU: {self.BMDU:.3f}
+        AIC: {self.AIC:.3f} BIC: {self.BIC_Equiv:.3f}
+        ''')
+
 
 class PRIOR(ctypes.Structure):
     _fields_ = [
@@ -258,6 +266,9 @@ class PRIOR(ctypes.Structure):
         ("minValue", ctypes.c_double),
         ("maxValue", ctypes.c_double),
     ]
+
+    def __repr__(self):
+        return f"Prior({self.type}, {self.initialValue}, {self.stdDev}, {self.minValue}, {self.maxValue})"
 
 
 RESULT_TYPES = Union[BMD_ANAL, BMD_C_ANAL]

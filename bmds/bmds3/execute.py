@@ -1,118 +1,43 @@
-import ctypes
-from typing import Collection, Tuple
-
-from . import types
-from ..utils import get_dll_func
-from ..datasets import DichotomousDataset
-from .models import dichotomous
-
-
-def prepare_continuous_data(
-    doses: Collection[float],
-    ns: Collection[int],
-    means: Collection[float],
-    stdevs: Collection[float]
-) -> Tuple[ctypes.Array, types.BMD_ANAL]:
-    """
-    Given a dataset, create the required input/output data slots required for model execution.
-
-    Args:
-        doses (Collection[float]): [description]
-        ns (Collection[int]): [description]
-        means (Collection[float]): [description]
-        stdevs (Collection[float]): [description]
-
-    Returns:
-        Tuple[ctypes.Array[types.BMDSInputData_t], types.BMD_ANAL]: [description]
-    """
-    num_dg = len(doses)
-    datasets = (types.BMDSInputData_t * num_dg)(*[
-        types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
-        for dose, n, mean, stdev in zip(doses, ns, means, stdevs)
-    ])
-
-    analysis = types.BMD_C_ANAL()
-    analysis.deviance = types.ContinuousDeviance_t(
-        llRows=(types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)(),
-        testRows=(types.TestRow_t * types.NUM_TESTS_OF_INTEREST)()
-    )
-    analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
-    analysis.gofRow = (types.cGoFRow_t * num_dg)()
-    analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
-    analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
-    analysis.nCDF = types.CDF_TABLE_SIZE
-
-    return datasets, analysis
-
-
-def continuous_test():
-    func = get_dll_func(bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel")
-
-    model_id = ctypes.c_int(types.CModelID_t.ePow.value)
-    input_type = ctypes.c_int(types.BMDSInputType_t.eCont_4.value)
-
-    # one row for each dose-group
-    dataset, results = prepare_continuous_data(
-        doses=[0, 25, 50, 100, 200],
-        ns=[20, 20, 19, 20, 20],
-        means=[6.0, 5.2, 2.4, 1.1, 0.75],
-        stdevs=[1.2, 1.1, 0.81, 0.74, 0.66]
-    )
-    n = ctypes.c_int(len(dataset))
-
-    # using default priors
-    priors_ = [
-        types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
-        types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
-        types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
-    ]
-    priors = (types.PRIOR * len(priors_))(*priors_)
-
-    options = types.BMDS_C_Options_t(
-        bmr=0.1,
-        alpha=0.05,
-        background=-9999,
-        tailProb=0.01,
-        bmrType=types.BMRType_t.eRelativeDev.value,
-        degree=0,
-        adverseDirection=0,
-        restriction=1,
-        varType=types.VarType_t.eConstant.value,
-        bLognormal=False,
-        bUserParmInit=False,
-    )
-
-    response_code = func(
-        ctypes.pointer(model_id),
-        ctypes.pointer(results),
-        ctypes.pointer(input_type),
-        dataset,
-        priors,
-        ctypes.pointer(options),
-        ctypes.pointer(n),
-    )
-
-    print(response_code)
-    print(f'Continuous: BMDL: {results.BMDL:.3f} BMD: {results.BMD:.3f} BMDU: {results.BMDU:.3f}')
+from ..datasets import DichotomousDataset, ContinuousDataset
+from .models import dichotomous, continuous
 
 
 def bmds3_test():
-    dataset = DichotomousDataset(
-        doses=[0, 20, 50, 100],
-        ns=[50, 50, 50, 50],
-        incidences=[0, 4, 11, 13]
+    ds = DichotomousDataset(
+        doses=[0, 20, 50, 100], ns=[50, 50, 50, 50], incidences=[0, 4, 11, 13]
     )
     models = [
         dichotomous.Logistic(),
-        dichotomous.LogLogistic(),
-        dichotomous.Probit(),
-        dichotomous.LogProbit(),
-        dichotomous.Gamma(),
-        dichotomous.QuantalLinear(),
-        dichotomous.Weibull(),
-        dichotomous.DichotomousHill(),
+        # dichotomous.Multistage(degree=1),
+        # dichotomous.Multistage(degree=2),
+        # dichotomous.Multistage(degree=3),
+        # dichotomous.LogLogistic(),
+        # dichotomous.Probit(),
+        # dichotomous.LogProbit(),
+        # dichotomous.Gamma(),
+        # dichotomous.QuantalLinear(),
+        # dichotomous.Weibull(),
+        # dichotomous.DichotomousHill(),
     ]
     for model in models:
-        print(model.execute_dll(dataset))
+        print(model.execute_dll(ds))
 
-    continuous_test()
+    ds = ContinuousDataset(
+        doses=[0, 25, 50, 100, 200],
+        ns=[20, 20, 19, 20, 20],
+        means=[10, 11, 13, 17, 22],
+        stdevs=[2, 2, 2, 3, 4],
+    )
+    models = [
+        # continuous.ExponentialM2(),
+        # continuous.ExponentialM3(),
+        # continuous.ExponentialM4(),
+        # continuous.ExponentialM5(),
+        # continuous.Linear(),
+        # continuous.Polynomial(degree=2),
+        # continuous.Polynomial(degree=3),
+        continuous.Power(),
+        # continuous.Hill(),
+    ]
+    for model in models:
+        model.execute_dll(ds)

@@ -1,5 +1,6 @@
 import ctypes
-from typing import Callable, Dict, List, Optional, Tuple
+import json
+from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 
@@ -10,25 +11,35 @@ from .. import types
 
 
 class DichotomousResult:
-    def __init__(self, dll_result: types.BMD_ANAL):
-        self.model_name: str
-        self.dll_result: types.BMD_ANAL = dll_result
-        self._dict: Optional[Dict] = None
-        self._str: Optional[str] = None
+    def __init__(self, data: Dict):
+        self.data = data
+        self._str = None
+
+    @classmethod
+    def from_execution(cls, result: types.BMD_ANAL) -> 'DichotomousResult':
+        data = dict(
+            map=result.MAP,
+            bmd=result.BMD,
+            bmdl=result.BMDL,
+            bmdu=result.BMDU,
+            aic=result.AIC,
+            bic=result.BIC_Equiv,
+            num_parms=result.nparms,
+            cdf=np.array(result.aCDF[:result.nCDF])
+        )
+        return cls(data=data)
+
+    @classmethod
+    def deserialize(cls, json_str: str) -> 'DichotomousResult':
+        # TODO - implement
+        return cls(data=json.loads(json_str))
+
+    def serialize(self):
+        # convert arrays to np.array
+        return json.dumps(self._dict)
 
     def as_dict(self) -> Dict:
-        if self._dict is None:
-            self._dict = dict(
-                map=self.dll_result.MAP,
-                bmd=self.dll_result.BMD,
-                bmdl=self.dll_result.BMDL,
-                bmdu=self.dll_result.BMDU,
-                aic=self.dll_result.AIC,
-                bic=self.dll_result.BIC_Equiv,
-                num_parms=self.dll_result.nparms,
-                cdf=np.array(self.dll_result.aCDF[:self.dll_result.nCDF])
-            )
-        return self._dict
+        return self.data
 
     def __str__(self) -> str:
         if self._str is None:
@@ -75,7 +86,8 @@ class Dichotomous(BaseModel):
             ctypes.pointer(d_opts2),
             ctypes.pointer(n),
         )
-        return DichotomousResult(results)
+        print(response_code)
+        return DichotomousResult.from_execution(results)
 
 
 class Logistic(Dichotomous):
@@ -178,15 +190,37 @@ class Weibull(Dichotomous):
 class Multistage(Dichotomous):
     model_id = types.DModelID_t.eMultistage
 
+    def __init__(self, degree: int = 2):
+        if degree < 2 or degree > 8:
+            raise ValueError(f"Invalid degree: {degree}")
+        self.degree = degree
+
+    @property
+    def param_names(self):
+        params = ["g"]
+        params.extend([f"{chr(97 + i)}" for i in range(self.degree)])
+        return tuple(params)
+
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
         Returns the default list of frequentist priors for a model.
         """
-        return [
-            types.PRIOR(type=0, initialValue=-17, stdDev=1, minValue=-18, maxValue=18),
-            types.PRIOR(type=0, initialValue=0.1, stdDev=1, minValue=-18, maxValue=100),
-            types.PRIOR(type=0, initialValue=0.1, stdDev=1, minValue=-18, maxValue=1e4),
+
+        priors = [
+            types.PRIOR(type=0, initialValue=-17, stdDev=0, minValue=-18, maxValue=18),
+            types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=100),
         ]
+        if self.degree > 2:
+            priors.extend([
+                types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=1e4)
+                for degree in range(2, self.degree)
+            ])
+        return priors
+
+    def get_dll_default_options(self) -> Tuple[types.BMDS_D_Opts1_t, types.BMDS_D_Opts2_t]:
+        (d_opts1, d_opts2) = super().get_dll_default_options()
+        d_opts2.degree = self.degree
+        return d_opts1, d_opts2
 
 
 class DichotomousHill(Dichotomous):

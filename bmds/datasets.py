@@ -435,6 +435,27 @@ class ContinuousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        num_dg = len(self.doses)
+        dataset = (types.BMDSInputData_t * num_dg)(*[
+            types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
+            for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
+        ])
+
+        deviance = types.ContinuousDeviance_t()
+        deviance.llRows = (types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)()
+        deviance.testRows = (types.TestRow_t * types.NUM_TESTS_OF_INTEREST)()
+
+        analysis = types.BMD_C_ANAL()
+        analysis.deviance = deviance
+        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
+        analysis.gofRow = (types.cGoFRow_t * num_dg)()
+        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
+        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
+        analysis.nCDF = types.CDF_TABLE_SIZE
+
+        return dataset, analysis
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
     """
