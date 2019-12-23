@@ -27,7 +27,7 @@ def prepare_continuous_data(
     """
     num_dg = len(doses)
     datasets = (types.BMDSInputData_t * num_dg)(*[
-        types.BMDSInputData_t(dose, n, mean, stdev)
+        types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
         for dose, n, mean, stdev in zip(doses, ns, means, stdevs)
     ])
 
@@ -48,8 +48,8 @@ def prepare_continuous_data(
 def continuous_test():
     func = get_dll_func(bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel")
 
-    model_id = (ctypes.c_int * 1)(types.CModelID_t.ePow.value)
-    model_type = (ctypes.c_int * 1)(types.CModelID_t.ePow.value)
+    model_id = ctypes.c_int(types.CModelID_t.ePow.value)
+    input_type = ctypes.c_int(types.BMDSInputType_t.eCont_4.value)
 
     # one row for each dose-group
     dataset, results = prepare_continuous_data(
@@ -62,11 +62,9 @@ def continuous_test():
 
     # using default priors
     priors_ = [
-        types.PRIOR(type=0, initialValue=1, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initialValue=3.71e-03, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initialValue=9.2965, stdDev=1, minValue=0, maxValue=1e8),
-        types.PRIOR(type=0, initialValue=1.77258, stdDev=1, minValue=1, maxValue=1000),
-        types.PRIOR(type=0, initialValue=1.93612, stdDev=1, minValue=-1000, maxValue=1000),
+        types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
+        types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
+        types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
     ]
     priors = (types.PRIOR * len(priors_))(*priors_)
 
@@ -84,16 +82,17 @@ def continuous_test():
         bUserParmInit=False,
     )
 
-    func(
-        model_id,
+    response_code = func(
+        ctypes.pointer(model_id),
         ctypes.pointer(results),
-        model_type,
+        ctypes.pointer(input_type),
         dataset,
         priors,
         ctypes.pointer(options),
         ctypes.pointer(n),
     )
 
+    print(response_code)
     print(f'Continuous: BMDL: {results.BMDL:.3f} BMD: {results.BMD:.3f} BMDU: {results.BMDU:.3f}')
 
 

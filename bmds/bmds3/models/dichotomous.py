@@ -65,7 +65,7 @@ class Dichotomous(BaseModel):
 
         d_opts1, d_opts2 = self.get_dll_default_options()
 
-        self._func(
+        response_code = self._func(
             model_id,
             ctypes.pointer(results),
             model_type,
