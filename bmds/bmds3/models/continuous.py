@@ -30,15 +30,15 @@ class Continuous(BaseModel):
 
     def get_dll_default_options(self) -> types.BMDS_C_Options_t:
         return types.BMDS_C_Options_t(
-            bmr=ctypes.c_double(0.1),
-            alpha=ctypes.c_double(0.05),
-            background=ctypes.c_double(-9999),
-            tailProb=ctypes.c_double(0.01),
-            bmrType=ctypes.c_int(types.BMRType_t.eRelativeDev.value),
-            degree=ctypes.c_int(0),
-            adverseDirection=ctypes.c_int(0),
-            restriction=ctypes.c_int(1),
-            varType=ctypes.c_int(types.VarType_t.eConstant.value),
+            bmr=0.1,
+            alpha=0.05,
+            background=-9999,
+            tailProb=0.01,
+            bmrType=types.BMRType_t.eRelativeDev.value,
+            degree=0,
+            adverseDirection=0,
+            restriction=1,
+            varType=types.VarType_t.eConstant.value,
             bLognormal=ctypes.c_bool(False),
             bUserParmInit=ctypes.c_bool(False),
         )
@@ -92,6 +92,7 @@ class ExponentialM2(Exponential):
         return [
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
         ]
 
 
@@ -107,6 +108,7 @@ class ExponentialM3(Exponential):
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
         ]
 
 
@@ -123,6 +125,7 @@ class ExponentialM4(Exponential):
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
         ]
 
 
@@ -140,6 +143,7 @@ class ExponentialM5(Exponential):
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
         ]
 
 

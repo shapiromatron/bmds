@@ -46,11 +46,6 @@ setup(
         "dev": ["wheel", "sphinx", "watchdog"],
         "test": ["pytest", "pytest-runner", "pytest-mpl"],
     },
-    entry_points={
-        'console_scripts': [
-            'bmds3_test = bmds.bmds3.execute:bmds3_test'
-        ]
-    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -58,8 +53,8 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
 )

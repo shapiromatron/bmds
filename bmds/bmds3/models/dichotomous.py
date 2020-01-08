@@ -11,13 +11,17 @@ from .. import types
 
 
 class DichotomousResult:
+    """
+    Only saves state on model results (model + dataset).
+    """
     def __init__(self, data: Dict):
         self.data = data
         self._str = None
 
     @classmethod
-    def from_execution(cls, result: types.BMD_ANAL) -> 'DichotomousResult':
+    def from_execution(cls, response_code: int, result: types.BMD_ANAL) -> 'DichotomousResult':
         data = dict(
+            response_code=response_code,
             map=result.MAP,
             bmd=result.BMD,
             bmdl=result.BMDL,
@@ -86,8 +90,7 @@ class Dichotomous(BaseModel):
             ctypes.pointer(d_opts2),
             ctypes.pointer(n),
         )
-        print(response_code)
-        return DichotomousResult.from_execution(results)
+        return DichotomousResult.from_execution(response_code, results)
 
 
 class Logistic(Dichotomous):
