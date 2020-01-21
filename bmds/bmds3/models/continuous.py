@@ -159,6 +159,7 @@ class Power(Continuous):
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
         ]
 
 

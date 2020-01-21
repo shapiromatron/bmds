@@ -19,11 +19,11 @@ class VarType_t(Enum):
 
 
 class BMDS_C_Options_t(ctypes.Structure):
-    __fields__ = [
-        ("bmr", ctypes.c_double),
-        ("alpha", ctypes.c_double),
-        ("background", ctypes.c_double),
-        ("tailProb", ctypes.c_double),  # Valid only for hybrid bmr type
+    _fields_ = [
+        ("bmr", ctypes.c_longdouble),
+        ("alpha", ctypes.c_longdouble),
+        ("background", ctypes.c_longdouble),
+        ("tailProb", ctypes.c_longdouble),  # Valid only for hybrid bmr type
         ("bmrType", ctypes.c_int),
         ("degree", ctypes.c_int),  # Valid for polynomial type models; for exponential, identifies the submodel
         ("adverseDirection", ctypes.c_int),  # Direction of adversity: 0=auto, 1=up, -1=down

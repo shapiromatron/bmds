@@ -70,10 +70,10 @@ class Dichotomous(BaseModel):
 
     def execute_dll(self, dataset: DichotomousDataset) -> DichotomousResult:
         model_id = (ctypes.c_int * 1)(self.model_id.value)
-        model_type = (ctypes.c_int * 1)(self.model_id.value)
+        model_type = (ctypes.c_int * 1)(types.BMDSInputType_t.eDich_4.value)
 
-        dataset_arrary, results = dataset.build_dll_dataset_and_analysis()
-        n = ctypes.c_int(len(dataset_arrary))
+        dataset_array, results = dataset.build_dll_dataset_and_analysis()
+        n = ctypes.c_int(len(dataset_array))
 
         priors_ = self.get_dll_default_frequentist_priors()
         priors = (types.PRIOR * len(priors_))(*priors_)
@@ -84,7 +84,7 @@ class Dichotomous(BaseModel):
             model_id,
             ctypes.pointer(results),
             model_type,
-            dataset_arrary,
+            dataset_array,
             priors,
             ctypes.pointer(d_opts1),
             ctypes.pointer(d_opts2),
@@ -103,7 +103,7 @@ class Logistic(Dichotomous):
         """
         return [
             types.PRIOR(type=0, initialValue=-2, stdDev=1, minValue=-18, maxValue=18),
-            types.PRIOR(type=0, initialValue=0.1, stdDev=1, minValue=1, maxValue=100),
+            types.PRIOR(type=0, initialValue=0.1, stdDev=1, minValue=1, maxValue=10),
         ]
 
 
