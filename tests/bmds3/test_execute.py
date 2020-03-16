@@ -4,15 +4,13 @@ import pytest
 
 from bmds.datasets import DichotomousDataset, ContinuousDataset
 
-# todo - remove try/catch
-try:
-    from bmds.bmds3.models import dichotomous, continuous
-except ImportError:
-    pass
-
 
 @pytest.mark.skip(reason="todo - add back")
 def test_bmds3_dichotomous():
+
+    # todo - move import outside of test
+    from bmds.bmds3.models import dichotomous
+
     ds = DichotomousDataset(
         doses=[0, 20, 50, 100], ns=[50, 50, 50, 50], incidences=[0, 4, 11, 13]
     )
@@ -40,6 +38,9 @@ def _print_debug(name: str):
 
 @pytest.mark.skip(reason="todo - add back")
 def test_bmds3_continuous():
+    # todo - move import outside of test
+    from bmds.bmds3.models import continuous
+
     ds = ContinuousDataset(
         doses=[0, 25, 50, 100, 200],
         ns=[20, 20, 20, 20, 20],
