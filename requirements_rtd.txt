@@ -1,8 +1,0 @@
-# mirrors what's in setup.py
-six
-requests
-numpy
-pandas
-openpyxl
-matplotlib
-scipy

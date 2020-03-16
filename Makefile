@@ -49,6 +49,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
 	rm -fr htmlcov/
 
+lint:  ## Check for python formatting issues via black & flake8
+	@black . --check && flake8 .
+
+format:  ## Modify python code using black & show flake8 issues
+	@black . && flake8 .
+
 lint: ## check style with flake8
 	flake8 bmds tests
 

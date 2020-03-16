@@ -2,6 +2,13 @@
 History
 =======
 
+v0.12.0 (NEXT)
+--------------------
+* Added black and flake8 to enforce code style
+* Remove python 3.5 support
+* Added BMDS 3.* support
+
+
 v0.11.0 (2018-09-14)
 --------------------
 * Used black and flake8 to enforce code style

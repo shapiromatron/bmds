@@ -19,9 +19,9 @@ requirements = [
     "requests",
     "numpy",
     "pandas",
-    "python-docx>=0.8.6",
+    "python-docx",
     "openpyxl",
-    "matplotlib>=2.1.2",
+    "matplotlib",
     "scipy",
     "simple-settings",
 ]
@@ -43,7 +43,7 @@ setup(
     # You can install these using the following syntax, for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        "dev": ["wheel", "sphinx", "watchdog"],
+        "dev": ["wheel", "sphinx", "watchdog", "black==19.10b0", "flake8==3.7.9"],
         "test": ["pytest", "pytest-runner", "pytest-mpl"],
     },
     include_package_data=True,

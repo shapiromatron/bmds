@@ -1,8 +1,0 @@
-wheel==0.30.0
-tox==2.9.1
-
-Sphinx==1.5.5
-watchdog==0.8.3
-
-pytest==3.2.3
-pytest-mpl==0.9

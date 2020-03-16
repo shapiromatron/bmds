@@ -9,7 +9,7 @@ installing the scientific python stack on Windows, and BMDS on Mac/Linux.
 Installing on Windows
 ~~~~~~~~~~~~~~~~~~~~~
 
-Requires Python 3.5+. When installing on windows, using Anaconda_ is recommended for simplicity,
+Requires Python 3.6+. When installing on windows, using Anaconda_ is recommended for simplicity,
 but using a standard install within Python virtual environment will also work.
 
 .. _Anaconda: https://www.continuum.io/
@@ -47,8 +47,7 @@ To install a development version, first checkout from git::
 Change paths to the newly created ``bmds`` folder. Then, preferably in a
 python virtual environment, run the command::
 
-    pip install -r requirements.txt
-    pip install -e .
+    pip install -e .[dev,test]
 
 Tests are written using `pytest`_. To run all tests::
 
