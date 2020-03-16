@@ -74,7 +74,6 @@ class Continuous(BaseModel):
 
 
 class Exponential(Continuous):
-
     def get_dll_default_options(self) -> types.BMDS_C_Options_t:
         options = super().get_dll_default_options()
         options.degree = ctypes.c_int(self.degree)
@@ -92,7 +91,9 @@ class ExponentialM2(Exponential):
         return [
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
+            types.PRIOR(
+                type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18
+            ),  # for variance?
         ]
 
 
@@ -108,7 +109,9 @@ class ExponentialM3(Exponential):
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
+            types.PRIOR(
+                type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18
+            ),  # for variance?
         ]
 
 
@@ -125,7 +128,9 @@ class ExponentialM4(Exponential):
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
+            types.PRIOR(
+                type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18
+            ),  # for variance?
         ]
 
 
@@ -143,7 +148,9 @@ class ExponentialM5(Exponential):
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
             types.PRIOR(type=0, initialValue=1.5, stdDev=0.2501, minValue=1e8, maxValue=18),
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),  # for variance?
+            types.PRIOR(
+                type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18
+            ),  # for variance?
         ]
 
 
@@ -159,7 +166,7 @@ class Power(Continuous):
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=-5, stdDev=0.5, minValue=-18, maxValue=18),
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
+            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18),
         ]
 
 
@@ -200,10 +207,12 @@ class Polynomial(Continuous):
         priors = [
             types.PRIOR(type=0, initialValue=0, stdDev=2, minValue=-18, maxValue=18),
         ]
-        priors.extend([
-            types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
-            for degree in range(self.degree)
-        ])
+        priors.extend(
+            [
+                types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
+                for degree in range(self.degree)
+            ]
+        )
         return priors
 
     def get_dll_default_options(self) -> types.BMDS_C_Options_t:

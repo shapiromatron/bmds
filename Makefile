@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build lint format docs servedocs release dist
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -31,7 +31,6 @@ dev: ## Start developer environment
 
 clean: clean-build clean-pyc clean-test ## remove all build, test and Python artifacts
 
-
 clean-build: ## remove build artifacts
 	rm -rf build/
 	rm -rf dist/
@@ -55,9 +54,6 @@ lint:  ## Check for python formatting issues via black & flake8
 format:  ## Modify python code using black & show flake8 issues
 	@black . && flake8 .
 
-lint: ## check style with flake8
-	flake8 bmds tests
-
 test:
 	# This runs all of the tests.
 
@@ -70,10 +66,7 @@ test:
 	# To generate baseline matplotlib images:
 	#   $ py.test --mpl-generate-path=tests/resources
 	#
-	py.test tests
-
-test-all: ## run tests on every Python version with tox
-	tox
+	py.test
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs clean

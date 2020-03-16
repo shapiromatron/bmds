@@ -14,12 +14,13 @@ class DichotomousResult:
     """
     Only saves state on model results (model + dataset).
     """
+
     def __init__(self, data: Dict):
         self.data = data
         self._str = None
 
     @classmethod
-    def from_execution(cls, response_code: int, result: types.BMD_ANAL) -> 'DichotomousResult':
+    def from_execution(cls, response_code: int, result: types.BMD_ANAL) -> "DichotomousResult":
         data = dict(
             response_code=response_code,
             map=result.MAP,
@@ -29,12 +30,12 @@ class DichotomousResult:
             aic=result.AIC,
             bic=result.BIC_Equiv,
             num_parms=result.nparms,
-            cdf=np.array(result.aCDF[:result.nCDF])
+            cdf=np.array(result.aCDF[: result.nCDF]),
         )
         return cls(data=data)
 
     @classmethod
-    def deserialize(cls, json_str: str) -> 'DichotomousResult':
+    def deserialize(cls, json_str: str) -> "DichotomousResult":
         # TODO - implement
         return cls(data=json.loads(json_str))
 
@@ -95,7 +96,7 @@ class Dichotomous(BaseModel):
 
 class Logistic(Dichotomous):
     model_id = types.DModelID_t.eLogistic
-    param_names = ('a', 'b')
+    param_names = ("a", "b")
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -109,7 +110,7 @@ class Logistic(Dichotomous):
 
 class LogLogistic(Dichotomous):
     model_id = types.DModelID_t.eLogLogistic
-    param_names = ('a', 'b', 'c')
+    param_names = ("a", "b", "c")
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -214,10 +215,12 @@ class Multistage(Dichotomous):
             types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=100),
         ]
         if self.degree > 2:
-            priors.extend([
-                types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=1e4)
-                for degree in range(2, self.degree)
-            ])
+            priors.extend(
+                [
+                    types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=1e4)
+                    for degree in range(2, self.degree)
+                ]
+            )
         return priors
 
     def get_dll_default_options(self) -> Tuple[types.BMDS_D_Opts1_t, types.BMDS_D_Opts2_t]:

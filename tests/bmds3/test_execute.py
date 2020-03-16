@@ -3,7 +3,12 @@ from pathlib import Path
 import pytest
 
 from bmds.datasets import DichotomousDataset, ContinuousDataset
-# from bmds.bmds3.models import dichotomous, continuous
+
+# todo - remove try/catch
+try:
+    from bmds.bmds3.models import dichotomous, continuous
+except ImportError:
+    pass
 
 
 @pytest.mark.skip(reason="todo - add back")
@@ -30,14 +35,7 @@ def test_bmds3_dichotomous():
 
 def _print_debug(name: str):
     print("-------------------------------------------------------")
-    print(
-        "\n".join(
-            Path(rf"~\dev\bmds\{name}")
-            .resolve()
-            .read_text()
-            .split("\n")[:30]
-        )
-    )
+    print("\n".join(Path(rf"~\dev\bmds\{name}").resolve().read_text().split("\n")[:30]))
 
 
 @pytest.mark.skip(reason="todo - add back")

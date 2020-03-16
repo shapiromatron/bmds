@@ -23,19 +23,19 @@ class Dataset:
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def as_dfile(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def to_dict(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def plot(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def drop_dose(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     @property
     def num_dose_groups(self):
@@ -437,10 +437,12 @@ class ContinuousDataset(Dataset):
 
     def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
         num_dg = len(self.doses)
-        dataset = (types.BMDSInputData_t * num_dg)(*[
-            types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
-            for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
-        ])
+        dataset = (types.BMDSInputData_t * num_dg)(
+            *[
+                types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
+                for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
+            ]
+        )
 
         deviance = types.ContinuousDeviance_t()
         deviance.llRows = (types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)()

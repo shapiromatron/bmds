@@ -8,7 +8,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6]
         os: ["ubuntu-18.04", "windows-2019"]
 
     steps:
@@ -21,9 +21,12 @@ jobs:
         run: |
           pip install -U pip
           pip install -e .[test]
+      - name: Check linting
+        run: |
+          make lint
       - name: Test with pytest
         env:
           BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
         run: |
-          py.test
+          make test

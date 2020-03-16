@@ -25,7 +25,10 @@ class BMDS_C_Options_t(ctypes.Structure):
         ("background", ctypes.c_longdouble),
         ("tailProb", ctypes.c_longdouble),  # Valid only for hybrid bmr type
         ("bmrType", ctypes.c_int),
-        ("degree", ctypes.c_int),  # Valid for polynomial type models; for exponential, identifies the submodel
+        (
+            "degree",
+            ctypes.c_int,
+        ),  # Valid for polynomial type models; for exponential, identifies the submodel
         ("adverseDirection", ctypes.c_int),  # Direction of adversity: 0=auto, 1=up, -1=down
         ("restriction", ctypes.c_int),  # Restriction on parameters for certain models
         ("varType", ctypes.c_int),  # VarType_t
@@ -240,7 +243,7 @@ class BMD_C_ANAL(ctypes.Structure):
         ("ll_const", ctypes.c_double),  # LL "additive" constant term
         (
             "aCDF",
-            ctypes.POINTER(ctypes.c_double)
+            ctypes.POINTER(ctypes.c_double),
         ),  # Array of cumulative density function values for BMD
         ("nCDF", ctypes.c_int),  # Requested number of aCDF elements to return
         ("nparms", ctypes.c_int),
@@ -248,11 +251,13 @@ class BMD_C_ANAL(ctypes.Structure):
     ]
 
     def __str__(self):
-        return dedent(f'''\
+        return dedent(
+            f"""\
         model_id: {self.model_id[0].decode('utf8')} nparms: {self.nparms}
         BMDL: {self.BMDL:.3f}  BMD: {self.BMD:.3f} BMDU: {self.BMDU:.3f}
         AIC: {self.AIC:.3f} BIC: {self.BIC_Equiv:.3f}
-        ''')
+        """
+        )
 
 
 class PRIOR(ctypes.Structure):

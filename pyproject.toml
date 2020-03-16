@@ -1,15 +1,15 @@
 [tool.black]
 line-length = 98
-py36 = true
+target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'
 exclude = '''
 /(
     \.git
   | \.tox
-  | \.venv
   | _build
   | bin
   | docs
   | notebooks
+  | venv
 )/
 '''

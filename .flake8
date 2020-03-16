@@ -3,10 +3,14 @@ max-line-length = 98
 ignore =
   E203
   E266
+  E501
+  W503
 exclude =
   .git,
   .tox,
   __pycache__,
   bin,
+  build,
   docs,
-  notebooks
+  notebooks,
+  venv

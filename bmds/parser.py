@@ -197,7 +197,7 @@ class OutputParser(object):
             if m:
                 try:
                     self.output[search] = float(m.group(1))
-                except:
+                except Exception:
                     self.output[search] = m.group(1)
             else:
                 self.output[search] = -999
@@ -243,7 +243,7 @@ class OutputParser(object):
         for val in cw:
             try:
                 self.output[cw[val]] = float(m.group(val))
-            except:
+            except Exception:
                 self.output[cw[val]] = -999
 
     def _lbl_parameter(self, outs, i):
@@ -256,7 +256,7 @@ class OutputParser(object):
             for j in range(1, len(vals)):
                 try:
                     self.output["parameters"][vals[0]][cw[j]] = float(vals[j])
-                except:
+                except Exception:
                     self.output["parameters"][vals[0]][cw[j]] = vals[j]
             i += 1
 
@@ -268,7 +268,7 @@ class OutputParser(object):
             for j in range(len(vals)):
                 try:
                     self.output[fit_tbl[j]].append(float(vals[j]))
-                except:
+                except Exception:
                     self.output[fit_tbl[j]].append(vals[j])
             i += 1
 
@@ -309,7 +309,7 @@ class OutputParser(object):
             else:
                 try:
                     self.output["p_value" + pvalue] = float(vals[4])
-                except:
+                except Exception:
                     if vals[4] == "<.0001":
                         self.output["p_value" + pvalue] = "<0.0001"
                     else:
@@ -329,6 +329,6 @@ class OutputParser(object):
             if vals[0] in field:
                 try:
                     self.output["AIC"] = float(vals[3])
-                except:
+                except Exception:
                     self.output["AIC"] = vals[3]
             i += 1

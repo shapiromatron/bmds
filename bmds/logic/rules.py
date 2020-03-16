@@ -126,7 +126,7 @@ class ShouldBeLessThan(Rule):
     msg = ""  # w/ arguments for value and threshold
 
     def get_value(self, dataset, output):
-        raise NotImplemented("Requires implementation")
+        raise NotImplementedError("Requires implementation")
 
     def apply_rule(self, dataset, output):
         val = self.get_value(dataset, output)
