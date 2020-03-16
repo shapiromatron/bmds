@@ -179,12 +179,15 @@ class BMDS(object):
         if not drop_doses:
             return
 
-        while self.recommended_model is None and self.dataset.num_dose_groups > 3:
+        while (
+            self.recommended_model is None
+            and self.dataset.num_dose_groups > self.dataset.MINIMUM_DOSE_GROUPS
+        ):
             self.doses_dropped_sessions[self.doses_dropped] = self.clone()
             self.dataset.drop_dose()
+            self.doses_dropped += 1
             self.execute()
             self.recommend()
-            self.doses_dropped += 1
 
     @staticmethod
     def _df_ordered_dict(include_io=True):

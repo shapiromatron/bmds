@@ -76,6 +76,7 @@ class DichotomousDataset(Dataset):
     """
 
     _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
 
     def __init__(self, doses, ns, incidences, **kwargs):
         self.doses = doses
@@ -102,8 +103,10 @@ class DichotomousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     def drop_dose(self):
         """
@@ -263,6 +266,8 @@ class DichotomousCancerDataset(DichotomousDataset):
         )
     """
 
+    MINIMUM_DOSE_GROUPS = 2
+
     def _validate(self):
         length = len(self.doses)
         if not all(len(lst) == length for lst in [self.doses, self.ns, self.incidences]):
@@ -271,8 +276,10 @@ class DichotomousCancerDataset(DichotomousDataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 2:
-            raise ValueError("Must have 2 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
 
 class ContinuousDataset(Dataset):
@@ -294,6 +301,7 @@ class ContinuousDataset(Dataset):
     """
 
     _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
 
     def __init__(self, doses, ns, means, stdevs, **kwargs):
         self.doses = doses
@@ -320,8 +328,10 @@ class ContinuousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     @property
     def is_increasing(self):
@@ -513,8 +523,10 @@ class ContinuousIndividualDataset(ContinuousDataset):
         if not all(len(lst) == length for lst in [self.individual_doses, self.responses]):
             raise ValueError("All input lists must be same length")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more doses after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     def set_summary_data(self):
         doses = list(set(self.individual_doses))
