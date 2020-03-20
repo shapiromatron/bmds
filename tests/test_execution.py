@@ -392,3 +392,20 @@ def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     assert session.recommended_model_index == 0
     assert session.doses_dropped == 1
     assert len(session.dataset.ns) == len(session.original_dataset.ns) - 1
+
+
+def test_large_dataset():
+    # N is so large that the residual table cannot be parsed correctly
+    dataset = bmds.ContinuousDataset(
+        doses=[0, 1, 10, 50, 100],
+        ns=[1244339, 39153, 58064, 58307, 56613],
+        means=[156.70, 159.00, 156.07, 161.71, 159.78],
+        stdevs=[72.46, 74.47, 73.60, 84.24, 81.89],
+    )
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=dataset)
+    session.add_model(bmds.constants.M_Power)
+
+    with pytest.raises(ValueError) as err:
+        session.execute_and_recommend(drop_doses=True)
+
+    assert "Fit table could not be parsed" in str(err)

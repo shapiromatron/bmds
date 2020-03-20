@@ -56,7 +56,7 @@ format:  ## Modify python code using black & show flake8 issues
 
 test:
 	# This runs all of the tests.
-
+	#
 	# To run an individual test, use the -k flag to grep for matching:
 	# 	$ py.test -k test_monkey_has_tail
 	#

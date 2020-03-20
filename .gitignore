@@ -29,7 +29,6 @@ log.txt
 
 # dev settings
 .env
-Pipfile.lock
 .vscode
 
 venv/
