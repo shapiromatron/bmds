@@ -4,8 +4,12 @@ BMDS Python interface
 .. image:: https://img.shields.io/pypi/v/bmds.svg
         :target: https://pypi.python.org/pypi/bmds
 
-.. image:: https://github.com/shapiromatron/bmds/workflows/CI/badge.svg
-        :target: https://github.com/shapiromatron/bmds/actions
+.. image:: https://img.shields.io/pypi/wheel/bmds.svg
+    :target: https://pypi.python.org/pypi/bmds/
+    :alt: Wheel Status
+
+.. image:: https://ci.appveyor.com/api/projects/status/9vuiyl71io1xu8h7?svg=true
+        :target: https://ci.appveyor.com/project/shapiromatron/bmds
 
 .. image:: https://readthedocs.org/projects/bmds/badge/?version=latest
         :target: https://bmds.readthedocs.io/en/latest/?badge=latest
