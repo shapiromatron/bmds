@@ -1,0 +1,78 @@
+interactions:
+- request:
+    body: '{"inputs": [{"bmds_version": "BMDS260", "model_name": "Multistage", "dfile":
+      "Multistage\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n4
+      2\n500 1e-08 1e-08 0 1 1 0 0\n0.1 0 0.95\n-9999 -9999 -9999\n0\n-9999 -9999
+      -9999\nDose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000
+      3 47\n29.750000 14 35"}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '335'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.23.0
+      authorization:
+      - DUMMY
+    method: POST
+    uri: http://bmds-python.com/api/dfile/
+  response:
+    body:
+      string: '[{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Multistage Model. (Version: 3.4;  Date: 05/02/2014) \n  \t  Input
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-loft91c2.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-loft91c2.plt\n \t\t\t\t\t\t\tMon Mar
+        30 21:11:17 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the probability function is: \n\n   P[response] = background
+        + (1-background)*[1-EXP(\n                 -beta1*dose^1-beta2*dose^2)]\n\n   The
+        parameter betas are restricted to be positive\n\n\n   Dependent variable =
+        Incidence\n   Independent variable = Dose\n\n Total number of observations
+        = 4\n Total number of records with missing values = 0\n Total number of parameters
+        in model = 3\n Total number of specified parameters = 0\n Degree of polynomial
+        = 2\n\n\n Maximum number of iterations = 500\n Relative Function Convergence
+        has been set to: 1e-008\n Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                     Background =     0.045456\n                        Beta(1)
+        =            0\n                        Beta(2) =  0.000327668\n\n\n           Asymptotic
+        Correlation Matrix of Parameter Estimates\n\n           ( *** The model parameter(s)  -Beta(1)   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n             Background      Beta(2)\n\nBackground            1        -0.24\n\n   Beta(2)        -0.24            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n     Background        0.0486991        0.0169764            0.015426           0.0819722\n        Beta(1)                0               NA\n        Beta(2)      0.000323006      0.000104494         0.000118202          0.00052781\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n                        Analysis
+        of Deviance Table\n\n       Model      Log(likelihood)  # Param''s  Deviance  Test
+        d.f.   P-value\n     Full model        -63.9149         4\n   Fitted model        -64.7238         2       1.61789      2          0.4453\n  Reduced
+        model        -74.0195         1       20.2092      3       0.0001536\n\n           AIC:         133.448\n\n\n                                  Goodness  of  Fit
+        \n                                                                 Scaled\n     Dose     Est._Prob.    Expected    Observed     Size       Residual\n  ------------------------------------------------------------------------\n    0.0000     0.0487         3.652     5.000      75.000        0.723\n    1.9600     0.0499         2.444     1.000      49.000       -0.948\n    5.6900     0.0586         2.930     3.000      50.000        0.042\n   29.7500     0.2852        13.977    14.000      49.000        0.007\n\n
+        Chi^2 = 1.42      d.f. = 2        P-value = 0.4910\n\n\n   Benchmark Dose
+        Computation\n\nSpecified effect =            0.1\n\nRisk Type        =      Extra
+        risk \n\nConfidence level =           0.95\n\n             BMD =        18.0607\n\n            BMDL
+        =        9.19396\n\n            BMDU =        24.6612\n\nTaken together, (9.19396,
+        24.6612) is a 90     % two-sided confidence\ninterval for the BMD\n\n","stdout":"","stderr":""}]'
+    headers:
+      Allow:
+      - POST, OPTIONS
+      Content-Length:
+      - '3733'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 30 Mar 2020 21:11:17 GMT
+      Server:
+      - Cheroot/6.3.3
+      Vary:
+      - Accept
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: OK
+version: 1

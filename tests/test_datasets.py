@@ -177,6 +177,7 @@ def test_anova(anova_dataset, bad_anova_dataset):
     assert report == expected
 
 
+@pytest.mark.vcr()
 def test_correct_variance_model(cdataset):
     # Check that the correct variance model is selected for dataset
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)

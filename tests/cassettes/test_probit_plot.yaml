@@ -1,0 +1,75 @@
+interactions:
+- request:
+    body: '{"inputs": [{"bmds_version": "BMDS240", "model_name": "Probit", "dfile":
+      "Probit\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n4\n500
+      1e-08 1e-08 0 0 0 1 0 0\n0.1 0 0.95\n-9999 -9999 -9999\n0\n-9999 -9999 -9999\nDose
+      Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47\n29.750000
+      14 35"}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '327'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.23.0
+      authorization:
+      - DUMMY
+    method: POST
+    uri: http://bmds-python.com/api/dfile/
+  response:
+    body:
+      string: '[{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Probit Model. (Version: 3.3;  Date: 2/28/2013) \n  \t  Input Data
+        File: C:\\Windows\\TEMP\\bmds-dfile-y8c_t8q4.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-y8c_t8q4.plt\n \t\t\t\t\t\t\tMon Mar
+        30 21:11:20 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the probability function is: \n\n   P[response] = CumNorm(Intercept+Slope*Dose),\n\n   where
+        CumNorm(.) is the cumulative normal distribution function\n\n\n   Dependent
+        variable = Incidence\n   Independent variable = Dose\n   Slope parameter is
+        not restricted\n\n   Total number of observations = 4\n   Total number of
+        records with missing values = 0\n   Maximum number of iterations = 500\n   Relative
+        Function Convergence has been set to: 1e-008\n   Parameter Convergence has
+        been set to: 1e-008\n\n\n\n                  Default Initial (and Specified)
+        Parameter Values  \n                     background =            0   Specified\n                      intercept
+        =     -1.72758\n                          slope =    0.0382105\n\n\n           Asymptotic
+        Correlation Matrix of Parameter Estimates\n\n           ( *** The model parameter(s)  -background   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n              intercept        slope\n\n
+        intercept            1        -0.71\n\n     slope        -0.71            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n      intercept          -1.7053         0.171535             -2.0415             -1.3691\n          slope        0.0378394       0.00894498           0.0203076           0.0553712\n\n\n\n                        Analysis
+        of Deviance Table\n\n       Model      Log(likelihood)  # Param''s  Deviance  Test
+        d.f.   P-value\n     Full model        -63.9149         4\n   Fitted model        -64.9599         2       2.09003      2          0.3517\n  Reduced
+        model        -74.0195         1       20.2092      3       0.0001536\n\n           AIC:          133.92\n\n\n                                  Goodness  of  Fit
+        \n                                                                 Scaled\n     Dose     Est._Prob.    Expected    Observed     Size       Residual\n  ------------------------------------------------------------------------\n    0.0000     0.0441         3.305     5.000          75        0.953\n    1.9600     0.0514         2.520     1.000          49       -0.983\n    5.6900     0.0681         3.406     3.000          50       -0.228\n   29.7500     0.2811        13.774    14.000          49        0.072\n\n
+        Chi^2 = 1.93      d.f. = 2        P-value = 0.3805\n\n\n   Benchmark Dose
+        Computation\n\nSpecified effect =            0.1\n\nRisk Type        =      Extra
+        risk \n\nConfidence level =           0.95\n\n             BMD =        16.4765\n\n            BMDL
+        =        12.8511\n\n","stdout":"","stderr":""}]'
+    headers:
+      Allow:
+      - POST, OPTIONS
+      Content-Length:
+      - '3334'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 30 Mar 2020 21:11:20 GMT
+      Server:
+      - Cheroot/6.3.3
+      Vary:
+      - Accept
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: OK
+version: 1

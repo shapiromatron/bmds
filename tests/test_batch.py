@@ -1,10 +1,12 @@
 import numpy as np
+import pytest
 
 import bmds
 
 from .fixtures import *  # noqa
 
 
+@pytest.mark.vcr()
 def test_batch(cdataset, ddataset):
 
     batch = bmds.SessionBatch()
