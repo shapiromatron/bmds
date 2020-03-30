@@ -6,8 +6,8 @@ import numpy as np
 
 from ...datasets import DichotomousDataset
 from ...utils import get_dll_func
-from .base import BaseModel
 from .. import types
+from .base import BaseModel
 
 
 class DichotomousResult:

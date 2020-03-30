@@ -1,8 +1,7 @@
 import ctypes
-from typing import Union
 from enum import Enum
 from textwrap import dedent
-
+from typing import Union
 
 BMDS_BLANK_VALUE = -9999
 NUM_PRIOR_COLS = 5

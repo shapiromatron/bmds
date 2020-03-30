@@ -1,5 +1,6 @@
-import bmds
 import os
+
+import bmds
 
 from .fixtures import *  # noqa
 

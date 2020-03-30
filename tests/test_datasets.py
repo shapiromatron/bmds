@@ -1,7 +1,7 @@
+import numpy as np
 import pytest
 
 import bmds
-import numpy as np
 
 from .fixtures import *  # noqa
 
@@ -52,9 +52,7 @@ def test_dfile_outputs():
     # check dichotomous
     ds = bmds.DichotomousDataset(doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
     dfile = ds.as_dfile()
-    expected = (
-        "Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3"  # noqa
-    )
+    expected = "Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3"  # noqa
     assert dfile == expected
 
     # check continuous

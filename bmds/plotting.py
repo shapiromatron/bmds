@@ -1,7 +1,7 @@
 import matplotlib as mpl
+import matplotlib.pyplot as plt  # noqa
 
 mpl.use("Agg")  # prevent matplotlib framework issues
-import matplotlib.pyplot as plt  # noqa
 
 __all__ = []
 

@@ -1,12 +1,13 @@
-import numpy as np
-import os
 import inspect
+import os
+
+import numpy as np
+import pytest
+from simple_settings import settings
+from simple_settings.utils import settings_stub
 
 import bmds
 from bmds import models
-from simple_settings import settings
-from simple_settings.utils import settings_stub
-import pytest
 
 from .fixtures import *  # noqa
 
@@ -241,9 +242,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
 
         # assert that the execution_halted flag is appropriately set
         halted = [model.execution_halted for model in session.models]
-        str_halted = (
-            "[False, False, False, False, False, False, False, True, False, False]"  # noqa
-        )
+        str_halted = "[False, False, False, False, False, False, False, True, False, False]"  # noqa
         assert halted[7] is True and session.models[7].name == "Gamma"
         assert str(halted) == str_halted
         total_time = session.models[7].execution_duration

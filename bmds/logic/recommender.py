@@ -1,8 +1,8 @@
-from .. import constants
-from . import rules
-
 import pandas as pd
 from simple_settings import settings
+
+from .. import constants
+from . import rules
 
 
 class Recommender(object):

@@ -1,13 +1,13 @@
-from collections import namedtuple, OrderedDict
-from io import BytesIO
-import docx
-from docx.shared import Inches
-import numpy as np
 import os
 import re
+from collections import OrderedDict, namedtuple
+from io import BytesIO
+
+import docx
+import numpy as np
+from docx.shared import Inches
 
 from . import constants, datasets
-
 
 ReporterStyleGuide = namedtuple(
     "ReporterStyleGuide",

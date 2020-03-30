@@ -1,13 +1,11 @@
 import ctypes
 import logging
 import os
-from pathlib import Path
 import platform
 import sys
 import tempfile
-
+from pathlib import Path
 from typing import Callable
-
 
 logger = logging.getLogger(__name__)
 

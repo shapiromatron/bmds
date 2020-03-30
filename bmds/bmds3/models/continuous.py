@@ -3,8 +3,8 @@ from typing import Callable, List, Optional, Tuple
 
 from ...datasets import ContinuousDataset
 from ...utils import get_dll_func
-from .base import BaseModel
 from .. import types
+from .base import BaseModel
 
 
 class ContinuousResult:

@@ -1,8 +1,9 @@
 import os
-from simple_settings import settings
 import subprocess
 
-from . import utils, session
+from simple_settings import settings
+
+from . import session, utils
 from .models.base import RunStatus
 
 

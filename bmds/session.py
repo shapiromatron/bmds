@@ -1,13 +1,13 @@
 import asyncio
-from copy import deepcopy
-from collections import OrderedDict
 import os
+import sys
+from collections import OrderedDict
+from copy import deepcopy
+
 import pandas as pd
 from simple_settings import settings
-import sys
 
-from . import __version__, constants, logic, models, utils, reporter
-
+from . import __version__, constants, logic, models, reporter, utils
 
 __all__ = ("BMDS",)
 

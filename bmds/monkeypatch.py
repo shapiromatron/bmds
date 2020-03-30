@@ -13,17 +13,17 @@ the BMDS and return the result .OUT files in a JSON format.
 We use a https://bmds-server.readthedocs.io/en/master/.
 """
 
-from datetime import datetime
 import json
 import logging
 import platform
+from datetime import datetime
+
 import requests
 from simple_settings import settings
 
-from .session import BMDS
-from .models.base import BMDModel, RunStatus
 from .exceptions import RemoteBMDSExcecutionException
-
+from .models.base import BMDModel, RunStatus
+from .session import BMDS
 
 logger = logging.getLogger(__name__)
 __all__ = []
@@ -43,7 +43,11 @@ def _get_payload(models):
     return json.dumps(
         dict(
             inputs=[
-                dict(bmds_version=model.bmds_version_dir, model_name=model.model_name, dfile=model.as_dfile(),)
+                dict(
+                    bmds_version=model.bmds_version_dir,
+                    model_name=model.model_name,
+                    dfile=model.as_dfile(),
+                )
                 for model in models
             ]
         )

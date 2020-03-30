@@ -3,13 +3,12 @@ from collections import defaultdict
 from typing import Tuple
 
 import numpy as np
-from simple_settings import settings
 from scipy import stats
+from simple_settings import settings
 
 from . import plotting
 from .anova import AnovaTests
 from .bmds3 import types
-
 
 __all__ = [
     "DichotomousDataset",
@@ -46,9 +45,7 @@ class Dataset:
 
     def _get_response_units_text(self):
         return (
-            " ({})".format(self.kwargs["response_units"])
-            if "response_units" in self.kwargs
-            else ""
+            " ({})".format(self.kwargs["response_units"]) if "response_units" in self.kwargs else ""
         )
 
     def _get_dataset_name(self):
@@ -173,12 +170,12 @@ class DichotomousDataset(Dataset):
         p = incidence / float(n)
         z = stats.norm.ppf(0.975)
         q = 1.0 - p
-        ll = (
-            (2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))
-        ) / (2 * (n + 2 * z))
-        ul = (
-            (2 * n * p + 2 * z + 1) + z * np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))
-        ) / (2 * (n + 2 * z))
+        ll = ((2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))) / (
+            2 * (n + 2 * z)
+        )
+        ul = ((2 * n * p + 2 * z + 1) + z * np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (
+            2 * (n + 2 * z)
+        )
         return p, ll, ul
 
     def _set_plot_data(self):
@@ -358,9 +355,7 @@ class ContinuousDataset(Dataset):
         for i, v in enumerate(self.doses):
             if i >= self.num_dose_groups:
                 continue
-            rows.append(
-                "%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i])
-            )
+            rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
         return "\n".join(rows)
 
     @property
@@ -377,9 +372,7 @@ class ContinuousDataset(Dataset):
             (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
                 self.num_dose_groups, self.ns, self.means, self.variances
             )
-            tests = AnovaTests.get_anova_c3_tests(
-                num_params, self.num_dose_groups, A1, A2, A3, AR
-            )
+            tests = AnovaTests.get_anova_c3_tests(num_params, self.num_dose_groups, A1, A2, A3, AR)
         except ValueError:
             tests = None
         return tests

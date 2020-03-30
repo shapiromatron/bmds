@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import textwrap
 
+import pytest
+
 import bmds
 from bmds.logic import rules
-
-import pytest
 
 from .fixtures import *  # noqa
 

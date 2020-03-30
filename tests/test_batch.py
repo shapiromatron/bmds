@@ -1,5 +1,6 @@
-import bmds
 import numpy as np
+
+import bmds
 
 from .fixtures import *  # noqa
 

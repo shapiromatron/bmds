@@ -1,9 +1,10 @@
-from copy import deepcopy
 import os
+from copy import deepcopy
+
 import numpy as np
 
-from .base import BMDModel, DefaultParams
 from .. import constants
+from .base import BMDModel, DefaultParams
 
 
 class Continuous(BMDModel):
@@ -24,9 +25,7 @@ class Continuous(BMDModel):
         return 0 if (anova is None or anova[1].TEST < 0.1) else 1
 
     def get_variance_model_name(self):
-        return (
-            "Modeled variance" if self.values["constant_variance"] == 0 else "Constant variance"
-        )
+        return "Modeled variance" if self.values["constant_variance"] == 0 else "Constant variance"
 
 
 # POLYNOMIAL
