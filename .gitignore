@@ -1,36 +1,17 @@
-# ipython/jupyter notebooks
-.ipynb_checkpoints
-
-# Compiled python modules.
-*.py[cod]
-
-# Setuptools distribution folder.
-/dist/
-/build/
-
-# Python egg metadata, regenerated from source files by setuptools.
-/*.egg-info
-/*.eggs
-
-# py.test cache
-.cache/*
-.tox
-
-# docs
-_build
-docs/_autosummary
-
-# testing notebooks
-notebooks/*testing.ipynb
-
-# log files created by bmds
-*.log*
-log.txt
-
-# dev settings
-.env
-.vscode
-
-venv/
-pip-wheel-metadata/
+# paths
+*.egg-info/
+.cache/
+.ipynb_checkpoints/
 .mypy_cache/
+.pytest_cache/
+.tox/
+.vscode/
+build/
+dist/
+docs/_build/
+venv/
+
+# files
+*.log
+*.py[cod]
+.env

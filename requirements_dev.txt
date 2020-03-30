@@ -1,0 +1,17 @@
+# docs
+Sphinx==2.4.4
+watchdog==0.10.2
+
+# tests
+pytest==5.4.1
+pytest-mpl==0.11
+
+# lint and formatting tools
+black==19.10b0
+flake8-isort==2.9.1
+flake8==3.7.9
+isort==4.3.21
+mypy==0.770
+
+# install bmds in editable mode
+-e .

@@ -1,5 +1,5 @@
 import re
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 def get_version():
@@ -35,17 +35,8 @@ setup(
     author="Andy Shapiro",
     author_email="shapiromatron@gmail.com",
     license="MIT",
-    packages=find_packages(exclude=["tests"]),
+    packages=("bmds",),
     install_requires=requirements,
-    tests_require=["pytest-runner", "pytest", "pytest-mpl"],
-    # List additional groups of dependencies here
-    # (e.g. development dependencies).
-    # You can install these using the following syntax, for example:
-    # $ pip install -e .[dev,test]
-    extras_require={
-        "dev": ["wheel", "sphinx", "watchdog", "black==19.10b0", "flake8==3.7.9"],
-        "test": ["pytest", "pytest-runner", "pytest-mpl"],
-    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[
