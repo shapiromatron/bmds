@@ -20,7 +20,7 @@ interface. The toolkit is currently used in the following projects:
 - The Health Assessment Workspace Collaborative (`HAWC`_)
 - `BMDS server`_
 
-It requires Python3.5+.
+It requires Python3.6+.
 
 .. _`BMDS`: https://www.epa.gov/bmds
 .. _`HAWC`: https://hawcproject.org

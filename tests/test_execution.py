@@ -1,12 +1,12 @@
-import numpy as np
-import os
 import inspect
+import os
 
-import bmds
-from bmds import models
+import numpy as np
+import pytest
 from simple_settings import settings
 from simple_settings.utils import settings_stub
-import pytest
+
+import bmds
 
 from .fixtures import *  # noqa
 
@@ -22,6 +22,7 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
+@pytest.mark.vcr()
 def test_default_execution(cdataset, ddataset, cidataset):
     # All models execute given valid inputs
 
@@ -122,6 +123,7 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert np.isclose(actual, expected).all()
 
 
+@pytest.mark.vcr()
 def test_parameter_overrides(cdataset):
     # assert to overrides are used
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
@@ -147,6 +149,7 @@ def test_parameter_overrides(cdataset):
     assert model2.output["parameters"]["beta_3"]["estimate"] == 0.0
 
 
+@pytest.mark.vcr()
 def test_tiny_datasets():
     # Observation # < parameters # for Hill model.
     # Make sure this doesn't break execution or recommendation.
@@ -168,6 +171,7 @@ def test_tiny_datasets():
     assert session.recommended_model_index is None
 
 
+@pytest.mark.vcr()
 def test_continuous_restrictions(cdataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
@@ -190,6 +194,7 @@ def test_continuous_restrictions(cdataset):
     assert "Power parameter is not restricted" in hill2.outfile
 
 
+@pytest.mark.vcr()
 def test_dichotomous_restrictions(ddataset):
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
     for model in session.model_options:
@@ -220,6 +225,7 @@ def test_can_be_executed(bad_cdataset):
     assert model.can_be_executed is False
 
 
+@pytest.mark.vcr()
 def test_bad_datasets(bad_cdataset, bad_ddataset):
     # ensure library doesn't fail with a terrible dataset that should never
     # be executed in the first place (which causes BMDS to throw NaN)
@@ -230,7 +236,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.recommend()
     assert session.recommended_model_index is None
 
-    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=3):
+    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=1e-5):
         # works in later versions; fix to this version
         BMDSv2601 = bmds.BMDS.versions["BMDS2601"]
         session = BMDSv2601(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
@@ -241,9 +247,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
 
         # assert that the execution_halted flag is appropriately set
         halted = [model.execution_halted for model in session.models]
-        str_halted = (
-            "[False, False, False, False, False, False, False, True, False, False]"
-        )  # noqa
+        str_halted = "[False, False, False, False, False, False, False, True, False, False]"  # noqa
         assert halted[7] is True and session.models[7].name == "Gamma"
         assert str(halted) == str_halted
         total_time = session.models[7].execution_duration
@@ -251,137 +255,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
         assert np.isclose(total_time, timeout) or total_time > timeout
 
 
-@pytest.mark.skip(reason="timeout failure is unreliable")
-def test_timeout():
-    # confirm that timeout setting works as expected; slow dataset provided
-    # by CEBS team on 2017-11-12. Only slow in BMDS version 2.6; fixed in 2.7.
-
-    dataset = bmds.ContinuousIndividualDataset(
-        doses=[
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0.000316,
-            0.000316,
-            0.000316,
-            0.000316,
-            0.001,
-            0.001,
-            0.001,
-            0.001,
-            0.00316,
-            0.00316,
-            0.00316,
-            0.00316,
-            0.01,
-            0.01,
-            0.01,
-            0.01,
-            0.0316,
-            0.0316,
-            0.0316,
-            0.0316,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.316,
-            0.316,
-            0.316,
-            0.316,
-            1,
-            1,
-            1,
-            1,
-            3.16,
-            3.16,
-            3.16,
-            3.16,
-            10,
-            10,
-            10,
-            10,
-        ],
-        responses=[
-            2289000,
-            2047000,
-            2108000,
-            2148000,
-            2325000,
-            2014000,
-            2173000,
-            2261000,
-            2024000,
-            2272000,
-            1742000,
-            1970000,
-            1850000,
-            1030000,
-            2074000,
-            2159000,
-            2348000,
-            2270000,
-            2238000,
-            2082000,
-            1894000,
-            1829000,
-            2181000,
-            2044000,
-            2438000,
-            2264000,
-            2303000,
-            2316000,
-            2061000,
-            2165000,
-            2310000,
-            2294000,
-            2550000,
-            2076000,
-            2284000,
-            2249000,
-            2308000,
-            2096000,
-            2347000,
-            2340000,
-            2170000,
-            1916000,
-            2858000,
-            2448000,
-            2648000,
-            2226000,
-            1164000,
-            1283000,
-            1278000,
-            1577000,
-            40305,
-            36227,
-            27300,
-            21531,
-        ],
-    )
-
-    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=3):
-        model = models.Hill_217(dataset)
-        model.execute()
-        assert model.has_successfully_executed is False
-
-    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=10):
-        model = models.Hill_217(dataset)
-        model.execute()
-        assert model.has_successfully_executed is True
-
-
+@pytest.mark.vcr()
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     session = bmds.BMDS.latest_version(
         bmds.constants.DICHOTOMOUS, dataset=ddataset_requires_dose_drop
@@ -392,3 +266,21 @@ def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     assert session.recommended_model_index == 0
     assert session.doses_dropped == 1
     assert len(session.dataset.ns) == len(session.original_dataset.ns) - 1
+
+
+@pytest.mark.vcr()
+def test_large_dataset():
+    # N is so large that the residual table cannot be parsed correctly
+    dataset = bmds.ContinuousDataset(
+        doses=[0, 1, 10, 50, 100],
+        ns=[1244339, 39153, 58064, 58307, 56613],
+        means=[156.70, 159.00, 156.07, 161.71, 159.78],
+        stdevs=[72.46, 74.47, 73.60, 84.24, 81.89],
+    )
+    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=dataset)
+    session.add_model(bmds.constants.M_Power)
+
+    with pytest.raises(ValueError) as err:
+        session.execute_and_recommend(drop_doses=True)
+
+    assert "Fit table could not be parsed" in str(err)

@@ -1,10 +1,14 @@
+import ctypes
 from collections import defaultdict
+from typing import Tuple
+
 import numpy as np
-from simple_settings import settings
 from scipy import stats
+from simple_settings import settings
 
 from . import plotting
 from .anova import AnovaTests
+from .bmds3 import types
 
 __all__ = [
     "DichotomousDataset",
@@ -14,23 +18,23 @@ __all__ = [
 ]
 
 
-class Dataset(object):
+class Dataset:
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def as_dfile(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def to_dict(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def plot(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     def drop_dose(self):
-        raise NotImplemented("Abstract method; requires implementation")
+        raise NotImplementedError("Abstract method; requires implementation")
 
     @property
     def num_dose_groups(self):
@@ -41,13 +45,14 @@ class Dataset(object):
 
     def _get_response_units_text(self):
         return (
-            " ({})".format(self.kwargs["response_units"])
-            if "response_units" in self.kwargs
-            else ""
+            " ({})".format(self.kwargs["response_units"]) if "response_units" in self.kwargs else ""
         )
 
     def _get_dataset_name(self):
         return self.kwargs.get("dataset_name", "BMDS output results")
+
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        raise NotImplementedError("Requires implementation")
 
 
 class DichotomousDataset(Dataset):
@@ -68,6 +73,7 @@ class DichotomousDataset(Dataset):
     """
 
     _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
 
     def __init__(self, doses, ns, incidences, **kwargs):
         self.doses = doses
@@ -94,8 +100,10 @@ class DichotomousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     def drop_dose(self):
         """
@@ -161,13 +169,13 @@ class DichotomousDataset(Dataset):
         """
         p = incidence / float(n)
         z = stats.norm.ppf(0.975)
-        q = 1. - p
-        ll = (
-            (2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))
-        ) / (2 * (n + 2 * z))
-        ul = (
-            (2 * n * p + 2 * z + 1) + z * np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))
-        ) / (2 * (n + 2 * z))
+        q = 1.0 - p
+        ll = ((2 * n * p + 2 * z - 1) - z * np.sqrt(2 * z - (2 + 1 / n) + 4 * p * (n * q + 1))) / (
+            2 * (n + 2 * z)
+        )
+        ul = ((2 * n * p + 2 * z + 1) + z * np.sqrt(2 * z + (2 + 1 / n) + 4 * p * (n * q - 1))) / (
+            2 * (n + 2 * z)
+        )
         return p, ll, ul
 
     def _set_plot_data(self):
@@ -215,6 +223,28 @@ class DichotomousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        num_dg = len(self.doses)
+        datasets = (types.BMDSInputData_t * num_dg)(
+            *[
+                types.BMDSInputData_t(dose, n, incidence, 0.0)
+                for dose, n, incidence in zip(self.doses, self.ns, self.incidences)
+            ]
+        )
+
+        _dGoF_t = types.dGoF_t()
+        _dGoF_t.pzRow = (types.GoFRow_t * num_dg)()
+
+        analysis = types.BMD_ANAL()
+        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
+        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
+        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
+        analysis.deviance = (types.DichotomousDeviance_t * num_dg)()
+        analysis.gof = ctypes.pointer(_dGoF_t)
+        analysis.nCDF = types.CDF_TABLE_SIZE
+
+        return datasets, analysis
+
 
 class DichotomousCancerDataset(DichotomousDataset):
     """
@@ -233,6 +263,8 @@ class DichotomousCancerDataset(DichotomousDataset):
         )
     """
 
+    MINIMUM_DOSE_GROUPS = 2
+
     def _validate(self):
         length = len(self.doses)
         if not all(len(lst) == length for lst in [self.doses, self.ns, self.incidences]):
@@ -241,8 +273,10 @@ class DichotomousCancerDataset(DichotomousDataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 2:
-            raise ValueError("Must have 2 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
 
 class ContinuousDataset(Dataset):
@@ -264,6 +298,7 @@ class ContinuousDataset(Dataset):
     """
 
     _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
 
     def __init__(self, doses, ns, means, stdevs, **kwargs):
         self.doses = doses
@@ -290,13 +325,15 @@ class ContinuousDataset(Dataset):
         if length != len(set(self.doses)):
             raise ValueError("Doses are not unique")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more dose groups after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     @property
     def is_increasing(self):
         # increasing or decreasing with respect to control?
-        change = 0.
+        change = 0.0
         for i in range(1, len(self.means)):
             change += self.means[i] - self.means[0]
         return change >= 0
@@ -318,9 +355,7 @@ class ContinuousDataset(Dataset):
         for i, v in enumerate(self.doses):
             if i >= self.num_dose_groups:
                 continue
-            rows.append(
-                "%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i])
-            )
+            rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
         return "\n".join(rows)
 
     @property
@@ -337,9 +372,7 @@ class ContinuousDataset(Dataset):
             (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
                 self.num_dose_groups, self.ns, self.means, self.variances
             )
-            tests = AnovaTests.get_anova_c3_tests(
-                num_params, self.num_dose_groups, A1, A2, A3, AR
-            )
+            tests = AnovaTests.get_anova_c3_tests(num_params, self.num_dose_groups, A1, A2, A3, AR)
         except ValueError:
             tests = None
         return tests
@@ -405,6 +438,29 @@ class ContinuousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+        num_dg = len(self.doses)
+        dataset = (types.BMDSInputData_t * num_dg)(
+            *[
+                types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
+                for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
+            ]
+        )
+
+        deviance = types.ContinuousDeviance_t()
+        deviance.llRows = (types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)()
+        deviance.testRows = (types.TestRow_t * types.NUM_TESTS_OF_INTEREST)()
+
+        analysis = types.BMD_C_ANAL()
+        analysis.deviance = deviance
+        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
+        analysis.gofRow = (types.cGoFRow_t * num_dg)()
+        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
+        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
+        analysis.nCDF = types.CDF_TABLE_SIZE
+
+        return dataset, analysis
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
     """
@@ -460,8 +516,10 @@ class ContinuousIndividualDataset(ContinuousDataset):
         if not all(len(lst) == length for lst in [self.individual_doses, self.responses]):
             raise ValueError("All input lists must be same length")
 
-        if self.num_dose_groups < 3:
-            raise ValueError("Must have 3 or more doses after dropping doses")
+        if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
+            raise ValueError(
+                f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
+            )
 
     def set_summary_data(self):
         doses = list(set(self.individual_doses))

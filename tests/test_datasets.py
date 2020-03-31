@@ -1,7 +1,7 @@
+import numpy as np
 import pytest
 
 import bmds
-import numpy as np
 
 from .fixtures import *  # noqa
 
@@ -52,9 +52,7 @@ def test_dfile_outputs():
     # check dichotomous
     ds = bmds.DichotomousDataset(doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
     dfile = ds.as_dfile()
-    expected = (
-        "Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3"
-    )  # noqa
+    expected = "Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3"  # noqa
     assert dfile == expected
 
     # check continuous
@@ -133,6 +131,20 @@ def test_dose_drops(cidataset):
     with pytest.raises(ValueError):
         ddataset.drop_dose()
 
+    # assert you can drop to 2 dose-groups for dichotomous cancer
+    dcdataset = bmds.DichotomousCancerDataset(
+        doses=list(reversed([0, 1.96, 5.69, 29.75])),
+        ns=list(reversed([75, 49, 50, 49])),
+        incidences=list(reversed([5, 1, 3, 14])),
+    )
+    dcdataset.drop_dose()
+    dcdataset.drop_dose()
+    assert (
+        dcdataset.as_dfile() == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48"
+    )  # noqa
+    with pytest.raises(ValueError):
+        dcdataset.drop_dose()
+
     assert (
         cidataset.as_dfile()
         == "Dose Response\n0.000000 8.107900\n0.000000 9.306300\n0.000000 9.743100\n0.000000 9.781400\n0.000000 10.051700\n0.000000 10.613200\n0.000000 10.750900\n0.000000 11.056700\n0.100000 9.155600\n0.100000 9.682100\n0.100000 9.825600\n0.100000 10.209500\n0.100000 10.222200\n0.100000 12.038200\n1.000000 9.566100\n1.000000 9.705900\n1.000000 9.990500\n1.000000 10.271600\n1.000000 10.471000\n1.000000 11.060200\n10.000000 8.851400\n10.000000 10.010700\n10.000000 10.085400\n10.000000 10.568300\n10.000000 11.139400\n10.000000 11.487500\n100.000000 9.542700\n100.000000 9.721100\n100.000000 9.826700\n100.000000 10.023100\n100.000000 10.183300\n100.000000 10.868500\n300.000000 10.368000\n300.000000 10.517600\n300.000000 11.316800\n300.000000 12.002000\n300.000000 12.118600\n300.000000 12.636800\n500.000000 9.957200\n500.000000 10.134700\n500.000000 10.774300\n500.000000 11.057100\n500.000000 11.156400\n500.000000 12.036800"
@@ -165,6 +177,7 @@ def test_anova(anova_dataset, bad_anova_dataset):
     assert report == expected
 
 
+@pytest.mark.vcr()
 def test_correct_variance_model(cdataset):
     # Check that the correct variance model is selected for dataset
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)

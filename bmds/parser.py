@@ -197,7 +197,7 @@ class OutputParser(object):
             if m:
                 try:
                     self.output[search] = float(m.group(1))
-                except:
+                except Exception:
                     self.output[search] = m.group(1)
             else:
                 self.output[search] = -999
@@ -243,7 +243,7 @@ class OutputParser(object):
         for val in cw:
             try:
                 self.output[cw[val]] = float(m.group(val))
-            except:
+            except Exception:
                 self.output[cw[val]] = -999
 
     def _lbl_parameter(self, outs, i):
@@ -256,7 +256,7 @@ class OutputParser(object):
             for j in range(1, len(vals)):
                 try:
                     self.output["parameters"][vals[0]][cw[j]] = float(vals[j])
-                except:
+                except Exception:
                     self.output["parameters"][vals[0]][cw[j]] = vals[j]
             i += 1
 
@@ -265,33 +265,34 @@ class OutputParser(object):
         i += self.NUM_LINE_SKIPS_FIT[self.dtype]
         while i < len(outs) and len(outs[i]) > 1:
             vals = outs[i].split()
-            for j in range(len(vals)):
-                try:
-                    self.output[fit_tbl[j]].append(float(vals[j]))
-                except:
-                    self.output[fit_tbl[j]].append(vals[j])
+
+            if len(vals) != len(fit_tbl):
+                raise ValueError(f"Fit table could not be parsed; line {i}")
+
+            for idx, val in enumerate(vals):
+                self.output[fit_tbl[idx]].append(try_float(val))
+
             i += 1
 
     def _lbl_fit_exp(self, outs, i, table_name):
         # Line-by-line: find "Goodness  of  Fit" table - exponential - observed
         i += 2  # next line and dotted lines
         if table_name == "observed_summary":
-            tbl_names = (1, "fit_dose", "fit_size", "fit_observed", "fit_stdev")
-            rng = range(len(outs[i].split()))
+            tbl_names = ("fit_dose", "fit_size", "fit_observed", "fit_stdev")
         elif table_name == "observed_individual":
             tbl_names = ("fit_dose", "fit_observed")
-            rng = range(1, len(outs[i].split()))
         elif table_name == "estimated":
             tbl_names = ("fit_dose", "fit_estimated", "fit_est_stdev", "fit_residuals")  # noqa
-            rng = range(len(outs[i].split()))
 
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()
-            # defensive code; parsing can fail if there's not enough text between
-            # remove once BMDS 1.7 is released?
-            if len(vals) == len(tbl_names):
-                for j in rng:
-                    self.output[tbl_names[j]].append(try_float(vals[j]))
+
+            if len(vals) != len(tbl_names):
+                raise ValueError(f"Fit table could not be parsed; line {i}")
+
+            for idx, val in enumerate(vals):
+                self.output[tbl_names[idx]].append(try_float(val))
+
             i += 1
 
     def _lbl_pvalue(self, outs, i):
@@ -309,7 +310,7 @@ class OutputParser(object):
             else:
                 try:
                     self.output["p_value" + pvalue] = float(vals[4])
-                except:
+                except Exception:
                     if vals[4] == "<.0001":
                         self.output["p_value" + pvalue] = "<0.0001"
                     else:
@@ -329,6 +330,6 @@ class OutputParser(object):
             if vals[0] in field:
                 try:
                     self.output["AIC"] = float(vals[3])
-                except:
+                except Exception:
                     self.output["AIC"] = vals[3]
             i += 1

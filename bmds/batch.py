@@ -1,10 +1,11 @@
 import json
 import os
+
 import pandas as pd
 from six import string_types
 
-from .session import BMDS
 from .reporter import Reporter
+from .session import BMDS
 
 
 class SessionBatch(list):
@@ -104,10 +105,7 @@ class SessionBatch(list):
 
         """
         od = BMDS._df_ordered_dict(include_io)
-        [
-            session._add_to_to_ordered_dict(od, i, recommended_only)
-            for i, session in enumerate(self)
-        ]
+        [session._add_to_to_ordered_dict(od, i, recommended_only) for i, session in enumerate(self)]
         return pd.DataFrame(od)
 
     def to_csv(self, filename, delimiter=",", recommended_only=False, include_io=True):

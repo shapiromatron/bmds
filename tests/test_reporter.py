@@ -1,9 +1,13 @@
-import bmds
 import os
+
+import pytest
+
+import bmds
 
 from .fixtures import *  # noqa
 
 
+@pytest.mark.vcr()
 def test_reporter(cdataset, ddataset, cidataset):
     # Check that API works; if VIEW_REPORTS is in test environment then reports
     # are also written to disk for manual inspection.

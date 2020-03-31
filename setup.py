@@ -1,5 +1,6 @@
 import re
-from setuptools import setup, find_packages
+
+from setuptools import setup
 
 
 def get_version():
@@ -19,9 +20,9 @@ requirements = [
     "requests",
     "numpy",
     "pandas",
-    "python-docx>=0.8.6",
+    "python-docx",
     "openpyxl",
-    "matplotlib>=2.1.2",
+    "matplotlib",
     "scipy",
     "simple-settings",
 ]
@@ -35,17 +36,8 @@ setup(
     author="Andy Shapiro",
     author_email="shapiromatron@gmail.com",
     license="MIT",
-    packages=find_packages(exclude=["tests"]),
+    packages=("bmds",),
     install_requires=requirements,
-    tests_require=["pytest-runner", "pytest", "pytest-mpl"],
-    # List additional groups of dependencies here
-    # (e.g. development dependencies).
-    # You can install these using the following syntax, for example:
-    # $ pip install -e .[dev,test]
-    extras_require={
-        "dev": ["wheel", "sphinx", "watchdog"],
-        "test": ["pytest", "pytest-runner", "pytest-mpl"],
-    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -53,8 +45,8 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
 )

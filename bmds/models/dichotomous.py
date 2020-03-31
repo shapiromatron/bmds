@@ -1,9 +1,10 @@
 from copy import deepcopy
-import numpy as np
-from scipy.stats import norm, gamma
 
-from .base import BMDModel, DefaultParams
+import numpy as np
+from scipy.stats import gamma, norm
+
 from .. import constants
+from .base import BMDModel, DefaultParams
 
 
 class Dichotomous(BMDModel):

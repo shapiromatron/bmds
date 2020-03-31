@@ -46,9 +46,7 @@ class Rule(object):
 
     def _is_valid_number(self, val):
         # Ensure number is an int or float, not equal to special case -999.
-        return (
-            val is not None and val != -999 and (isinstance(val, int) or isinstance(val, float))
-        )
+        return val is not None and val != -999 and (isinstance(val, int) or isinstance(val, float))
 
 
 class NumericValueExists(Rule):
@@ -126,7 +124,7 @@ class ShouldBeLessThan(Rule):
     msg = ""  # w/ arguments for value and threshold
 
     def get_value(self, dataset, output):
-        raise NotImplemented("Requires implementation")
+        raise NotImplementedError("Requires implementation")
 
     def apply_rule(self, dataset, output):
         val = self.get_value(dataset, output)

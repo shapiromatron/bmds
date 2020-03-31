@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import json
 import os
 import sys
+from datetime import datetime
 
 import bmds
-
 
 HELP_TEXT = '''BMDS multiprocessor execution:
 ------------------------------

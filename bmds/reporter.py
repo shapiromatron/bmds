@@ -1,13 +1,13 @@
-from collections import namedtuple, OrderedDict
-from io import BytesIO
-import docx
-from docx.shared import Inches
-import numpy as np
 import os
 import re
+from collections import OrderedDict, namedtuple
+from io import BytesIO
+
+import docx
+import numpy as np
+from docx.shared import Inches
 
 from . import constants, datasets
-
 
 ReporterStyleGuide = namedtuple(
     "ReporterStyleGuide",
@@ -281,8 +281,8 @@ class Reporter:
         cell.paragraphs[0].style = style
 
     _VARIANCE_FOOTNOTE_TEMPLATE = (
-        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."
-    )  # noqa
+        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."  # noqa
+    )
 
     def _get_variance_footnote(self, models):
         text = None
@@ -440,7 +440,7 @@ class Reporter:
     def _write_model_name(self, p, model_group, footnotes):
         def pretty(name):
             name = name.replace("-", " ")
-            return re.sub(r"( \d+)", "\g<1>°", name)
+            return re.sub(r"( \d+)", r"\g<1>°", name)
 
         def collapse_names(models):
             names = [model.name for model in models]

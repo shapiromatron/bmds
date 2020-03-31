@@ -1,7 +1,7 @@
+import numpy as np
 import pytest
 
 import bmds
-import numpy as np
 
 
 @pytest.fixture

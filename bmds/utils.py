@@ -1,9 +1,11 @@
 import ctypes
 import logging
 import os
+import platform
 import sys
 import tempfile
-
+from pathlib import Path
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -40,3 +42,45 @@ class TempFileList(list):
 
     def __del__(self):
         self.cleanup()
+
+
+def get_dll_func(bmds_version: str, base_name: str, func_name: str) -> Callable:
+    """
+    Return a callable function from a dll. The filename will be OS and environment specific.
+
+    Args:
+        bmds_version (str): The bmds version, eg., `BMDS312`
+        base_name (str): The base-name for the file eg., `bmds_models`
+        func_name (str): The callable function from the dll, eg., `run_cmodel`
+
+    Raises:
+        EnvironmentError: System could not be determined
+        FileNotFoundError: The dll file could not be found
+
+    Returns:
+        Callable: the callable function from the dll
+    """
+    filename = base_name
+
+    bits = platform.architecture()[0]
+    if "64" in bits:
+        filename += "_x64"
+    elif "32" in bits:
+        pass
+    else:
+        raise EnvironmentError(f"Unknown architecture: {bits}")
+
+    os_ = platform.system()
+    if os_ == "Windows":
+        filename += ".dll"
+    elif os_ in ("Darwin", "Linux"):
+        filename += ".so"
+    else:
+        raise EnvironmentError(f"Unknown OS: {os_}")
+
+    path = Path(__file__).absolute().parents[0] / "bin" / bmds_version / filename
+    if not path.exists():
+        raise FileNotFoundError(f"Path does not exist: {path}")
+
+    dll = ctypes.cdll.LoadLibrary(str(path))
+    return getattr(dll, func_name)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import textwrap
 
+import pytest
+
 import bmds
 from bmds.logic import rules
-
-import pytest
 
 from .fixtures import *  # noqa
 
@@ -125,6 +125,7 @@ def test_rules_df():
     assert df.shape == (20, 4)
 
 
+@pytest.mark.vcr()
 def test_apply_logic(cdataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
@@ -381,6 +382,7 @@ def test_error_messages(cdataset):
         assert msg == expected
 
 
+@pytest.mark.vcr()
 def test_parsimonious_recommendation(reduced_cdataset):
     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=reduced_cdataset)
     session.add_default_models()
@@ -407,6 +409,7 @@ def test_parsimonious_recommendation(reduced_cdataset):
     assert bmds.Recommender._get_parsimonious_model(models).name == "Linear"
 
 
+@pytest.mark.vcr()
 def test_no_bmdl():
     # this model is valid but returns a BMDL of 0; confirm it can be recommended
     ds = bmds.DichotomousDataset(

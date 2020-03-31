@@ -2,6 +2,14 @@
 History
 =======
 
+v0.12.0 (NEXT)
+--------------------
+* Added black and flake8 to enforce code style
+* Increase minimum python version to 3.6
+* Added BMDS 3.* support
+* Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
+
+
 v0.11.0 (2018-09-14)
 --------------------
 * Used black and flake8 to enforce code style
@@ -18,6 +26,7 @@ v0.11.0 (2018-09-14)
 * Reporting:
     * Update reporting (xlsx) to include prior sessions when doses are dropped
     * Update reporting (docx) to better document sessions where doses are dropped
+
 
 v0.10.0 (2018-04-11)
 --------------------

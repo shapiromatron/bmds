@@ -1,6 +1,7 @@
 import json
-import pytest
 import sys
+
+import pytest
 
 import bmds
 

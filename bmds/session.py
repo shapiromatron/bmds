@@ -1,13 +1,13 @@
 import asyncio
-from copy import deepcopy
-from collections import OrderedDict
 import os
+import sys
+from collections import OrderedDict
+from copy import deepcopy
+
 import pandas as pd
 from simple_settings import settings
-import sys
 
-from . import __version__, constants, logic, models, utils, reporter
-
+from . import __version__, constants, logic, models, reporter, utils
 
 __all__ = ("BMDS",)
 
@@ -179,12 +179,15 @@ class BMDS(object):
         if not drop_doses:
             return
 
-        while self.recommended_model is None and self.dataset.num_dose_groups > 3:
+        while (
+            self.recommended_model is None
+            and self.dataset.num_dose_groups > self.dataset.MINIMUM_DOSE_GROUPS
+        ):
             self.doses_dropped_sessions[self.doses_dropped] = self.clone()
             self.dataset.drop_dose()
+            self.doses_dropped += 1
             self.execute()
             self.recommend()
-            self.doses_dropped += 1
 
     @staticmethod
     def _df_ordered_dict(include_io=True):

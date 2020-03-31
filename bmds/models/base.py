@@ -1,16 +1,16 @@
 import asyncio
+import logging
+import os
+import sys
 from datetime import datetime
 from enum import IntEnum
-import os
-import logging
+
 import numpy as np
 from simple_settings import settings
-import sys
 
 from .. import constants, plotting
 from ..parser import OutputParser
 from ..utils import TempFileList
-
 
 logger = logging.getLogger(__name__)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bin"))
@@ -358,9 +358,7 @@ class BMDModel(object):
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter
         # names, in the proper order.
-        if (self.dtype in constants.CONTINUOUS_DTYPES) and (
-            self.values["constant_variance"] == 1
-        ):
+        if (self.dtype in constants.CONTINUOUS_DTYPES) and (self.values["constant_variance"] == 1):
             self.values["rho"] = ("s", 0)  # for specified to equal 0
         specifieds = []
         initials = []
@@ -532,13 +530,13 @@ class DefaultParams(object):
     relative_fn_conv = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
-        "d": 1.0E-08,
+        "d": 1.0e-08,
         "n": "Relative function",
     }
     parameter_conv = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
-        "d": 1.0E-08,
+        "d": 1.0e-08,
         "n": "Parameter",
     }
     confidence_level = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0.95}

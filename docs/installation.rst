@@ -1,23 +1,11 @@
 Installing
 ==========
 
-A few tips and tricks are required to install this package, due to issues
-installing the scientific python stack on Windows, and BMDS on Mac/Linux.
+To install the latest official release:
 
-.. _windows-install:
+.. code-block:: bash
 
-Installing on Windows
-~~~~~~~~~~~~~~~~~~~~~
-
-Requires Python 3.5+. When installing on windows, using Anaconda_ is recommended for simplicity,
-but using a standard install within Python virtual environment will also work.
-
-.. _Anaconda: https://www.continuum.io/
-
-.. _mac-install:
-
-Installing on Mac/linux
-~~~~~~~~~~~~~~~~~~~~~~~
+    pip install bmds
 
 Due to limitations in the underlying BMDS software, the BMDS will only
 execute on Windows. However, by using a (remote) Windows server which executes
@@ -40,25 +28,37 @@ variables to specify the `BMDS server`_  URL and login credentials:
 Installing a development version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install a development version, first checkout from git::
+To install a development version (instructions for Mac/Linux; may need to be adapted for Windows):
 
+.. code-block:: bash
+
+    # clone repo
     git clone https://github.com/shapiromatron/bmds
 
-Change paths to the newly created ``bmds`` folder. Then, preferably in a
-python virtual environment, run the command::
+    # create a new python virtual environment
+    python -m venv venv
 
-    pip install -r requirements.txt
-    pip install -e .
+    # active virtual environment
+    source venv/bin/activate
 
-Tests are written using `pytest`_. To run all tests::
+    # install package in developer mode and developer tools
+    pip install -r requirements_dev.txt
 
+If using Windows, it's recommended to use an `miniconda`_ Python environment for simplicity.
+
+.. _`miniconda`: https://docs.conda.io/en/latest/miniconda.html
+
+Tests are written using `pytest`_. To run all tests:
+
+.. code-block:: bash
+
+    # run all tests
     py.test
 
-.. _`pytest`: http://doc.pytest.org/en/latest/
-
-To run a specific test, use::
-
+    # To run a specific test
     py.test -k test_my_special_test_name
+
+.. _`pytest`: http://doc.pytest.org/en/latest/
 
 Some tests also create export files, which can be manually inspected to ensure
 that they're in the proper format. By default, tests do not create manual
