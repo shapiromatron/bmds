@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -U pip
-          pip install -e .[test]
+          pip install -r requirements_dev.txt
       - name: Check linting
         run: |
           make lint
