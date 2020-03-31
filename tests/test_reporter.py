@@ -1,7 +1,8 @@
 import os
 
-import bmds
 import pytest
+
+import bmds
 
 from .fixtures import *  # noqa
 
