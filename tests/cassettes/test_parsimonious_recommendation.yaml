@@ -91,16 +91,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Polynomial Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-0m67p04l.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-0m67p04l.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:11:00 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-iulnilhx.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-iulnilhx.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:56 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
         + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
@@ -149,9 +149,9 @@ interactions:
         level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
         =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Polynomial
-        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-s4rzic1k.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-s4rzic1k.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:01 2020\n ====================================================================
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-9z5k0ijv.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-9z5k0ijv.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:56 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
         + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
@@ -202,9 +202,9 @@ interactions:
         level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
         =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Polynomial
-        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-k2pc3ymo.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-k2pc3ymo.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:01 2020\n ====================================================================
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-fzsqi9yz.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-fzsqi9yz.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:57 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
         + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
@@ -256,9 +256,9 @@ interactions:
         level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
         =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Polynomial
-        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-1pg2r0e8.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-1pg2r0e8.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:02 2020\n ====================================================================
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-d4rbrwwn.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-d4rbrwwn.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:57 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
         + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
@@ -310,9 +310,9 @@ interactions:
         level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
         =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Polynomial
-        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-sd4mj12l.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-sd4mj12l.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:02 2020\n ====================================================================
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-te7izzmz.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-te7izzmz.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:58 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
         + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
@@ -365,9 +365,9 @@ interactions:
         level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
         =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Power
-        Model. (Version: 2.19;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-w2fh8igy.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-w2fh8igy.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:03 2020\n ====================================================================
+        Model. (Version: 2.19;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-2wnxy689.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-2wnxy689.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:58 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = control + slope
         * dose^power\n\n\n   Dependent variable = Response\n   Independent variable
@@ -418,9 +418,9 @@ interactions:
         level =          0.95\n\n             BMD = 12114.3       \n\n\n            BMDL
         = 8755.97       \n\n\n            BMDU = 19612.5       \n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Hill
-        Model. (Version: 2.18;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-ydu10seu.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-ydu10seu.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:03 2020\n ====================================================================
+        Model. (Version: 2.18;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-y_bclrpv.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-y_bclrpv.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:59 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = intercept + v*dose^n/(k^n
         + dose^n)\n\n\n   Dependent variable = Response\n   Independent variable =
@@ -471,8 +471,8 @@ interactions:
         level =           0.95\n\n             BMD =        3030.65\n\n            BMDL
         =       1166.17\n\n            BMDU =       8586.22\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Exponential
-        Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-vd9193eb.(d)  \n  \t  Gnuplot
-        Plotting File:  \n \t\t\t\t\t\t\tMon Mar 30 21:11:04 2020\n ====================================================================
+        Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-2sn2peme.(d)  \n  \t  Gnuplot
+        Plotting File:  \n \t\t\t\t\t\t\tTue Mar 31 01:51:59 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function by Model: \n      Model 2:     Y[dose]
         = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
@@ -525,8 +525,8 @@ interactions:
         =      11346.6\n\n                 BMDL =      7997.54\n\n                 BMDU
         =      18823.8\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
         \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-r8tbr7ls.(d)  \n  \t  Gnuplot Plotting
-        File:  \n \t\t\t\t\t\t\tMon Mar 30 21:11:04 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-hw9z8qrw.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tTue Mar 31 01:52:00 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function by Model: \n      Model 2:     Y[dose]
         = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
@@ -579,8 +579,8 @@ interactions:
         =      11346.6\n\n                 BMDL =      7997.54\n\n                 BMDU
         =      18823.8\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
         \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-1uidyhc8.(d)  \n  \t  Gnuplot Plotting
-        File:  \n \t\t\t\t\t\t\tMon Mar 30 21:11:05 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-4yzqjtev.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tTue Mar 31 01:52:00 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function by Model: \n      Model 2:     Y[dose]
         = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
@@ -633,8 +633,8 @@ interactions:
         =       3274.6\n\n                 BMDL =      1414.98\n\n                 BMDU
         =      8906.38\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
         \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-8m2btk1p.(d)  \n  \t  Gnuplot Plotting
-        File:  \n \t\t\t\t\t\t\tMon Mar 30 21:11:05 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-aw1vvydz.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tTue Mar 31 01:52:01 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function by Model: \n      Model 2:     Y[dose]
         = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
@@ -693,7 +693,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:05 GMT
+      - Tue, 31 Mar 2020 01:52:01 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

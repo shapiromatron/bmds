@@ -24,15 +24,15 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Exponential Model. (Version: 1.10;  Date: 01/12/2015) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-rmwdt_zk.(d)  \n  \t  Gnuplot Plotting
-        File:  \n \t\t\t\t\t\t\tMon Mar 30 21:11:10 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-k2o9b9f_.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tTue Mar 31 01:52:06 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function by Model: \n      Model 2:     Y[dose]
         = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
@@ -90,7 +90,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:11 GMT
+      - Tue, 31 Mar 2020 01:52:06 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

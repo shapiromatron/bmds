@@ -19,16 +19,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Probit Model. (Version: 3.3;  Date: 2/28/2013) \n  \t  Input Data
-        File: C:\\Windows\\TEMP\\bmds-dfile-y8c_t8q4.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-y8c_t8q4.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:11:20 2020\n ====================================================================
+        File: C:\\Windows\\TEMP\\bmds-dfile-vfygleh6.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-vfygleh6.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:52:15 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = CumNorm(Intercept+Slope*Dose),\n\n   where
         CumNorm(.) is the cumulative normal distribution function\n\n\n   Dependent
@@ -62,7 +62,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:20 GMT
+      - Tue, 31 Mar 2020 01:52:15 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

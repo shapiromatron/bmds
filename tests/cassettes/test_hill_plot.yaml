@@ -20,16 +20,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Hill Model. (Version: 2.17;  Date: 01/28/2013) \n  \t  Input Data
-        File: C:\\Windows\\TEMP\\bmds-dfile-s11hxwtw.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-s11hxwtw.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:11:16 2020\n ====================================================================
+        File: C:\\Windows\\TEMP\\bmds-dfile-am7gg20o.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-am7gg20o.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:52:11 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the response function is: \n\n   Y[dose] = intercept + v*dose^n/(k^n
         + dose^n)\n\n\n   Dependent variable = Response\n   Independent variable =
@@ -81,7 +81,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:16 GMT
+      - Tue, 31 Mar 2020 01:52:11 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

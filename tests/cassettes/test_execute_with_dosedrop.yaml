@@ -19,16 +19,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Logistic Model. (Version: 2.15; Date: 3/20/2017) \n  \t  Input Data
-        File: C:\\Windows\\TEMP\\bmds-dfile-ltbt_81b.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-ltbt_81b.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:51 2020\n ====================================================================
+        File: C:\\Windows\\TEMP\\bmds-dfile-3vmrdzi2.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-3vmrdzi2.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:46 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = 1/[1+EXP(-intercept-slope*dose)]\n\n\n   Dependent
         variable = Incidence\n   Independent variable = Dose\n   Slope parameter is
@@ -62,7 +62,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:10:51 GMT
+      - Tue, 31 Mar 2020 01:51:46 GMT
       Server:
       - Cheroot/6.3.3
       Vary:
@@ -92,16 +92,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Logistic Model. (Version: 2.15; Date: 3/20/2017) \n  \t  Input Data
-        File: C:\\Windows\\TEMP\\bmds-dfile-flory1_f.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-flory1_f.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:52 2020\n ====================================================================
+        File: C:\\Windows\\TEMP\\bmds-dfile-1wwn6_69.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-1wwn6_69.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:47 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = 1/[1+EXP(-intercept-slope*dose)]\n\n\n   Dependent
         variable = Incidence\n   Independent variable = Dose\n   Slope parameter is
@@ -134,7 +134,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:10:52 GMT
+      - Tue, 31 Mar 2020 01:51:47 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

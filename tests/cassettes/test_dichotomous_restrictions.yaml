@@ -40,16 +40,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Weibull Model using Weibull Model (Version: 2.17;  Date: 6/23/2017)
-        \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-pluw8tm2.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-pluw8tm2.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:10:10 2020\n ====================================================================
+        \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-6__fh5c9.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-6__fh5c9.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:51:05 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -74,9 +74,9 @@ interactions:
         =       9.21996\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-sw280fsi.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-sw280fsi.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:10 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-3uz45sgk.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-3uz45sgk.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:05 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -101,9 +101,9 @@ interactions:
         =       9.21928\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-1a4657a1.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-1a4657a1.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:11 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-cqz_8rqt.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-cqz_8rqt.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:06 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -128,9 +128,9 @@ interactions:
         =       9.21996\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-4q9h85nv.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-4q9h85nv.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:11 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-espmig6g.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-espmig6g.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:06 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -155,9 +155,9 @@ interactions:
         =       9.21928\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-6mxnibpv.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-6mxnibpv.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:12 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-spvle1zl.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-spvle1zl.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:07 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -182,9 +182,9 @@ interactions:
         =       9.21996\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-ua974ubt.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-ua974ubt.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:12 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-037fsiuy.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-037fsiuy.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:07 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -209,9 +209,9 @@ interactions:
         =       9.21928\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-7cl0pirc.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-7cl0pirc.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:13 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-pauky5m7.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-pauky5m7.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:08 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -236,9 +236,9 @@ interactions:
         =       9.21996\n\n            BMDU =        29.1446\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
         ==================================================================== \n   \t  Weibull
         Model using Weibull Model (Version: 2.17;  Date: 6/23/2017) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-etu6ypl_.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-etu6ypl_.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:10:13 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-j7jzi_rv.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-j7jzi_rv.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:51:08 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -269,7 +269,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:10:13 GMT
+      - Tue, 31 Mar 2020 01:51:09 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

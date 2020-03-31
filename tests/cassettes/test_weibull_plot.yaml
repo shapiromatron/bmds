@@ -19,16 +19,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Weibull Model using Weibull Model (Version: 2.16;  Date: 2/28/2013)
-        \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-z_my4mp0.(d)  \n  \t  Gnuplot
-        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-z_my4mp0.plt\n \t\t\t\t\t\t\tMon
-        Mar 30 21:11:18 2020\n ====================================================================
+        \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-cs33rqtu.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-cs33rqtu.plt\n \t\t\t\t\t\t\tTue
+        Mar 31 01:52:13 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = background
         + (1-background)*[1-EXP(-slope*dose^power)]\n\n\n   Dependent variable = Incidence\n   Independent
@@ -59,7 +59,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:19 GMT
+      - Tue, 31 Mar 2020 01:52:14 GMT
       Server:
       - Cheroot/6.3.3
       Vary:

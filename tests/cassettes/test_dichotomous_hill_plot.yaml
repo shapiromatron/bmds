@@ -19,16 +19,16 @@ interactions:
       User-Agent:
       - python-requests/2.23.0
       authorization:
-      - DUMMY
+      - <omitted>
     method: POST
     uri: http://bmds-python.com/api/dfile/
   response:
     body:
       string: '[{"status":1,"output":"\n\n ====================================================================
         \n   \t  Dichotomous Hill Model. (Version: 1.3; Date: 02/28/2013) \n  \t  Input
-        Data File: C:\\Windows\\TEMP\\bmds-dfile-elar0pvz.(d)  \n  \t  Gnuplot Plotting
-        File:  C:\\Windows\\TEMP\\bmds-dfile-elar0pvz.plt\n \t\t\t\t\t\t\tMon Mar
-        30 21:11:23 2020\n ====================================================================
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-u9crhrz2.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-u9crhrz2.plt\n \t\t\t\t\t\t\tTue Mar
+        31 01:52:18 2020\n ====================================================================
         \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
         \n   The form of the probability function is: \n\n   P[response] = v*g +(v-v*g)/[1+EXP(-intercept-slope*Log(dose))]\n\n        where:
         0 <= g < 1, 0 < v <= 1\n\n               v is the maximum probability of response
@@ -62,7 +62,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 30 Mar 2020 21:11:23 GMT
+      - Tue, 31 Mar 2020 01:52:19 GMT
       Server:
       - Cheroot/6.3.3
       Vary:
