@@ -1,6 +1,5 @@
 import ctypes
 from collections import defaultdict
-from typing import Tuple
 
 import numpy as np
 from scipy import stats
@@ -51,7 +50,7 @@ class Dataset:
     def _get_dataset_name(self):
         return self.kwargs.get("dataset_name", "BMDS output results")
 
-    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
+    def _build_dll_dataset(self) -> ctypes.Array:
         raise NotImplementedError("Requires implementation")
 
 
@@ -223,27 +222,13 @@ class DichotomousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
-    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
-        num_dg = len(self.doses)
-        datasets = (types.BMDSInputData_t * num_dg)(
+    def _build_dll_dataset(self) -> ctypes.Array:
+        return (types.BMDSInputData_t * self.num_dose_groups)(
             *[
                 types.BMDSInputData_t(dose, n, incidence, 0.0)
                 for dose, n, incidence in zip(self.doses, self.ns, self.incidences)
             ]
         )
-
-        _dGoF_t = types.dGoF_t()
-        _dGoF_t.pzRow = (types.GoFRow_t * num_dg)()
-
-        analysis = types.BMD_ANAL()
-        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
-        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
-        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
-        analysis.deviance = (types.DichotomousDeviance_t * num_dg)()
-        analysis.gof = ctypes.pointer(_dGoF_t)
-        analysis.nCDF = types.CDF_TABLE_SIZE
-
-        return datasets, analysis
 
 
 class DichotomousCancerDataset(DichotomousDataset):
@@ -438,28 +423,13 @@ class ContinuousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
-    def build_dll_dataset_and_analysis(self) -> Tuple[ctypes.Array, types.RESULT_TYPES]:
-        num_dg = len(self.doses)
-        dataset = (types.BMDSInputData_t * num_dg)(
+    def _build_dll_dataset(self) -> ctypes.Array:
+        return (types.BMDSInputData_t * self.num_dose_groups)(
             *[
                 types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
                 for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
             ]
         )
-
-        deviance = types.ContinuousDeviance_t()
-        deviance.llRows = (types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)()
-        deviance.testRows = (types.TestRow_t * types.NUM_TESTS_OF_INTEREST)()
-
-        analysis = types.BMD_C_ANAL()
-        analysis.deviance = deviance
-        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
-        analysis.gofRow = (types.cGoFRow_t * num_dg)()
-        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
-        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
-        analysis.nCDF = types.CDF_TABLE_SIZE
-
-        return dataset, analysis
 
 
 class ContinuousIndividualDataset(ContinuousDataset):
@@ -613,3 +583,6 @@ class ContinuousIndividualDataset(ContinuousDataset):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
+
+    def _build_dll_dataset(self) -> ctypes.Array:
+        raise NotImplementedError("TODO")

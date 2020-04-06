@@ -43,13 +43,29 @@ class Continuous(BaseModel):
             bUserParmInit=ctypes.c_bool(False),
         )
 
-    def execute_dll(self, dataset: ContinuousDataset) -> ContinuousResult:
+    def _build_dll_result(self, dataset: ContinuousDataset) -> types.BMD_C_ANAL:
+        deviance = types.ContinuousDeviance_t()
+        deviance.llRows = (types.LLRow_t * types.NUM_LIKELIHOODS_OF_INTEREST)()
+        deviance.testRows = (types.TestRow_t * types.NUM_TESTS_OF_INTEREST)()
+
+        analysis = types.BMD_C_ANAL()
+        analysis.deviance = deviance
+        analysis.PARMS = (ctypes.c_double * types.MY_MAX_PARMS)()
+        analysis.gofRow = (types.cGoFRow_t * dataset.num_dose_groups)()
+        analysis.boundedParms = (ctypes.c_bool * types.MY_MAX_PARMS)()
+        analysis.aCDF = (ctypes.c_double * types.CDF_TABLE_SIZE)()
+        analysis.nCDF = types.CDF_TABLE_SIZE
+
+        return analysis
+
+    def execute(self, dataset: ContinuousDataset) -> ContinuousResult:
         model_id = ctypes.c_int(self.model_id.value)
         input_type = ctypes.c_int(types.BMDSInputType_t.eCont_4.value)
 
         # one row for each dose-group
-        dataset_, results = dataset.build_dll_dataset_and_analysis()
-        n = ctypes.c_int(len(dataset_))
+        dataset_array = dataset._build_dll_dataset()
+        results = self.build_dll_dataset_and_analysis(dataset)
+        n = ctypes.c_int(len(dataset.num_dose_groups))
 
         # using default priors
         priors_ = self.get_dll_default_frequentist_priors()
@@ -62,7 +78,7 @@ class Continuous(BaseModel):
             ctypes.pointer(model_id),
             ctypes.pointer(results),
             ctypes.pointer(input_type),
-            dataset_,
+            dataset_array,
             priors,
             ctypes.pointer(options),
             ctypes.pointer(n),
