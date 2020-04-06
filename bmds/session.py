@@ -1,7 +1,6 @@
-import asyncio
 import os
-import sys
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 
 import pandas as pd
@@ -122,18 +121,15 @@ class BMDS(object):
         instance = Model(dataset=self.dataset, overrides=overrides, id=id)
         self.models.append(instance)
 
-    async def execute_models(self):
-        tasks = [model.execute_job() for model in self.models]
-        await asyncio.wait(tasks)
-
     def execute(self):
-        if sys.platform == "win32":
-            loop = asyncio.ProactorEventLoop()
-            asyncio.set_event_loop(loop)
-        else:
-            loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.execute_models())
-        loop.close()
+        def _execute(model):
+            model.execute_job()
+
+        with ThreadPoolExecutor() as executor:
+            promises = executor.map(_execute, self.models)
+
+        # evaluate response; throw Exceptions if raised
+        list(promises)
 
     @property
     def recommendation_enabled(self):
