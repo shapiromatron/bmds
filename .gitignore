@@ -15,3 +15,6 @@ venv/
 *.log
 *.py[cod]
 .env
+
+# created by bmds2.7
+log.txt

@@ -1,7 +1,6 @@
-import asyncio
 import logging
 import os
-import sys
+import subprocess
 from datetime import datetime
 from enum import IntEnum
 
@@ -88,7 +87,7 @@ class BMDModel(object):
                 execution_duration=self.execution_duration,
             )
 
-    async def execute_job(self):
+    def execute_job(self):
         """
         Execute the BMDS model and parse outputs if successful.
         """
@@ -103,13 +102,12 @@ class BMDModel(object):
         outfile = self.get_outfile(dfile)
         o2 = outfile.replace(".out", ".002")
 
-        proc = await asyncio.create_subprocess_exec(
-            exe, dfile, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
-
         try:
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS
+            proc = subprocess.run(
+                [exe, dfile],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS,
             )
 
             output = None
@@ -119,14 +117,12 @@ class BMDModel(object):
 
             self._set_job_outputs(
                 RunStatus.SUCCESS,
-                stdout=stdout.decode().strip(),
-                stderr=stderr.decode().strip(),
+                stdout=proc.stdout.decode().strip(),
+                stderr=proc.stderr.decode().strip(),
                 output=output,
             )
 
-        except asyncio.TimeoutError:
-            proc.kill()
-            stdout, stderr = await proc.communicate()
+        except subprocess.TimeoutExpired:
             self._set_job_outputs(RunStatus.FAILURE)
 
         finally:
@@ -135,7 +131,7 @@ class BMDModel(object):
             else:
                 with open(dfile, "r") as f:
                     txt = f.read()
-                logger.info("Output file not created: \n{}\n\n".format(txt))
+                logger.info(f"Output file not created: \n{txt}\n")
 
             if os.path.exists(o2):
                 self.tempfiles.append(o2)
@@ -143,13 +139,7 @@ class BMDModel(object):
             self.tempfiles.cleanup()
 
     def execute(self):
-        if sys.platform == "win32":
-            loop = asyncio.ProactorEventLoop()
-            asyncio.set_event_loop(loop)
-        else:
-            loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.execute_job())
-        loop.close()
+        self.execute_job()
 
     @property
     def execution_duration(self):

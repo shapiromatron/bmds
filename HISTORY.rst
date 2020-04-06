@@ -8,6 +8,7 @@ v0.12.0 (NEXT)
 * Increase minimum python version to 3.6
 * Added BMDS 3.* support
 * Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
+* Removed `asyncio`; use `ThreadPoolExecutor` instead
 
 
 v0.11.0 (2018-09-14)

@@ -1,5 +1,6 @@
 import inspect
 import os
+import platform
 
 import numpy as np
 import pytest
@@ -236,7 +237,10 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.recommend()
     assert session.recommended_model_index is None
 
-    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=1e-5):
+    # gross; if we're on windows and actually existing then make timeout realistic; else we may be
+    # using pytest vcr and then make it really fast
+    timeout = 3 if platform.system() == "Windows" else 1e-5
+    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=timeout):
         # works in later versions; fix to this version
         BMDSv2601 = bmds.BMDS.versions["BMDS2601"]
         session = BMDSv2601(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
@@ -281,6 +285,6 @@ def test_large_dataset():
     session.add_model(bmds.constants.M_Power)
 
     with pytest.raises(ValueError) as err:
-        session.execute_and_recommend(drop_doses=True)
+        session.execute()
 
     assert "Fit table could not be parsed" in str(err)
