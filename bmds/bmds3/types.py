@@ -1,11 +1,10 @@
 import ctypes
+from dataclasses import dataclass
 from enum import Enum
 from textwrap import dedent
 from typing import List, Optional
 
 import numpy as np
-from dataclasses import dataclass
-
 
 BMDS_BLANK_VALUE = -9999
 NUM_PRIOR_COLS = 5

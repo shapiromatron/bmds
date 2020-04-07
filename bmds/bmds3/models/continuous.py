@@ -14,19 +14,19 @@ class Continuous(BaseModel):
     model_id: types.CModelID_t
     param_names: Tuple[str, ...] = ()
 
+    def __init__(self, variance: types.VarType_t = types.VarType_t.eConstant):
+        self.variance = variance
+        self.degree = 1
+
     @property
     def num_params(self) -> int:
         params = len(self.param_names)
-        if self.variance == types.VarType_t.eConstant:
+        if self.variance is types.VarType_t.eConstant:  # noqa: E721
             return params + 1
-        elif self.variance == types.VarType_t.eModeled:
+        elif self.variance is types.VarType_t.eModeled:  # noqa: E721
             return params + 2
         else:
             raise ValueError("Unknown variance type")
-
-    def __init__(self):
-        self.variance: types.VarType_t = types.VarType_t.eConstant
-        self.degree = 1
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
