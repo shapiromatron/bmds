@@ -3,8 +3,8 @@ from enum import Enum
 from textwrap import dedent
 from typing import List, Optional
 
-from dataclasses import dataclass
 import numpy as np
+from dataclasses import dataclass
 
 
 BMDS_BLANK_VALUE = -9999
@@ -389,5 +389,118 @@ class DichotomousResult:
                     df_reduced=result.deviance[i].dfReduced,
                 )
                 for i in range(num_dose_groups)
+            ],
+        )
+
+
+@dataclass
+class ContinuousResult:
+    ctypes: Optional[BMD_C_ANAL]
+    response_code: int
+    map: float
+    bmd: float
+    bmdl: float
+    bmdu: float
+    aic: float
+    bic: float
+    ll_const: float
+    b_adverse_up: bool
+    cdf: np.ndarray
+    parameters: List[float]
+    bounded_parameters: bool
+    gof: List["ContinuousResult.GoodnessOfFit"]
+    loglikelihoods: List["ContinuousResult.Loglikelihood"]
+    test_rows: List["ContinuousResult.TestRow"]
+
+    @dataclass
+    class GoodnessOfFit:
+        dose: float
+        obs_mean: float
+        obs_stdev: float
+        calc_median: float
+        calc_gsd: float
+        est_mean: float
+        est_stdev: float
+        size: float
+        scaled_residual: float
+        eb_lower: float
+        eb_upper: float
+
+    @dataclass
+    class Loglikelihood:
+        loglikelihood: float
+        aic: float
+        model: int
+        n_parms: int
+
+    @dataclass
+    class TestRow:
+        deviance: float
+        p_value: float
+        test_number: int
+        df: int
+
+    @classmethod
+    def from_execution(
+        cls, response_code: int, result: BMD_C_ANAL, num_dose_groups: int, num_parameters: int
+    ) -> "ContinuousResult":
+        """
+        Create a new response object from the bmd analysis C type `BMD_C_ANAL`. class.
+
+        Args:
+            response_code (int): the dll execution response code
+            result (types.BMD_C_ANAL): the result struct from execution
+            num_dose_groups (int): number of dose groups
+            num_parameters (int): number of model parameters
+        """
+        assert response_code == 0
+
+        return cls(
+            ctypes=result,
+            response_code=response_code,
+            map=result.MAP,
+            bmd=result.BMD,
+            bmdl=result.BMDL,
+            bmdu=result.BMDU,
+            aic=result.AIC,
+            bic=result.BIC_Equiv,
+            ll_const=result.ll_const,
+            b_adverse_up=result.bAdverseUp,
+            cdf=np.array(result.aCDF[: result.nCDF]),
+            parameters=[result.PARMS[i] for i in range(num_parameters)],
+            bounded_parameters=bool(result.boundedParms.contents),
+            gof=[
+                cls.GoodnessOfFit(
+                    dose=result.gofRow[i].dose,
+                    obs_mean=result.gofRow[i].obsMean,
+                    obs_stdev=result.gofRow[i].obsStDev,
+                    calc_median=result.gofRow[i].calcMedian,
+                    calc_gsd=result.gofRow[i].calcGSD,
+                    est_mean=result.gofRow[i].estMean,
+                    est_stdev=result.gofRow[i].estStDev,
+                    size=result.gofRow[i].size,
+                    scaled_residual=result.gofRow[i].scaledResidual,
+                    eb_lower=result.gofRow[i].ebLower,
+                    eb_upper=result.gofRow[i].ebUpper,
+                )
+                for i in range(num_dose_groups)
+            ],
+            loglikelihoods=[
+                cls.Loglikelihood(
+                    loglikelihood=result.deviance.llRows[i].ll,
+                    aic=result.deviance.llRows[i].aic,
+                    model=result.deviance.llRows[i].model,
+                    n_parms=result.deviance.llRows[i].nParms,
+                )
+                for i in range(NUM_LIKELIHOODS_OF_INTEREST)
+            ],
+            test_rows=[
+                cls.TestRow(
+                    deviance=result.deviance.testRows[i].deviance,
+                    p_value=result.deviance.testRows[i].pvalue,
+                    test_number=result.deviance.testRows[i].testNumber,
+                    df=result.deviance.testRows[i].df,
+                )
+                for i in range(NUM_TESTS_OF_INTEREST)
             ],
         )

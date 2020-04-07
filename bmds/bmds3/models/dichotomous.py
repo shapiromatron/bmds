@@ -179,6 +179,7 @@ class Multistage(Dichotomous):
     model_id = types.DModelID_t.eMultistage
 
     def __init__(self, degree: int = 2):
+        # todo - 2 or 1 degree?
         if degree < 2 or degree > 8:
             raise ValueError(f"Invalid degree: {degree}")
         self.degree = degree
@@ -191,7 +192,7 @@ class Multistage(Dichotomous):
 
     @property
     def num_params(self) -> int:
-        return self.degree
+        return self.degree + 1
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """

@@ -1,5 +1,4 @@
 import platform
-from pathlib import Path
 
 import pytest
 
@@ -35,7 +34,6 @@ def test_bmds3_dichotomous():
 
 @pytest.mark.skipif(not is_windows, reason="dlls only exist for Windows")
 def test_bmds3_continuous():
-    return
     ds = bmds.datasets.ContinuousDataset(
         doses=[0, 25, 50, 100, 200],
         ns=[20, 20, 20, 20, 20],
@@ -43,15 +41,16 @@ def test_bmds3_continuous():
         stdevs=[1, 2, 3, 4, 5],
     )
     models = [
-        # continuous.ExponentialM2(),
-        # continuous.ExponentialM3(),
-        # continuous.ExponentialM4(),
-        # continuous.ExponentialM5(),
-        # continuous.Linear(),
-        # continuous.Polynomial(degree=2),
-        # continuous.Polynomial(degree=3),
+        continuous.ExponentialM2(),
+        continuous.ExponentialM3(),
+        continuous.ExponentialM4(),
+        continuous.ExponentialM5(),
+        continuous.Linear(),
+        continuous.Polynomial(degree=2),
+        continuous.Polynomial(degree=3),
         continuous.Power(),
-        # continuous.Hill(),
+        continuous.Hill(),
     ]
     for model in models:
-        model.execute(ds)
+        result = model.execute(ds)
+        print(result)

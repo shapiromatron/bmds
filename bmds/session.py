@@ -125,7 +125,7 @@ class BMDS(object):
         def _execute(model):
             model.execute_job()
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             promises = executor.map(_execute, self.models)
 
         # evaluate response; throw Exceptions if raised
