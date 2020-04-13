@@ -31,6 +31,7 @@ def test_bmds3_dichotomous():
     ]
     for model in models:
         result = model.execute(ds)
+        print(result)
 
 
 @pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
@@ -54,3 +55,4 @@ def test_bmds3_continuous():
     ]
     for model in models:
         result = model.execute(ds)
+        print(result)
