@@ -5,8 +5,8 @@ import pytest
 
 import bmds
 
-# todo - investigate why this never completes in CI
-should_run = platform.system() == "Windows" and os.environ.get("GITHUB_RUN_ID") is not None
+# only run if we're on windows and not running on gitlab ci - todo investigate why
+should_run = platform.system() == "Windows" and os.environ.get("GITHUB_RUN_ID") is None
 
 if should_run:
     from bmds.bmds3.models import dichotomous, continuous
