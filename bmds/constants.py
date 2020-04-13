@@ -30,6 +30,7 @@ M_MultistageCancer = "Multistage-Cancer"
 M_Linear = "Linear"
 M_Polynomial = "Polynomial"
 M_Power = "Power"
+M_Exponential = "Exponential"
 M_ExponentialM2 = "Exponential-M2"
 M_ExponentialM3 = "Exponential-M3"
 M_ExponentialM4 = "Exponential-M4"
@@ -37,6 +38,44 @@ M_ExponentialM5 = "Exponential-M5"
 M_Hill = "Hill"
 
 VARIABLE_POLYNOMIAL = (M_Multistage, M_MultistageCancer, M_Polynomial)
+D_MODELS_RESTRICTABLE = [
+    M_DichotomousHill,
+    M_Gamma,
+    M_LogLogistic,
+    M_LogProbit,
+    M_Multistage,
+    M_Weibull,
+]
+D_MODELS = [
+    M_DichotomousHill,
+    M_Gamma,
+    M_Logistic,
+    M_LogLogistic,
+    M_LogProbit,
+    M_Multistage,
+    M_Probit,
+    M_QuantalLinear,
+    M_Weibull,
+]
+C_MODELS = [
+    M_Exponential,
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+]
+C_MODELS_RESTRICTABLE = [
+    M_Exponential,
+    M_Hill,
+    M_Polynomial,
+    M_Power,
+]
+C_MODELS_UNRESTRICTABLE = [
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+]
 
 # BMR types
 DICHOTOMOUS_BMRS = [
