@@ -60,6 +60,7 @@ D_MODELS = [
     M_QuantalLinear,
     M_Weibull,
 ]
+DC_MODELS = [M_MultistageCancer]
 C_MODELS = [
     M_Exponential,
     M_Hill,
@@ -78,6 +79,16 @@ C_MODELS_UNRESTRICTABLE = [
     M_Linear,
     M_Polynomial,
     M_Power,
+]
+C_MODELS_BMDS2 = [
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+    M_ExponentialM2,
+    M_ExponentialM3,
+    M_ExponentialM4,
+    M_ExponentialM5,
 ]
 
 # BMR types
