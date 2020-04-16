@@ -15,6 +15,9 @@ BMDS240 = "BMDS240"
 BMDS260 = "BMDS260"
 BMDS2601 = "BMDS2601"
 BMDS270 = "BMDS270"
+BMDS312 = "BMDS312"
+BMDS_TWOS = {BMDS231, BMDS240, BMDS260, BMDS2601, BMDS270}
+BMDS_THREES = {BMDS312}
 
 # model names
 M_Weibull = "Weibull"
@@ -30,6 +33,7 @@ M_MultistageCancer = "Multistage-Cancer"
 M_Linear = "Linear"
 M_Polynomial = "Polynomial"
 M_Power = "Power"
+M_Exponential = "Exponential"
 M_ExponentialM2 = "Exponential-M2"
 M_ExponentialM3 = "Exponential-M3"
 M_ExponentialM4 = "Exponential-M4"
@@ -37,6 +41,55 @@ M_ExponentialM5 = "Exponential-M5"
 M_Hill = "Hill"
 
 VARIABLE_POLYNOMIAL = (M_Multistage, M_MultistageCancer, M_Polynomial)
+D_MODELS_RESTRICTABLE = [
+    M_DichotomousHill,
+    M_Gamma,
+    M_LogLogistic,
+    M_LogProbit,
+    M_Multistage,
+    M_Weibull,
+]
+D_MODELS = [
+    M_DichotomousHill,
+    M_Gamma,
+    M_Logistic,
+    M_LogLogistic,
+    M_LogProbit,
+    M_Multistage,
+    M_Probit,
+    M_QuantalLinear,
+    M_Weibull,
+]
+DC_MODELS = [M_MultistageCancer]
+C_MODELS = [
+    M_Exponential,
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+]
+C_MODELS_RESTRICTABLE = [
+    M_Exponential,
+    M_Hill,
+    M_Polynomial,
+    M_Power,
+]
+C_MODELS_UNRESTRICTABLE = [
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+]
+C_MODELS_BMDS2 = [
+    M_Hill,
+    M_Linear,
+    M_Polynomial,
+    M_Power,
+    M_ExponentialM2,
+    M_ExponentialM3,
+    M_ExponentialM4,
+    M_ExponentialM5,
+]
 
 # BMR types
 DICHOTOMOUS_BMRS = [

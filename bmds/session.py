@@ -11,7 +11,7 @@ from . import __version__, constants, logic, models, reporter, utils
 __all__ = ("BMDS",)
 
 
-class BMDS(object):
+class BMDS:
     """
     A single dataset, related models, outputs, and model recommendations.
     """
@@ -53,7 +53,7 @@ class BMDS(object):
         Return the class of the latest version of the BMDS. If additional
         arguments are provided, an instance of this class is generated.
         """
-        cls = list(cls.versions.values())[-1]
+        cls = list(cls.versions.values())[-2]  # TODO - change to -1 after BMDS3 is stable
         if len(args) > 0 or len(kwargs) > 0:
             return cls(*args, **kwargs)
         return cls
@@ -125,7 +125,7 @@ class BMDS(object):
         def _execute(model):
             model.execute_job()
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             promises = executor.map(_execute, self.models)
 
         # evaluate response; throw Exceptions if raised
@@ -543,6 +543,11 @@ class BMDS_v270(BMDS_v2601):
     }
 
 
+class BMDS_v312(BMDS):
+    version = constants.BMDS312
+    version_pretty = "BMDS v3.1.2"
+
+
 _BMDS_VERSIONS = OrderedDict(
     (
         (constants.BMDS231, BMDS_v231),
@@ -550,5 +555,6 @@ _BMDS_VERSIONS = OrderedDict(
         (constants.BMDS260, BMDS_v260),
         (constants.BMDS2601, BMDS_v2601),
         (constants.BMDS270, BMDS_v270),
+        (constants.BMDS312, BMDS_v312),
     )
 )

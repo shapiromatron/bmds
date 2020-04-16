@@ -1,17 +1,22 @@
-from pathlib import Path
+import os
+import platform
 
 import pytest
 
-from bmds.datasets import ContinuousDataset, DichotomousDataset
+import bmds
+
+# only run if we're on windows and not running on gitlab ci - todo investigate why
+should_run = platform.system() == "Windows" and os.environ.get("GITHUB_RUN_ID") is None
+
+if should_run:
+    from bmds.bmds3.models import dichotomous, continuous
 
 
-@pytest.mark.skip(reason="todo - add back")
+@pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
 def test_bmds3_dichotomous():
-
-    # todo - move import outside of test
-    from bmds.bmds3.models import dichotomous
-
-    ds = DichotomousDataset(doses=[0, 20, 50, 100], ns=[50, 50, 50, 50], incidences=[0, 4, 11, 13])
+    ds = bmds.datasets.DichotomousDataset(
+        doses=[0, 20, 50, 100], ns=[50, 50, 50, 50], incidences=[0, 4, 11, 13]
+    )
     models = [
         dichotomous.Logistic(),
         dichotomous.LogLogistic(),
@@ -25,21 +30,13 @@ def test_bmds3_dichotomous():
         dichotomous.Multistage(degree=3),
     ]
     for model in models:
-        result = model.execute_dll(ds)
+        result = model.execute(ds)
         print(result)
 
 
-def _print_debug(name: str):
-    print("-------------------------------------------------------")
-    print("\n".join(Path(rf"~\dev\bmds\{name}").resolve().read_text().split("\n")[:30]))
-
-
-@pytest.mark.skip(reason="todo - add back")
+@pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
 def test_bmds3_continuous():
-    # todo - move import outside of test
-    from bmds.bmds3.models import continuous
-
-    ds = ContinuousDataset(
+    ds = bmds.datasets.ContinuousDataset(
         doses=[0, 25, 50, 100, 200],
         ns=[20, 20, 20, 20, 20],
         means=[10.0, 15.0, 20.0, 25.0, 30.0],
@@ -48,14 +45,14 @@ def test_bmds3_continuous():
     models = [
         continuous.ExponentialM2(),
         continuous.ExponentialM3(),
-        # continuous.ExponentialM4(),
-        # continuous.ExponentialM5(),
-        # continuous.Linear(),
-        # continuous.Polynomial(degree=2),
-        # continuous.Polynomial(degree=3),
+        continuous.ExponentialM4(),
+        continuous.ExponentialM5(),
+        continuous.Linear(),
+        continuous.Polynomial(degree=2),
+        continuous.Polynomial(degree=3),
         continuous.Power(),
-        # continuous.Hill(),
+        continuous.Hill(),
     ]
     for model in models:
-        model.execute_dll(ds)
-    _print_debug("run_cmodel2.Power.log")
+        result = model.execute(ds)
+        print(result)

@@ -8,7 +8,7 @@ from .fixtures import *  # noqa
 class TestBMDS(unittest.TestCase):
     def test_get_bmds_versions(self):
         versions = sorted(bmds.BMDS.get_versions())
-        expected = sorted(["BMDS231", "BMDS240", "BMDS260", "BMDS2601", "BMDS270"])
+        expected = sorted(["BMDS231", "BMDS240", "BMDS260", "BMDS2601", "BMDS270", "BMDS312"])
         self.assertListEqual(versions, expected)
 
     def test_latest_bmds(self):

@@ -1,7 +1,10 @@
 import ctypes
+from dataclasses import dataclass
 from enum import Enum
 from textwrap import dedent
-from typing import Union
+from typing import List, Optional
+
+import numpy as np
 
 BMDS_BLANK_VALUE = -9999
 NUM_PRIOR_COLS = 5
@@ -275,4 +278,228 @@ class PRIOR(ctypes.Structure):
         return f"Prior({self.type}, {self.initialValue}, {self.stdDev}, {self.minValue}, {self.maxValue})"
 
 
-RESULT_TYPES = Union[BMD_ANAL, BMD_C_ANAL]
+@dataclass
+class DichotomousResult:
+    ctypes: Optional[BMD_ANAL]
+    response_code: int
+    map: float
+    bmd: float
+    bmdl: float
+    bmdu: float
+    aic: float
+    bic: float
+    parameters: List[float]
+    bounded_parameters: bool
+    cdf: np.ndarray
+    gof: "DichotomousResult.GoodnessOfFit"
+    deviances: List["DichotomousResult.Deviance"]
+
+    @dataclass
+    class Deviance:
+        ll_full: float
+        ll_reduced: float
+        dev_fit: float
+        dev_reduced: float
+        pv_fit: float
+        pv_reduced: float
+        n_parm_full: int
+        n_parm_fit: int
+        df_fit: int
+        n_parm_reduced: int
+        df_reduced: int
+
+    @dataclass
+    class GoodnessOfFit:
+        chi_square: float
+        p_value: float
+        rows: List["DichotomousResult.GoodnessOfFit.Row"]
+        df: int
+        n: int
+
+        @dataclass
+        class Row:
+            dose: float
+            est_prob: float
+            expected: float
+            observed: float
+            size: float
+            scaled_residual: float
+            eb_lower: float
+            eb_upper: float
+
+    @classmethod
+    def from_execution(
+        cls, response_code: int, result: BMD_ANAL, num_dose_groups: int, num_parameters: int
+    ) -> "DichotomousResult":
+        """
+        Create a new response object from the bmd analysis C type `BMD_ANAL`. class.
+
+        Args:
+            response_code (int): the dll execution response code
+            result (types.BMD_ANAL): the result struct from execution
+            num_dose_groups (int): number of dose groups
+            num_parameters (int): number of model parameters
+        """
+        assert response_code == 0
+
+        return cls(
+            ctypes=result,
+            response_code=response_code,
+            map=result.MAP,
+            bmd=result.BMD,
+            bmdl=result.BMDL,
+            bmdu=result.BMDU,
+            aic=result.AIC,
+            bic=result.BIC_Equiv,
+            parameters=[result.PARMS[i] for i in range(num_parameters)],
+            bounded_parameters=bool(result.boundedParms.contents),
+            cdf=np.array(result.aCDF[: result.nCDF]),
+            gof=cls.GoodnessOfFit(
+                chi_square=result.gof[0].chiSquare,
+                p_value=result.gof[0].pvalue,
+                rows=[
+                    cls.GoodnessOfFit.Row(
+                        dose=result.gof[0].pzRow[i].dose,
+                        est_prob=result.gof[0].pzRow[i].estProb,
+                        expected=result.gof[0].pzRow[i].expected,
+                        observed=result.gof[0].pzRow[i].observed,
+                        size=result.gof[0].pzRow[i].size,
+                        scaled_residual=result.gof[0].pzRow[i].scaledResidual,
+                        eb_lower=result.gof[0].pzRow[i].ebLower,
+                        eb_upper=result.gof[0].pzRow[i].ebUpper,
+                    )
+                    for i in range(num_dose_groups)
+                ],
+                df=result.gof[0].df,
+                n=result.gof[0].n,
+            ),
+            deviances=[
+                cls.Deviance(
+                    ll_full=result.deviance[i].llFull,
+                    ll_reduced=result.deviance[i].llReduced,
+                    dev_fit=result.deviance[i].devFit,
+                    dev_reduced=result.deviance[i].devReduced,
+                    pv_fit=result.deviance[i].pvFit,
+                    pv_reduced=result.deviance[i].pvReduced,
+                    n_parm_full=result.deviance[i].nparmFull,
+                    n_parm_fit=result.deviance[i].nparmFit,
+                    df_fit=result.deviance[i].dfFit,
+                    n_parm_reduced=result.deviance[i].nparmReduced,
+                    df_reduced=result.deviance[i].dfReduced,
+                )
+                for i in range(num_dose_groups)
+            ],
+        )
+
+
+@dataclass
+class ContinuousResult:
+    ctypes: Optional[BMD_C_ANAL]
+    response_code: int
+    map: float
+    bmd: float
+    bmdl: float
+    bmdu: float
+    aic: float
+    bic: float
+    ll_const: float
+    b_adverse_up: bool
+    cdf: np.ndarray
+    parameters: List[float]
+    bounded_parameters: bool
+    gof: List["ContinuousResult.GoodnessOfFit"]
+    loglikelihoods: List["ContinuousResult.Loglikelihood"]
+    test_rows: List["ContinuousResult.TestRow"]
+
+    @dataclass
+    class GoodnessOfFit:
+        dose: float
+        obs_mean: float
+        obs_stdev: float
+        calc_median: float
+        calc_gsd: float
+        est_mean: float
+        est_stdev: float
+        size: float
+        scaled_residual: float
+        eb_lower: float
+        eb_upper: float
+
+    @dataclass
+    class Loglikelihood:
+        loglikelihood: float
+        aic: float
+        model: int
+        n_parms: int
+
+    @dataclass
+    class TestRow:
+        deviance: float
+        p_value: float
+        test_number: int
+        df: int
+
+    @classmethod
+    def from_execution(
+        cls, response_code: int, result: BMD_C_ANAL, num_dose_groups: int, num_parameters: int
+    ) -> "ContinuousResult":
+        """
+        Create a new response object from the bmd analysis C type `BMD_C_ANAL`. class.
+
+        Args:
+            response_code (int): the dll execution response code
+            result (types.BMD_C_ANAL): the result struct from execution
+            num_dose_groups (int): number of dose groups
+            num_parameters (int): number of model parameters
+        """
+        assert response_code == 0
+
+        return cls(
+            ctypes=result,
+            response_code=response_code,
+            map=result.MAP,
+            bmd=result.BMD,
+            bmdl=result.BMDL,
+            bmdu=result.BMDU,
+            aic=result.AIC,
+            bic=result.BIC_Equiv,
+            ll_const=result.ll_const,
+            b_adverse_up=result.bAdverseUp,
+            cdf=np.array(result.aCDF[: result.nCDF]),
+            parameters=[result.PARMS[i] for i in range(num_parameters)],
+            bounded_parameters=bool(result.boundedParms.contents),
+            gof=[
+                cls.GoodnessOfFit(
+                    dose=result.gofRow[i].dose,
+                    obs_mean=result.gofRow[i].obsMean,
+                    obs_stdev=result.gofRow[i].obsStDev,
+                    calc_median=result.gofRow[i].calcMedian,
+                    calc_gsd=result.gofRow[i].calcGSD,
+                    est_mean=result.gofRow[i].estMean,
+                    est_stdev=result.gofRow[i].estStDev,
+                    size=result.gofRow[i].size,
+                    scaled_residual=result.gofRow[i].scaledResidual,
+                    eb_lower=result.gofRow[i].ebLower,
+                    eb_upper=result.gofRow[i].ebUpper,
+                )
+                for i in range(num_dose_groups)
+            ],
+            loglikelihoods=[
+                cls.Loglikelihood(
+                    loglikelihood=result.deviance.llRows[i].ll,
+                    aic=result.deviance.llRows[i].aic,
+                    model=result.deviance.llRows[i].model,
+                    n_parms=result.deviance.llRows[i].nParms,
+                )
+                for i in range(NUM_LIKELIHOODS_OF_INTEREST)
+            ],
+            test_rows=[
+                cls.TestRow(
+                    deviance=result.deviance.testRows[i].deviance,
+                    p_value=result.deviance.testRows[i].pvalue,
+                    test_number=result.deviance.testRows[i].testNumber,
+                    df=result.deviance.testRows[i].df,
+                )
+                for i in range(NUM_TESTS_OF_INTEREST)
+            ],
+        )
