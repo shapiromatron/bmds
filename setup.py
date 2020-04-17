@@ -1,6 +1,6 @@
 import re
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def get_version():
@@ -37,7 +37,7 @@ setup(
     author="Andy Shapiro",
     author_email="shapiromatron@gmail.com",
     license="MIT",
-    packages=("bmds",),
+    packages=find_packages(exclude=("tests",)),
     install_requires=requirements,
     include_package_data=True,
     zip_safe=False,
