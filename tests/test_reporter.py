@@ -24,9 +24,9 @@ def test_reporter(cdataset, ddataset, cidataset):
         )
 
     sessions = [
-        bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset),
-        bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset),
-        bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cidataset),
+        bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset),
+        bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset),
+        bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cidataset),
     ]
 
     for session in sessions:

@@ -1,6 +1,6 @@
 import os
 import re
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 from io import BytesIO
 
 import docx
@@ -26,7 +26,7 @@ def default_float_formatter(value):
         return "{:.3f}".format(value).rstrip("0")
 
 
-class TableFootnote(OrderedDict):
+class TableFootnote(dict):
     def __init__(self):
         super().__init__()
         self.ascii_char = 96

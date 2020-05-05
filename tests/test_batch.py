@@ -11,18 +11,18 @@ def test_batch(cdataset, ddataset):
 
     batch = bmds.SessionBatch()
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
     session.execute()
     session.recommend()
     batch.append(session)
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset)
     session.add_default_models()
     session.execute()
     batch.append(session)
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
     session.add_default_models()
     session.execute()
     session.recommend()

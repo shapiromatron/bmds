@@ -180,7 +180,7 @@ def test_anova(anova_dataset, bad_anova_dataset):
 @pytest.mark.vcr()
 def test_correct_variance_model(cdataset):
     # Check that the correct variance model is selected for dataset
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Power)
     session.execute()

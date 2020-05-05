@@ -1,7 +1,7 @@
 import os
-from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
+from typing import Dict
 
 import pandas as pd
 from simple_settings import settings
@@ -17,7 +17,7 @@ class BMDS:
     """
 
     @utils.classproperty
-    def versions(cls):
+    def versions(cls) -> Dict:
         """
         Return all available BMDS software versions.
 
@@ -28,7 +28,7 @@ class BMDS:
 
         Returns
         -------
-        OrderedDict of available BMDS versions.
+        Dict(str, cls) of available BMDS versions.
         """
         return _BMDS_VERSIONS
 
@@ -48,15 +48,24 @@ class BMDS:
         return cls.versions.keys()
 
     @classmethod
+    def version(cls, version: str, *args, **kwargs):
+        """
+        Return a BMDS session of the specified version. If additional
+        arguments are provided, an instance of this class is generated.
+        """
+        cls = cls.versions[version]
+        if len(args) > 0 or len(kwargs) > 0:
+            return cls(*args, **kwargs)
+        return cls
+
+    @classmethod
     def latest_version(cls, *args, **kwargs):
         """
         Return the class of the latest version of the BMDS. If additional
         arguments are provided, an instance of this class is generated.
         """
-        cls = list(cls.versions.values())[-2]  # TODO - change to -1 after BMDS3 is stable
-        if len(args) > 0 or len(kwargs) > 0:
-            return cls(*args, **kwargs)
-        return cls
+        latest = list(cls.versions.keys())[-1]
+        return cls.version(latest, *args, **kwargs)
 
     bmr_options = {
         constants.DICHOTOMOUS: constants.DICHOTOMOUS_BMRS,
@@ -220,7 +229,7 @@ class BMDS:
         if include_io:
             keys.extend(["dfile", "outfile", "stdout", "stderr"])
 
-        return OrderedDict([(key, list()) for key in keys])
+        return {key: [] for key in keys}
 
     def _add_to_to_ordered_dict(self, d, dataset_index, recommended_only=False):
         """
@@ -364,7 +373,7 @@ class BMDS:
         linear model). In summary outputs, we may want to present all models in
         one row, since they are the same model effectively.
         """
-        od = OrderedDict()
+        od = {}
 
         # Add models to appropriate list. We only aggregate models which
         # completed successfully and have a valid AIC and BMD.
@@ -396,165 +405,145 @@ class BMDS:
 class BMDS_v231(BMDS):
     version = constants.BMDS231
     version_pretty = "BMDS v2.3.1"
+    version_tuple = (2, 3, 1)
 
 
 class BMDS_v240(BMDS_v231):
     version = constants.BMDS240
     version_pretty = "BMDS v2.4.0"
+    version_tuple = (2, 4, 0)
     model_options = {
-        constants.DICHOTOMOUS: OrderedDict(
-            [
-                (constants.M_Logistic, models.Logistic_214),
-                (constants.M_LogLogistic, models.LogLogistic_214),
-                (constants.M_Probit, models.Probit_33),
-                (constants.M_LogProbit, models.LogProbit_33),
-                (constants.M_QuantalLinear, models.QuantalLinear_33),
-                (constants.M_Multistage, models.Multistage_33),
-                (constants.M_Gamma, models.Gamma_216),
-                (constants.M_Weibull, models.Weibull_216),
-            ]
-        ),
-        constants.DICHOTOMOUS_CANCER: OrderedDict(
-            [(constants.M_MultistageCancer, models.MultistageCancer_110)]
-        ),
-        constants.CONTINUOUS: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_217),
-                (constants.M_Polynomial, models.Polynomial_217),
-                (constants.M_Power, models.Power_217),
-                (constants.M_Hill, models.Hill_217),
-                (constants.M_ExponentialM2, models.Exponential_M2_19),
-                (constants.M_ExponentialM3, models.Exponential_M3_19),
-                (constants.M_ExponentialM4, models.Exponential_M4_19),
-                (constants.M_ExponentialM5, models.Exponential_M5_19),
-            ]
-        ),
-        constants.CONTINUOUS_INDIVIDUAL: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_217),
-                (constants.M_Polynomial, models.Polynomial_217),
-                (constants.M_Power, models.Power_217),
-                (constants.M_Hill, models.Hill_217),
-                (constants.M_ExponentialM2, models.Exponential_M2_19),
-                (constants.M_ExponentialM3, models.Exponential_M3_19),
-                (constants.M_ExponentialM4, models.Exponential_M4_19),
-                (constants.M_ExponentialM5, models.Exponential_M5_19),
-            ]
-        ),
+        constants.DICHOTOMOUS: {
+            constants.M_Logistic: models.Logistic_214,
+            constants.M_LogLogistic: models.LogLogistic_214,
+            constants.M_Probit: models.Probit_33,
+            constants.M_LogProbit: models.LogProbit_33,
+            constants.M_QuantalLinear: models.QuantalLinear_33,
+            constants.M_Multistage: models.Multistage_33,
+            constants.M_Gamma: models.Gamma_216,
+            constants.M_Weibull: models.Weibull_216,
+        },
+        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: models.MultistageCancer_110},
+        constants.CONTINUOUS: {
+            constants.M_Linear: models.Linear_217,
+            constants.M_Polynomial: models.Polynomial_217,
+            constants.M_Power: models.Power_217,
+            constants.M_Hill: models.Hill_217,
+            constants.M_ExponentialM2: models.Exponential_M2_19,
+            constants.M_ExponentialM3: models.Exponential_M3_19,
+            constants.M_ExponentialM4: models.Exponential_M4_19,
+            constants.M_ExponentialM5: models.Exponential_M5_19,
+        },
+        constants.CONTINUOUS_INDIVIDUAL: {
+            constants.M_Linear: models.Linear_217,
+            constants.M_Polynomial: models.Polynomial_217,
+            constants.M_Power: models.Power_217,
+            constants.M_Hill: models.Hill_217,
+            constants.M_ExponentialM2: models.Exponential_M2_19,
+            constants.M_ExponentialM3: models.Exponential_M3_19,
+            constants.M_ExponentialM4: models.Exponential_M4_19,
+            constants.M_ExponentialM5: models.Exponential_M5_19,
+        },
     }
 
 
 class BMDS_v260(BMDS_v240):
     version = constants.BMDS260
     version_pretty = "BMDS v2.6.0"
+    version_tuple = (2, 6, 0)
     model_options = {
-        constants.DICHOTOMOUS: OrderedDict(
-            [
-                (constants.M_Logistic, models.Logistic_214),
-                (constants.M_LogLogistic, models.LogLogistic_214),
-                (constants.M_Probit, models.Probit_33),
-                (constants.M_LogProbit, models.LogProbit_33),
-                (constants.M_QuantalLinear, models.QuantalLinear_34),
-                (constants.M_Multistage, models.Multistage_34),
-                (constants.M_Gamma, models.Gamma_216),
-                (constants.M_Weibull, models.Weibull_216),
-                (constants.M_DichotomousHill, models.DichotomousHill_13),
-            ]
-        ),
-        constants.DICHOTOMOUS_CANCER: OrderedDict(
-            [(constants.M_MultistageCancer, models.MultistageCancer_110)]
-        ),
-        constants.CONTINUOUS: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_220),
-                (constants.M_Polynomial, models.Polynomial_220),
-                (constants.M_Power, models.Power_218),
-                (constants.M_Hill, models.Hill_217),
-                (constants.M_ExponentialM2, models.Exponential_M2_110),
-                (constants.M_ExponentialM3, models.Exponential_M3_110),
-                (constants.M_ExponentialM4, models.Exponential_M4_110),
-                (constants.M_ExponentialM5, models.Exponential_M5_110),
-            ]
-        ),
-        constants.CONTINUOUS_INDIVIDUAL: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_220),
-                (constants.M_Polynomial, models.Polynomial_220),
-                (constants.M_Power, models.Power_218),
-                (constants.M_Hill, models.Hill_217),
-                (constants.M_ExponentialM2, models.Exponential_M2_110),
-                (constants.M_ExponentialM3, models.Exponential_M3_110),
-                (constants.M_ExponentialM4, models.Exponential_M4_110),
-                (constants.M_ExponentialM5, models.Exponential_M5_110),
-            ]
-        ),
+        constants.DICHOTOMOUS: {
+            constants.M_Logistic: models.Logistic_214,
+            constants.M_LogLogistic: models.LogLogistic_214,
+            constants.M_Probit: models.Probit_33,
+            constants.M_LogProbit: models.LogProbit_33,
+            constants.M_QuantalLinear: models.QuantalLinear_34,
+            constants.M_Multistage: models.Multistage_34,
+            constants.M_Gamma: models.Gamma_216,
+            constants.M_Weibull: models.Weibull_216,
+            constants.M_DichotomousHill: models.DichotomousHill_13,
+        },
+        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: models.MultistageCancer_110},
+        constants.CONTINUOUS: {
+            constants.M_Linear: models.Linear_220,
+            constants.M_Polynomial: models.Polynomial_220,
+            constants.M_Power: models.Power_218,
+            constants.M_Hill: models.Hill_217,
+            constants.M_ExponentialM2: models.Exponential_M2_110,
+            constants.M_ExponentialM3: models.Exponential_M3_110,
+            constants.M_ExponentialM4: models.Exponential_M4_110,
+            constants.M_ExponentialM5: models.Exponential_M5_110,
+        },
+        constants.CONTINUOUS_INDIVIDUAL: {
+            constants.M_Linear: models.Linear_220,
+            constants.M_Polynomial: models.Polynomial_220,
+            constants.M_Power: models.Power_218,
+            constants.M_Hill: models.Hill_217,
+            constants.M_ExponentialM2: models.Exponential_M2_110,
+            constants.M_ExponentialM3: models.Exponential_M3_110,
+            constants.M_ExponentialM4: models.Exponential_M4_110,
+            constants.M_ExponentialM5: models.Exponential_M5_110,
+        },
     }
 
 
 class BMDS_v2601(BMDS_v260):
     version = constants.BMDS2601
     version_pretty = "BMDS v2.6.0.1"
+    version_tuple = (2, 6, 0, 1)
 
 
 class BMDS_v270(BMDS_v2601):
     version = constants.BMDS270
     version_pretty = "BMDS v2.7.0"
+    version_tuple = (2, 7, 0)
     model_options = {
-        constants.DICHOTOMOUS: OrderedDict(
-            [
-                (constants.M_Logistic, models.Logistic_215),
-                (constants.M_LogLogistic, models.LogLogistic_215),
-                (constants.M_Probit, models.Probit_34),
-                (constants.M_LogProbit, models.LogProbit_34),
-                (constants.M_QuantalLinear, models.QuantalLinear_34),
-                (constants.M_Multistage, models.Multistage_34),
-                (constants.M_Gamma, models.Gamma_217),
-                (constants.M_Weibull, models.Weibull_217),
-                (constants.M_DichotomousHill, models.DichotomousHill_13),
-            ]
-        ),
-        constants.DICHOTOMOUS_CANCER: OrderedDict(
-            [(constants.M_MultistageCancer, models.MultistageCancer_34)]
-        ),
-        constants.CONTINUOUS: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_221),
-                (constants.M_Polynomial, models.Polynomial_221),
-                (constants.M_Power, models.Power_219),
-                (constants.M_Hill, models.Hill_218),
-                (constants.M_ExponentialM2, models.Exponential_M2_111),
-                (constants.M_ExponentialM3, models.Exponential_M3_111),
-                (constants.M_ExponentialM4, models.Exponential_M4_111),
-                (constants.M_ExponentialM5, models.Exponential_M5_111),
-            ]
-        ),
-        constants.CONTINUOUS_INDIVIDUAL: OrderedDict(
-            [
-                (constants.M_Linear, models.Linear_221),
-                (constants.M_Polynomial, models.Polynomial_221),
-                (constants.M_Power, models.Power_219),
-                (constants.M_Hill, models.Hill_218),
-                (constants.M_ExponentialM2, models.Exponential_M2_111),
-                (constants.M_ExponentialM3, models.Exponential_M3_111),
-                (constants.M_ExponentialM4, models.Exponential_M4_111),
-                (constants.M_ExponentialM5, models.Exponential_M5_111),
-            ]
-        ),
+        constants.DICHOTOMOUS: {
+            constants.M_Logistic: models.Logistic_215,
+            constants.M_LogLogistic: models.LogLogistic_215,
+            constants.M_Probit: models.Probit_34,
+            constants.M_LogProbit: models.LogProbit_34,
+            constants.M_QuantalLinear: models.QuantalLinear_34,
+            constants.M_Multistage: models.Multistage_34,
+            constants.M_Gamma: models.Gamma_217,
+            constants.M_Weibull: models.Weibull_217,
+            constants.M_DichotomousHill: models.DichotomousHill_13,
+        },
+        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: models.MultistageCancer_34},
+        constants.CONTINUOUS: {
+            constants.M_Linear: models.Linear_221,
+            constants.M_Polynomial: models.Polynomial_221,
+            constants.M_Power: models.Power_219,
+            constants.M_Hill: models.Hill_218,
+            constants.M_ExponentialM2: models.Exponential_M2_111,
+            constants.M_ExponentialM3: models.Exponential_M3_111,
+            constants.M_ExponentialM4: models.Exponential_M4_111,
+            constants.M_ExponentialM5: models.Exponential_M5_111,
+        },
+        constants.CONTINUOUS_INDIVIDUAL: {
+            constants.M_Linear: models.Linear_221,
+            constants.M_Polynomial: models.Polynomial_221,
+            constants.M_Power: models.Power_219,
+            constants.M_Hill: models.Hill_218,
+            constants.M_ExponentialM2: models.Exponential_M2_111,
+            constants.M_ExponentialM3: models.Exponential_M3_111,
+            constants.M_ExponentialM4: models.Exponential_M4_111,
+            constants.M_ExponentialM5: models.Exponential_M5_111,
+        },
     }
 
 
 class BMDS_v312(BMDS):
     version = constants.BMDS312
     version_pretty = "BMDS v3.1.2"
+    version_tuple = (3, 1, 2)
 
 
-_BMDS_VERSIONS = OrderedDict(
-    (
-        (constants.BMDS231, BMDS_v231),
-        (constants.BMDS240, BMDS_v240),
-        (constants.BMDS260, BMDS_v260),
-        (constants.BMDS2601, BMDS_v2601),
-        (constants.BMDS270, BMDS_v270),
-        (constants.BMDS312, BMDS_v312),
-    )
-)
+_BMDS_VERSIONS = {
+    constants.BMDS231: BMDS_v231,
+    constants.BMDS240: BMDS_v240,
+    constants.BMDS260: BMDS_v260,
+    constants.BMDS2601: BMDS_v2601,
+    constants.BMDS270: BMDS_v270,
+    constants.BMDS312: BMDS_v312,
+}
