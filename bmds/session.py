@@ -86,7 +86,7 @@ class BMDS:
         """
         self.dtype = dtype
         if self.dtype not in constants.DTYPES:
-            raise ValueError("Invalid data type")
+            raise ValueError(f"Invalid data type: {dtype}")
         self.models = []
         self.dataset = dataset
         self.original_dataset = deepcopy(self.dataset)

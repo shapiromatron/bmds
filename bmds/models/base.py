@@ -21,7 +21,7 @@ class RunStatus(IntEnum):
     DID_NOT_RUN = 3
 
 
-class BMDModel(object):
+class BMDModel:
     """
     Parent class for individual BMDS models.
 
@@ -474,7 +474,7 @@ class BMDModel(object):
         return constants.BIN_TEXT[self.logic_bin] if hasattr(self, "logic_bin") else "-"
 
 
-class DefaultParams(object):
+class DefaultParams:
     """
     Container to store default modeling input parameters.
 

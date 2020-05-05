@@ -4,7 +4,7 @@ class BMDSException(Exception):
     pass
 
 
-class RemoteBMDSExcecutionException(BMDSException):
+class RemoteBMDSExecutionException(BMDSException):
     """There was an error in executing BMDS on the BMDS server"""
 
     pass

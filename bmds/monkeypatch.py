@@ -21,7 +21,7 @@ from datetime import datetime
 import requests
 from simple_settings import settings
 
-from .exceptions import RemoteBMDSExcecutionException
+from .exceptions import RemoteBMDSExecutionException
 from .models.base import BMDModel, RunStatus
 from .session import BMDS
 
@@ -56,14 +56,14 @@ def _get_payload(models):
 
 def _get_requests_session():
     if settings.BMDS_REQUEST_URL is None or settings.BMDS_TOKEN is None:
-        raise RemoteBMDSExcecutionException(NO_HOST_WARNING)
+        raise RemoteBMDSExecutionException(NO_HOST_WARNING)
 
     global _request_session
     if _request_session is None:
         s = requests.Session()
         s.headers.update(
             {
-                "Authorization": "Token {}".format(settings.BMDS_TOKEN),
+                "Authorization": f"Token {settings.BMDS_TOKEN}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
@@ -91,7 +91,7 @@ def execute_model(self):
     if self.can_be_executed:
         session = _get_requests_session()
         payload = _get_payload([self])
-        logger.debug("Submitting payload: {}".format(payload))
+        logger.debug(f"Submitting payload: {payload}")
         resp = session.post(session._BMDS_REQUEST_URL, data=payload)
         results = resp.json()[0]
     else:
@@ -115,7 +115,7 @@ def execute_session(self):
 
     session = _get_requests_session()
     payload = _get_payload(executable_models)
-    logger.debug("Submitting payload: {}".format(payload))
+    logger.debug(f"Submitting payload: {payload}")
     resp = session.post(session._BMDS_REQUEST_URL, data=payload)
 
     # parse results for each model

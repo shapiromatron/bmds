@@ -4,7 +4,7 @@ import math
 from .. import constants
 
 
-class Rule(object):
+class Rule:
     def __init__(self, failure_bin, **kwargs):
         self.failure_bin = failure_bin
         self.enabled = kwargs.get("enabled", True)
