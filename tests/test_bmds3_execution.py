@@ -15,6 +15,8 @@ def test_bmds3_dichotomous_session(ddataset):
     assert session.version_tuple[0] == 3
     session.add_default_models()
     session.execute()
+    results = session.to_dict(0)
+    assert len(results["models"]) == 10
 
 
 @pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
@@ -23,3 +25,5 @@ def test_bmds3_continuous(cdataset):
     assert session.version_tuple[0] == 3
     session.add_default_models()
     session.execute()
+    results = session.to_dict(0)
+    assert len(results["models"]) == 10

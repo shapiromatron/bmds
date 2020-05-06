@@ -73,6 +73,8 @@ class BaseModel:
     Should save no results form model execution or any dataset-specific settings.
     """
 
+    model_version = "BMDS312"
+
     def __init__(
         self,
         dataset: Dataset,
@@ -85,10 +87,19 @@ class BaseModel:
         self.execution_end = None
         self.execution_halted = False
         self.settings = self.get_model_settings(settings or {})
+        self.results = None
 
     @property
     def output_created(self) -> bool:
         return self.execution_start is not None and self.execution_halted is False
+
+    @property
+    def model_class(self) -> str:
+        return self.model_id.model_class()
+
+    @property
+    def model_name(self) -> str:
+        return self.model_id.pretty_name(self)
 
     def get_model_settings(self, settings: Dict) -> Any:
         raise NotImplementedError("Requires abstract implementation")
@@ -97,4 +108,25 @@ class BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
     def execute_job(self):
-        self.execute()
+        self.results = self.execute()
+
+    def to_dict(self, model_index: int):
+        """
+        Return a summary of the model in a dictionary format for serialization.
+
+        Args:
+            model_index (int): numeric model index in a list of models, should be unique
+
+        Returns:
+            A dictionary of model inputs, and raw and parsed outputs
+        """
+        return dict(
+            model_index=model_index,
+            model_class=self.model_class,
+            model_name=self.model_name,
+            model_version=self.model_version,
+            has_output=self.output_created,
+            execution_halted=self.execution_halted,
+            settings=self.settings.dict(),
+            results=self.results.dict() if self.results else None,
+        )

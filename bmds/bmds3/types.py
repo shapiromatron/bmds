@@ -1,10 +1,11 @@
 import ctypes
-from dataclasses import dataclass
 from enum import IntEnum
 from textwrap import dedent
-from typing import List, Optional
+from typing import List
 
-import numpy as np
+from pydantic import BaseModel
+
+from .. import constants
 
 BMDS_BLANK_VALUE = -9999
 NUM_PRIOR_COLS = 5
@@ -47,6 +48,17 @@ class BMDS_C_Options_t(ctypes.Structure):
     ]
 
 
+_c_model_class_cw = {
+    2: constants.M_ExponentialM2,
+    3: constants.M_ExponentialM3,
+    4: constants.M_ExponentialM4,
+    5: constants.M_ExponentialM5,
+    6: constants.M_Hill,
+    7: constants.M_Polynomial,
+    8: constants.M_Power,
+}
+
+
 class CModelID_t(IntEnum):
     eExp2 = 2
     eExp3 = 3
@@ -55,6 +67,27 @@ class CModelID_t(IntEnum):
     eHill = 6
     ePoly = 7
     ePow = 8
+
+    def model_class(self) -> str:
+        return _c_model_class_cw[self.value]
+
+    def pretty_name(self, model) -> str:
+        if self.value == 7:
+            return "Linear" if model.settings.degree == 1 else f"Polynomial-{model.settings.degree}"
+        return self.model_class()
+
+
+_d_model_class_cw = {
+    1: constants.M_DichotomousHill,
+    2: constants.M_Gamma,
+    3: constants.M_Logistic,
+    4: constants.M_LogLogistic,
+    5: constants.M_LogProbit,
+    6: constants.M_Multistage,
+    7: constants.M_Probit,
+    8: constants.M_QuantalLinear,
+    9: constants.M_Weibull,
+}
 
 
 class DModelID_t(IntEnum):
@@ -67,6 +100,14 @@ class DModelID_t(IntEnum):
     eProbit = 7
     eQLinear = 8
     eWeibull = 9
+
+    def model_class(self) -> str:
+        return _d_model_class_cw[self.value]
+
+    def pretty_name(self, model) -> str:
+        if self.value == 6:
+            return f"Multistage-{model.settings.degree}"
+        return self.model_class()
 
 
 class BMDSPrior_t(IntEnum):
@@ -286,9 +327,40 @@ class PRIOR(ctypes.Structure):
         return f"Prior({self.type}, {self.initialValue}, {self.stdDev}, {self.minValue}, {self.maxValue})"
 
 
-@dataclass
-class DichotomousResult:
-    ctypes: Optional[BMD_ANAL]
+class DichotomousResultDeviance(BaseModel):
+    ll_full: float
+    ll_reduced: float
+    dev_fit: float
+    dev_reduced: float
+    pv_fit: float
+    pv_reduced: float
+    n_parm_full: int
+    n_parm_fit: int
+    df_fit: int
+    n_parm_reduced: int
+    df_reduced: int
+
+
+class DichotomousResultGofRow(BaseModel):
+    dose: float
+    est_prob: float
+    expected: float
+    observed: float
+    size: float
+    scaled_residual: float
+    eb_lower: float
+    eb_upper: float
+
+
+class DichotomousResultGof(BaseModel):
+    chi_square: float
+    p_value: float
+    rows: List[DichotomousResultGofRow]
+    df: int
+    n: int
+
+
+class DichotomousResult(BaseModel):
     response_code: int
     map: float
     bmd: float
@@ -298,42 +370,9 @@ class DichotomousResult:
     bic: float
     parameters: List[float]
     bounded_parameters: bool
-    cdf: np.ndarray
-    gof: "DichotomousResult.GoodnessOfFit"
-    deviances: List["DichotomousResult.Deviance"]
-
-    @dataclass
-    class Deviance:
-        ll_full: float
-        ll_reduced: float
-        dev_fit: float
-        dev_reduced: float
-        pv_fit: float
-        pv_reduced: float
-        n_parm_full: int
-        n_parm_fit: int
-        df_fit: int
-        n_parm_reduced: int
-        df_reduced: int
-
-    @dataclass
-    class GoodnessOfFit:
-        chi_square: float
-        p_value: float
-        rows: List["DichotomousResult.GoodnessOfFit.Row"]
-        df: int
-        n: int
-
-        @dataclass
-        class Row:
-            dose: float
-            est_prob: float
-            expected: float
-            observed: float
-            size: float
-            scaled_residual: float
-            eb_lower: float
-            eb_upper: float
+    cdf: List[float]
+    gof: DichotomousResultGof
+    deviances: List[DichotomousResultDeviance]
 
     @classmethod
     def from_execution(
@@ -351,7 +390,6 @@ class DichotomousResult:
         assert response_code == 0
 
         return cls(
-            ctypes=result,
             response_code=response_code,
             map=result.MAP,
             bmd=result.BMD,
@@ -361,12 +399,12 @@ class DichotomousResult:
             bic=result.BIC_Equiv,
             parameters=[result.PARMS[i] for i in range(num_parameters)],
             bounded_parameters=bool(result.boundedParms.contents),
-            cdf=np.array(result.aCDF[: result.nCDF]),
-            gof=cls.GoodnessOfFit(
+            cdf=result.aCDF[: result.nCDF],
+            gof=DichotomousResultGof(
                 chi_square=result.gof[0].chiSquare,
                 p_value=result.gof[0].pvalue,
                 rows=[
-                    cls.GoodnessOfFit.Row(
+                    DichotomousResultGofRow(
                         dose=result.gof[0].pzRow[i].dose,
                         est_prob=result.gof[0].pzRow[i].estProb,
                         expected=result.gof[0].pzRow[i].expected,
@@ -382,7 +420,7 @@ class DichotomousResult:
                 n=result.gof[0].n,
             ),
             deviances=[
-                cls.Deviance(
+                DichotomousResultDeviance(
                     ll_full=result.deviance[i].llFull,
                     ll_reduced=result.deviance[i].llReduced,
                     dev_fit=result.deviance[i].devFit,
@@ -400,9 +438,35 @@ class DichotomousResult:
         )
 
 
-@dataclass
-class ContinuousResult:
-    ctypes: Optional[BMD_C_ANAL]
+class ContinuousResultGoodnessOfFit(BaseModel):
+    dose: float
+    obs_mean: float
+    obs_stdev: float
+    calc_median: float
+    calc_gsd: float
+    est_mean: float
+    est_stdev: float
+    size: float
+    scaled_residual: float
+    eb_lower: float
+    eb_upper: float
+
+
+class ContinuousResultLoglikelihood(BaseModel):
+    loglikelihood: float
+    aic: float
+    model: int
+    n_parms: int
+
+
+class ContinuousResultTestRow(BaseModel):
+    deviance: float
+    p_value: float
+    test_number: int
+    df: int
+
+
+class ContinuousResult(BaseModel):
     response_code: int
     map: float
     bmd: float
@@ -412,40 +476,12 @@ class ContinuousResult:
     bic: float
     ll_const: float
     b_adverse_up: bool
-    cdf: np.ndarray
+    cdf: List[float]
     parameters: List[float]
     bounded_parameters: bool
-    gof: List["ContinuousResult.GoodnessOfFit"]
-    loglikelihoods: List["ContinuousResult.Loglikelihood"]
-    test_rows: List["ContinuousResult.TestRow"]
-
-    @dataclass
-    class GoodnessOfFit:
-        dose: float
-        obs_mean: float
-        obs_stdev: float
-        calc_median: float
-        calc_gsd: float
-        est_mean: float
-        est_stdev: float
-        size: float
-        scaled_residual: float
-        eb_lower: float
-        eb_upper: float
-
-    @dataclass
-    class Loglikelihood:
-        loglikelihood: float
-        aic: float
-        model: int
-        n_parms: int
-
-    @dataclass
-    class TestRow:
-        deviance: float
-        p_value: float
-        test_number: int
-        df: int
+    gof: List[ContinuousResultGoodnessOfFit]
+    loglikelihoods: List[ContinuousResultLoglikelihood]
+    test_rows: List[ContinuousResultTestRow]
 
     @classmethod
     def from_execution(
@@ -463,7 +499,6 @@ class ContinuousResult:
         assert response_code == 0
 
         return cls(
-            ctypes=result,
             response_code=response_code,
             map=result.MAP,
             bmd=result.BMD,
@@ -473,11 +508,11 @@ class ContinuousResult:
             bic=result.BIC_Equiv,
             ll_const=result.ll_const,
             b_adverse_up=result.bAdverseUp,
-            cdf=np.array(result.aCDF[: result.nCDF]),
+            cdf=result.aCDF[: result.nCDF],
             parameters=[result.PARMS[i] for i in range(num_parameters)],
             bounded_parameters=bool(result.boundedParms.contents),
             gof=[
-                cls.GoodnessOfFit(
+                ContinuousResultGoodnessOfFit(
                     dose=result.gofRow[i].dose,
                     obs_mean=result.gofRow[i].obsMean,
                     obs_stdev=result.gofRow[i].obsStDev,
@@ -493,7 +528,7 @@ class ContinuousResult:
                 for i in range(num_dose_groups)
             ],
             loglikelihoods=[
-                cls.Loglikelihood(
+                ContinuousResultLoglikelihood(
                     loglikelihood=result.deviance.llRows[i].ll,
                     aic=result.deviance.llRows[i].aic,
                     model=result.deviance.llRows[i].model,
@@ -502,7 +537,7 @@ class ContinuousResult:
                 for i in range(NUM_LIKELIHOODS_OF_INTEREST)
             ],
             test_rows=[
-                cls.TestRow(
+                ContinuousResultTestRow(
                     deviance=result.deviance.testRows[i].deviance,
                     p_value=result.deviance.testRows[i].pvalue,
                     test_number=result.deviance.testRows[i].testNumber,
