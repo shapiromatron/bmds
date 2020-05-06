@@ -6,8 +6,6 @@ import pytest
 import bmds
 from bmds.logic import rules
 
-from .fixtures import *  # noqa
-
 
 def dedentify(txt):
     return textwrap.dedent(txt).strip()
@@ -418,7 +416,7 @@ def test_no_bmdl():
         incidences=[289, 309, 315, 302, 70],
     )
     session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ds)
-    session.add_model(bmds.constants.M_Multistage, overrides={"degree_poly": 3})
+    session.add_model(bmds.constants.M_Multistage, settings={"degree_poly": 3})
     session.execute_and_recommend()
     assert session.models[0].output["BMDL"] == 0
     assert session.recommended_model == session.models[0]

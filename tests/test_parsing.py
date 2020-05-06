@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import bmds
 
-from .fixtures import *  # noqa
-
 expected_bad_anova_warnings = """THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!
 BMDL computation failed.
 Warning:  optimum may not have been found.  Bad completion code in Optimization routine.

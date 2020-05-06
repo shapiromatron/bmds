@@ -1,12 +1,14 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, Tuple
 
 import pandas as pd
 from simple_settings import settings
 
 from . import __version__, constants, logic, models, reporter, utils
+from .bmds3.models import continuous as c3
+from .bmds3.models import dichotomous as d3
 
 __all__ = ("BMDS",)
 
@@ -15,6 +17,11 @@ class BMDS:
     """
     A single dataset, related models, outputs, and model recommendations.
     """
+
+    version_str: str = ""
+    version_pretty: str = ""
+    version_tuple: Tuple[int, ...] = ()
+    model_options: Dict[str, Dict] = {}
 
     @utils.classproperty
     def versions(cls) -> Dict:
@@ -93,10 +100,6 @@ class BMDS:
         self.doses_dropped = 0
         self.doses_dropped_sessions = {}
 
-    @property
-    def model_options(self):
-        raise NotImplementedError("Abstract method requires implementation")
-
     def get_bmr_options(self):
         return self.bmr_options[self.dtype]
 
@@ -107,27 +110,28 @@ class BMDS:
     def has_models(self):
         return len(self.models) > 0
 
-    def add_default_models(self, global_overrides=None):
-
-        max_poly_order = min(self.dataset.num_dose_groups, settings.MAXIMUM_POLYNOMIAL_ORDER + 1)
-
+    def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dtype].keys():
-            overrides = deepcopy(global_overrides) if global_overrides is not None else None
-
+            model_settings = deepcopy(global_settings) if global_settings is not None else None
             if name in constants.VARIABLE_POLYNOMIAL:
                 min_poly_order = 1 if name == constants.M_MultistageCancer else 2
+                max_poly_order = min(
+                    self.dataset.num_dose_groups, settings.MAXIMUM_POLYNOMIAL_ORDER + 1
+                )
                 for i in range(min_poly_order, max_poly_order):
-                    overrides = {} if overrides is None else deepcopy(overrides)
-                    overrides["degree_poly"] = i
-                    self.add_model(name, overrides=overrides)
+                    poly_model_settings = (
+                        deepcopy(model_settings) if model_settings is not None else {}
+                    )
+                    poly_model_settings["degree_poly"] = i
+                    self.add_model(name, settings=poly_model_settings)
             else:
-                self.add_model(name, overrides=overrides)
+                self.add_model(name, settings=model_settings)
 
-    def add_model(self, name, overrides=None, id=None):
+    def add_model(self, name, settings=None, id=None):
         if self.dataset is None:
             raise ValueError("Add dataset to session before adding models")
         Model = self.model_options[self.dtype][name]
-        instance = Model(dataset=self.dataset, overrides=overrides, id=id)
+        instance = Model(dataset=self.dataset, settings=settings, id=id)
         self.models.append(instance)
 
     def execute(self):
@@ -274,7 +278,7 @@ class BMDS:
 
     def to_dict(self, dataset_index):
         return dict(
-            bmds_version=self.version,
+            bmds_version=self.version_str,
             bmds_python_version=__version__,
             dataset_index=dataset_index,
             dataset=self.dataset.to_dict(),
@@ -403,13 +407,13 @@ class BMDS:
 
 
 class BMDS_v231(BMDS):
-    version = constants.BMDS231
+    version_str = constants.BMDS231
     version_pretty = "BMDS v2.3.1"
     version_tuple = (2, 3, 1)
 
 
 class BMDS_v240(BMDS_v231):
-    version = constants.BMDS240
+    version_str = constants.BMDS240
     version_pretty = "BMDS v2.4.0"
     version_tuple = (2, 4, 0)
     model_options = {
@@ -448,7 +452,7 @@ class BMDS_v240(BMDS_v231):
 
 
 class BMDS_v260(BMDS_v240):
-    version = constants.BMDS260
+    version_str = constants.BMDS260
     version_pretty = "BMDS v2.6.0"
     version_tuple = (2, 6, 0)
     model_options = {
@@ -487,14 +491,14 @@ class BMDS_v260(BMDS_v240):
     }
 
 
-class BMDS_v2601(BMDS_v260):
-    version = constants.BMDS2601
+class BMDS_v2601(BMDS_v240):
+    version_str = constants.BMDS2601
     version_pretty = "BMDS v2.6.0.1"
     version_tuple = (2, 6, 0, 1)
 
 
 class BMDS_v270(BMDS_v2601):
-    version = constants.BMDS270
+    version_str = constants.BMDS270
     version_pretty = "BMDS v2.7.0"
     version_tuple = (2, 7, 0)
     model_options = {
@@ -534,9 +538,43 @@ class BMDS_v270(BMDS_v2601):
 
 
 class BMDS_v312(BMDS):
-    version = constants.BMDS312
+    version_str = constants.BMDS312
     version_pretty = "BMDS v3.1.2"
     version_tuple = (3, 1, 2)
+    model_options = {
+        constants.DICHOTOMOUS: {
+            constants.M_Logistic: d3.Logistic,
+            constants.M_LogLogistic: d3.LogLogistic,
+            constants.M_Probit: d3.Probit,
+            constants.M_LogProbit: d3.LogProbit,
+            constants.M_QuantalLinear: d3.QuantalLinear,
+            constants.M_Multistage: d3.Multistage,
+            constants.M_Gamma: d3.Gamma,
+            constants.M_Weibull: d3.Weibull,
+            constants.M_DichotomousHill: d3.DichotomousHill,
+        },
+        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: d3.Multistage},
+        constants.CONTINUOUS: {
+            constants.M_Linear: c3.Linear,
+            constants.M_Polynomial: c3.Polynomial,
+            constants.M_Power: c3.Power,
+            constants.M_Hill: c3.Hill,
+            constants.M_ExponentialM2: c3.ExponentialM2,
+            constants.M_ExponentialM3: c3.ExponentialM3,
+            constants.M_ExponentialM4: c3.ExponentialM4,
+            constants.M_ExponentialM5: c3.ExponentialM5,
+        },
+        constants.CONTINUOUS_INDIVIDUAL: {
+            constants.M_Linear: c3.Linear,
+            constants.M_Polynomial: c3.Polynomial,
+            constants.M_Power: c3.Power,
+            constants.M_Hill: c3.Hill,
+            constants.M_ExponentialM2: c3.ExponentialM2,
+            constants.M_ExponentialM3: c3.ExponentialM3,
+            constants.M_ExponentialM4: c3.ExponentialM4,
+            constants.M_ExponentialM5: c3.ExponentialM5,
+        },
+    }
 
 
 _BMDS_VERSIONS = {

@@ -9,8 +9,6 @@ from simple_settings.utils import settings_stub
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 def test_executable_path():
 
@@ -125,12 +123,12 @@ def test_default_execution(cdataset, ddataset, cidataset):
 
 
 @pytest.mark.vcr()
-def test_parameter_overrides(cdataset):
-    # assert to overrides are used
+def test_parameter_settings(cdataset):
+    # assert to settings are used
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Polynomial)
     session.add_model(
-        bmds.constants.M_Polynomial, overrides={"constant_variance": 1, "degree_poly": 3}
+        bmds.constants.M_Polynomial, settings={"constant_variance": 1, "degree_poly": 3}
     )
 
     session.execute()
@@ -176,9 +174,9 @@ def test_tiny_datasets():
 def test_continuous_restrictions(cdataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
-    session.add_model(bmds.constants.M_Power, overrides={"restrict_power": 0})
+    session.add_model(bmds.constants.M_Power, settings={"restrict_power": 0})
     session.add_model(bmds.constants.M_Hill)
-    session.add_model(bmds.constants.M_Hill, overrides={"restrict_n": 0})
+    session.add_model(bmds.constants.M_Hill, settings={"restrict_n": 0})
 
     session.execute()
     power1 = session.models[0]
@@ -200,7 +198,7 @@ def test_dichotomous_restrictions(ddataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Weibull)
-        session.add_model(bmds.constants.M_Weibull, overrides={"restrict_power": 0})
+        session.add_model(bmds.constants.M_Weibull, settings={"restrict_power": 0})
 
     session.execute()
     weibull1 = session.models[0]
@@ -235,28 +233,25 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.add_default_models()
     session.execute()
     session.recommend()
+    halted = [model.execution_halted for model in session.models]
+    assert [False] * 8
     assert session.recommended_model_index is None
 
     # gross; if we're on windows and actually existing then make timeout realistic; else we may be
     # using pytest vcr and then make it really fast
-    timeout = 3 if platform.system() == "Windows" else 1e-5
+    timeout = 1e-5
     with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=timeout):
         # works in later versions; fix to this version
         BMDSv2601 = bmds.BMDS.versions["BMDS2601"]
         session = BMDSv2601(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
-        session.add_model(bmds.constants.M_Logistic)
         session.add_model(bmds.constants.M_Gamma)
         session.execute()
         session.recommend()
-        assert session.recommended_model_index is None
-
-        # assert that the execution_halted flag is appropriately set
-        halted = [model.execution_halted for model in session.models]
-        assert halted == [False, True]
-
-        # assert it was run for a while
-        total_time = session.models[1].execution_duration
+        total_time = session.models[0].execution_duration
         timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
+
+        assert session.recommended_model_index is None
+        assert session.models[0].execution_halted is True
         assert np.isclose(total_time, timeout) or total_time > timeout
 
 

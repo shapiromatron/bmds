@@ -39,18 +39,18 @@ class BMDModel:
         )
     >>> model = bmds.models.Polynomial_220(
             dataset,
-            overrides={"degree_poly": 3}
+            settings={"degree_poly": 3}
         )
     >>> model.execute()
     >>> model.output['BMD']
     88.3549
     """
 
-    def __init__(self, dataset, overrides=None, id=None):
+    def __init__(self, dataset, settings=None, id=None):
         self.tempfiles = TempFileList()
         self.id = id
         self.dataset = dataset
-        self.overrides = overrides or {}
+        self.settings = settings or {}
         self.values = {}
         self.output_created = False
         self.execution_halted = False
@@ -327,9 +327,9 @@ class BMDModel:
         Two output values for 'p' type values (parameters), else one.
         Returns a single value or tuple of two values
         """
-        fn_name = "set_{}_value".format(key)
-        if key in self.overrides:
-            val = self.overrides[key]
+        fn_name = f"set_{key}_value"
+        if key in self.settings:
+            val = self.settings[key]
         elif hasattr(self, fn_name):
             val = getattr(self, fn_name)()
         else:

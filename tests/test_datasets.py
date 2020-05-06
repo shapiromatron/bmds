@@ -3,8 +3,6 @@ import pytest
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 def test_dataset_validation():
     # make dummy datasets
@@ -225,7 +223,7 @@ def test_dataset_reporting_options(cdataset):
     assert cdataset._get_response_units_text() == ""
     assert cdataset._get_dataset_name() == "BMDS output results"
 
-    # test overrides
+    # test settings
     ds = bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[111, 142, 143, 93, 42],

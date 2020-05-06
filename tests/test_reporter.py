@@ -4,8 +4,6 @@ import pytest
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 @pytest.mark.vcr()
 def test_reporter(cdataset, ddataset, cidataset):

@@ -2,8 +2,6 @@ import unittest
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 class TestBMDS(unittest.TestCase):
     def test_get_bmds_versions(self):
@@ -13,7 +11,7 @@ class TestBMDS(unittest.TestCase):
 
     def test_latest_bmds(self):
         session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS)
-        assert session.version == bmds.constants.BMDS312
+        assert session.version_str == bmds.constants.BMDS312
 
     def test_get_model(self):
         model = bmds.BMDS.get_model(bmds.constants.BMDS2601, bmds.constants.M_Probit)

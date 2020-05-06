@@ -5,8 +5,6 @@ import pytest
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 @pytest.mark.skipif(sys.platform != "win32", reason="requires Windows")
 def test_drunner(cdataset):

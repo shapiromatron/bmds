@@ -1,7 +1,5 @@
 import bmds
 
-from .fixtures import *  # noqa
-
 
 def test_calculated_variance_value(anova_dataset, bad_anova_dataset):
     model = bmds.models.Continuous(anova_dataset)

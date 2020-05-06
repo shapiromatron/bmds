@@ -1,7 +1,7 @@
 import ctypes
-from typing import Callable, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from ...datasets import DichotomousDataset
+from ...datasets import Dataset, DichotomousDataset
 from ...utils import get_dll_func
 from .. import types
 from .base import BaseModel
@@ -45,13 +45,13 @@ class Dichotomous(BaseModel):
 
         return analysis
 
-    def execute(self, dataset: DichotomousDataset) -> types.DichotomousResult:
+    def execute(self) -> types.DichotomousResult:
         model_id = (ctypes.c_int * 1)(self.model_id.value)
         model_type = (ctypes.c_int * 1)(types.BMDSInputType_t.eDich_4.value)
 
-        dataset_array = dataset._build_dll_dataset()
-        results = self._build_dll_result(dataset)
-        n = ctypes.c_int(dataset.num_dose_groups)
+        dataset_array = self.dataset._build_dll_dataset()
+        results = self._build_dll_result(self.dataset)
+        n = ctypes.c_int(self.dataset.num_dose_groups)
 
         priors_ = self.get_dll_default_frequentist_priors()
         priors = (types.PRIOR * len(priors_))(*priors_)
@@ -69,7 +69,7 @@ class Dichotomous(BaseModel):
             ctypes.pointer(n),
         )
         return types.DichotomousResult.from_execution(
-            response_code, results, dataset.num_dose_groups, self.num_params
+            response_code, results, self.dataset.num_dose_groups, self.num_params
         )
 
 
@@ -178,11 +178,25 @@ class Weibull(Dichotomous):
 class Multistage(Dichotomous):
     model_id = types.DModelID_t.eMultistage
 
-    def __init__(self, degree: int = 2):
-        # todo - 2 or 1 degree?
-        if degree < 2 or degree > 8:
+    def __init__(
+        self,
+        dataset: Dataset,
+        settings: Optional[Dict] = None,
+        id: Optional[Union[int, str]] = None,
+    ):
+
+        if settings is None:
+            settings = {}
+
+        degree = settings.get("degree")
+        if degree is None:
+            settings["degree"] = 2
+        elif degree < 2 or degree > 8:
             raise ValueError(f"Invalid degree: {degree}")
-        self.degree = degree
+
+        self.settings = settings
+        self.degree = settings["degree"]
+        super().__init__(dataset, settings, id)
 
     @property
     def param_names(self) -> Tuple[str, ...]:

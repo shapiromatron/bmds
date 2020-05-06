@@ -3,8 +3,6 @@ import pytest
 import bmds
 from bmds import models
 
-from .fixtures import *  # noqa
-
 
 # dataset tests
 @pytest.mark.mpl_image_compare
