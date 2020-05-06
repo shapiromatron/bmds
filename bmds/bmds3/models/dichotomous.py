@@ -2,15 +2,11 @@ import ctypes
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from ...datasets import Dataset, DichotomousDataset
-from ...utils import get_dll_func
 from .. import types
-from .base import BaseModel
+from .base import BaseModel, BmdsFunctionManager
 
 
 class Dichotomous(BaseModel):
-    _func: Callable = get_dll_func(
-        bmds_version="BMDS312", base_name="bmds_models", func_name="run_dmodel2"
-    )
     model_id: types.DModelID_t
     param_names: Tuple[str, ...] = ()
 
@@ -44,6 +40,12 @@ class Dichotomous(BaseModel):
         analysis.nCDF = types.CDF_TABLE_SIZE
 
         return analysis
+
+    @property
+    def _func(self) -> Callable:
+        return BmdsFunctionManager.get_dll_func(
+            bmds_version="BMDS312", base_name="bmds_models", func_name="run_dmodel2"
+        )
 
     def execute(self) -> types.DichotomousResult:
         model_id = (ctypes.c_int * 1)(self.model_id.value)
