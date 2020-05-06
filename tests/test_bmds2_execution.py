@@ -1,6 +1,5 @@
 import inspect
 import os
-import platform
 
 import numpy as np
 import pytest
@@ -234,7 +233,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     session.execute()
     session.recommend()
     halted = [model.execution_halted for model in session.models]
-    assert [False] * 8
+    assert halted == [False] * 8
     assert session.recommended_model_index is None
 
     # gross; if we're on windows and actually existing then make timeout realistic; else we may be
