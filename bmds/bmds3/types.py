@@ -1,6 +1,6 @@
 import ctypes
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from textwrap import dedent
 from typing import List, Optional
 
@@ -14,10 +14,18 @@ NUM_LIKELIHOODS_OF_INTEREST = 5
 NUM_TESTS_OF_INTEREST = 4
 
 
-class VarType_t(Enum):
+class VarType_t(IntEnum):
     eVarTypeNone = 0
     eConstant = 1
     eModeled = 2
+
+    def num_params(self):
+        if self.name == "eConstant":
+            return 1
+        elif self.name == "eModeled":
+            return 2
+        else:
+            raise ValueError(f"Unspecified number of parameters: {self.name}")
 
 
 class BMDS_C_Options_t(ctypes.Structure):
@@ -39,7 +47,7 @@ class BMDS_C_Options_t(ctypes.Structure):
     ]
 
 
-class CModelID_t(Enum):
+class CModelID_t(IntEnum):
     eExp2 = 2
     eExp3 = 3
     eExp4 = 4
@@ -49,7 +57,7 @@ class CModelID_t(Enum):
     ePow = 8
 
 
-class DModelID_t(Enum):
+class DModelID_t(IntEnum):
     eDHill = 1
     eGamma = 2
     eLogistic = 3
@@ -61,13 +69,13 @@ class DModelID_t(Enum):
     eWeibull = 9
 
 
-class BMDSPrior_t(Enum):
+class BMDSPrior_t(IntEnum):
     eNone = 0
     eNormal = 1
     eLognormal = 2
 
 
-class BMRType_t(Enum):
+class BMRType_t(IntEnum):
     eAbsoluteDev = 1
     eStandardDev = 2
     eRelativeDev = 3
@@ -77,12 +85,12 @@ class BMRType_t(Enum):
     eHybrid_Added = 7
 
 
-class RiskType_t(Enum):
+class RiskType_t(IntEnum):
     eExtraRisk = 1
     eAddedRisk = 2
 
 
-class BMDSInputType_t(Enum):
+class BMDSInputType_t(IntEnum):
     unused = 0
     eCont_2 = 1  # Individual dose-responses
     eCont_4 = 2  # Summarized dose-responses

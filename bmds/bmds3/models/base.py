@@ -1,7 +1,7 @@
 import ctypes
 import logging
 import platform
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from ...datasets import Dataset
 from ...utils import package_root
@@ -81,14 +81,17 @@ class BaseModel:
     ):
         self.id = id
         self.dataset = dataset
-        self.settings = settings or {}
         self.execution_start = None
         self.execution_end = None
         self.execution_halted = False
+        self.settings = self.get_model_settings(settings or {})
 
     @property
     def output_created(self) -> bool:
         return self.execution_start is not None and self.execution_halted is False
+
+    def get_model_settings(self, settings: Dict) -> Any:
+        raise NotImplementedError("Requires abstract implementation")
 
     def execute(self):
         raise NotImplementedError("Requires abstract implementation")

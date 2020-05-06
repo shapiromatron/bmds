@@ -431,6 +431,16 @@ class ContinuousDataset(Dataset):
             ]
         )
 
+    def get_default_variance_model(self) -> types.VarType_t:
+        """
+        Predict which variance model should be used based on the anova:
+            - set constant variance if p-test 2 >= 0.1, otherwise use modeled variance
+            - 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+            - 1 = constant variance => Var(i) = alpha*mean(i)
+        """
+        anova = self.anova()
+        return types.VarType_t.eConstant if anova[1].TEST < 0.1 else types.VarType_t.eModeled
+
 
 class ContinuousIndividualDataset(ContinuousDataset):
     """

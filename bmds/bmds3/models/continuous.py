@@ -1,50 +1,35 @@
 import ctypes
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Tuple
 
-from ...datasets import ContinuousDataset, Dataset
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import confloat, conint
+
+from ...datasets import ContinuousDataset
 from .. import types
 from .base import BaseModel, BmdsFunctionManager
+
+
+class ContinuousModelSettings(PydanticBaseModel):
+    bmr: confloat(gt=0) = 0.1
+    alpha: confloat(gt=0, lt=1) = 0.05
+    tailProb: confloat(gt=0, lt=1) = 0.01
+    background: int = -9999
+    bmrType: types.BMRType_t = types.BMRType_t.eRelativeDev
+    degree: conint(ge=0, le=8) = 0
+    adverseDirection: conint(ge=0, le=1) = 0
+    restriction: conint(ge=0, le=1) = 1
+    varType: types.VarType_t = types.VarType_t.eVarTypeNone
+    bLognormal: bool = False
+    bUserParmInit: bool = False
 
 
 class Continuous(BaseModel):
     model_id: types.CModelID_t
     param_names: Tuple[str, ...] = ()
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        settings: Optional[Dict] = None,
-        id: Optional[Union[int, str]] = None,
-    ):
-
-        if settings is None:
-            settings = {}
-
-        # make sure variance is a value in enum; could throw ValueError
-        variance = settings.get("variance", types.VarType_t.eConstant)
-        variance = types.VarType_t(variance)
-        settings["variance"] = variance
-
-        # make sure degree is numeric and within range
-        degree = int(settings.get("degree", 1))
-        if degree < 1 or degree > 8:
-            raise ValueError(f"Invalid degree: {degree}")
-        settings["degree"] = degree
-
-        self.settings = settings
-        self.degree = settings["degree"]
-        self.variance = settings["variance"]
-        super().__init__(dataset, settings, id)
-
     @property
     def num_params(self) -> int:
-        params = len(self.param_names)
-        if self.variance is types.VarType_t.eConstant:  # noqa: E721
-            return params + 1
-        elif self.variance is types.VarType_t.eModeled:  # noqa: E721
-            return params + 2
-        else:
-            raise ValueError("Unknown variance type")
+        return len(self.param_names) + self.settings.varType.num_params()
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -53,18 +38,19 @@ class Continuous(BaseModel):
         raise NotImplementedError()
 
     def get_dll_default_options(self) -> types.BMDS_C_Options_t:
+        settings = self.settings
         return types.BMDS_C_Options_t(
-            bmr=0.1,
-            alpha=0.05,
-            background=-9999,
-            tailProb=0.01,
-            bmrType=types.BMRType_t.eRelativeDev.value,
-            degree=0,
-            adverseDirection=0,
-            restriction=1,
-            varType=self.variance.value,
-            bLognormal=ctypes.c_bool(False),
-            bUserParmInit=ctypes.c_bool(False),
+            bmr=settings.bmr,
+            alpha=settings.alpha,
+            background=settings.background,
+            tailProb=settings.tailProb,
+            bmrType=settings.bmrType.value,
+            degree=settings.degree,
+            adverseDirection=settings.adverseDirection,
+            restriction=settings.restriction,
+            varType=settings.varType,
+            bLognormal=ctypes.c_bool(settings.bLognormal),
+            bUserParmInit=ctypes.c_bool(settings.bUserParmInit),
         )
 
     def _build_dll_result(self, dataset: ContinuousDataset) -> types.BMD_C_ANAL:
@@ -118,15 +104,13 @@ class Continuous(BaseModel):
             response_code, results, self.dataset.num_dose_groups, self.num_params
         )
 
-
-class Exponential(Continuous):
-    def get_dll_default_options(self) -> types.BMDS_C_Options_t:
-        options = super().get_dll_default_options()
-        options.degree = ctypes.c_int(self.degree)
-        return options
+    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+        if "varType" not in settings:
+            settings["varType"] = self.dataset.get_default_variance_model()
+        return ContinuousModelSettings.parse_obj(settings)
 
 
-class ExponentialM2(Exponential):
+class ExponentialM2(Continuous):
     model_id = types.CModelID_t.eExp2
     param_names = ("a", "b")
 
@@ -143,7 +127,7 @@ class ExponentialM2(Exponential):
         ]
 
 
-class ExponentialM3(Exponential):
+class ExponentialM3(Continuous):
     model_id = types.CModelID_t.eExp3
     param_names = ("a", "b", "c")
 
@@ -161,7 +145,7 @@ class ExponentialM3(Exponential):
         ]
 
 
-class ExponentialM4(Exponential):
+class ExponentialM4(Continuous):
     model_id = types.CModelID_t.eExp4
     param_names = ("a", "b", "c", "d")
 
@@ -180,7 +164,7 @@ class ExponentialM4(Exponential):
         ]
 
 
-class ExponentialM5(Exponential):
+class ExponentialM5(Continuous):
     model_id = types.CModelID_t.eExp5
     param_names = ("a", "b", "c", "d", "g")
 
@@ -238,12 +222,8 @@ class Polynomial(Continuous):
     @property
     def param_names(self):
         params = ["g"]
-        params.extend([f"b{i + 1}" for i in range(self.degree)])
+        params.extend([f"b{i + 1}" for i in range(self.settings.degree)])
         return tuple(params)
-
-    @property
-    def num_params(self) -> int:
-        return self.degree + 1
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -255,19 +235,17 @@ class Polynomial(Continuous):
         priors.extend(
             [
                 types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
-                for degree in range(self.degree)
+                for degree in range(self.settings.degree)
             ]
         )
         return priors
 
-    def get_dll_default_options(self) -> types.BMDS_C_Options_t:
-        options = super().get_dll_default_options()
-        options.degree = ctypes.c_int(self.degree)
-        return options
+    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+        settings.setdefault("degree", 2)
+        return super().get_model_settings(settings)
 
 
 class Linear(Polynomial):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.degree != 1:
-            raise ValueError("Linear model must have degree of 1")
+    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+        settings["degree"] = 1
+        return super().get_model_settings(settings)

@@ -1,9 +1,23 @@
 import ctypes
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Tuple
 
-from ...datasets import Dataset, DichotomousDataset
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import confloat, conint
+
+from ...datasets import DichotomousDataset
 from .. import types
 from .base import BaseModel, BmdsFunctionManager
+
+
+class DichotomousModelSettings(PydanticBaseModel):
+    bmr: confloat(gt=0) = 0.1
+    alpha: confloat(gt=0, lt=1) = 0.05
+    background: int = -9999
+    bmrType: types.BMRType_t = types.BMRType_t.eAbsoluteDev
+    degree: conint(ge=0, le=8) = 0
+
+    def degree_param_names(self) -> List[str]:
+        return [chr(97 + i) for i in range(self.degree)]
 
 
 class Dichotomous(BaseModel):
@@ -21,8 +35,12 @@ class Dichotomous(BaseModel):
         raise NotImplementedError()
 
     def _get_dll_default_options(self) -> Tuple[types.BMDS_D_Opts1_t, types.BMDS_D_Opts2_t]:
-        d_opts1 = types.BMDS_D_Opts1_t(bmr=0.1, alpha=0.05, background=-9999)
-        d_opts2 = types.BMDS_D_Opts2_t(bmrType=types.BMRType_t.eAbsoluteDev.value, degree=0)
+        d_opts1 = types.BMDS_D_Opts1_t(
+            bmr=self.settings.bmr, alpha=self.settings.alpha, background=self.settings.background
+        )
+        d_opts2 = types.BMDS_D_Opts2_t(
+            bmrType=self.settings.bmrType.value, degree=self.settings.degree
+        )
         return d_opts1, d_opts2
 
     def _build_dll_result(self, dataset: DichotomousDataset) -> types.BMD_ANAL:
@@ -73,6 +91,9 @@ class Dichotomous(BaseModel):
         return types.DichotomousResult.from_execution(
             response_code, results, self.dataset.num_dose_groups, self.num_params
         )
+
+    def get_model_settings(self, settings: Dict) -> DichotomousModelSettings:
+        return DichotomousModelSettings.parse_obj(settings)
 
 
 class Logistic(Dichotomous):
@@ -180,35 +201,22 @@ class Weibull(Dichotomous):
 class Multistage(Dichotomous):
     model_id = types.DModelID_t.eMultistage
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        settings: Optional[Dict] = None,
-        id: Optional[Union[int, str]] = None,
-    ):
-
-        if settings is None:
-            settings = {}
-
-        degree = settings.get("degree")
-        if degree is None:
-            settings["degree"] = 2
-        elif degree < 2 or degree > 8:
-            raise ValueError(f"Invalid degree: {degree}")
-
-        self.settings = settings
-        self.degree = settings["degree"]
-        super().__init__(dataset, settings, id)
+    def get_model_settings(self, settings: Dict) -> DichotomousModelSettings:
+        settings.setdefault("degree", 2)
+        settings = DichotomousModelSettings.parse_obj(settings)
+        if settings.degree < 2:
+            raise ValueError(f"Degree must be at least 2: {settings.degree}")
+        return settings
 
     @property
     def param_names(self) -> Tuple[str, ...]:
         params: List[str] = ["g"]
-        params.extend([f"{chr(97 + i)}" for i in range(self.degree)])
+        params.extend(self.settings.degree_param_names())
         return tuple(params)
 
     @property
     def num_params(self) -> int:
-        return self.degree + 1
+        return self.settings.degree + 1
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -219,19 +227,14 @@ class Multistage(Dichotomous):
             types.PRIOR(type=0, initialValue=-17, stdDev=0, minValue=-18, maxValue=18),
             types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=100),
         ]
-        if self.degree > 2:
+        if self.settings.degree > 2:
             priors.extend(
                 [
                     types.PRIOR(type=0, initialValue=0.1, stdDev=0, minValue=0, maxValue=1e4)
-                    for degree in range(2, self.degree)
+                    for degree in range(2, self.settings.degree)
                 ]
             )
         return priors
-
-    def _get_dll_default_options(self) -> Tuple[types.BMDS_D_Opts1_t, types.BMDS_D_Opts2_t]:
-        (d_opts1, d_opts2) = super()._get_dll_default_options()
-        d_opts2.degree = self.degree
-        return d_opts1, d_opts2
 
 
 class DichotomousHill(Dichotomous):
