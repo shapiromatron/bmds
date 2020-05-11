@@ -1,5 +1,5 @@
 import ctypes
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import confloat, conint
@@ -104,7 +104,12 @@ class Continuous(BaseModel):
             response_code, results, self.dataset.num_dose_groups, self.num_params
         )
 
-    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+    def get_model_settings(
+        self, settings: Union[ContinuousModelSettings, Dict]
+    ) -> ContinuousModelSettings:
+        if isinstance(settings, ContinuousModelSettings):
+            return settings
+
         if "varType" not in settings:
             settings["varType"] = self.dataset.get_default_variance_model()
         return ContinuousModelSettings.parse_obj(settings)

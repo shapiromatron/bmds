@@ -3,6 +3,8 @@ import logging
 import platform
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
+from pydantic import BaseModel as PydanticBaseModel
+
 from ...datasets import Dataset
 from ...utils import package_root
 
@@ -78,7 +80,7 @@ class BaseModel:
     def __init__(
         self,
         dataset: Dataset,
-        settings: Optional[Dict] = None,
+        settings: Optional[Union[Dict, PydanticBaseModel]] = None,
         id: Optional[Union[int, str]] = None,
     ):
         self.id = id

@@ -1,5 +1,5 @@
 import ctypes
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Union, Tuple
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import confloat, conint
@@ -92,7 +92,11 @@ class Dichotomous(BaseModel):
             response_code, results, self.dataset.num_dose_groups, self.num_params
         )
 
-    def get_model_settings(self, settings: Dict) -> DichotomousModelSettings:
+    def get_model_settings(
+        self, settings: Union[DichotomousModelSettings, Dict]
+    ) -> DichotomousModelSettings:
+        if isinstance(settings, DichotomousModelSettings):
+            return settings
         return DichotomousModelSettings.parse_obj(settings)
 
 
