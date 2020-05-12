@@ -107,12 +107,14 @@ class Continuous(BaseModel):
     def get_model_settings(
         self, settings: Union[ContinuousModelSettings, Dict]
     ) -> ContinuousModelSettings:
-        if isinstance(settings, ContinuousModelSettings):
-            return settings
+        if isinstance(settings, dict):
+            settings = ContinuousModelSettings.parse_obj(settings)
 
-        if "varType" not in settings:
-            settings["varType"] = self.dataset.get_default_variance_model()
-        return ContinuousModelSettings.parse_obj(settings)
+        # set variable model if unset
+        if settings.varType is types.VarType_t.eVarTypeNone:  # noqa: E721
+            settings.varType = self.dataset.get_default_variance_model()
+
+        return settings
 
 
 class ExponentialM2(Continuous):

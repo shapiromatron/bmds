@@ -1,5 +1,5 @@
 import ctypes
-from typing import Callable, Dict, List, Union, Tuple
+from typing import Callable, Dict, List, Tuple, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import confloat, conint
@@ -13,7 +13,7 @@ class DichotomousModelSettings(PydanticBaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
     background: int = -9999
-    bmrType: types.BMRType_t = types.BMRType_t.eAbsoluteDev
+    bmrType: types.RiskType_t = types.RiskType_t.eExtraRisk
     degree: conint(ge=0, le=8) = 0
 
     def degree_param_names(self) -> List[str]:
