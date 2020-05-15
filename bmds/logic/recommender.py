@@ -5,8 +5,10 @@ from .. import constants
 from . import rules
 
 
-class Recommender(object):
-    # Recommendation logic for a specified data-type.
+class Recommender:
+    """
+    Recommendation logic for a specified data-type.
+    """
 
     def __init__(self, dtype):
 

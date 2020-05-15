@@ -17,7 +17,7 @@ def get_readme():
 
 requirements = [
     "six",
-    "dataclasses",
+    "pydantic",
     "requests",
     "numpy",
     "pandas",

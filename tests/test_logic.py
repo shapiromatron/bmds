@@ -6,8 +6,6 @@ import pytest
 import bmds
 from bmds.logic import rules
 
-from .fixtures import *  # noqa
-
 
 def dedentify(txt):
     return textwrap.dedent(txt).strip()
@@ -127,7 +125,7 @@ def test_rules_df():
 
 @pytest.mark.vcr()
 def test_apply_logic(cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
         session.add_model(bmds.constants.M_Power)
         session.add_model(bmds.constants.M_Polynomial)
@@ -384,7 +382,7 @@ def test_error_messages(cdataset):
 
 @pytest.mark.vcr()
 def test_parsimonious_recommendation(reduced_cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=reduced_cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=reduced_cdataset)
     session.add_default_models()
     session.execute()
     session.recommend()
@@ -417,8 +415,8 @@ def test_no_bmdl():
         ns=[289, 311, 315, 302, 70],
         incidences=[289, 309, 315, 302, 70],
     )
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ds)
-    session.add_model(bmds.constants.M_Multistage, overrides={"degree_poly": 3})
+    session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ds)
+    session.add_model(bmds.constants.M_Multistage, settings={"degree_poly": 3})
     session.execute_and_recommend()
     assert session.models[0].output["BMDL"] == 0
     assert session.recommended_model == session.models[0]

@@ -1,32 +1,35 @@
 import ctypes
-from typing import Callable, List, Tuple
+from typing import Callable, Dict, List, Tuple, Union
+
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import confloat, conint
 
 from ...datasets import ContinuousDataset
-from ...utils import get_dll_func
 from .. import types
-from .base import BaseModel
+from .base import BaseModel, BmdsFunctionManager
+
+
+class ContinuousModelSettings(PydanticBaseModel):
+    bmr: confloat(gt=0) = 0.1
+    alpha: confloat(gt=0, lt=1) = 0.05
+    tailProb: confloat(gt=0, lt=1) = 0.01
+    background: int = -9999
+    bmrType: types.BMRType_t = types.BMRType_t.eRelativeDev
+    degree: conint(ge=0, le=8) = 0
+    adverseDirection: conint(ge=0, le=1) = 0
+    restriction: conint(ge=0, le=1) = 1
+    varType: types.VarType_t = types.VarType_t.eVarTypeNone
+    bLognormal: bool = False
+    bUserParmInit: bool = False
 
 
 class Continuous(BaseModel):
-    _func: Callable = get_dll_func(
-        bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel"
-    )
     model_id: types.CModelID_t
     param_names: Tuple[str, ...] = ()
 
-    def __init__(self, variance: types.VarType_t = types.VarType_t.eConstant):
-        self.variance = variance
-        self.degree = 1
-
     @property
     def num_params(self) -> int:
-        params = len(self.param_names)
-        if self.variance is types.VarType_t.eConstant:  # noqa: E721
-            return params + 1
-        elif self.variance is types.VarType_t.eModeled:  # noqa: E721
-            return params + 2
-        else:
-            raise ValueError("Unknown variance type")
+        return len(self.param_names) + self.settings.varType.num_params()
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -35,18 +38,19 @@ class Continuous(BaseModel):
         raise NotImplementedError()
 
     def get_dll_default_options(self) -> types.BMDS_C_Options_t:
+        settings = self.settings
         return types.BMDS_C_Options_t(
-            bmr=0.1,
-            alpha=0.05,
-            background=-9999,
-            tailProb=0.01,
-            bmrType=types.BMRType_t.eRelativeDev.value,
-            degree=0,
-            adverseDirection=0,
-            restriction=1,
-            varType=self.variance.value,
-            bLognormal=ctypes.c_bool(False),
-            bUserParmInit=ctypes.c_bool(False),
+            bmr=settings.bmr,
+            alpha=settings.alpha,
+            background=settings.background,
+            tailProb=settings.tailProb,
+            bmrType=settings.bmrType.value,
+            degree=settings.degree,
+            adverseDirection=settings.adverseDirection,
+            restriction=settings.restriction,
+            varType=settings.varType,
+            bLognormal=ctypes.c_bool(settings.bLognormal),
+            bUserParmInit=ctypes.c_bool(settings.bUserParmInit),
         )
 
     def _build_dll_result(self, dataset: ContinuousDataset) -> types.BMD_C_ANAL:
@@ -64,14 +68,20 @@ class Continuous(BaseModel):
 
         return analysis
 
-    def execute(self, dataset: ContinuousDataset) -> types.ContinuousResult:
+    @property
+    def _func(self) -> Callable:
+        return BmdsFunctionManager.get_dll_func(
+            bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel"
+        )
+
+    def execute(self) -> types.ContinuousResult:
         model_id = ctypes.c_int(self.model_id.value)
         input_type = ctypes.c_int(types.BMDSInputType_t.eCont_4.value)
 
         # one row for each dose-group
-        dataset_array = dataset._build_dll_dataset()
-        results = self._build_dll_result(dataset)
-        n = ctypes.c_int(dataset.num_dose_groups)
+        dataset_array = self.dataset._build_dll_dataset()
+        results = self._build_dll_result(self.dataset)
+        n = ctypes.c_int(self.dataset.num_dose_groups)
 
         # using default priors
         priors_ = self.get_dll_default_frequentist_priors()
@@ -91,18 +101,23 @@ class Continuous(BaseModel):
         )
 
         return types.ContinuousResult.from_execution(
-            response_code, results, dataset.num_dose_groups, self.num_params
+            response_code, results, self.dataset.num_dose_groups, self.num_params
         )
 
+    def get_model_settings(
+        self, settings: Union[ContinuousModelSettings, Dict]
+    ) -> ContinuousModelSettings:
+        if isinstance(settings, dict):
+            settings = ContinuousModelSettings.parse_obj(settings)
 
-class Exponential(Continuous):
-    def get_dll_default_options(self) -> types.BMDS_C_Options_t:
-        options = super().get_dll_default_options()
-        options.degree = ctypes.c_int(self.degree)
-        return options
+        # set variable model if unset
+        if settings.varType is types.VarType_t.eVarTypeNone:  # noqa: E721
+            settings.varType = self.dataset.get_default_variance_model()
+
+        return settings
 
 
-class ExponentialM2(Exponential):
+class ExponentialM2(Continuous):
     model_id = types.CModelID_t.eExp2
     param_names = ("a", "b")
 
@@ -119,7 +134,7 @@ class ExponentialM2(Exponential):
         ]
 
 
-class ExponentialM3(Exponential):
+class ExponentialM3(Continuous):
     model_id = types.CModelID_t.eExp3
     param_names = ("a", "b", "c")
 
@@ -137,7 +152,7 @@ class ExponentialM3(Exponential):
         ]
 
 
-class ExponentialM4(Exponential):
+class ExponentialM4(Continuous):
     model_id = types.CModelID_t.eExp4
     param_names = ("a", "b", "c", "d")
 
@@ -156,7 +171,7 @@ class ExponentialM4(Exponential):
         ]
 
 
-class ExponentialM5(Exponential):
+class ExponentialM5(Continuous):
     model_id = types.CModelID_t.eExp5
     param_names = ("a", "b", "c", "d", "g")
 
@@ -211,21 +226,11 @@ class Hill(Continuous):
 class Polynomial(Continuous):
     model_id = types.CModelID_t.ePoly
 
-    def __init__(self, degree: int = 2):
-        super().__init__()
-        if degree < 1 or degree > 8:
-            raise ValueError(f"Invalid degree: {degree}")
-        self.degree = degree
-
     @property
     def param_names(self):
         params = ["g"]
-        params.extend([f"b{i + 1}" for i in range(self.degree)])
+        params.extend([f"b{i + 1}" for i in range(self.settings.degree)])
         return tuple(params)
-
-    @property
-    def num_params(self) -> int:
-        return self.degree + 1
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """
@@ -237,18 +242,17 @@ class Polynomial(Continuous):
         priors.extend(
             [
                 types.PRIOR(type=0, initialValue=1, stdDev=2, minValue=-18, maxValue=18)
-                for degree in range(self.degree)
+                for degree in range(self.settings.degree)
             ]
         )
         return priors
 
-    def get_dll_default_options(self) -> types.BMDS_C_Options_t:
-        options = super().get_dll_default_options()
-        options.degree = ctypes.c_int(self.degree)
-        return options
+    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+        settings.setdefault("degree", 2)
+        return super().get_model_settings(settings)
 
 
 class Linear(Polynomial):
-    def __init__(self):
-        super().__init__()
-        self.degree = 1
+    def get_model_settings(self, settings: Dict) -> ContinuousModelSettings:
+        settings["degree"] = 1
+        return super().get_model_settings(settings)

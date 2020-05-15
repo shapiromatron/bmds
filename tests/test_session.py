@@ -2,8 +2,6 @@ import unittest
 
 import bmds
 
-from .fixtures import *  # noqa
-
 
 class TestBMDS(unittest.TestCase):
     def test_get_bmds_versions(self):
@@ -13,7 +11,7 @@ class TestBMDS(unittest.TestCase):
 
     def test_latest_bmds(self):
         session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS)
-        assert session.version == bmds.constants.BMDS270
+        assert session.version_str == bmds.constants.BMDS312
 
     def test_get_model(self):
         model = bmds.BMDS.get_model(bmds.constants.BMDS2601, bmds.constants.M_Probit)
@@ -29,15 +27,15 @@ def test_default_model_additions(cdataset, ddataset):
             m._set_values()
         return len([m for m in session.models if "Multistage" in m.name])
 
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
     assert len(session.models) == 10
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset)
     session.add_default_models()
     assert len(session.models) == 10
 
-    session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS_CANCER, dataset=ddataset)
     session.add_default_models()
     assert len(session.models) == 3
 
@@ -46,24 +44,24 @@ def test_default_model_additions(cdataset, ddataset):
 
         # expected [2-8]
         cds = bmds.ContinuousDataset(doses=array, ns=array, means=array, stdevs=array)
-        session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cds)
+        session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cds)
         session.add_default_models()
         assert num_polys(session) == min(cds.num_dose_groups, 8) - 2
 
         # expected [2-8]
         dds = bmds.DichotomousDataset(doses=array, ns=array, incidences=array)
-        session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=dds)
+        session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=dds)
         session.add_default_models()
         assert num_multis(session) == min(dds.num_dose_groups, 8) - 2
 
         # expected [1-8]
-        session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS_CANCER, dataset=dds)
+        session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS_CANCER, dataset=dds)
         session.add_default_models()
         assert num_multis(session) == min(dds.num_dose_groups, 8) - 1
 
 
 def test_group_models(cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()
 
     # assert models are not grouped if no outputs exist

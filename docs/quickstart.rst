@@ -81,12 +81,12 @@ Frequently Asked Questions
         bmds.constants.CONTINUOUS,
         dataset=dataset)
 
-    # add overrides to all models
-    overrides = {
+    # add settings to all models
+    settings = {
         'bmr': 0.1,
         'bmr_type': bmr_types['Rel. Dev.']
     }
-    session.add_default_models(global_overrides=overrides)
+    session.add_default_models(global_settings=settings)
 
 2. How can I specify other settings on a particular model?
 
@@ -95,10 +95,10 @@ Frequently Asked Questions
     # get BMR types for dataset type selected
     bmr_types = bmds.constants.BMR_CROSSWALK[bmds.constants.CONTINUOUS]
 
-    # add model and overrides
+    # add model and settings
     session.add_model(
         bmds.constants.M_Polynomial,
-        overrides={
+        settings={
             'constant_variance': 1,
             'degree_poly': 3,
             'bmr': 2.5,

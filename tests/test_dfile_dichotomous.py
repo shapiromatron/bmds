@@ -1,7 +1,5 @@
 import bmds
 
-from .fixtures import *  # noqa
-
 
 def test_Logistic_213(ddataset):
     model = bmds.models.Logistic_213(ddataset)

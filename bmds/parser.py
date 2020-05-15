@@ -13,7 +13,10 @@ def try_float(v):
         return v
 
 
-class OutputParser(object):
+class OutputParser:
+    """
+    Output parser for BMDS 2.x models.
+    """
 
     # regex for finding numeric values
     re_num = r"[/+/-]?[0-9]+[/.]*[0-9]*[Ee+-]*[0-9]*"

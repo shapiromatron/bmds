@@ -3,7 +3,7 @@ from math import log
 from scipy import stats
 
 
-class Test(object):
+class Test:
     def __init__(self):
         self.DF = -1
         self.CDF = -1
@@ -13,7 +13,7 @@ class Test(object):
         self.TEST = -1.0
 
 
-class AnovaTests(object):
+class AnovaTests:
     @staticmethod
     def compute_likelihoods(n_obs, ns, ym, yd):
         Ntot = ns[0]
