@@ -41,6 +41,13 @@ def _list_to_c(list: List[Any], ctype):
     return (ctype * len(list))(*list)
 
 
+def _expand_column_order(flat_list: List[Any], ncols: int):
+    expanded_list = list()
+    for i in range(ncols):
+        expanded_list.append(flat_list[i::ncols])
+    return expanded_list
+
+
 ########################
 # Dichotomous Structures
 ########################
@@ -106,6 +113,25 @@ class DichotomousAnalysis(BaseModel):
             prior_cols=ctypes.c_int(self.prior_cols),
         )
 
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            model=struct.model.value,
+            n=struct.n.value,
+            Y=struct.Y[: struct.n.value],
+            doses=struct.doses[: struct.n.value],
+            n_group=struct.n_group[: struct.n.value],
+            prior=struct.prior[: struct.parms.value * struct.prior_cols.value],
+            BMD_type=struct.BMD_type.value,
+            BMR=struct.BMR.value,
+            alpha=struct.alpha.value,
+            degree=struct.degree.value,
+            samples=struct.samples.value,
+            burnin=struct.burnin.value,
+            parms=struct.parms.value,
+            prior_cols=struct.prior_cols.value,
+        )
+
 
 class DichotomousModelResult(BaseModel):
     """
@@ -142,6 +168,18 @@ class DichotomousModelResult(BaseModel):
             max=ctypes.c_double(self.max),
             dist_numE=ctypes.c_int(self.dist_numE),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
+        )
+
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            model=struct.model.value,
+            nparms=struct.nparms.value,
+            parms=struct.parms[: struct.nparms.value],
+            cov=struct.cov[: struct.nparms.value],
+            max=struct.max.value,
+            dist_numE=struct.dist_numE.value,
+            bmd_dist=struct.bmd_dist[: struct.dist_numE ** 2],
         )
 
 
@@ -181,6 +219,18 @@ class DichotomousMAAnalysis(BaseModel):
             modelPriors=_list_to_c(self.modelPriors, ctypes.c_double),
         )
 
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            nmodels=struct.nmodels.value,
+            priors=[x[:1] for x in struct.priors[: struct.nmodels.value]],
+            nparms=struct.nparms[: struct.nmodels.value],
+            actual_parms=struct.actual_parms[: struct.nmodels.value],
+            prior_cols=struct.prior_cols[: struct.nmodels.value],
+            models=struct.models[: struct.nmodels.value],
+            modelPriors=struct.modelPriors[: struct.nmodels.value],
+        )
+
 
 class DichotomousMAResult(BaseModel):
     nmodels: int
@@ -209,6 +259,16 @@ class DichotomousMAResult(BaseModel):
             dist_numE=ctypes.c_int(self.dist_numE),
             post_probs=_list_to_c(self.post_probs, ctypes.c_double),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
+        )
+
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            nmodels=struct.nmodels.value,
+            models=[[DichotomousModelResult.from_c(y) for y in x[:1]] for x in struct.models[: struct.nmodels.value]],
+            dist_numE=struct.dist_numE.value,
+            post_probs=struct.post_probs[: struct.nmodels.value],
+            bmd_dist=struct.bmd_dist[: struct.dis_numE.value ** 2],
         )
 
 
@@ -281,6 +341,29 @@ class ContinuousAnalysis(BaseModel):
             prior_cols=ctypes.c_int(self.prior_cols),
         )
 
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            model=struct.model.value,
+            n=struct.n.value,
+            suff_stat=struct.suff_stat.value,
+            Y=struct.Y[: struct.n.value],
+            doses=struct.doses[: struct.n.value],
+            sd=struct.sd[: struct.n.value],
+            n_group=struct.n_group[: struct.n.value],
+            prior=struct.prior[: struct.parms.value * struct.prior_cols.value],
+            BMD_type=struct.BMD_type.value,
+            isIncreasing=struct.isIncreasing.value,
+            BMR=struct.BMR.value,
+            tail_prob=struct.tail_prob.value,
+            disttype=struct.disttype.value,
+            alpha=struct.alpha.value,
+            samples=struct.samples.value,
+            burnin=struct.burnin.value,
+            parms=struct.parms.value,
+            prior_cols=struct.prior_cols.value,
+        )
+
 
 class ContinuousMAAnalysis(BaseModel):
 
@@ -316,6 +399,19 @@ class ContinuousMAAnalysis(BaseModel):
             models=_list_to_c(self.models, ctypes.c_int),
             disttype=_list_to_c(self.disttype, ctypes.c_int),
             modelPriors=_list_to_c(self.modelPriors, ctypes.c_double),
+        )
+
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            nmodels=struct.nmodels.value,
+            priors=[x[:1] for x in struct.priors[: struct.nmodels.value]],
+            nparms=struct.nparms[: struct.nmodels.value],
+            actual_parms=struct.actual_parms[: struct.nmodels.value],
+            prior_cols=struct.prior_cols[: struct.nmodels.value],
+            models=struct.models[: struct.nmodels.value],
+            disttype=struct.disttype[: struct.nmodels.value],
+            modelPriors=struct.modelPriors[: struct.nmodels.value],
         )
 
 
@@ -354,6 +450,19 @@ class ContinuousModelResult(BaseModel):
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
         )
 
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            model=struct.model.value,
+            dist=struct.dist.value,
+            nparms=struct.nparms.value,
+            parms=struct.parms[: struct.nparms.value],
+            cov=struct.cov[: struct.nparms.value],
+            max=struct.max.value,
+            dist_numE=struct.dist_numE.value,
+            bmd_dist=struct.bmd_dist[: struct.dist_numE ** 2],
+        )
+
 
 class ContinuousMAResult(BaseModel):
 
@@ -380,6 +489,16 @@ class ContinuousMAResult(BaseModel):
             dist_numE=ctypes.c_int(self.dist_numE),
             post_probs=_list_to_c(self.post_probs, ctypes.c_double),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
+        )
+
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            nmodels=struct.nmodels.value,
+            models=[[ContinuousModelResult.from_c(y) for y in x[:1]] for x in struct.models[: struct.nmodels.value]],
+            dist_numE=struct.dist_numE.value,
+            post_probs=struct.post_probs[: struct.nmodels.value],
+            bmd_dist=struct.bmd_dist[: struct.dis_numE.value ** 2],
         )
 
 
@@ -417,6 +536,17 @@ class BMDAnalysisMCMC(BaseModel):
             parms=_list_to_c(self.parms, ctypes.c_double),
         )
 
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            model=struct.model.value,
+            burnin=struct.burnin.value,
+            samples=struct.samples.value,
+            nparms=struct.nparms.value,
+            BMDS=struct.BMDS[: struct.samples.value],
+            parms=struct.parms[: struct.samples.value * struct.nparms.value],
+        )
+
 
 class MAMCMSFits(BaseModel):
 
@@ -431,5 +561,12 @@ class MAMCMSFits(BaseModel):
         return self.Struct(
             nfits=ctypes.c_uint(self.nfits),
             analyses=_list_to_c(analyses_partial, ctypes.POINTER(BMDAnalysisMCMC.Struct)),
+        )
+
+    @classmethod
+    def from_c(cls, struct):
+        return cls(
+            nfits=struct.nfits.value,
+            analyses=[[BMDAnalysisMCMC.from_c(y) for y in x[:1]] for x in struct.analyses[: struct.nfits.value]],
         )
 
