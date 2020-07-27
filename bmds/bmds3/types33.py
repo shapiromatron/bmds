@@ -170,9 +170,10 @@ class DichotomousMAAnalysis(BaseModel):
         ]
 
     def to_c(self):
+        priors_partial = self.priors.map(lambda x: _list_to_c(x, ctypes.c_double))
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
-            priors=_list_to_c(_list_to_c(self.priors, ctypes.c_double), ctypes.POINTER(ctypes.c_double)),
+            priors=_list_to_c(priors_partial, ctypes.POINTER(ctypes.c_double)),
             nparms=_list_to_c(self.nparms, ctypes.c_int),
             actual_parms=_list_to_c(self.actual_parms, ctypes.c_int),
             prior_cols=_list_to_c(self.prior_cols, ctypes.c_int),
@@ -201,12 +202,10 @@ class DichotomousMAResult(BaseModel):
         ]
 
     def to_c(self):
+        models_partial = self.models.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), DichotomousModelResult.Struct)))
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
-            models=_list_to_c(
-                _list_to_c(list(self.models.map(lambda x: x.to_c())), DichotomousModelResult.Struct),
-                ctypes.POINTER(DichotomousModelResult.Struct),
-            ),
+            models=_list_to_c(models_partial, ctypes.POINTER(DichotomousModelResult.Struct),),
             dist_numE=ctypes.c_int(self.dist_numE),
             post_probs=_list_to_c(self.post_probs, ctypes.c_double),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
@@ -307,9 +306,10 @@ class ContinuousMAAnalysis(BaseModel):
         ]
 
     def to_c(self):
+        priors_partial = self.priors.map(lambda x: _list_to_c(x, ctypes.c_double))
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
-            priors=_list_to_c(_list_to_c(self.priors, ctypes.c_double), ctypes.POINTER(ctypes.c_double)),
+            priors=_list_to_c(priors_partial, ctypes.POINTER(ctypes.c_double)),
             nparms=_list_to_c(self.nparms, ctypes.c_int),
             actual_parms=_list_to_c(self.actual_parms, ctypes.c_int),
             prior_cols=_list_to_c(self.prior_cols, ctypes.c_int),
@@ -373,12 +373,10 @@ class ContinuousMAResult(BaseModel):
         ]
 
     def to_c(self):
+        models_partial = self.models.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), ContinuousModelResult.Struct)))
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
-            models=_list_to_c(
-                _list_to_c(list(self.models.map(lambda x: x.to_c())), DichotomousModelResult.Struct),
-                ctypes.POINTER(ContinuousModelResult.Struct),
-            ),
+            models=_list_to_c(models_partial, ctypes.POINTER(ContinuousModelResult.Struct),),
             dist_numE=ctypes.c_int(self.dist_numE),
             post_probs=_list_to_c(self.post_probs, ctypes.c_double),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
@@ -429,8 +427,9 @@ class MAMCMSFits(BaseModel):
         _fields_ = [("nfits", ctypes.c_uint), ("analyses", ctypes.POINTER(ctypes.POINTER(BMDAnalysisMCMC.Struct)))]
 
     def to_c(self):
+        analyses_partial = self.analyses.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), BMDAnalysisMCMC.Struct)))
         return self.Struct(
             nfits=ctypes.c_uint(self.nfits),
-            analyses=_list_to_c(_list_to_c(self.analyses,), ctypes.POINTER(BMDAnalysisMCMC.Struct)),
+            analyses=_list_to_c(analyses_partial, ctypes.POINTER(BMDAnalysisMCMC.Struct)),
         )
 
