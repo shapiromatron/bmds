@@ -1,6 +1,7 @@
 import ctypes
 from enum import IntEnum
-from typing import List, Any
+from typing import Any, List
+
 from pydantic import BaseModel
 
 
@@ -42,10 +43,7 @@ def _list_to_c(list: List[Any], ctype):
 
 
 def _expand_column_order(flat_list: List[Any], ncols: int):
-    expanded_list = list()
-    for i in range(ncols):
-        expanded_list.append(flat_list[i::ncols])
-    return expanded_list
+    return [flat_list[i::ncols] for i in range(ncols)]
 
 
 ########################
@@ -156,7 +154,10 @@ class DichotomousModelResult(BaseModel):
             ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
             ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-            ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
+            (
+                "bmd_dist",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # bmd distribution (dist_numE x 2) matrix
         ]
 
     def to_c(self):
@@ -199,16 +200,25 @@ class DichotomousMAAnalysis(BaseModel):
     class Struct(ctypes.Structure):
         _fields_ = [
             ("nmodels", ctypes.c_int),  # number of models for the model average
-            ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),  # list of pointers to prior arrays
+            (
+                "priors",
+                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+            ),  # list of pointers to prior arrays
             ("nparms", ctypes.POINTER(ctypes.c_int)),  # parameters in each model
-            ("actual_parms", ctypes.POINTER(ctypes.c_int)),  # actual number of parameters in the model
-            ("prior_cols", ctypes.POINTER(ctypes.c_int)),  # columns in the prior if there are "more" in the future
+            (
+                "actual_parms",
+                ctypes.POINTER(ctypes.c_int),
+            ),  # actual number of parameters in the model
+            (
+                "prior_cols",
+                ctypes.POINTER(ctypes.c_int),
+            ),  # columns in the prior if there are "more" in the future
             ("models", ctypes.POINTER(ctypes.c_int)),  # list of models defined by DichModel
             ("modelPriors", ctypes.POINTER(ctypes.c_double)),  # prior probability on the model
         ]
 
     def to_c(self):
-        priors_partial = self.priors.map(lambda x: _list_to_c(x, ctypes.c_double))
+        priors_partial = [_list_to_c(x, ctypes.c_double) for x in self.priors]
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
             priors=_list_to_c(priors_partial, ctypes.POINTER(ctypes.c_double)),
@@ -248,11 +258,16 @@ class DichotomousMAResult(BaseModel):
             ),  # individual model fits for each model average
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             ("post_probs", ctypes.POINTER(ctypes.c_double)),  # posterior probabilities
-            ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd ma distribution (dist_numE x 2) matrix
+            (
+                "bmd_dist",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # bmd ma distribution (dist_numE x 2) matrix
         ]
 
     def to_c(self):
-        models_partial = self.models.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), DichotomousModelResult.Struct)))
+        models_partial = [
+            _list_to_c([y.to_c() for y in x], DichotomousModelResult.Struct) for x in self.models
+        ]
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
             models=_list_to_c(models_partial, ctypes.POINTER(DichotomousModelResult.Struct),),
@@ -265,7 +280,10 @@ class DichotomousMAResult(BaseModel):
     def from_c(cls, struct):
         return cls(
             nmodels=struct.nmodels.value,
-            models=[[DichotomousModelResult.from_c(y) for y in x[:1]] for x in struct.models[: struct.nmodels.value]],
+            models=[
+                [DichotomousModelResult.from_c(y) for y in x[:1]]
+                for x in struct.models[: struct.nmodels.value]
+            ],
             dist_numE=struct.dist_numE.value,
             post_probs=struct.post_probs[: struct.nmodels.value],
             bmd_dist=struct.bmd_dist[: struct.dis_numE.value ** 2],
@@ -304,9 +322,18 @@ class ContinuousAnalysis(BaseModel):
             ("suff_stat", ctypes.c_bool),  # true if the data are in sufficient statistics format
             ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
             ("doses", ctypes.POINTER(ctypes.c_double)),
-            ("sd", ctypes.POINTER(ctypes.c_double)),  # SD of the group if suff_stat = true, null otherwise
-            ("n_group", ctypes.POINTER(ctypes.c_double)),  # N for each group if suff_stat = true, null otherwise
-            ("prior", ctypes.POINTER(ctypes.c_double)),  # a column order matrix px5 where p is the number of parameters
+            (
+                "sd",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # SD of the group if suff_stat = true, null otherwise
+            (
+                "n_group",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # N for each group if suff_stat = true, null otherwise
+            (
+                "prior",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # a column order matrix px5 where p is the number of parameters
             ("BMD_type", ctypes.c_int),  # type of BMD
             ("isIncreasing", ctypes.c_bool),  # if the BMD is defined increasing or decreasing
             ("BMR", ctypes.c_double),  # benchmark response related to the BMD type
@@ -379,17 +406,26 @@ class ContinuousMAAnalysis(BaseModel):
     class Struct(ctypes.Structure):
         _fields_ = [
             ("nmodels", ctypes.c_int),  # number of models for each
-            ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),  # pointer to pointer arrays for the prior
+            (
+                "priors",
+                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+            ),  # pointer to pointer arrays for the prior
             ("nparms", ctypes.POINTER(ctypes.c_int)),  # parameters in each model
-            ("actual_parms", ctypes.POINTER(ctypes.c_int)),  # actual number of parameters in the model
-            ("prior_cols", ctypes.POINTER(ctypes.c_int)),  # columns in the prior if there are "more" in the future
+            (
+                "actual_parms",
+                ctypes.POINTER(ctypes.c_int),
+            ),  # actual number of parameters in the model
+            (
+                "prior_cols",
+                ctypes.POINTER(ctypes.c_int),
+            ),  # columns in the prior if there are "more" in the future
             ("models", ctypes.POINTER(ctypes.c_int)),  # given model
             ("disttype", ctypes.POINTER(ctypes.c_int)),  # given distribution type
             ("modelPriors", ctypes.POINTER(ctypes.c_double)),  # prior probability on the model
         ]
 
     def to_c(self):
-        priors_partial = self.priors.map(lambda x: _list_to_c(x, ctypes.c_double))
+        priors_partial = [_list_to_c(x, ctypes.c_double) for x in self.priors]
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
             priors=_list_to_c(priors_partial, ctypes.POINTER(ctypes.c_double)),
@@ -435,7 +471,10 @@ class ContinuousModelResult(BaseModel):
             ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
             ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-            ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
+            (
+                "bmd_dist",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # bmd distribution (dist_numE x 2) matrix
         ]
 
     def to_c(self):
@@ -478,11 +517,16 @@ class ContinuousMAResult(BaseModel):
             ("models", ctypes.POINTER(ctypes.POINTER(ContinuousModelResult.Struct)),),  # priors
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             ("post_probs", ctypes.POINTER(ctypes.c_double)),  # posterior probabilities
-            ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd ma distribution (dist_numE x 2) matrix
+            (
+                "bmd_dist",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # bmd ma distribution (dist_numE x 2) matrix
         ]
 
     def to_c(self):
-        models_partial = self.models.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), ContinuousModelResult.Struct)))
+        models_partial = [
+            _list_to_c([y.to_c() for y in x], ContinuousModelResult.Struct) for x in self.models
+        ]
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
             models=_list_to_c(models_partial, ctypes.POINTER(ContinuousModelResult.Struct),),
@@ -495,7 +539,10 @@ class ContinuousMAResult(BaseModel):
     def from_c(cls, struct):
         return cls(
             nmodels=struct.nmodels.value,
-            models=[[ContinuousModelResult.from_c(y) for y in x[:1]] for x in struct.models[: struct.nmodels.value]],
+            models=[
+                [ContinuousModelResult.from_c(y) for y in x[:1]]
+                for x in struct.models[: struct.nmodels.value]
+            ],
             dist_numE=struct.dist_numE.value,
             post_probs=struct.post_probs[: struct.nmodels.value],
             bmd_dist=struct.bmd_dist[: struct.dis_numE.value ** 2],
@@ -523,7 +570,10 @@ class BMDAnalysisMCMC(BaseModel):
             ("samples", ctypes.c_uint),  # total samples including burnin
             ("nparms", ctypes.c_uint),  # parameters in the model
             ("BMDS", ctypes.POINTER(ctypes.c_double)),  # array of samples of BMDS length (samples)
-            ("parms", ctypes.POINTER(ctypes.c_double)),  # array of parameters length (samples X parms)
+            (
+                "parms",
+                ctypes.POINTER(ctypes.c_double),
+            ),  # array of parameters length (samples X parms)
         ]
 
     def to_c(self):
@@ -554,10 +604,15 @@ class MAMCMSFits(BaseModel):
     analyses: List[List[BMDAnalysisMCMC]]
 
     class Struct(ctypes.Structure):
-        _fields_ = [("nfits", ctypes.c_uint), ("analyses", ctypes.POINTER(ctypes.POINTER(BMDAnalysisMCMC.Struct)))]
+        _fields_ = [
+            ("nfits", ctypes.c_uint),
+            ("analyses", ctypes.POINTER(ctypes.POINTER(BMDAnalysisMCMC.Struct))),
+        ]
 
     def to_c(self):
-        analyses_partial = self.analyses.map(lambda x: _list_to_c(x.map(lambda y: y.to_c(), BMDAnalysisMCMC.Struct)))
+        analyses_partial = [
+            _list_to_c([y.to_c() for y in x], BMDAnalysisMCMC.Struct) for x in self.analyses
+        ]
         return self.Struct(
             nfits=ctypes.c_uint(self.nfits),
             analyses=_list_to_c(analyses_partial, ctypes.POINTER(BMDAnalysisMCMC.Struct)),
@@ -567,6 +622,8 @@ class MAMCMSFits(BaseModel):
     def from_c(cls, struct):
         return cls(
             nfits=struct.nfits.value,
-            analyses=[[BMDAnalysisMCMC.from_c(y) for y in x[:1]] for x in struct.analyses[: struct.nfits.value]],
+            analyses=[
+                [BMDAnalysisMCMC.from_c(y) for y in x[:1]]
+                for x in struct.analyses[: struct.nfits.value]
+            ],
         )
-
