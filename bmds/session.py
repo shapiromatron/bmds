@@ -9,8 +9,8 @@ from typing import Dict, Tuple
 import pandas as pd
 from simple_settings import settings
 
-from . import __version__, constants, logic, remote, reporter, utils
-from .bmds2 import models
+from . import __version__, constants, logic, reporter, utils
+from .bmds2 import models, remote
 from .bmds3.models import dichotomous as d3
 
 __all__ = ("BMDS",)

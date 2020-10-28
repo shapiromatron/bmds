@@ -1,0 +1,706 @@
+interactions:
+- request:
+    body: '{"inputs": [{"bmds_version": "BMDS270", "model_name": "Linear", "dfile":
+      "Linear\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1\n1
+      6 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000 2.530000\n1340.000000
+      10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000 10 26.000000
+      2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000 1.580000"},
+      {"bmds_version": "BMDS270", "model_name": "Polynomial", "dfile": "Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n2\n1
+      6 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Polynomial", "dfile":
+      "Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n3\n1
+      6 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Polynomial", "dfile":
+      "Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n4\n1
+      6 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999 -9999
+      -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response
+      Stdev\n0.000000 10 29.300000 2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000
+      10 27.200000 2.530000\n5600.000000 10 26.000000 2.530000\n11125.000000 10 25.800000
+      2.210000\n23000.000000 8 24.500000 1.580000"}, {"bmds_version": "BMDS270", "model_name":
+      "Polynomial", "dfile": "Polynomial\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n5\n1
+      6 0\n500 1e-08 1e-08 0 -1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999 -9999
+      -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999\nDose NumAnimals
+      Response Stdev\n0.000000 10 29.300000 2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000
+      10 27.200000 2.530000\n5600.000000 10 26.000000 2.530000\n11125.000000 10 25.800000
+      2.210000\n23000.000000 8 24.500000 1.580000"}, {"bmds_version": "BMDS270", "model_name":
+      "Power", "dfile": "Power\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 0\n500 1e-08 1e-08 0 1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Hill", "dfile": "Hill\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 0\n500 1e-08 1e-08 0 1 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Exponential-M2", "dfile":
+      "Exponential-M2\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 -1 1000 11 0 1\n500 1e-08 1e-08 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999
+      -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999
+      -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999 -9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Exponential-M3", "dfile":
+      "Exponential-M3\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 -1 0100 22 0 1\n500 1e-08 1e-08 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999
+      -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999
+      -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999 -9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Exponential-M4", "dfile":
+      "Exponential-M4\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 -1 0010 33 0 1\n500 1e-08 1e-08 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999
+      -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999
+      -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999 -9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}, {"bmds_version": "BMDS270", "model_name": "Exponential-M5", "dfile":
+      "Exponential-M5\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out\n1
+      6 -1 0001 44 0 1\n500 1e-08 1e-08 0 1 0 0\n1 1.0 1 0.95\n-9999 0 -9999 -9999
+      -9999 -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999
+      -9999\n0\n-9999 -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999
+      -9999 -9999 -9999 -9999 -9999\n-9999 0 -9999 -9999 -9999 -9999\n0\n-9999 -9999
+      -9999 -9999 -9999 -9999\nDose NumAnimals Response Stdev\n0.000000 10 29.300000
+      2.530000\n1340.000000 10 28.400000 1.900000\n2820.000000 10 27.200000 2.530000\n5600.000000
+      10 26.000000 2.530000\n11125.000000 10 25.800000 2.210000\n23000.000000 8 24.500000
+      1.580000"}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '6475'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.24.0
+      authorization:
+      - <omitted>
+    method: POST
+    uri: http://bmds-python.com/api/dfile/
+  response:
+    body:
+      string: '[{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Polynomial Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-7ejkgbnb.(d)  \n  \t  Gnuplot Plotting
+        File:  C:\\Windows\\TEMP\\bmds-dfile-7ejkgbnb.plt\n \t\t\t\t\t\t\tWed Oct
+        28 22:09:52 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
+        + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   rho is set to 0\n   The polynomial coefficients are restricted
+        to be negative\n   A constant variance model is fit\n\n   Total number of
+        dose groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                         beta_0 =      28.2036\n                         beta_1
+        = -0.000182784\n\n\n           Asymptotic Correlation Matrix of Parameter
+        Estimates\n\n           ( *** The model parameter(s)  -rho   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha       beta_0       beta_1\n\n     alpha            1    -1.6e-007     2.2e-007\n\n    beta_0    -1.6e-007            1        -0.67\n\n    beta_1     2.2e-007        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17752         0.961441             3.29313             7.06191\n         beta_0          28.2205          0.40378             27.4291             29.0119\n         beta_1     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n\n\n\n     Table
+        of Data and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est
+        Mean   Obs Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n             Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean\n\nConfidence
+        level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
+        =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Polynomial
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-zsn3vite.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-zsn3vite.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:52 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
+        + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   rho is set to 0\n   The polynomial coefficients are restricted
+        to be negative\n   A constant variance model is fit\n\n   Total number of
+        dose groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                         beta_0 =      28.8784\n                         beta_1
+        = -0.000471177\n                         beta_2 =            0\n\n\n           Asymptotic
+        Correlation Matrix of Parameter Estimates\n\n           ( *** The model parameter(s)  -rho    -beta_2   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha       beta_0       beta_1\n\n     alpha            1       1e-007    -2.4e-007\n\n    beta_0       1e-007            1        -0.67\n\n    beta_1    -2.4e-007        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17752         0.961441             3.29313             7.06191\n         beta_0          28.2205          0.40378             27.4291             29.0119\n         beta_1     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n         beta_2                0               NA\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n     Table of Data
+        and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est Mean   Obs
+        Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n             Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean\n\nConfidence
+        level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
+        =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Polynomial
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-yr6fa_so.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-yr6fa_so.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:53 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
+        + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   rho is set to 0\n   The polynomial coefficients are restricted
+        to be negative\n   A constant variance model is fit\n\n   Total number of
+        dose groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                         beta_0 =      29.4117\n                         beta_1
+        =  -0.00100297\n                         beta_2 =            0\n                         beta_3
+        = -2.22467e-012\n\n\n           Asymptotic Correlation Matrix of Parameter
+        Estimates\n\n           ( *** The model parameter(s)  -rho    -beta_2    -beta_3   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha       beta_0       beta_1\n\n     alpha            1     3.9e-008     1.7e-008\n\n    beta_0     3.9e-008            1        -0.67\n\n    beta_1     1.7e-008        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17751          0.96144             3.29313              7.0619\n         beta_0          28.2205          0.40378             27.4291             29.0119\n         beta_1     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n         beta_2                0               NA\n         beta_3                0               NA\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n     Table of Data
+        and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est Mean   Obs
+        Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n             Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean\n\nConfidence
+        level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
+        =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Polynomial
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-u1gfyz1a.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-u1gfyz1a.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:53 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
+        + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   rho is set to 0\n   The polynomial coefficients are restricted
+        to be negative\n   A constant variance model is fit\n\n   Total number of
+        dose groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                         beta_0 =      29.3338\n                         beta_1
+        = -0.000805881\n                         beta_2 =            0\n                         beta_3
+        =            0\n                         beta_4 = -1.6236e-016\n\n\n           Asymptotic
+        Correlation Matrix of Parameter Estimates\n\n           ( *** The model parameter(s)  -rho    -beta_2    -beta_3    -beta_4   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha       beta_0       beta_1\n\n     alpha            1    -7.4e-008     5.3e-008\n\n    beta_0    -7.4e-008            1        -0.67\n\n    beta_1     5.3e-008        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17752         0.961441             3.29313             7.06191\n         beta_0          28.2205          0.40378             27.4291             29.0119\n         beta_1     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n         beta_2                0               NA\n         beta_3                0               NA\n         beta_4                0               NA\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n     Table of Data
+        and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est Mean   Obs
+        Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n             Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean\n\nConfidence
+        level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
+        =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Polynomial
+        Model. (Version: 2.21;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-apwtidjg.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-apwtidjg.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:54 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = beta_0 + beta_1*dose
+        + beta_2*dose^2 + ...\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   rho is set to 0\n   The polynomial coefficients are restricted
+        to be negative\n   A constant variance model is fit\n\n   Total number of
+        dose groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                         beta_0 =         29.3\n                         beta_1
+        = -0.000429705\n                         beta_2 = -2.6008e-007\n                         beta_3
+        =            0\n                         beta_4 = -5.03242e-015\n                         beta_5
+        =            0\n\n\n           Asymptotic Correlation Matrix of Parameter
+        Estimates\n\n           ( *** The model parameter(s)  -rho    -beta_2    -beta_3    -beta_4    -beta_5   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha       beta_0       beta_1\n\n     alpha            1    -3.3e-008     4.7e-008\n\n    beta_0    -3.3e-008            1        -0.67\n\n    beta_1     4.7e-008        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17752          0.96144             3.29313              7.0619\n         beta_0          28.2205          0.40378             27.4291             29.0119\n         beta_1     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n         beta_2                0               NA\n         beta_3                0               NA\n         beta_4                0               NA\n         beta_5                0               NA\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n     Table of Data
+        and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est Mean   Obs
+        Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n             Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean\n\nConfidence
+        level =          0.95\n\n             BMD =        12114.3\n\n\n            BMDL
+        =        8755.97\n\n\n            BMDU =        19612.5\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Power
+        Model. (Version: 2.19;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-ayja0gdq.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-ayja0gdq.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:54 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = control + slope
+        * dose^power\n\n\n   Dependent variable = Response\n   Independent variable
+        = Dose\n   rho is set to 0\n   The power is restricted to be greater than
+        or equal to 1\n   A constant variance model is fit\n\n   Total number of dose
+        groups = 6\n   Total number of records with missing values = 0\n   Maximum
+        number of iterations = 500\n   Relative Function Convergence has been set
+        to: 1e-008\n   Parameter Convergence has been set to: 1e-008\n\n\n\n                  Default
+        Initial Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                        control =         29.3\n                          slope
+        =     -1230.84\n                          power =        -9999\n\n\n           Asymptotic
+        Correlation Matrix of Parameter Estimates\n\n           ( *** The model parameter(s)  -rho    -power   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha      control        slope\n\n     alpha            1     6.1e-009     5.3e-009\n\n   control     6.1e-009            1        -0.67\n\n     slope     5.3e-009        -0.67            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          5.17752         0.961441             3.29313             7.06191\n        control          28.2205          0.40378             27.4291             29.0119\n          slope     -0.000187828     4.00998e-005        -0.000266423        -0.000109234\n          power                1               NA\n\nNA
+        - Indicates that this parameter has hit a bound\n     implied by some inequality
+        constraint and thus\n     has no standard error.\n\n\n\n     Table of Data
+        and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est Mean   Obs
+        Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         28.2         2.53         2.28            1.5\n
+        1340    10       28.4           28          1.9         2.28          0.599\n
+        2820    10       27.2         27.7         2.53         2.28         -0.682\n
+        5600    10         26         27.2         2.53         2.28          -1.62\n1.113e+004    10       25.8         26.1         2.21         2.28          -0.46\n2.3e+004     8       24.5         23.9         1.58         2.28          0.745\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -76.685438            3     159.370875\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4              6.87135          4          0.1428\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n               Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean \n\nConfidence
+        level =          0.95\n\n             BMD = 12114.3       \n\n\n            BMDL
+        = 8755.97       \n\n\n            BMDU = 19612.5       \n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Hill
+        Model. (Version: 2.18;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-ao65aey4.(d)  \n  \t  Gnuplot
+        Plotting File:  C:\\Windows\\TEMP\\bmds-dfile-ao65aey4.plt\n \t\t\t\t\t\t\tWed
+        Oct 28 22:09:55 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function is: \n\n   Y[dose] = intercept + v*dose^n/(k^n
+        + dose^n)\n\n\n   Dependent variable = Response\n   Independent variable =
+        Dose\n   rho is set to 0\n   Power parameter restricted to be greater than
+        1\n   A constant variance model is fit\n\n   Total number of dose groups =
+        6\n   Total number of records with missing values = 0\n   Maximum number of
+        iterations = 500\n   Relative Function Convergence has been set to: 1e-008\n   Parameter
+        Convergence has been set to: 1e-008\n\n\n\n                  Default Initial
+        Parameter Values  \n                          alpha =      5.12973\n                            rho
+        =            0   Specified\n                      intercept =         29.3\n                              v
+        =         -4.8\n                              n =      1.30346\n                              k
+        =         3515\n\n\n           Asymptotic Correlation Matrix of Parameter
+        Estimates\n\n           ( *** The model parameter(s)  -rho   \n                 have
+        been estimated at a boundary point, or have been specified by the user,\n                 and
+        do not appear in the correlation matrix )\n\n                  alpha    intercept            v            n            k\n\n     alpha            1       2e-007    -5.4e-007    -5.1e-007     4.6e-007\n\n
+        intercept       2e-007            1        -0.37        -0.25        -0.13\n\n         v    -5.4e-007        -0.37            1         0.92        -0.84\n\n         n    -5.1e-007        -0.25         0.92            1        -0.81\n\n         k     4.6e-007        -0.13        -0.84        -0.81            1\n\n\n\n                                 Parameter
+        Estimates\n\n                                                         95.0%
+        Wald Confidence Interval\n       Variable         Estimate        Std. Err.     Lower
+        Conf. Limit   Upper Conf. Limit\n          alpha          4.65846         0.865054             2.96298             6.35393\n      intercept          29.3467         0.662658             28.0479             30.6455\n              v         -5.20438          2.58205            -10.2651           -0.143664\n              n          1.17137          1.00305            -0.79458             3.13732\n              k          4066.88          4243.76            -4250.74             12384.5\n\n\n\n     Table
+        of Data and Estimated Values of Interest\n\n Dose       N    Obs Mean     Est
+        Mean   Obs Std Dev  Est Std Dev   Scaled Res.\n------     ---   --------     --------   -----------  -----------   ----------\n\n    0    10       29.3         29.3         2.53         2.16        -0.0684\n
+        1340    10       28.4         28.2          1.9         2.16          0.245\n
+        2820    10       27.2         27.3         2.53         2.16         -0.138\n
+        5600    10         26         26.3         2.53         2.16         -0.385\n1.113e+004    10       25.8         25.4         2.21         2.16          0.635\n2.3e+004     8       24.5         24.7         1.58         2.16         -0.323\n\n\n\n
+        Model Descriptions for likelihoods calculated\n\n\n Model A1:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n\n Model A2:        Yij =
+        Mu(i) + e(ij)\n           Var{e(ij)} = Sigma(i)^2\n\n Model A3:        Yij
+        = Mu(i) + e(ij)\n           Var{e(ij)} = Sigma^2\n     Model A3 uses any fixed
+        variance parameters that\n     were specified by the user\n\n Model  R:         Yi
+        = Mu + e(i)\n            Var{e(i)} = Sigma^2\n\n\n                       Likelihoods
+        of Interest\n\n            Model      Log(likelihood)   # Param''s      AIC\n             A1          -73.249763            7     160.499525\n             A2          -71.686303           12     167.372607\n             A3          -73.249763            7     160.499525\n         fitted          -73.621839            5     157.243678\n              R          -85.989618            2     175.979235\n\n\n                   Explanation
+        of Tests  \n\n Test 1:  Do responses and/or variances differ among Dose levels?
+        \n          (A2 vs. R)\n Test 2:  Are Variances Homogeneous? (A1 vs A2)\n
+        Test 3:  Are variances adequately modeled? (A2 vs. A3)\n Test 4:  Does the
+        Model for the Mean Fit? (A3 vs. fitted)\n (Note:  When rho=0 the results of
+        Test 3 and Test 2 will be the same.)\n\n                     Tests of Interest    \n\n   Test    -2*log(Likelihood
+        Ratio)  Test df        p-value    \n\n   Test 1              28.6066         10        0.001442\n   Test
+        2              3.12692          5          0.6804\n   Test 3              3.12692          5          0.6804\n   Test
+        4             0.744152          2          0.6893\n\nThe p-value for Test
+        1 is less than .05.  There appears to be a\ndifference between response and/or
+        variances among the dose levels\nIt seems appropriate to model the data\n\nThe
+        p-value for Test 2 is greater than .1.  A homogeneous variance \nmodel appears
+        to be appropriate here\n\n\nThe p-value for Test 3 is greater than .1.  The
+        modeled variance appears \n to be appropriate here\n\nThe p-value for Test
+        4 is greater than .1.  The model chosen seems \nto adequately describe the
+        data\n \n\n        Benchmark Dose Computation\n\nSpecified effect =             1\n\nRisk
+        Type        =     Estimated standard deviations from the control mean \n\nConfidence
+        level =           0.95\n\n             BMD =        3030.65\n\n            BMDL
+        =       1166.17\n\n            BMDU =       8586.22\n\n","stdout":"","stderr":""},{"status":1,"output":"\n\n
+        ==================================================================== \n   \t  Exponential
+        Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input Data File: C:\\Windows\\TEMP\\bmds-dfile-lmgqk79w.(d)  \n  \t  Gnuplot
+        Plotting File:  \n \t\t\t\t\t\t\tWed Oct 28 22:09:56 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function by Model: \n      Model 2:     Y[dose]
+        = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
+        * dose)^d}\n      Model 4:     Y[dose] = a * [c-(c-1) * exp{-b * dose}]\n      Model
+        5:     Y[dose] = a * [c-(c-1) * exp{-(b * dose)^d}]\n\n    Note: Y[dose] is
+        the median response for exposure = dose;\n          sign = +1 for increasing
+        trend in data;\n          sign = -1 for decreasing trend.\n\n      Model 2
+        is nested within Models 3 and 4.\n      Model 3 is nested within Model 5.\n      Model
+        4 is nested within Model 5.\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   Data are assumed to be distributed: normally\n   Variance
+        Model: exp(lnalpha +rho *ln(Y[dose]))\n   rho is set to 0.\n   A constant
+        variance model is fit.\n\n   Total number of dose groups = 6\n   Total number
+        of records with missing values = 0\n   Maximum number of iterations = 500\n   Relative
+        Function Convergence has been set to: 1e-008\n   Parameter Convergence has
+        been set to: 1e-008\n\n   MLE solution provided: Exact\n\n\n                  Initial
+        Parameter Values\n\n                  Variable          Model 2\n                  --------          --------\n                    lnalpha           1.52585          \n                        rho                 0
+        Specified\n                          a           25.6455          \n                          b      7.05758e-006          \n                          c                 0
+        Specified\n                          d                 1 Specified\n\n\n\n                     Parameter
+        Estimates\n\n                   Variable          Model 2          Std. Err.\n                   --------          -------          ---------\n                    lnalpha           1.63647           0.95392\n                          a           28.2836          0.410801\n                          b      7.36153e-006      1.57247e-006\n\n     NC
+        = No Convergence\n\n\n            Table of Stats From Input Data\n\n     Dose      N         Obs
+        Mean     Obs Std Dev\n     -----    ---       ----------   -------------\n         0     10         29.3         2.53\n      1340     10         28.4          1.9\n      2820     10         27.2         2.53\n      5600     10           26         2.53\n     1.113e+004     10         25.8         2.21\n     2.3e+004      8         24.5         1.58\n\n\n                  Estimated
+        Values of Interest\n\n      Dose      Est Mean      Est Std     Scaled Residual\n    ------    ----------    ---------    ----------------\n         0         28.28        2.266            1.418\n      1340         28.01        2.266           0.5498\n      2820          27.7        2.266          -0.7011\n      5600         27.14        2.266           -1.592\n1.113e+004         26.06        2.266          -0.3621\n  2.3e+004         23.88        2.266           0.7759\n\n\n\n   Other
+        models for which likelihoods are calculated:\n\n     Model A1:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma^2\n\n     Model A2:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma(i)^2\n\n     Model A3:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = exp(lalpha + log(mean(i)) * rho)\n\n     Model  R:        Yij
+        = Mu + e(i)\n               Var{e(ij)} = Sigma^2\n\n\n                                Likelihoods
+        of Interest\n\n                     Model      Log(likelihood)      DF         AIC\n                    -------    -----------------    ----   ------------\n                        A1       -73.24976            7      160.4995\n                        A2        -71.6863           12      167.3726\n                        A3       -73.24976            7      160.4995\n                         R       -85.98962            2      175.9792\n                         2       -76.45773            3      158.9155\n\n\n   Additive
+        constant for all log-likelihoods =      -53.3.  This constant added to the\n   above
+        values gives the log-likelihood including the term that does not\n   depend
+        on the model parameters.\n\n\n                                 Explanation
+        of Tests\n\n   Test 1:  Does response and/or variances differ among Dose levels?
+        (A2 vs. R)\n   Test 2:  Are Variances Homogeneous? (A2 vs. A1)\n   Test 3:  Are
+        variances adequately modeled? (A2 vs. A3)\n   Test 4:  Does Model 2 fit the
+        data? (A3 vs. 2)\n\n\n                            Tests of Interest\n\n     Test          -2*log(Likelihood
+        Ratio)       D. F.         p-value\n   --------        ------------------------      ------     --------------\n     Test
+        1                         28.61          10            0.001442\n     Test
+        2                         3.127           5              0.6804\n     Test
+        3                         3.127           5              0.6804\n     Test
+        4                         6.416           4              0.1702\n\n\n     The
+        p-value for Test 1 is less than .05.  There appears to be a\n     difference
+        between response and/or variances among the dose\n     levels, it seems appropriate
+        to model the data.\n\n     The p-value for Test 2 is greater than .1.  A homogeneous\n     variance
+        model appears to be appropriate here.\n\n     The p-value for Test 3 is greater
+        than .1.  The modeled\n     variance appears to be appropriate here.\n\n     The
+        p-value for Test 4 is greater than .1.  Model 2 seems\n     to adequately
+        describe the data.\n\n\n   Benchmark Dose Computations:\n\n     Specified
+        Effect = 1.000000\n\n            Risk Type = Estimated standard deviations
+        from control\n\n     Confidence Level = 0.950000\n\n                  BMD
+        =      11346.6\n\n                 BMDL =      7997.54\n\n                 BMDU
+        =      18823.8\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-gfn0imkz.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tWed Oct 28 22:09:56 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function by Model: \n      Model 2:     Y[dose]
+        = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
+        * dose)^d}\n      Model 4:     Y[dose] = a * [c-(c-1) * exp{-b * dose}]\n      Model
+        5:     Y[dose] = a * [c-(c-1) * exp{-(b * dose)^d}]\n\n    Note: Y[dose] is
+        the median response for exposure = dose;\n          sign = +1 for increasing
+        trend in data;\n          sign = -1 for decreasing trend.\n\n      Model 2
+        is nested within Models 3 and 4.\n      Model 3 is nested within Model 5.\n      Model
+        4 is nested within Model 5.\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   Data are assumed to be distributed: normally\n   Variance
+        Model: exp(lnalpha +rho *ln(Y[dose]))\n   rho is set to 0.\n   A constant
+        variance model is fit.\n\n   Total number of dose groups = 6\n   Total number
+        of records with missing values = 0\n   Maximum number of iterations = 500\n   Relative
+        Function Convergence has been set to: 1e-008\n   Parameter Convergence has
+        been set to: 1e-008\n\n   MLE solution provided: Exact\n\n\n                  Initial
+        Parameter Values\n\n                  Variable          Model 3\n                  --------          --------\n                    lnalpha           1.52585          \n                        rho                 0
+        Specified\n                          a           25.6455          \n                          b      7.05758e-006          \n                          c                 0
+        Specified\n                          d                 1          \n\n\n\n                     Parameter
+        Estimates\n\n                   Variable          Model 3          Std. Err.\n                   --------          -------          ---------\n                    lnalpha           1.63647          0.953921\n                          a           28.2836          0.414616\n                          b      7.36153e-006      1.60674e-006\n                          d                 1             NA\n\n     NC
+        = No Convergence\n\n\n            Table of Stats From Input Data\n\n     Dose      N         Obs
+        Mean     Obs Std Dev\n     -----    ---       ----------   -------------\n         0     10         29.3         2.53\n      1340     10         28.4          1.9\n      2820     10         27.2         2.53\n      5600     10           26         2.53\n     1.113e+004     10         25.8         2.21\n     2.3e+004      8         24.5         1.58\n\n\n                  Estimated
+        Values of Interest\n\n      Dose      Est Mean      Est Std     Scaled Residual\n    ------    ----------    ---------    ----------------\n         0         28.28        2.266            1.418\n      1340         28.01        2.266           0.5498\n      2820          27.7        2.266          -0.7011\n      5600         27.14        2.266           -1.592\n1.113e+004         26.06        2.266          -0.3621\n  2.3e+004         23.88        2.266           0.7759\n\n\n\n   Other
+        models for which likelihoods are calculated:\n\n     Model A1:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma^2\n\n     Model A2:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma(i)^2\n\n     Model A3:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = exp(lalpha + log(mean(i)) * rho)\n\n     Model  R:        Yij
+        = Mu + e(i)\n               Var{e(ij)} = Sigma^2\n\n\n                                Likelihoods
+        of Interest\n\n                     Model      Log(likelihood)      DF         AIC\n                    -------    -----------------    ----   ------------\n                        A1       -73.24976            7      160.4995\n                        A2        -71.6863           12      167.3726\n                        A3       -73.24976            7      160.4995\n                         R       -85.98962            2      175.9792\n                         3       -76.45773            3      158.9155\n\n\n   Additive
+        constant for all log-likelihoods =      -53.3.  This constant added to the\n   above
+        values gives the log-likelihood including the term that does not\n   depend
+        on the model parameters.\n\n\n                                 Explanation
+        of Tests\n\n   Test 1:  Does response and/or variances differ among Dose levels?
+        (A2 vs. R)\n   Test 2:  Are Variances Homogeneous? (A2 vs. A1)\n   Test 3:  Are
+        variances adequately modeled? (A2 vs. A3)\n\n   Test 5a: Does Model 3 fit
+        the data? (A3 vs 3)\n\n\n                            Tests of Interest\n\n     Test          -2*log(Likelihood
+        Ratio)       D. F.         p-value\n   --------        ------------------------      ------     --------------\n     Test
+        1                         28.61          10            0.001442\n     Test
+        2                         3.127           5              0.6804\n     Test
+        3                         3.127           5              0.6804\n    Test
+        5a                         6.416           4              0.1702\n\n\n     The
+        p-value for Test 1 is less than .05.  There appears to be a\n     difference
+        between response and/or variances among the dose\n     levels, it seems appropriate
+        to model the data.\n\n     The p-value for Test 2 is greater than .1.  A homogeneous\n     variance
+        model appears to be appropriate here.\n\n     The p-value for Test 3 is greater
+        than .1.  The modeled\n     variance appears to be appropriate here.\n\n     The
+        p-value for Test 5a is greater than .1.  Model 3 seems\n     to adequately
+        describe the data.\n\n\n   Benchmark Dose Computations:\n\n     Specified
+        Effect = 1.000000\n\n            Risk Type = Estimated standard deviations
+        from control\n\n     Confidence Level = 0.950000\n\n                  BMD
+        =      11346.6\n\n                 BMDL =      7997.54\n\n                 BMDU
+        =      18823.8\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-ea18ajdg.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tWed Oct 28 22:09:57 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function by Model: \n      Model 2:     Y[dose]
+        = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
+        * dose)^d}\n      Model 4:     Y[dose] = a * [c-(c-1) * exp{-b * dose}]\n      Model
+        5:     Y[dose] = a * [c-(c-1) * exp{-(b * dose)^d}]\n\n    Note: Y[dose] is
+        the median response for exposure = dose;\n          sign = +1 for increasing
+        trend in data;\n          sign = -1 for decreasing trend.\n\n      Model 2
+        is nested within Models 3 and 4.\n      Model 3 is nested within Model 5.\n      Model
+        4 is nested within Model 5.\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   Data are assumed to be distributed: normally\n   Variance
+        Model: exp(lnalpha +rho *ln(Y[dose]))\n   rho is set to 0.\n   A constant
+        variance model is fit.\n\n   Total number of dose groups = 6\n   Total number
+        of records with missing values = 0\n   Maximum number of iterations = 500\n   Relative
+        Function Convergence has been set to: 1e-008\n   Parameter Convergence has
+        been set to: 1e-008\n\n   MLE solution provided: Exact\n\n\n                  Initial
+        Parameter Values\n\n                  Variable          Model 4\n                  --------          --------\n                    lnalpha           1.52585          \n                        rho                 0
+        Specified\n                          a            30.765          \n                          b       9.0725e-005          \n                          c          0.758438          \n                          d                 1
+        Specified\n\n\n\n                     Parameter Estimates\n\n                   Variable          Model
+        4          Std. Err.\n                   --------          -------          ---------\n                    lnalpha             1.54374            0.869439\n                          a             29.2993             0.63177\n                          b         0.000199102         0.000111849\n                          c            0.845817           0.0281204\n\n     NC
+        = No Convergence\n\n\n            Table of Stats From Input Data\n\n     Dose      N         Obs
+        Mean     Obs Std Dev\n     -----    ---       ----------   -------------\n         0     10         29.3         2.53\n      1340     10         28.4          1.9\n      2820     10         27.2         2.53\n      5600     10           26         2.53\n     1.113e+004     10         25.8         2.21\n     2.3e+004      8         24.5         1.58\n\n\n                  Estimated
+        Values of Interest\n\n      Dose      Est Mean      Est Std     Scaled Residual\n    ------    ----------    ---------    ----------------\n         0          29.3        2.164        0.0009968\n      1340         28.24        2.164           0.2317\n      2820         27.36        2.164          -0.2316\n      5600         26.26        2.164          -0.3847\n1.113e+004         25.27        2.164           0.7673\n  2.3e+004         24.83        2.164           -0.429\n\n\n\n   Other
+        models for which likelihoods are calculated:\n\n     Model A1:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma^2\n\n     Model A2:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma(i)^2\n\n     Model A3:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = exp(lalpha + log(mean(i)) * rho)\n\n     Model  R:        Yij
+        = Mu + e(i)\n               Var{e(ij)} = Sigma^2\n\n\n                                Likelihoods
+        of Interest\n\n                     Model      Log(likelihood)      DF         AIC\n                    -------    -----------------    ----   ------------\n                        A1       -73.24976            7      160.4995\n                        A2        -71.6863           12      167.3726\n                        A3       -73.24976            7      160.4995\n                         R       -85.98962            2      175.9792\n                         4       -73.76847            4      155.5369\n\n\n   Additive
+        constant for all log-likelihoods =      -53.3.  This constant added to the\n   above
+        values gives the log-likelihood including the term that does not\n   depend
+        on the model parameters.\n\n\n                                 Explanation
+        of Tests\n\n   Test 1:  Does response and/or variances differ among Dose levels?
+        (A2 vs. R)\n   Test 2:  Are Variances Homogeneous? (A2 vs. A1)\n   Test 3:  Are
+        variances adequately modeled? (A2 vs. A3)\n\n   Test 6a: Does Model 4 fit
+        the data? (A3 vs 4)\n\n\n                            Tests of Interest\n\n     Test          -2*log(Likelihood
+        Ratio)       D. F.         p-value\n   --------        ------------------------      ------     --------------\n     Test
+        1                         28.61          10            0.001442\n     Test
+        2                         3.127           5              0.6804\n     Test
+        3                         3.127           5              0.6804\n    Test
+        6a                         1.037           3              0.7922\n\n\n     The
+        p-value for Test 1 is less than .05.  There appears to be a\n     difference
+        between response and/or variances among the dose\n     levels, it seems appropriate
+        to model the data.\n\n     The p-value for Test 2 is greater than .1.  A homogeneous\n     variance
+        model appears to be appropriate here.\n\n     The p-value for Test 3 is greater
+        than .1.  The modeled\n     variance appears to be appropriate here.\n\n     The
+        p-value for Test 6a is greater than .1.  Model 4 seems\n     to adequately
+        describe the data.\n\n\n   Benchmark Dose Computations:\n\n     Specified
+        Effect = 1.000000\n\n            Risk Type = Estimated standard deviations
+        from control\n\n     Confidence Level = 0.950000\n\n                  BMD
+        =       3274.6\n\n                 BMDL =      1414.98\n\n                 BMDU
+        =      8906.38\n","stdout":"","stderr":""},{"status":1,"output":"\n\n ====================================================================
+        \n   \t  Exponential Model. (Version: 1.11;  Date: 03/14/2017) \n  \t  Input
+        Data File: C:\\Windows\\TEMP\\bmds-dfile-i80dljob.(d)  \n  \t  Gnuplot Plotting
+        File:  \n \t\t\t\t\t\t\tWed Oct 28 22:09:57 2020\n ====================================================================
+        \n\n BMDS_Model_Run \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n
+        \n   The form of the response function by Model: \n      Model 2:     Y[dose]
+        = a * exp{sign * b * dose}\n      Model 3:     Y[dose] = a * exp{sign * (b
+        * dose)^d}\n      Model 4:     Y[dose] = a * [c-(c-1) * exp{-b * dose}]\n      Model
+        5:     Y[dose] = a * [c-(c-1) * exp{-(b * dose)^d}]\n\n    Note: Y[dose] is
+        the median response for exposure = dose;\n          sign = +1 for increasing
+        trend in data;\n          sign = -1 for decreasing trend.\n\n      Model 2
+        is nested within Models 3 and 4.\n      Model 3 is nested within Model 5.\n      Model
+        4 is nested within Model 5.\n\n\n   Dependent variable = Response\n   Independent
+        variable = Dose\n   Data are assumed to be distributed: normally\n   Variance
+        Model: exp(lnalpha +rho *ln(Y[dose]))\n   rho is set to 0.\n   A constant
+        variance model is fit.\n\n   Total number of dose groups = 6\n   Total number
+        of records with missing values = 0\n   Maximum number of iterations = 500\n   Relative
+        Function Convergence has been set to: 1e-008\n   Parameter Convergence has
+        been set to: 1e-008\n\n   MLE solution provided: Exact\n\n\n                  Initial
+        Parameter Values\n\n                  Variable          Model 5\n                  --------          --------\n                    lnalpha           1.52585          \n                        rho                 0
+        Specified\n                          a            30.765          \n                          b       9.0725e-005          \n                          c          0.758438          \n                          d                 1          \n\n\n\n                     Parameter
+        Estimates\n\n                   Variable          Model 5          Std. Err.\n                   --------          -------          ---------\n                    lnalpha           1.54374          0.869439\n                          a           29.2993           0.63177\n                          b       0.000199102       0.000111849\n                          c          0.845817         0.0281204\n                          d                 1             NA\n\n     NC
+        = No Convergence\n\n\n            Table of Stats From Input Data\n\n     Dose      N         Obs
+        Mean     Obs Std Dev\n     -----    ---       ----------   -------------\n         0     10         29.3         2.53\n      1340     10         28.4          1.9\n      2820     10         27.2         2.53\n      5600     10           26         2.53\n     1.113e+004     10         25.8         2.21\n     2.3e+004      8         24.5         1.58\n\n\n                  Estimated
+        Values of Interest\n\n      Dose      Est Mean      Est Std     Scaled Residual\n    ------    ----------    ---------    ----------------\n         0          29.3        2.164        0.0009987\n      1340         28.24        2.164           0.2317\n      2820         27.36        2.164          -0.2316\n      5600         26.26        2.164          -0.3847\n1.113e+004         25.27        2.164           0.7673\n  2.3e+004         24.83        2.164           -0.429\n\n\n\n   Other
+        models for which likelihoods are calculated:\n\n     Model A1:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma^2\n\n     Model A2:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = Sigma(i)^2\n\n     Model A3:        Yij
+        = Mu(i) + e(ij)\n               Var{e(ij)} = exp(lalpha + log(mean(i)) * rho)\n\n     Model  R:        Yij
+        = Mu + e(i)\n               Var{e(ij)} = Sigma^2\n\n\n                                Likelihoods
+        of Interest\n\n                     Model      Log(likelihood)      DF         AIC\n                    -------    -----------------    ----   ------------\n                        A1       -73.24976            7      160.4995\n                        A2        -71.6863           12      167.3726\n                        A3       -73.24976            7      160.4995\n                         R       -85.98962            2      175.9792\n                         5       -73.76847            4      155.5369\n\n\n   Additive
+        constant for all log-likelihoods =      -53.3.  This constant added to the\n   above
+        values gives the log-likelihood including the term that does not\n   depend
+        on the model parameters.\n\n\n                                 Explanation
+        of Tests\n\n   Test 1:  Does response and/or variances differ among Dose levels?
+        (A2 vs. R)\n   Test 2:  Are Variances Homogeneous? (A2 vs. A1)\n   Test 3:  Are
+        variances adequately modeled? (A2 vs. A3)\n\n   Test 7a: Does Model 5 fit
+        the data? (A3 vs 5)\n\n\n                            Tests of Interest\n\n     Test          -2*log(Likelihood
+        Ratio)       D. F.         p-value\n   --------        ------------------------      ------     --------------\n     Test
+        1                         28.61          10            0.001442\n     Test
+        2                         3.127           5              0.6804\n     Test
+        3                         3.127           5              0.6804\n    Test
+        7a                         1.037           3              0.7922\n\n\n     The
+        p-value for Test 1 is less than .05.  There appears to be a\n     difference
+        between response and/or variances among the dose\n     levels, it seems appropriate
+        to model the data.\n\n     The p-value for Test 2 is greater than .1.  A homogeneous\n     variance
+        model appears to be appropriate here.\n\n     The p-value for Test 3 is greater
+        than .1.  The modeled\n     variance appears to be appropriate here.\n\n     The
+        p-value for Test 7a is greater than .1.  Model 5 seems\n     to adequately
+        describe the data.\n\n\n   Benchmark Dose Computations:\n\n     Specified
+        Effect = 1.000000\n\n            Risk Type = Estimated standard deviations
+        from control\n\n     Confidence Level = 0.950000\n\n                  BMD
+        =      3274.61\n\n                 BMDL =      1414.98\n\n                 BMDU
+        =      8906.38\n","stdout":"","stderr":""}]'
+    headers:
+      Allow:
+      - POST, OPTIONS
+      Content-Length:
+      - '65664'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 28 Oct 2020 22:09:57 GMT
+      Server:
+      - Cheroot/6.3.3
+      Vary:
+      - Accept
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: OK
+version: 1

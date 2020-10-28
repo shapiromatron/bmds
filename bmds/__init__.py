@@ -10,10 +10,9 @@ import os
 os.environ.setdefault("SIMPLE_SETTINGS", "bmds.settings")  # noqa
 
 from . import constants  # noqa
-from .bmds2 import models  # noqa
+from .bmds2 import drunner, models  # noqa
 from .batch import SessionBatch  # noqa
 from .datasets import *  # noqa
-from .drunner import *  # noqa
 from .logic import *  # noqa
 from .plotting import *  # noqa
 from .reporter import Reporter, ReporterStyleGuide  # noqa
