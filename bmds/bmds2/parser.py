@@ -1,6 +1,6 @@
 import re
 
-from . import constants
+from .. import constants
 
 EXPONENTIAL = "E"
 CTYPES = [constants.CONTINUOUS, constants.CONTINUOUS_INDIVIDUAL, EXPONENTIAL]

@@ -10,7 +10,6 @@ import pandas as pd
 from simple_settings import settings
 
 from . import __version__, constants, logic, models, remote, reporter, utils
-# from .bmds3.models import continuous as c3
 from .bmds3.models import dichotomous as d3
 
 __all__ = ("BMDS",)

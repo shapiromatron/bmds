@@ -8,7 +8,7 @@ import numpy as np
 from simple_settings import settings
 
 from .. import constants, plotting
-from ..parser import OutputParser
+from ..bmds2.parser import OutputParser
 from ..utils import TempFileList
 
 logger = logging.getLogger(__name__)
