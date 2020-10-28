@@ -10,7 +10,8 @@ import pandas as pd
 from simple_settings import settings
 
 from . import __version__, constants, logic, remote, models, reporter, utils
-from .bmds3.models import continuous as c3
+
+# from .bmds3.models import continuous as c3
 from .bmds3.models import dichotomous as d3
 
 __all__ = ("BMDS",)
@@ -583,35 +584,37 @@ class BMDS_v330(BMDS):
     model_options = {
         constants.DICHOTOMOUS: {
             constants.M_Logistic: d3.Logistic,
-            constants.M_LogLogistic: d3.LogLogistic,
-            constants.M_Probit: d3.Probit,
-            constants.M_LogProbit: d3.LogProbit,
-            constants.M_QuantalLinear: d3.QuantalLinear,
-            constants.M_Multistage: d3.Multistage,
-            constants.M_Gamma: d3.Gamma,
-            constants.M_Weibull: d3.Weibull,
-            constants.M_DichotomousHill: d3.DichotomousHill,
+            # constants.M_LogLogistic: d3.LogLogistic,
+            # constants.M_Probit: d3.Probit,
+            # constants.M_LogProbit: d3.LogProbit,
+            # constants.M_QuantalLinear: d3.QuantalLinear,
+            # constants.M_Multistage: d3.Multistage,
+            # constants.M_Gamma: d3.Gamma,
+            # constants.M_Weibull: d3.Weibull,
+            # constants.M_DichotomousHill: d3.DichotomousHill,
         },
-        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: d3.Multistage},
+        constants.DICHOTOMOUS_CANCER: {
+            # constants.M_MultistageCancer: d3.Multistage
+        },
         constants.CONTINUOUS: {
-            constants.M_Linear: c3.Linear,
-            constants.M_Polynomial: c3.Polynomial,
-            constants.M_Power: c3.Power,
-            constants.M_Hill: c3.Hill,
-            constants.M_ExponentialM2: c3.ExponentialM2,
-            constants.M_ExponentialM3: c3.ExponentialM3,
-            constants.M_ExponentialM4: c3.ExponentialM4,
-            constants.M_ExponentialM5: c3.ExponentialM5,
+            # constants.M_Linear: c3.Linear,
+            # constants.M_Polynomial: c3.Polynomial,
+            # constants.M_Power: c3.Power,
+            # constants.M_Hill: c3.Hill,
+            # constants.M_ExponentialM2: c3.ExponentialM2,
+            # constants.M_ExponentialM3: c3.ExponentialM3,
+            # constants.M_ExponentialM4: c3.ExponentialM4,
+            # constants.M_ExponentialM5: c3.ExponentialM5,
         },
         constants.CONTINUOUS_INDIVIDUAL: {
-            constants.M_Linear: c3.Linear,
-            constants.M_Polynomial: c3.Polynomial,
-            constants.M_Power: c3.Power,
-            constants.M_Hill: c3.Hill,
-            constants.M_ExponentialM2: c3.ExponentialM2,
-            constants.M_ExponentialM3: c3.ExponentialM3,
-            constants.M_ExponentialM4: c3.ExponentialM4,
-            constants.M_ExponentialM5: c3.ExponentialM5,
+            # constants.M_Linear: c3.Linear,
+            # constants.M_Polynomial: c3.Polynomial,
+            # constants.M_Power: c3.Power,
+            # constants.M_Hill: c3.Hill,
+            # constants.M_ExponentialM2: c3.ExponentialM2,
+            # constants.M_ExponentialM3: c3.ExponentialM3,
+            # constants.M_ExponentialM4: c3.ExponentialM4,
+            # constants.M_ExponentialM5: c3.ExponentialM5,
         },
     }
 

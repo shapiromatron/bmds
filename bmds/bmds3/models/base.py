@@ -1,7 +1,7 @@
 import ctypes
 import logging
 import platform
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -11,21 +11,24 @@ from ...utils import package_root
 logger = logging.getLogger(__name__)
 
 
-class BmdsFunctionManager:
+class BmdsLibraryManager:
+    """
+    Cache for managing dll libraries
+    """
+
     def __init__(self):
         raise RuntimeError("Use as a static-class")
 
-    func_cache: Dict[Tuple[str, str, str], Callable] = {}
+    _dll_cache: Dict[str, ctypes.CDLL] = {}
 
     @classmethod
-    def get_dll_func(cls, bmds_version: str, base_name: str, func_name: str) -> Callable:
+    def get_dll(cls, bmds_version: str, base_name: str) -> ctypes.CDLL:
         """
-        Return a callable function from a dll. The filename will be OS and environment specific.
+        Returns a dll instance. The filename will be OS and environment specific.
 
         Args:
             bmds_version (str): The bmds version, eg., `BMDS330`
             base_name (str): The base-name for the file eg., `bmds_models`
-            func_name (str): The callable function from the dll, eg., `run_cmodel`
 
         Raises:
             EnvironmentError: System could not be determined
@@ -34,33 +37,35 @@ class BmdsFunctionManager:
         Returns:
             Callable: the callable function from the dll
         """
-        key = (bmds_version, base_name, func_name)
-        func = cls.func_cache.get(key)
 
-        if func is None:
-            logger.info(f"Loading dll from disk: {key}")
-            filename = base_name
+        filename = base_name
+        os_ = platform.system()
+        if os_ == "Windows":
+            filename += ".dll"
+        elif os_ == "Linux":
+            filename += ".so"
+        elif os_ == "Darwin":
+            filename += ".dylib"
+        else:
+            raise EnvironmentError(f"Unknown OS: {os_}")
 
-            os_ = platform.system()
-            if os_ == "Windows":
-                filename += ".dll"
-            elif os_ == "Linux":
-                filename += ".so"
-            elif os_ == "Darwin":
-                filename += ".dylib"
-            else:
-                raise EnvironmentError(f"Unknown OS: {os_}")
+        path = package_root / "bin" / bmds_version / filename
+        key = str(path)
+        dll = cls._dll_cache.get(key)
 
-            path = package_root / "bin" / bmds_version / filename
+        if dll is None:
             if not path.exists():
                 raise FileNotFoundError(f"Path does not exist: {path}")
 
+            logger.info(f"Loading dll from disk: {key}")
+            filename = base_name
             dll = ctypes.cdll.LoadLibrary(str(path))
-            func = getattr(dll, func_name)
+            cls._dll_cache[key] = dll
 
-            cls.func_cache[key] = func
+        return dll
 
-        return func
+
+InputModelSettings = Optional[Union[Dict, PydanticBaseModel]]
 
 
 class BaseModel:
@@ -74,7 +79,7 @@ class BaseModel:
     def __init__(
         self,
         dataset: Dataset,
-        settings: Optional[Union[Dict, PydanticBaseModel]] = None,
+        settings: InputModelSettings = None,
         id: Optional[Union[int, str]] = None,
     ):
         self.id = id
@@ -82,23 +87,23 @@ class BaseModel:
         self.execution_start = None
         self.execution_end = None
         self.execution_halted = False
-        self.settings = self.get_model_settings(settings or {})
+        self.settings = self.get_model_settings(settings)
         self.results = None
 
     @property
     def output_created(self) -> bool:
         return self.execution_start is not None and self.execution_halted is False
 
-    def get_model_settings(self, settings: Dict) -> Any:
+    def get_model_settings(self, settings: InputModelSettings) -> PydanticBaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def execute(self):
+    def execute(self) -> PydanticBaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
     def execute_job(self):
         self.results = self.execute()
 
-    def to_dict(self, model_index: int):
+    def to_dict(self, model_index: int) -> Dict:
         """
         Return a summary of the model in a dictionary format for serialization.
 

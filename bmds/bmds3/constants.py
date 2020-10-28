@@ -1,5 +1,8 @@
+import ctypes
 from enum import Enum, IntEnum
-from typing import Tuple
+from typing import List, Tuple
+
+from pydantic import BaseModel
 
 
 BMDS_BLANK_VALUE = -9999
@@ -75,7 +78,15 @@ class ContinuousModel(Enum):
         return self.verbose
 
 
-class Distribution(IntEnum):
-    normal = 1
-    normal_ncv = 2
-    log_normal = 3
+class PriorType(IntEnum):
+    eNone = 0
+    eNormal = 1
+    eLognormal = 2
+
+
+class Prior(BaseModel):
+    type: PriorType
+    initial_value: float
+    stdev: float
+    min_value: float
+    max_value: float

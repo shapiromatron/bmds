@@ -1,9 +1,10 @@
 import ctypes
+from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, confloat, conint
 
 from ..datasets import DichotomousDataset
 from . import constants
@@ -18,6 +19,20 @@ def _list_to_c(list: List[Any], ctype):
 ########################
 
 
+class DichotomousRiskType(IntEnum):
+    eExtraRisk = 1
+    eAddedRisk = 2
+
+
+class DichotomousModelSettings(BaseModel):
+    bmr: confloat(gt=0) = 0.1
+    alpha: confloat(gt=0, lt=1) = 0.05
+    bmr_type: DichotomousRiskType = DichotomousRiskType.eExtraRisk
+    degree: conint(ge=1, le=8) = 2  # multistage only
+    samples: conint(ge=10, le=1000) = 100
+    burnin: conint(ge=5, le=1000) = 20
+
+
 class DichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a dichotomous analysis.
@@ -28,7 +43,7 @@ class DichotomousAnalysis(BaseModel):
 
     model: constants.DichotomousModel
     dataset: DichotomousDataset
-    prior: List[float]
+    priors: List[constants.Prior]
     BMD_type: int
     BMR: float
     alpha: float
@@ -59,13 +74,17 @@ class DichotomousAnalysis(BaseModel):
         ]
 
     def to_c(self):
+        priors = []
+        for prior in self.priors:
+            priors.extend(prior.dict().values())
+
         return self.Struct(
             model=ctypes.c_int(self.model.value),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             Y=_list_to_c(self.dataset.incidences, ctypes.c_double),
             doses=_list_to_c(self.dataset.doses, ctypes.c_double),
             n_group=_list_to_c(self.dataset.ns, ctypes.c_double),
-            prior=_list_to_c(self.prior, ctypes.c_double),
+            prior=_list_to_c(priors, ctypes.c_double),
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
             alpha=ctypes.c_double(self.alpha),
@@ -96,7 +115,6 @@ class DichotomousModelResult(BaseModel):
         arbitrary_types_allowed = True
 
     class Struct(ctypes.Structure):
-
         _fields_ = [
             ("model", ctypes.c_int),  # dichotomous model specification
             ("nparms", ctypes.c_int),  # number of parameters in the model
