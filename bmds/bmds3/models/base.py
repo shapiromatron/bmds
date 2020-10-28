@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 
-from ...datasets import Dataset
+from ...datasets import DatasetBase
 from ...utils import package_root
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class BaseModel:
 
     def __init__(
         self,
-        dataset: Dataset,
+        dataset: DatasetBase,
         settings: InputModelSettings = None,
         id: Optional[Union[int, str]] = None,
     ):
