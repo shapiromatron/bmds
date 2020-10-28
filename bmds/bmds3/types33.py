@@ -2,6 +2,7 @@ import ctypes
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from ..datasets import DichotomousDataset
@@ -102,9 +103,9 @@ class DichotomousModelResult(BaseModel):
             ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
             ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
             ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
+            ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             ("model_df", ctypes.c_double),  # Used model degrees of freedom
             ("total_df", ctypes.c_double),  # Total degrees of freedom
-            ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             (
                 "bmd_dist",
                 ctypes.POINTER(ctypes.c_double),
@@ -113,9 +114,9 @@ class DichotomousModelResult(BaseModel):
 
     def to_c(self):
         n_params = len(self.model.params)
-        parms = np.zeros(n_params)
-        self.cov = np.zeros(n_params ** 2)
-        self.bmd_dist = np.zeros(self.dist_numE * 2)
+        parms = np.zeros(n_params, dtype=np.float64)
+        self.cov = np.zeros(n_params ** 2, dtype=np.float64)
+        self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return self.Struct(
             model=ctypes.c_int(self.model.value),
             nparms=ctypes.c_int(n_params),
@@ -127,8 +128,13 @@ class DichotomousModelResult(BaseModel):
 
     def from_c(self):
         n_params = len(self.model.params)
-        self.cov.reshape(n_params, n_params)
-        # TODO - why is `bmd_dist` zero here?
+        self.cov = self.cov.reshape(n_params, n_params)
+        self.bmd_dist = self.bmd_dist.reshape(2, self.dist_numE).T
+
+    def bmd_plot(self):
+        df = pd.DataFrame(data=self.bmd_dist, columns="bmd quantile".split())
+        df = df.query("bmd>0 & bmd < inf")
+        df.plot.scatter("bmd", "quantile", xlabel="Dose", ylabel="Propotion")
 
 
 class DichotomousMAAnalysis(BaseModel):
