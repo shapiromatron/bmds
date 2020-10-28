@@ -17,8 +17,9 @@ def test_bmds3_dichotomous_session():
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ds)
     assert session.version_tuple == (3, 3, 0)
     session.add_default_models()
-    session.execute()
-    results = session.to_dict(0)
+    for model in session.models:
+        model.execute(debug=True)
+    session.to_dict(0)
 
 
 # @pytest.mark.skipif(not should_run, reason="dlls only exist for Mac")

@@ -1,12 +1,13 @@
-from bmds.bmds3.constants import DichotomousModel
 import ctypes
-from enum import IntEnum
 import textwrap
+from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, confloat, conint
+
+from bmds.bmds3.constants import DichotomousModel
 
 from ..datasets import DichotomousDataset
 from . import constants

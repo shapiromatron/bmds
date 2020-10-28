@@ -1,4 +1,5 @@
 # dataset types
+
 DICHOTOMOUS = "D"
 DICHOTOMOUS_CANCER = "DC"
 CONTINUOUS = "C"

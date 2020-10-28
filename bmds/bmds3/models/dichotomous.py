@@ -2,8 +2,8 @@ import ctypes
 from typing import List
 
 from .. import types33
-from ..types33 import DichotomousModelSettings
 from ..constants import DichotomousModel, Prior
+from ..types33 import DichotomousModelSettings
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
 
 
