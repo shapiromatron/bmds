@@ -1,7 +1,11 @@
 import ctypes
-from typing import Any, List
+from typing import Any, Dict, List, Optional
 
+import numpy as np
 from pydantic import BaseModel
+
+from ..datasets import DichotomousDataset
+from . import constants
 
 
 def _list_to_c(list: List[Any], ctype):
@@ -21,11 +25,8 @@ class DichotomousAnalysis(BaseModel):
     save prior, degree, parms and prior_cols are used.
     """
 
-    model: int
-    n: int
-    Y: List[float]
-    doses: List[float]
-    n_group: List[float]
+    model: constants.DichotomousModel
+    dataset: DichotomousDataset
     prior: List[float]
     BMD_type: int
     BMR: float
@@ -33,8 +34,9 @@ class DichotomousAnalysis(BaseModel):
     degree: int
     samples: int
     burnin: int
-    parms: int
-    prior_cols: int
+
+    class Config:
+        arbitrary_types_allowed = True
 
     class Struct(ctypes.Structure):
 
@@ -57,11 +59,11 @@ class DichotomousAnalysis(BaseModel):
 
     def to_c(self):
         return self.Struct(
-            model=ctypes.c_int(self.model),
-            n=ctypes.c_int(self.n),
-            Y=_list_to_c(self.Y, ctypes.c_double),
-            doses=_list_to_c(self.doses, ctypes.c_double),
-            n_group=_list_to_c(self.n_group, ctypes.c_double),
+            model=ctypes.c_int(self.model.value),
+            n=ctypes.c_int(self.dataset.num_dose_groups),
+            Y=_list_to_c(self.dataset.incidences, ctypes.c_double),
+            doses=_list_to_c(self.dataset.doses, ctypes.c_double),
+            n_group=_list_to_c(self.dataset.ns, ctypes.c_double),
             prior=_list_to_c(self.prior, ctypes.c_double),
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
@@ -69,27 +71,8 @@ class DichotomousAnalysis(BaseModel):
             degree=ctypes.c_int(self.degree),
             samples=ctypes.c_int(self.samples),
             burnin=ctypes.c_int(self.burnin),
-            parms=ctypes.c_int(self.parms),
-            prior_cols=ctypes.c_int(self.prior_cols),
-        )
-
-    @classmethod
-    def from_c(cls, struct):
-        return cls(
-            model=struct.model.value,
-            n=struct.n.value,
-            Y=struct.Y[: struct.n.value],
-            doses=struct.doses[: struct.n.value],
-            n_group=struct.n_group[: struct.n.value],
-            prior=struct.prior[: struct.parms.value * struct.prior_cols.value],
-            BMD_type=struct.BMD_type.value,
-            BMR=struct.BMR.value,
-            alpha=struct.alpha.value,
-            degree=struct.degree.value,
-            samples=struct.samples.value,
-            burnin=struct.burnin.value,
-            parms=struct.parms.value,
-            prior_cols=struct.prior_cols.value,
+            parms=ctypes.c_int(len(self.model.params)),
+            prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
         )
 
 
@@ -99,13 +82,17 @@ class DichotomousModelResult(BaseModel):
     information for a single model fit.
     """
 
-    model: int
-    nparms: int
-    parms: List[float]
-    cov: List[float]
-    max: float
+    model: constants.DichotomousModel
     dist_numE: int
-    bmd_dist: List[float]
+    params: Optional[Dict[str, float]]
+    cov: Optional[np.ndarray]
+    max: Optional[float]
+    model_df: Optional[float]
+    total_df: Optional[float]
+    bmd_dist: Optional[np.ndarray]
+
+    class Config:
+        arbitrary_types_allowed = True
 
     class Struct(ctypes.Structure):
 
@@ -115,6 +102,8 @@ class DichotomousModelResult(BaseModel):
             ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
             ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
             ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
+            ("model_df", ctypes.c_double),  # Used model degrees of freedom
+            ("total_df", ctypes.c_double),  # Total degrees of freedom
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             (
                 "bmd_dist",
@@ -123,27 +112,23 @@ class DichotomousModelResult(BaseModel):
         ]
 
     def to_c(self):
+        n_params = len(self.model.params)
+        parms = np.zeros(n_params)
+        self.cov = np.zeros(n_params ** 2)
+        self.bmd_dist = np.zeros(self.dist_numE * 2)
         return self.Struct(
-            model=ctypes.c_int(self.model),
-            nparms=ctypes.c_int(self.nparms),
-            parms=_list_to_c(self.parms, ctypes.c_double),
-            cov=_list_to_c(self.cov, ctypes.c_double),
-            max=ctypes.c_double(self.max),
+            model=ctypes.c_int(self.model.value),
+            nparms=ctypes.c_int(n_params),
+            parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
+            bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         )
 
-    @classmethod
-    def from_c(cls, struct):
-        return cls(
-            model=struct.model.value,
-            nparms=struct.nparms.value,
-            parms=struct.parms[: struct.nparms.value],
-            cov=struct.cov[: struct.nparms.value],
-            max=struct.max.value,
-            dist_numE=struct.dist_numE.value,
-            bmd_dist=struct.bmd_dist[: struct.dist_numE ** 2],
-        )
+    def from_c(self):
+        n_params = len(self.model.params)
+        self.cov.reshape(n_params, n_params)
+        # TODO - why is `bmd_dist` zero here?
 
 
 class DichotomousMAAnalysis(BaseModel):

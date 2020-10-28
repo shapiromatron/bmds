@@ -5,7 +5,7 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import confloat, conint
 
 from ...datasets import DichotomousDataset
-from .. import types
+from .. import constants, types, types33
 from .base import BaseModel, BmdsFunctionManager
 
 
@@ -21,7 +21,7 @@ class DichotomousModelSettings(PydanticBaseModel):
 
 
 class Dichotomous(BaseModel):
-    model_id: types.DModelID_t
+    model_id: constants.DichotomousModel
     param_names: Tuple[str, ...] = ()
 
     @property
@@ -62,35 +62,32 @@ class Dichotomous(BaseModel):
     @property
     def _func(self) -> Callable:
         return BmdsFunctionManager.get_dll_func(
-            bmds_version="BMDS330", base_name="bmds_models", func_name="run_dmodel2"
+            bmds_version="BMDS330", base_name="libDRBMD", func_name="estimate_sm_laplace_dicho"
         )
 
-    def execute(self) -> types.DichotomousResult:
-        model_id = (ctypes.c_int * 1)(self.model_id.value)
-        model_type = (ctypes.c_int * 1)(types.BMDSInputType_t.eDich_4.value)
+    def execute(self) -> types33.DichotomousModelResult:
 
-        dataset_array = self.dataset._build_dll_dataset()
-        results = self._build_dll_result(self.dataset)
-        n = ctypes.c_int(self.dataset.num_dose_groups)
-
-        priors_ = self.get_dll_default_frequentist_priors()
-        priors = (types.PRIOR * len(priors_))(*priors_)
-
-        d_opts1, d_opts2 = self._get_dll_default_options()
-
-        response_code = self._func(
-            model_id,
-            ctypes.pointer(results),
-            model_type,
-            dataset_array,
-            priors,
-            ctypes.pointer(d_opts1),
-            ctypes.pointer(d_opts2),
-            ctypes.pointer(n),
+        # setup inputs
+        inputs = types33.DichotomousAnalysis(
+            model=self.model_id,
+            dataset=self.dataset,
+            prior=[1.0, 2.0, 0.0, 0.1, 2.0, 1.0, -20.0, 1e-12, 20.0, 100.0],
+            BMD_type=1,
+            BMR=0.1,
+            alpha=0.05,
+            degree=len(self.model_id.params) - 1,
+            samples=100,
+            burnin=20,
         )
-        return types.DichotomousResult.from_execution(
-            response_code, results, self.dataset.num_dose_groups, self.num_params
-        )
+
+        # setup outputs
+        results = types33.DichotomousModelResult(model=self.model_id, dist_numE=200)
+        results_struct = results.to_c()
+
+        self._func(ctypes.pointer(inputs.to_c()), ctypes.pointer(results_struct), True)
+        results.from_c()
+
+        return results
 
     def get_model_settings(
         self, settings: Union[DichotomousModelSettings, Dict]
@@ -101,8 +98,7 @@ class Dichotomous(BaseModel):
 
 
 class Logistic(Dichotomous):
-    model_id = types.DModelID_t.eLogistic
-    param_names = ("a", "b")
+    model_id = constants.DichotomousModel.d_logistic
 
     def get_dll_default_frequentist_priors(self) -> List[types.PRIOR]:
         """

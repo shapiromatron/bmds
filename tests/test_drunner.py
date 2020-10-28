@@ -4,11 +4,12 @@ import sys
 import pytest
 
 import bmds
+from bmds import remote
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="requires Windows")
 def test_drunner(cdataset):
-    payload = bmds.monkeypatch._get_payload(
+    payload = remote._get_payload(
         [bmds.models.Linear_220(cdataset), bmds.models.Power_218(cdataset)]
     )
     inputs = json.loads(payload)["inputs"]

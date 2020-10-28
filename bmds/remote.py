@@ -1,5 +1,5 @@
 """
-If we're not working on Windows, we cannot execute BMDS.
+If we're not working on Windows, we cannot execute BMDS < 3.
 
 The BMDS source-code can be for other operating systems, but the compiled
 binaries can yield different results from the same inputs. Thus, we treat the
@@ -23,7 +23,6 @@ from simple_settings import settings
 
 from .exceptions import RemoteBMDSExecutionException
 from .models.base import BMDModel, RunStatus
-from .session import BMDS
 
 logger = logging.getLogger(__name__)
 __all__ = []
@@ -99,33 +98,6 @@ def execute_model(self):
     _set_results(self, results)
 
 
-def execute_session(self):
-    # submit data
-    start_time = datetime.now()
-    executable_models = []
-    for model in self.models:
-        model.execution_start = start_time
-        if model.can_be_executed:
-            executable_models.append(model)
-        else:
-            _set_results(model)
-
-    if len(executable_models) == 0:
-        return
-
-    session = _get_requests_session()
-    payload = _get_payload(executable_models)
-    logger.debug(f"Submitting payload: {payload}")
-    resp = session.post(session._BMDS_REQUEST_URL, data=payload)
-
-    # parse results for each model
-    jsoned = resp.json()
-    for model, results in zip(executable_models, jsoned):
-        _set_results(model, results)
-
-
 if platform.system() != "Windows":
-
     # monkeypatch
-    BMDS.execute = execute_session
     BMDModel.execute = execute_model

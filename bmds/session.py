@@ -1,16 +1,21 @@
 import os
+import logging
+import platform
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
+from datetime import datetime
 from typing import Dict, Tuple
 
 import pandas as pd
 from simple_settings import settings
 
-from . import __version__, constants, logic, models, reporter, utils
+from . import __version__, constants, logic, remote, models, reporter, utils
 from .bmds3.models import continuous as c3
 from .bmds3.models import dichotomous as d3
 
 __all__ = ("BMDS",)
+
+logger = logging.getLogger(__name__)
 
 
 class BMDS:
@@ -135,14 +140,41 @@ class BMDS:
         self.models.append(instance)
 
     def execute(self):
-        def _execute(model):
-            model.execute_job()
+        if self._can_execute_locally():
+            self._execute()
+        else:
+            self._execute_remote()
 
+    def _execute(self):
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-            promises = executor.map(_execute, self.models)
+            promises = executor.map(lambda model: model.execute_job(), self.models)
 
         # evaluate response; throw Exceptions if raised
         list(promises)
+
+    def _execute_remote(self):
+        # submit data
+        start_time = datetime.now()
+        executable_models = []
+        for model in self.models:
+            model.execution_start = start_time
+            if model.can_be_executed:
+                executable_models.append(model)
+            else:
+                remote._set_results(model)
+
+        if len(executable_models) == 0:
+            return
+
+        session = remote._get_requests_session()
+        payload = remote._get_payload(executable_models)
+        logger.debug(f"Submitting payload: {payload}")
+        resp = session.post(session._BMDS_REQUEST_URL, data=payload)
+
+        # parse results for each model
+        jsoned = resp.json()
+        for model, results in zip(executable_models, jsoned):
+            remote._set_results(model, results)
 
     @property
     def recommendation_enabled(self):
@@ -404,6 +436,13 @@ class BMDS:
             _models.sort(key=_get_num_params)
 
         return list(od.values())
+
+    def _can_execute_locally(self) -> bool:
+        major_version = self.version_tuple[0]
+        if major_version == 2:
+            return platform.system() == "Windows"
+        elif major_version == 3:
+            return True
 
 
 class BMDS_v231(BMDS):

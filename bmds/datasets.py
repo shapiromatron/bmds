@@ -1,4 +1,3 @@
-import ctypes
 from collections import defaultdict
 
 import numpy as np
@@ -7,7 +6,6 @@ from simple_settings import settings
 
 from . import plotting
 from .anova import AnovaTests
-from .bmds3 import types
 
 __all__ = [
     "DichotomousDataset",
@@ -49,9 +47,6 @@ class Dataset:
 
     def _get_dataset_name(self):
         return self.kwargs.get("dataset_name", "BMDS output results")
-
-    def _build_dll_dataset(self) -> ctypes.Array:
-        raise NotImplementedError("Requires implementation")
 
 
 class DichotomousDataset(Dataset):
@@ -221,14 +216,6 @@ class DichotomousDataset(Dataset):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
-
-    def _build_dll_dataset(self) -> ctypes.Array:
-        return (types.BMDSInputData_t * self.num_dose_groups)(
-            *[
-                types.BMDSInputData_t(dose, n, incidence, 0.0)
-                for dose, n, incidence in zip(self.doses, self.ns, self.incidences)
-            ]
-        )
 
 
 class DichotomousCancerDataset(DichotomousDataset):
@@ -423,24 +410,6 @@ class ContinuousDataset(Dataset):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
-    def _build_dll_dataset(self) -> ctypes.Array:
-        return (types.BMDSInputData_t * self.num_dose_groups)(
-            *[
-                types.BMDSInputData_t(dose=dose, groupSize=n, response=mean, col4=stdev)
-                for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
-            ]
-        )
-
-    def get_default_variance_model(self) -> types.VarType_t:
-        """
-        Predict which variance model should be used based on the anova:
-            - set constant variance if p-test 2 >= 0.1, otherwise use modeled variance
-            - 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
-            - 1 = constant variance => Var(i) = alpha*mean(i)
-        """
-        anova = self.anova()
-        return types.VarType_t.eConstant if anova[1].TEST < 0.1 else types.VarType_t.eModeled
-
 
 class ContinuousIndividualDataset(ContinuousDataset):
     """
@@ -593,6 +562,3 @@ class ContinuousIndividualDataset(ContinuousDataset):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
-
-    def _build_dll_dataset(self) -> ctypes.Array:
-        raise NotImplementedError("TODO")

@@ -1,11 +1,11 @@
 import ctypes
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import confloat, conint
 
 from ...datasets import ContinuousDataset
-from .. import types
+from .. import constants, types
 from .base import BaseModel, BmdsFunctionManager
 
 
@@ -71,50 +71,32 @@ class Continuous(BaseModel):
     @property
     def _func(self) -> Callable:
         return BmdsFunctionManager.get_dll_func(
-            bmds_version="BMDS330", base_name="cmodels", func_name="run_cmodel"
+            bmds_version="BMDS330", base_name="libDRBMD", func_name="estimate_sm_laplace_cont"
         )
 
-    def execute(self) -> types.ContinuousResult:
-        model_id = ctypes.c_int(self.model_id.value)
-        input_type = ctypes.c_int(types.BMDSInputType_t.eCont_4.value)
+    def execute(self) -> bool:
+        return True
 
-        # one row for each dose-group
-        dataset_array = self.dataset._build_dll_dataset()
-        results = self._build_dll_result(self.dataset)
-        n = ctypes.c_int(self.dataset.num_dose_groups)
+    def get_model_settings(self) -> bool:
+        return True
 
-        # using default priors
-        priors_ = self.get_dll_default_frequentist_priors()
-        priors = (types.PRIOR * len(priors_))(*priors_)
+    def get_default_variance_model(self, dataset: ContinuousDataset) -> constants.VarType_t:
+        """
+        Predict which variance model should be used based on the anova:
+        - set constant variance if p-test 2 >= 0.1, otherwise use modeled variance
+        - 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
+        - 1 = constant variance => Var(i) = alpha*mean(i)
 
-        # using default options
-        options = self.get_dll_default_options()
+        Args:
+            dataset (ContinuousDataset): a continuous dataset
 
-        response_code = self._func(
-            ctypes.pointer(model_id),
-            ctypes.pointer(results),
-            ctypes.pointer(input_type),
-            dataset_array,
-            priors,
-            ctypes.pointer(options),
-            ctypes.pointer(n),
+        Returns:
+            constants.VarType_t: a variance type
+        """
+        anova = dataset.anova()
+        return (
+            constants.VarType_t.eConstant if anova[1].TEST < 0.1 else constants.VarType_t.eModeled
         )
-
-        return types.ContinuousResult.from_execution(
-            response_code, results, self.dataset.num_dose_groups, self.num_params
-        )
-
-    def get_model_settings(
-        self, settings: Union[ContinuousModelSettings, Dict]
-    ) -> ContinuousModelSettings:
-        if isinstance(settings, dict):
-            settings = ContinuousModelSettings.parse_obj(settings)
-
-        # set variable model if unset
-        if settings.varType is types.VarType_t.eVarTypeNone:  # noqa: E721
-            settings.varType = self.dataset.get_default_variance_model()
-
-        return settings
 
 
 class ExponentialM2(Continuous):

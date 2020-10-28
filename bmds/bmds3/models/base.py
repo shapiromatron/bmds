@@ -89,14 +89,6 @@ class BaseModel:
     def output_created(self) -> bool:
         return self.execution_start is not None and self.execution_halted is False
 
-    @property
-    def model_class(self) -> str:
-        return self.model_id.model_class()
-
-    @property
-    def model_name(self) -> str:
-        return self.model_id.pretty_name(self)
-
     def get_model_settings(self, settings: Dict) -> Any:
         raise NotImplementedError("Requires abstract implementation")
 
@@ -118,8 +110,8 @@ class BaseModel:
         """
         return dict(
             model_index=model_index,
-            model_class=self.model_class,
-            model_name=self.model_name,
+            model_class=self.model_id.name,
+            model_name=self.model_id.verbose,
             model_version=self.model_version,
             has_output=self.output_created,
             execution_halted=self.execution_halted,

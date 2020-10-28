@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum
+from typing import Tuple
 
 
 BMDS_BLANK_VALUE = -9999
@@ -24,21 +25,22 @@ class VarType_t(Enum):
 
 
 class DichotomousModel(Enum):
-    d_hill = 1, "Hill"
-    d_gamma = 2, "Gamma"
-    d_logistic = 3, "Logistic"
-    d_loglogistic = 4, "LogLogistic"
-    d_logprobit = 5, "LogProbit"
-    d_multistage = 6, "Multistage"
-    d_probit = 7, "Probit"
-    d_qlinear = 8, "QuantalLinear"
-    d_weibull = 9, "Weibull"
+    d_hill = 1, "Hill", ("a", "b")
+    d_gamma = 2, "Gamma", ("a", "b")
+    d_logistic = 3, "Logistic", ("a", "b")
+    d_loglogistic = 4, "LogLogistic", ("a", "b")
+    d_logprobit = 5, "LogProbit", ("a", "b")
+    d_multistage = 6, "Multistage", ("a", "b")
+    d_probit = 7, "Probit", ("a", "b")
+    d_qlinear = 8, "QuantalLinear", ("a", "b")
+    d_weibull = 9, "Weibull", ("a", "b")
 
-    def __new__(cls, id: int, verbose: str):
+    def __new__(cls, id: int, verbose: str, params: Tuple[str, ...]):
         # https://stackoverflow.com/a/12680149/906385
         entry = object.__new__(cls)
         entry.id = entry._value_ = id  # set the value, and the extra attribute
         entry.verbose = verbose
+        entry.params = params
         return entry
 
     def pretty_name(self, model) -> str:
