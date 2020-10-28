@@ -28,9 +28,15 @@ class DichotomousModelSettings(BaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
     bmr_type: DichotomousRiskType = DichotomousRiskType.eExtraRisk
-    degree: conint(ge=1, le=8) = 2  # multistage only
+    degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
+
+    def set_default_degree(self, model: constants.DichotomousModel, dataset: DichotomousDataset):
+        if model == constants.DichotomousModel.d_multistage:
+            self.degree = dataset.num_dose_groups - 1
+        else:
+            self.degree = model.num_params - 1
 
 
 class DichotomousAnalysis(BaseModel):
@@ -91,7 +97,7 @@ class DichotomousAnalysis(BaseModel):
             degree=ctypes.c_int(self.degree),
             samples=ctypes.c_int(self.samples),
             burnin=ctypes.c_int(self.burnin),
-            parms=ctypes.c_int(len(self.model.params)),
+            parms=ctypes.c_int(self.model.num_params),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
         )
 
@@ -131,13 +137,13 @@ class DichotomousModelResult(BaseModel):
         ]
 
     def to_c(self):
-        n_params = len(self.model.params)
-        parms = np.zeros(n_params, dtype=np.float64)
-        self.cov = np.zeros(n_params ** 2, dtype=np.float64)
+        num_params = self.model.num_params
+        parms = np.zeros(num_params, dtype=np.float64)
+        self.cov = np.zeros(num_params ** 2, dtype=np.float64)
         self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return self.Struct(
             model=ctypes.c_int(self.model.value),
-            nparms=ctypes.c_int(n_params),
+            nparms=ctypes.c_int(num_params),
             parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             dist_numE=ctypes.c_int(self.dist_numE),
@@ -145,8 +151,8 @@ class DichotomousModelResult(BaseModel):
         )
 
     def from_c(self):
-        n_params = len(self.model.params)
-        self.cov = self.cov.reshape(n_params, n_params)
+        num_params = self.model.num_params
+        self.cov = self.cov.reshape(num_params, num_params)
         self.bmd_dist = self.bmd_dist.reshape(2, self.dist_numE).T
 
     def bmd_plot(self):

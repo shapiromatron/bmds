@@ -1,6 +1,5 @@
-import ctypes
 from enum import Enum, IntEnum
-from typing import List, Tuple
+from typing import Tuple
 
 from pydantic import BaseModel
 
@@ -27,24 +26,33 @@ class VarType_t(Enum):
         return entry
 
 
-class DichotomousModel(Enum):
-    d_hill = 1, "Hill", ("a", "b")
-    d_gamma = 2, "Gamma", ("a", "b")
-    d_logistic = 3, "Logistic", ("a", "b")
-    d_loglogistic = 4, "LogLogistic", ("a", "b")
-    d_logprobit = 5, "LogProbit", ("a", "b")
-    d_multistage = 6, "Multistage", ("a", "b")
-    d_probit = 7, "Probit", ("a", "b")
-    d_qlinear = 8, "QuantalLinear", ("a", "b")
-    d_weibull = 9, "Weibull", ("a", "b")
+class DichotomousModelData(BaseModel):
+    id: int
+    verbose: str
+    params: Tuple[str, ...]
 
-    def __new__(cls, id: int, verbose: str, params: Tuple[str, ...]):
+
+class DichotomousModel(Enum):
+    d_hill = DichotomousModelData(id=1, verbose="Hill", params=("a", "b", "c", "d"))
+    d_gamma = DichotomousModelData(id=2, verbose="Gamma", params=("a", "b", "c"))
+    d_logistic = DichotomousModelData(id=3, verbose="Logistic", params=("a", "b"))
+    d_loglogistic = DichotomousModelData(id=4, verbose="LogLogistic", params=("a", "b", "c"))
+    d_logprobit = DichotomousModelData(id=5, verbose="LogProbit", params=("a", "b", "c"))
+    d_multistage = DichotomousModelData(id=6, verbose="Multistage", params=("a", "b"))
+    d_probit = DichotomousModelData(id=7, verbose="Probit", params=("a", "b"))
+    d_qlinear = DichotomousModelData(id=8, verbose="QuantalLinear", params=("a", "b"))
+    d_weibull = DichotomousModelData(id=9, verbose="Weibull", params=("a", "b", "c"))
+
+    def __new__(cls, data: DichotomousModelData):
         # https://stackoverflow.com/a/12680149/906385
         entry = object.__new__(cls)
-        entry.id = entry._value_ = id  # set the value, and the extra attribute
-        entry.verbose = verbose
-        entry.params = params
+        entry.id = entry._value_ = data.id  # set the value, and the extra attribute
+        entry.data = data
         return entry
+
+    @property
+    def num_params(self):
+        return len(self.data.params)
 
     def pretty_name(self, model) -> str:
         # TODO - move to model object
@@ -59,10 +67,8 @@ class ContinuousModel(Enum):
     eExp4 = 4, "Exponential 4"
     eExp5 = 5, "Exponential 5"
     eHill = 6, "Hill"
-    ePoly = 7, "Linear/Polynomial"
     ePow = 8, "Power"
-    gain_loss_model = 10, "Gain loss model"
-    polynomial = 666, "Linear/Polynomial"
+    ePolynomial = 666, "Linear/Polynomial"
 
     def __new__(cls, id: int, verbose: str):
         # https://stackoverflow.com/a/12680149/906385
