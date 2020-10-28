@@ -4,7 +4,7 @@ import subprocess
 from simple_settings import settings
 
 from . import session, utils
-from .models.base import RunStatus
+from .bmds2.models.base import RunStatus
 
 
 class BatchDfileRunner:

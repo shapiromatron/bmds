@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 from scipy.stats import gamma, norm
 
-from .. import constants
+from ... import constants
 from .base import BMDModel, DefaultParams
 
 

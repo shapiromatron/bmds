@@ -22,7 +22,7 @@ import requests
 from simple_settings import settings
 
 from .exceptions import RemoteBMDSExecutionException
-from .models.base import BMDModel, RunStatus
+from .bmds2.models.base import BMDModel, RunStatus
 
 logger = logging.getLogger(__name__)
 __all__ = []

@@ -7,9 +7,9 @@ from enum import IntEnum
 import numpy as np
 from simple_settings import settings
 
-from .. import constants, plotting
-from ..bmds2.parser import OutputParser
-from ..utils import TempFileList
+from ..parser import OutputParser
+from ... import constants, plotting
+from ...utils import TempFileList
 
 logger = logging.getLogger(__name__)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bin"))

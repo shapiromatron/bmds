@@ -9,7 +9,8 @@ import os
 
 os.environ.setdefault("SIMPLE_SETTINGS", "bmds.settings")  # noqa
 
-from . import constants, models  # noqa
+from . import constants  # noqa
+from .bmds2 import models  # noqa
 from .batch import SessionBatch  # noqa
 from .datasets import *  # noqa
 from .drunner import *  # noqa
