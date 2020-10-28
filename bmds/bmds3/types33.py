@@ -1,5 +1,7 @@
+from bmds.bmds3.constants import DichotomousModel
 import ctypes
 from enum import IntEnum
+import textwrap
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -31,12 +33,6 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-
-    def set_default_degree(self, model: constants.DichotomousModel, dataset: DichotomousDataset):
-        if model == constants.DichotomousModel.d_multistage:
-            self.degree = dataset.num_dose_groups - 1
-        else:
-            self.degree = model.num_params - 1
 
 
 class DichotomousAnalysis(BaseModel):
@@ -79,10 +75,30 @@ class DichotomousAnalysis(BaseModel):
             ("prior_cols", ctypes.c_int),  # columns in the prior
         ]
 
+        def __str__(self) -> str:
+            return textwrap.dedent(
+                f"""
+                model: {self.model}
+                n: {self.n}
+                Y: {self.Y[:self.n]}
+                doses: {self.doses[:self.n]}
+                n_group: {self.n_group[:self.n]}
+                prior: {self.prior[:self.parms*self.prior_cols]}
+                BMD_type: {self.BMD_type}
+                BMR: {self.BMR}
+                alpha: {self.alpha}
+                degree: {self.degree}
+                samples: {self.samples}
+                burnin: {self.burnin}
+                parms: {self.parms}
+                prior_cols: {self.prior_cols}
+                """
+            )
+
     def to_c(self):
-        priors = []
-        for prior in self.priors:
-            priors.extend(prior.dict().values())
+        priors = (
+            np.array([list(prior.dict().values()) for prior in self.priors]).T.flatten().tolist()
+        )
 
         return self.Struct(
             model=ctypes.c_int(self.model.value),
@@ -97,8 +113,16 @@ class DichotomousAnalysis(BaseModel):
             degree=ctypes.c_int(self.degree),
             samples=ctypes.c_int(self.samples),
             burnin=ctypes.c_int(self.burnin),
-            parms=ctypes.c_int(self.model.num_params),
+            parms=ctypes.c_int(self.num_params),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
+        )
+
+    @property
+    def num_params(self) -> int:
+        return (
+            self.degree + 1
+            if self.model == DichotomousModel.d_multistage
+            else self.model.num_params
         )
 
 
@@ -109,6 +133,7 @@ class DichotomousModelResult(BaseModel):
     """
 
     model: constants.DichotomousModel
+    num_params: int
     dist_numE: int
     params: Optional[Dict[str, float]]
     cov: Optional[np.ndarray]
@@ -137,13 +162,12 @@ class DichotomousModelResult(BaseModel):
         ]
 
     def to_c(self):
-        num_params = self.model.num_params
-        parms = np.zeros(num_params, dtype=np.float64)
-        self.cov = np.zeros(num_params ** 2, dtype=np.float64)
+        parms = np.zeros(self.num_params, dtype=np.float64)
+        self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
         self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return self.Struct(
             model=ctypes.c_int(self.model.value),
-            nparms=ctypes.c_int(num_params),
+            nparms=ctypes.c_int(self.num_params),
             parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             dist_numE=ctypes.c_int(self.dist_numE),
@@ -151,8 +175,7 @@ class DichotomousModelResult(BaseModel):
         )
 
     def from_c(self):
-        num_params = self.model.num_params
-        self.cov = self.cov.reshape(num_params, num_params)
+        self.cov = self.cov.reshape(self.num_params, self.num_params)
         self.bmd_dist = self.bmd_dist.reshape(2, self.dist_numE).T
 
     def bmd_plot(self):

@@ -20,11 +20,11 @@ class Dichotomous(BaseModel):
             model = DichotomousModelSettings.parse_obj(settings)
 
         if model.degree == 0:
-            model.set_default_degree(self.model, self.dataset)
+            model.degree = self.get_default_model_degree()
 
         return model
 
-    def execute(self) -> types33.DichotomousModelResult:
+    def execute(self, debug=False) -> types33.DichotomousModelResult:
         # setup inputs
         priors = self.default_frequentist_priors()
         inputs = types33.DichotomousAnalysis(
@@ -40,13 +40,19 @@ class Dichotomous(BaseModel):
         )
 
         # setup outputs
-        results = types33.DichotomousModelResult(model=self.model, dist_numE=200)
+        results = types33.DichotomousModelResult(
+            model=self.model, dist_numE=200, num_params=inputs.num_params
+        )
         results_struct = results.to_c()
 
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
+        inputs_struct = inputs.to_c()
+        if debug:
+            print(inputs_struct)
+
         dll.estimate_sm_laplace_dicho(
-            ctypes.pointer(inputs.to_c()), ctypes.pointer(results_struct), True
+            ctypes.pointer(inputs_struct), ctypes.pointer(results_struct), True
         )
         results.from_c()
 
@@ -55,105 +61,114 @@ class Dichotomous(BaseModel):
     def default_frequentist_priors(self) -> List[Prior]:
         pass
 
+    def get_default_model_degree(self) -> int:
+        return self.model.num_params - 1
+
 
 class Logistic(Dichotomous):
     model = DichotomousModel.d_logistic
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.1, stdev=1, min_value=1, max_value=10),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0.1, stdev=1, min_value=1, max_value=10),
+        ]
 
 
 class LogLogistic(Dichotomous):
     model = DichotomousModel.d_loglogistic
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
+        ]
 
 
 class Probit(Dichotomous):
     model = DichotomousModel.d_probit
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=18),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=18),
+        ]
 
 
 class LogProbit(Dichotomous):
     model = DichotomousModel.d_logprobit
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=-3.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=-3.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
+        ]
 
 
 class Gamma(Dichotomous):
     model = DichotomousModel.d_gamma
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=1.0, stdev=1, min_value=0.2, max_value=18),
-        Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=100),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=1.0, stdev=1, min_value=0.2, max_value=18),
+            Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=100),
+        ]
 
 
 class QuantalLinear(Dichotomous):
     model = DichotomousModel.d_qlinear
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.5, stdev=1, min_value=0, max_value=100),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0.5, stdev=1, min_value=0, max_value=100),
+        ]
 
 
 class Weibull(Dichotomous):
     model = DichotomousModel.d_weibull
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.5, stdev=1, min_value=1e-6, max_value=18),
-        Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-6, max_value=100),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0.5, stdev=1, min_value=1e-6, max_value=18),
+            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-6, max_value=100),
+        ]
 
 
 class DichotomousHill(Dichotomous):
     model = DichotomousModel.d_hill
-    default_frequentist_priors = [
-        Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=0.0, stdev=1, min_value=-18, max_value=18),
-        Prior(type=0, initial_value=1.0, stdev=1, min_value=-1e-8, max_value=18),
-    ]
+
+    def default_frequentist_priors(self) -> List[Prior]:
+        return [
+            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0, stdev=1, min_value=-1e-8, max_value=18),
+        ]
 
 
 class Multistage(Dichotomous):
     model = DichotomousModel.d_multistage
 
+    def default_frequentist_priors(self) -> List[Prior]:
+        # underlying dll code is duplicated based on the degree
+        return [
+            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=18),
+            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=100),
+            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=1e4),
+        ]
 
-#     @property
-#     def param_names(self) -> Tuple[str, ...]:
-#         params: List[str] = ["g"]
-#         params.extend(self.settings.degree_param_names())
-#         return tuple(params)
+    def get_default_model_degree(self) -> int:
+        return self.dataset.num_dose_groups - 1
 
-#     @property
-#     def num_params(self) -> int:
-#         return self.settings.degree + 1
+    def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
+        model = super().get_model_settings(settings)
 
-#     def get_dll_default_frequentist_priors(self) -> List[Prior]:
-#         """
-#         Returns the default list of frequentist priors for a model.
-#         """
+        if model.degree < 2:
+            raise ValueError(f"Multistage must be ≥ 2; got {model.degree}")
 
-#         priors = [
-#             Prior(type=0, initial_value=-17, stdev=0, min_value=-18, max_value=18),
-#             Prior(type=0, initial_value=0.1, stdev=0, min_value=0, max_value=100),
-#         ]
-#         if self.settings.degree > 2:
-#             priors.extend(
-#                 [
-#                     Prior(type=0, initial_value=0.1, stdev=0, min_value=0, max_value=1e4)
-#                     for degree in range(2, self.settings.degree)
-#                 ]
-#             )
-#         return priors
+        return model
