@@ -71,7 +71,7 @@ class Continuous(BaseModel):
     @property
     def _func(self) -> Callable:
         return BmdsFunctionManager.get_dll_func(
-            bmds_version="BMDS312", base_name="cmodels", func_name="run_cmodel"
+            bmds_version="BMDS330", base_name="cmodels", func_name="run_cmodel"
         )
 
     def execute(self) -> types.ContinuousResult:

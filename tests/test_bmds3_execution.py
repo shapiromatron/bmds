@@ -6,10 +6,10 @@ import pytest
 import bmds
 
 # TODO remove this restriction
-should_run = platform.system() == "Windows" and os.environ.get("GITHUB_RUN_ID") is None
+should_run = platform.system() == "Darwin" and os.getenv("CI") is None
 
 
-@pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
+@pytest.mark.skipif(not should_run, reason="dlls only exist for Mac")
 def test_bmds3_dichotomous_session(ddataset):
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ddataset)
     assert session.version_tuple[0] == 3
@@ -19,11 +19,11 @@ def test_bmds3_dichotomous_session(ddataset):
     assert len(results["models"]) == 10
 
 
-@pytest.mark.skipif(not should_run, reason="dlls only exist for Windows")
-def test_bmds3_continuous(cdataset):
-    session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
-    assert session.version_tuple[0] == 3
-    session.add_default_models()
-    session.execute()
-    results = session.to_dict(0)
-    assert len(results["models"]) == 10
+# @pytest.mark.skipif(not should_run, reason="dlls only exist for Mac")
+# def test_bmds3_continuous(cdataset):
+#     session = bmds.BMDS.latest_version(bmds.constants.CONTINUOUS, dataset=cdataset)
+#     assert session.version_tuple[0] == 3
+#     session.add_default_models()
+#     session.execute()
+#     results = session.to_dict(0)
+#     assert len(results["models"]) == 10

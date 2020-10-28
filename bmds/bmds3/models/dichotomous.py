@@ -62,7 +62,7 @@ class Dichotomous(BaseModel):
     @property
     def _func(self) -> Callable:
         return BmdsFunctionManager.get_dll_func(
-            bmds_version="BMDS312", base_name="bmds_models", func_name="run_dmodel2"
+            bmds_version="BMDS330", base_name="bmds_models", func_name="run_dmodel2"
         )
 
     def execute(self) -> types.DichotomousResult:

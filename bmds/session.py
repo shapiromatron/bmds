@@ -537,10 +537,10 @@ class BMDS_v270(BMDS_v2601):
     }
 
 
-class BMDS_v312(BMDS):
-    version_str = constants.BMDS312
-    version_pretty = "BMDS v3.1.2"
-    version_tuple = (3, 1, 2)
+class BMDS_v330(BMDS):
+    version_str = constants.BMDS330
+    version_pretty = "BMDS v3.3.0"
+    version_tuple = (3, 3, 0)
     model_options = {
         constants.DICHOTOMOUS: {
             constants.M_Logistic: d3.Logistic,
@@ -583,5 +583,5 @@ _BMDS_VERSIONS = {
     constants.BMDS260: BMDS_v260,
     constants.BMDS2601: BMDS_v2601,
     constants.BMDS270: BMDS_v270,
-    constants.BMDS312: BMDS_v312,
+    constants.BMDS330: BMDS_v330,
 }

@@ -23,7 +23,7 @@ class BmdsFunctionManager:
         Return a callable function from a dll. The filename will be OS and environment specific.
 
         Args:
-            bmds_version (str): The bmds version, eg., `BMDS312`
+            bmds_version (str): The bmds version, eg., `BMDS330`
             base_name (str): The base-name for the file eg., `bmds_models`
             func_name (str): The callable function from the dll, eg., `run_cmodel`
 
@@ -41,19 +41,13 @@ class BmdsFunctionManager:
             logger.info(f"Loading dll from disk: {key}")
             filename = base_name
 
-            bits = platform.architecture()[0]
-            if "64" in bits:
-                filename += "_x64"
-            elif "32" in bits:
-                pass
-            else:
-                raise EnvironmentError(f"Unknown architecture: {bits}")
-
             os_ = platform.system()
             if os_ == "Windows":
                 filename += ".dll"
-            elif os_ in ("Darwin", "Linux"):
+            elif os_ == "Linux":
                 filename += ".so"
+            elif os_ == "Darwin":
+                filename += ".dylib"
             else:
                 raise EnvironmentError(f"Unknown OS: {os_}")
 
@@ -75,7 +69,7 @@ class BaseModel:
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model_version = "BMDS312"
+    model_version = "BMDS330"
 
     def __init__(
         self,
