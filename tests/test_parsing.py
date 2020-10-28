@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import bmds
 
 expected_bad_anova_warnings = """THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!

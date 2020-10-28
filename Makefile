@@ -49,10 +49,10 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint:  ## Check for python formatting issues via black & flake8
-	@black . --check && flake8 .
+	@black . --check && isort -q --check . && flake8 .
 
 format:  ## Modify python code using black & show flake8 issues
-	@black . && isort -rc -y && flake8 .
+	@black . && isort -q . && flake8 .
 
 test:
 	# This runs all of the tests.

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # dataset types
 DICHOTOMOUS = "D"
 DICHOTOMOUS_CANCER = "DC"
