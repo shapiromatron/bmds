@@ -294,6 +294,8 @@ class DichotomousMAResult(BaseModel):
 #######################
 # Continuous Structures
 #######################
+class ContinuousModelSettings(BaseModel):
+    pass
 
 
 class ContinuousAnalysis(BaseModel):
