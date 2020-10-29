@@ -1,3 +1,4 @@
+import json
 import os
 import platform
 
@@ -17,6 +18,8 @@ def test_bmds3_dichotomous_session():
     session = bmds.BMDS.latest_version(bmds.constants.DICHOTOMOUS, dataset=ds)
     assert session.version_tuple == (3, 3, 0)
     session.add_default_models()
-    for model in session.models:
-        model.execute(debug=True)
-    session.to_dict(0)
+    session.execute()
+    d = session.to_dict(0)
+    # ensure json-serializable
+    print(json.dumps(d))
+

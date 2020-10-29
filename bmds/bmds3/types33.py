@@ -193,12 +193,23 @@ class DichotomousModelResult(BaseModel):
 
     def from_c(self):
         self.cov = self.cov.reshape(self.num_params, self.num_params)
-        self.bmd_dist = self.bmd_dist.reshape(2, self.dist_numE).T
+
+        # reshape; get rid of 0 and inf; must be JSON serializable
+        arr = self.bmd_dist.reshape(2, self.dist_numE).T
+        arr = arr[np.isfinite(arr[:, 0])]
+        arr = arr[arr[:, 0] > 0]
+        self.bmd_dist = arr
 
     def bmd_plot(self):
         df = pd.DataFrame(data=self.bmd_dist, columns="bmd quantile".split())
         df = df.query("bmd>0 & bmd < inf")
         df.plot.scatter("bmd", "quantile", xlabel="Dose", ylabel="Propotion")
+
+    def dict(self) -> Dict:
+        d = super().dict(exclude={"cov", "bmd_dist"})
+        d["cov"] = self.cov.tolist()
+        d["bmd_dist"] = self.bmd_dist.T.tolist()
+        return d
 
 
 class DichotomousMAAnalysis(BaseModel):
