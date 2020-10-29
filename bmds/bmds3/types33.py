@@ -57,6 +57,14 @@ class DichotomousAnalysis(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+    @property
+    def num_params(self) -> int:
+        return (
+            self.degree + 1
+            if self.model == DichotomousModelChoices.d_multistage.value
+            else self.model.num_params
+        )
+
     class Struct(ctypes.Structure):
 
         _fields_ = [
@@ -96,11 +104,27 @@ class DichotomousAnalysis(BaseModel):
                 """
             )
 
-    def to_c(self):
-        priors = (
-            np.array([list(prior.dict().values()) for prior in self.priors]).T.flatten().tolist()
-        )
+    def _priors_to_list(self) -> List[float]:
+        """
+        allocate memory for all parameters and convert to columnwise matrix
+        """
+        if len(self.priors) == self.num_params:
+            # most cases
+            arr = np.array([list(prior.dict().values()) for prior in self.priors])
+        elif len(self.priors) < self.num_params:
+            # special case for multistage; apply all priors; copy last one
+            data: List[List[float]] = []
+            for prior in self.priors[:-1]:
+                data.append(list(prior.dict().values()))
+            for _ in range(len(self.priors) - 1, self.num_params):
+                data.append(list(self.priors[-1].dict().values()))
+            arr = np.array(data)
+        else:
+            raise ValueError("Unknown state")
+        return arr.T.flatten().tolist()
 
+    def to_c(self):
+        priors = self._priors_to_list()
         return self.Struct(
             model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
@@ -116,14 +140,6 @@ class DichotomousAnalysis(BaseModel):
             burnin=ctypes.c_int(self.burnin),
             parms=ctypes.c_int(self.num_params),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
-        )
-
-    @property
-    def num_params(self) -> int:
-        return (
-            self.degree + 1
-            if self.model == DichotomousModelChoices.d_multistage.value
-            else self.model.num_params
         )
 
 
