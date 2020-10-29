@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, confloat, conint
 
-from bmds.bmds3.constants import DichotomousModel
+from bmds.bmds3.constants import DichotomousModelChoices
 
 from ..datasets import DichotomousDataset
 from . import constants
@@ -102,7 +102,7 @@ class DichotomousAnalysis(BaseModel):
         )
 
         return self.Struct(
-            model=ctypes.c_int(self.model.value),
+            model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             Y=_list_to_c(self.dataset.incidences, ctypes.c_double),
             doses=_list_to_c(self.dataset.doses, ctypes.c_double),
@@ -122,7 +122,7 @@ class DichotomousAnalysis(BaseModel):
     def num_params(self) -> int:
         return (
             self.degree + 1
-            if self.model == DichotomousModel.d_multistage
+            if self.model == DichotomousModelChoices.d_multistage.value
             else self.model.num_params
         )
 
@@ -167,7 +167,7 @@ class DichotomousModelResult(BaseModel):
         self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
         self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return self.Struct(
-            model=ctypes.c_int(self.model.value),
+            model=ctypes.c_int(self.model.id),
             nparms=ctypes.c_int(self.num_params),
             parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),

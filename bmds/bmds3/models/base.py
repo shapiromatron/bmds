@@ -116,8 +116,8 @@ class BaseModel:
         """
         return dict(
             model_index=model_index,
-            model_class=self.model.name,
-            model_name=self.model.data.verbose,
+            model_class=self.model.id,
+            model_name=self.model.verbose,
             model_version=self.model_version,
             has_output=self.output_created,
             execution_halted=self.execution_halted,

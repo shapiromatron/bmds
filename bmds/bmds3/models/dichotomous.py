@@ -2,7 +2,7 @@ import ctypes
 from typing import List
 
 from .. import types33
-from ..constants import DichotomousModel, Prior
+from ..constants import DichotomousModel, DichotomousModelChoices, Prior
 from ..types33 import DichotomousModelSettings
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
 
@@ -66,7 +66,7 @@ class Dichotomous(BaseModel):
 
 
 class Logistic(Dichotomous):
-    model = DichotomousModel.d_logistic
+    model = DichotomousModelChoices.d_logistic.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -76,7 +76,7 @@ class Logistic(Dichotomous):
 
 
 class LogLogistic(Dichotomous):
-    model = DichotomousModel.d_loglogistic
+    model = DichotomousModelChoices.d_loglogistic.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -87,7 +87,7 @@ class LogLogistic(Dichotomous):
 
 
 class Probit(Dichotomous):
-    model = DichotomousModel.d_probit
+    model = DichotomousModelChoices.d_probit.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -97,7 +97,7 @@ class Probit(Dichotomous):
 
 
 class LogProbit(Dichotomous):
-    model = DichotomousModel.d_logprobit
+    model = DichotomousModelChoices.d_logprobit.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -108,7 +108,7 @@ class LogProbit(Dichotomous):
 
 
 class Gamma(Dichotomous):
-    model = DichotomousModel.d_gamma
+    model = DichotomousModelChoices.d_gamma.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -119,7 +119,7 @@ class Gamma(Dichotomous):
 
 
 class QuantalLinear(Dichotomous):
-    model = DichotomousModel.d_qlinear
+    model = DichotomousModelChoices.d_qlinear.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -129,7 +129,7 @@ class QuantalLinear(Dichotomous):
 
 
 class Weibull(Dichotomous):
-    model = DichotomousModel.d_weibull
+    model = DichotomousModelChoices.d_weibull.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -140,7 +140,7 @@ class Weibull(Dichotomous):
 
 
 class DichotomousHill(Dichotomous):
-    model = DichotomousModel.d_hill
+    model = DichotomousModelChoices.d_hill.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         return [
@@ -152,7 +152,7 @@ class DichotomousHill(Dichotomous):
 
 
 class Multistage(Dichotomous):
-    model = DichotomousModel.d_multistage
+    model = DichotomousModelChoices.d_multistage.value
 
     def default_frequentist_priors(self) -> List[Prior]:
         # underlying dll code is duplicated based on the degree

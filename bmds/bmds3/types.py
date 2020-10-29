@@ -71,11 +71,6 @@ class CModelID_t(IntEnum):
     def model_class(self) -> str:
         return _c_model_class_cw[self.value]
 
-    def pretty_name(self, model) -> str:
-        if self.value == 7:
-            return "Linear" if model.settings.degree == 1 else f"Polynomial-{model.settings.degree}"
-        return self.model_class()
-
 
 _d_model_class_cw = {
     1: constants.M_DichotomousHill,
@@ -103,11 +98,6 @@ class DModelID_t(IntEnum):
 
     def model_class(self) -> str:
         return _d_model_class_cw[self.value]
-
-    def pretty_name(self, model) -> str:
-        if self.value == 6:
-            return f"Multistage-{model.settings.degree}"
-        return self.model_class()
 
 
 class BMDSPrior_t(IntEnum):
