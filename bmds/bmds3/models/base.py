@@ -52,13 +52,11 @@ class BmdsLibraryManager:
         path = package_root / "bin" / bmds_version / filename
         key = str(path)
         dll = cls._dll_cache.get(key)
-
         if dll is None:
             if not path.exists():
                 raise FileNotFoundError(f"Path does not exist: {path}")
 
             logger.info(f"Loading dll from disk: {key}")
-            filename = base_name
             dll = ctypes.cdll.LoadLibrary(str(path))
             cls._dll_cache[key] = dll
 
