@@ -514,7 +514,7 @@ class DefaultParams:
     max_iterations = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_INTEGER,
-        "d": 250,
+        "d": 500,
         "n": "Iteration",
     }
     relative_fn_conv = {

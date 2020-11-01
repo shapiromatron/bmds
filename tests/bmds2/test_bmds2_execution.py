@@ -216,10 +216,10 @@ def test_can_be_executed(bad_cdataset):
 
     assert bad_cdataset.num_dose_groups == 3
 
-    model = bmds.models.Power_217(bad_cdataset)
+    model = bmds.models.Power_219(bad_cdataset)
     assert model.can_be_executed is True
 
-    model = bmds.models.Exponential_M5_19(bad_cdataset)
+    model = bmds.models.Exponential_M5_111(bad_cdataset)
     assert model.can_be_executed is False
 
 
@@ -227,7 +227,6 @@ def test_can_be_executed(bad_cdataset):
 def test_bad_datasets(bad_cdataset, bad_ddataset):
     # ensure library doesn't fail with a terrible dataset that should never
     # be executed in the first place (which causes BMDS to throw NaN)
-
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=bad_cdataset)
     session.add_default_models()
     session.execute()
@@ -235,23 +234,6 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     halted = [model.execution_halted for model in session.models]
     assert halted == [False] * 8
     assert session.recommended_model_index is None
-
-    # gross; if we're on windows and actually existing then make timeout realistic; else we may be
-    # using pytest vcr and then make it really fast
-    timeout = 1e-5
-    with settings_stub(BMDS_MODEL_TIMEOUT_SECONDS=timeout):
-        # works in later versions; fix to this version
-        BMDSv2601 = bmds.BMDS.versions["BMDS2601"]
-        session = BMDSv2601(bmds.constants.DICHOTOMOUS, dataset=bad_ddataset)
-        session.add_model(bmds.constants.M_Gamma)
-        session.execute()
-        session.recommend()
-        total_time = session.models[0].execution_duration
-        timeout = settings.BMDS_MODEL_TIMEOUT_SECONDS
-
-        assert session.recommended_model_index is None
-        assert session.models[0].execution_halted is True
-        assert np.isclose(total_time, timeout) or total_time > timeout
 
 
 @pytest.mark.vcr()

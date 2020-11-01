@@ -445,98 +445,7 @@ class BMDS:
             return True
 
 
-class BMDS_v231(BMDS):
-    version_str = constants.BMDS231
-    version_pretty = "BMDS v2.3.1"
-    version_tuple = (2, 3, 1)
-
-
-class BMDS_v240(BMDS_v231):
-    version_str = constants.BMDS240
-    version_pretty = "BMDS v2.4.0"
-    version_tuple = (2, 4, 0)
-    model_options = {
-        constants.DICHOTOMOUS: {
-            constants.M_Logistic: models.Logistic_214,
-            constants.M_LogLogistic: models.LogLogistic_214,
-            constants.M_Probit: models.Probit_33,
-            constants.M_LogProbit: models.LogProbit_33,
-            constants.M_QuantalLinear: models.QuantalLinear_33,
-            constants.M_Multistage: models.Multistage_33,
-            constants.M_Gamma: models.Gamma_216,
-            constants.M_Weibull: models.Weibull_216,
-        },
-        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: models.MultistageCancer_110},
-        constants.CONTINUOUS: {
-            constants.M_Linear: models.Linear_217,
-            constants.M_Polynomial: models.Polynomial_217,
-            constants.M_Power: models.Power_217,
-            constants.M_Hill: models.Hill_217,
-            constants.M_ExponentialM2: models.Exponential_M2_19,
-            constants.M_ExponentialM3: models.Exponential_M3_19,
-            constants.M_ExponentialM4: models.Exponential_M4_19,
-            constants.M_ExponentialM5: models.Exponential_M5_19,
-        },
-        constants.CONTINUOUS_INDIVIDUAL: {
-            constants.M_Linear: models.Linear_217,
-            constants.M_Polynomial: models.Polynomial_217,
-            constants.M_Power: models.Power_217,
-            constants.M_Hill: models.Hill_217,
-            constants.M_ExponentialM2: models.Exponential_M2_19,
-            constants.M_ExponentialM3: models.Exponential_M3_19,
-            constants.M_ExponentialM4: models.Exponential_M4_19,
-            constants.M_ExponentialM5: models.Exponential_M5_19,
-        },
-    }
-
-
-class BMDS_v260(BMDS_v240):
-    version_str = constants.BMDS260
-    version_pretty = "BMDS v2.6.0"
-    version_tuple = (2, 6, 0)
-    model_options = {
-        constants.DICHOTOMOUS: {
-            constants.M_Logistic: models.Logistic_214,
-            constants.M_LogLogistic: models.LogLogistic_214,
-            constants.M_Probit: models.Probit_33,
-            constants.M_LogProbit: models.LogProbit_33,
-            constants.M_QuantalLinear: models.QuantalLinear_34,
-            constants.M_Multistage: models.Multistage_34,
-            constants.M_Gamma: models.Gamma_216,
-            constants.M_Weibull: models.Weibull_216,
-            constants.M_DichotomousHill: models.DichotomousHill_13,
-        },
-        constants.DICHOTOMOUS_CANCER: {constants.M_MultistageCancer: models.MultistageCancer_110},
-        constants.CONTINUOUS: {
-            constants.M_Linear: models.Linear_220,
-            constants.M_Polynomial: models.Polynomial_220,
-            constants.M_Power: models.Power_218,
-            constants.M_Hill: models.Hill_217,
-            constants.M_ExponentialM2: models.Exponential_M2_110,
-            constants.M_ExponentialM3: models.Exponential_M3_110,
-            constants.M_ExponentialM4: models.Exponential_M4_110,
-            constants.M_ExponentialM5: models.Exponential_M5_110,
-        },
-        constants.CONTINUOUS_INDIVIDUAL: {
-            constants.M_Linear: models.Linear_220,
-            constants.M_Polynomial: models.Polynomial_220,
-            constants.M_Power: models.Power_218,
-            constants.M_Hill: models.Hill_217,
-            constants.M_ExponentialM2: models.Exponential_M2_110,
-            constants.M_ExponentialM3: models.Exponential_M3_110,
-            constants.M_ExponentialM4: models.Exponential_M4_110,
-            constants.M_ExponentialM5: models.Exponential_M5_110,
-        },
-    }
-
-
-class BMDS_v2601(BMDS_v240):
-    version_str = constants.BMDS2601
-    version_pretty = "BMDS v2.6.0.1"
-    version_tuple = (2, 6, 0, 1)
-
-
-class BMDS_v270(BMDS_v2601):
+class BMDS_v270(BMDS):
     version_str = constants.BMDS270
     version_pretty = "BMDS v2.7.0"
     version_tuple = (2, 7, 0)
@@ -619,10 +528,6 @@ class BMDS_v330(BMDS):
 
 
 _BMDS_VERSIONS = {
-    constants.BMDS231: BMDS_v231,
-    constants.BMDS240: BMDS_v240,
-    constants.BMDS260: BMDS_v260,
-    constants.BMDS2601: BMDS_v2601,
     constants.BMDS270: BMDS_v270,
     constants.BMDS330: BMDS_v330,
 }

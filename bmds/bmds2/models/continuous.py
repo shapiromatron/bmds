@@ -1,5 +1,4 @@
 import os
-from copy import deepcopy
 
 import numpy as np
 
@@ -29,14 +28,14 @@ class Continuous(BMDModel):
 
 
 # POLYNOMIAL
-class Polynomial_216(Continuous):
+class Polynomial_221(Continuous):
     minimum_dose_groups = 2
     model_name = "Polynomial"
-    bmds_version_dir = "BMDS231"
+    bmds_version_dir = "BMDS270"
+    version = 2.21
+    date = "03/14/2017"
     exe = "poly"
     exe_plot = "00poly"
-    version = 2.16
-    date = "05/26/2010"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -116,35 +115,15 @@ class Polynomial_216(Continuous):
         return ys
 
 
-class Polynomial_217(Polynomial_216):
-    bmds_version_dir = "BMDS240"
-    version = 2.17
-    date = "01/28/2013"
-    defaults = deepcopy(Polynomial_216.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Polynomial_220(Polynomial_217):
-    bmds_version_dir = "BMDS260"
-    version = 2.20
-    date = "10/22/2014"
-
-
-class Polynomial_221(Polynomial_220):
-    bmds_version_dir = "BMDS270"
-    version = 2.21
-    date = "03/14/2017"
-
-
 # LINEAR
-class Linear_216(Polynomial_216):
+class Linear_221(Polynomial_221):
     minimum_dose_groups = 2
     model_name = "Linear"
-    bmds_version_dir = "BMDS231"
+    bmds_version_dir = "BMDS270"
     exe = "poly"
     exe_plot = "00poly"
-    version = 2.16
-    date = "05/26/2010"
+    version = 2.21
+    date = "03/14/2017"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -194,26 +173,6 @@ class Linear_216(Polynomial_216):
                 self.dataset.as_dfile(),
             ]
         )
-
-
-class Linear_217(Linear_216):
-    bmds_version_dir = "BMDS240"
-    version = 2.17
-    date = "01/28/2013"
-    defaults = deepcopy(Linear_216.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Linear_220(Linear_217):
-    bmds_version_dir = "BMDS260"
-    version = 2.20
-    date = "10/22/2014"
-
-
-class Linear_221(Linear_220):
-    bmds_version_dir = "BMDS270"
-    version = 2.21
-    date = "03/14/2017"
 
 
 # EXPONENTIAL M2
@@ -270,15 +229,15 @@ class Exponential(Continuous):
         )
 
 
-class Exponential_M2_17(Exponential):
+class Exponential_M2_111(Exponential):
+    bmds_version_dir = "BMDS270"
+    version = 1.11
+    date = "03/14/2017"
     minimum_dose_groups = 2
     model_name = "Exponential-M2"
-    bmds_version_dir = "BMDS231"
     exe = "exponential"
     exe_plot = "Expo_CPlot"
     exp_run_settings = "{} {} {} 1000 11 0 1"
-    version = 1.7
-    date = "12/10/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -309,28 +268,8 @@ class Exponential_M2_17(Exponential):
         return ys
 
 
-class Exponential_M2_19(Exponential_M2_17):
-    bmds_version_dir = "BMDS240"
-    version = 1.9
-    date = "01/29/2013"
-    defaults = deepcopy(Exponential_M2_17.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Exponential_M2_110(Exponential_M2_19):
-    bmds_version_dir = "BMDS260"
-    version = 1.10
-    date = "01/12/2015"
-
-
-class Exponential_M2_111(Exponential_M2_110):
-    bmds_version_dir = "BMDS270"
-    version = 1.11
-    date = "03/14/2017"
-
-
 # EXPONENTIAL M3
-class Exponential_M3_17(Exponential_M2_17):
+class Exponential_M3_111(Exponential_M2_111):
     minimum_dose_groups = 3
     model_name = "Exponential-M3"
     exp_run_settings = "{} {} {} 0100 22 0 1"
@@ -345,28 +284,8 @@ class Exponential_M3_17(Exponential_M2_17):
         return ys
 
 
-class Exponential_M3_19(Exponential_M3_17):
-    bmds_version_dir = "BMDS240"
-    version = 1.9
-    ddate = "01/29/2013"
-    defaults = deepcopy(Exponential_M3_17.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Exponential_M3_110(Exponential_M3_19):
-    bmds_version_dir = "BMDS260"
-    version = 1.10
-    date = "01/12/2015"
-
-
-class Exponential_M3_111(Exponential_M3_110):
-    bmds_version_dir = "BMDS270"
-    version = 1.11
-    date = "03/14/2017"
-
-
 # EXPONENTIAL M4
-class Exponential_M4_17(Exponential_M2_17):
+class Exponential_M4_111(Exponential_M2_111):
     minimum_dose_groups = 3
     model_name = "Exponential-M4"
     exp_run_settings = "{} {} {} 0010 33 0 1"
@@ -380,28 +299,8 @@ class Exponential_M4_17(Exponential_M2_17):
         return ys
 
 
-class Exponential_M4_19(Exponential_M4_17):
-    bmds_version_dir = "BMDS240"
-    version = 1.9
-    date = "01/29/2013"
-    defaults = deepcopy(Exponential_M4_17.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Exponential_M4_110(Exponential_M4_19):
-    bmds_version_dir = "BMDS260"
-    version = 1.10
-    date = "01/12/2015"
-
-
-class Exponential_M4_111(Exponential_M4_110):
-    bmds_version_dir = "BMDS270"
-    version = 1.11
-    date = "03/14/2017"
-
-
 # EXPONENTIAL M5
-class Exponential_M5_17(Exponential_M2_17):
+class Exponential_M5_111(Exponential_M2_111):
     minimum_dose_groups = 4
     model_name = "Exponential-M5"
     exp_run_settings = "{} {} {} 0001 44 0 1"
@@ -416,35 +315,15 @@ class Exponential_M5_17(Exponential_M2_17):
         return ys
 
 
-class Exponential_M5_19(Exponential_M5_17):
-    bmds_version_dir = "BMDS240"
-    version = 1.9
-    date = "01/29/2013"
-    defaults = deepcopy(Exponential_M5_17.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Exponential_M5_110(Exponential_M5_19):
-    bmds_version_dir = "BMDS260"
-    version = 1.10
-    date = "01/12/2015"
-
-
-class Exponential_M5_111(Exponential_M5_110):
-    bmds_version_dir = "BMDS270"
-    version = 1.11
-    date = "03/14/2017"
-
-
 # POWER
-class Power_216(Continuous):
+class Power_219(Continuous):
+    bmds_version_dir = "BMDS270"
+    version = 2.19
+    date = "03/14/2017"
     minimum_dose_groups = 3
     model_name = "Power"
-    bmds_version_dir = "BMDS231"
     exe = "power"
     exe_plot = "00power"
-    version = 2.16
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -499,35 +378,15 @@ class Power_216(Continuous):
         return ys
 
 
-class Power_217(Power_216):
-    bmds_version_dir = "BMDS240"
-    version = 2.17
-    date = "01/28/2013"
-    defaults = deepcopy(Power_216.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Power_218(Power_217):
-    bmds_version_dir = "BMDS260"
-    version = 2.18
-    date = "05/19/2014"
-
-
-class Power_219(Power_218):
-    bmds_version_dir = "BMDS270"
-    version = 2.19
-    date = "03/14/2017"
-
-
 # HILL
-class Hill_216(Continuous):
+class Hill_218(Continuous):
+    bmds_version_dir = "BMDS270"
+    version = 2.18
+    date = "03/14/2017"
     minimum_dose_groups = 4
     model_name = "Hill"
-    bmds_version_dir = "BMDS231"
     exe = "hill"
     exe_plot = "00Hill"
-    version = 2.16
-    date = "04/06/2011"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -582,17 +441,3 @@ class Hill_216(Continuous):
         k = self._get_param("k")
         ys = intercept + (v * np.power(xs, n)) / (np.power(k, n) + np.power(xs, n))
         return ys
-
-
-class Hill_217(Hill_216):
-    bmds_version_dir = "BMDS240"
-    version = 2.17
-    date = "01/28/2013"
-    defaults = deepcopy(Hill_216.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Hill_218(Hill_217):
-    bmds_version_dir = "BMDS270"
-    version = 2.18
-    date = "03/14/2017"

@@ -6,7 +6,7 @@ import bmds
 class TestBMDS(unittest.TestCase):
     def test_get_bmds_versions(self):
         versions = sorted(bmds.BMDS.get_versions())
-        expected = sorted(["BMDS231", "BMDS240", "BMDS260", "BMDS2601", "BMDS270", "BMDS330"])
+        expected = sorted(["BMDS270", "BMDS330"])
         self.assertListEqual(versions, expected)
 
     def test_latest_bmds(self):
@@ -14,8 +14,8 @@ class TestBMDS(unittest.TestCase):
         assert session.version_str == bmds.constants.BMDS330
 
     def test_get_model(self):
-        model = bmds.BMDS.get_model(bmds.constants.BMDS2601, bmds.constants.M_Probit)
-        assert model == bmds.models.Probit_33
+        model = bmds.BMDS.get_model(bmds.constants.BMDS270, bmds.constants.M_Probit)
+        assert model == bmds.models.Probit_34
 
 
 def test_default_model_additions(cdataset, ddataset):

@@ -24,14 +24,14 @@ class DichotomousCancer(Dichotomous):
 
 
 # MULTISTAGE
-class Multistage_32(Dichotomous):
+class Multistage_34(Dichotomous):
+    bmds_version_dir = "BMDS270"
+    version = 3.4
+    date = "05/02/2014"
     minimum_dose_groups = 2
     model_name = "Multistage"
-    bmds_version_dir = "BMDS231"
     exe = "multistage"
     exe_plot = "10multista"
-    version = 3.2
-    date = "05/26/2010"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -104,23 +104,9 @@ class Multistage_32(Dichotomous):
         return ys
 
 
-class Multistage_33(Multistage_32):
-    bmds_version_dir = "BMDS240"
-    version = 3.3
-    date = "02/28/2013"
-    defaults = deepcopy(Multistage_32.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Multistage_34(Multistage_33):
-    bmds_version_dir = "BMDS260"
-    version = 3.4
-    date = "05/02/2014"
-
-
 # QUANTAL LINEAR
-class QuantalLinear_32(Multistage_32):
-    defaults = deepcopy(Multistage_32.defaults)
+class QuantalLinear_34(Multistage_34):
+    defaults = deepcopy(Multistage_34.defaults)
     defaults["degree_poly"] = DefaultParams.degree_poly(d=1)
 
     @property
@@ -128,29 +114,15 @@ class QuantalLinear_32(Multistage_32):
         return "Quantal linear"
 
 
-class QuantalLinear_33(QuantalLinear_32):
-    bmds_version_dir = "BMDS240"
-    version = 3.3
-    date = "02/28/2013"
-    defaults = deepcopy(QuantalLinear_32.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class QuantalLinear_34(QuantalLinear_33):
-    bmds_version_dir = "BMDS260"
+# MULTISTAGE CANCER
+class MultistageCancer_34(DichotomousCancer):
+    bmds_version_dir = "BMDS270"
     version = 3.4
     date = "05/02/2014"
-
-
-# MULTISTAGE CANCER
-class MultistageCancer_19(DichotomousCancer):
     minimum_dose_groups = 2
     model_name = "Multistage-Cancer"
-    bmds_version_dir = "BMDS231"
     exe = "cancer"
     exe_plot = "10cancer"
-    version = 1.9
-    date = "05/26/2010"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -223,29 +195,15 @@ class MultistageCancer_19(DichotomousCancer):
         return ys
 
 
-class MultistageCancer_110(MultistageCancer_19):
-    bmds_version_dir = "BMDS240"
-    version = 1.10
-    date = "02/28/2013"
-    defaults = deepcopy(MultistageCancer_19.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class MultistageCancer_34(MultistageCancer_19):
-    bmds_version_dir = "BMDS270"
-    version = 3.4
-    date = "05/02/2014"
-
-
 # WEIBULL
-class Weibull_215(Dichotomous):
+class Weibull_217(Dichotomous):
+    bmds_version_dir = "BMDS270"
+    version = 2.17
+    date = "06/23/2017"
     minimum_dose_groups = 3
     model_name = "Weibull"
-    bmds_version_dir = "BMDS231"
     exe = "weibull"
     exe_plot = "10weibull"
-    version = 2.15
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -295,29 +253,15 @@ class Weibull_215(Dichotomous):
         return ys
 
 
-class Weibull_216(Weibull_215):
-    bmds_version_dir = "BMDS240"
-    version = 2.16
-    date = "02/28/2013"
-    defaults = deepcopy(Weibull_215.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Weibull_217(Weibull_216):
-    bmds_version_dir = "BMDS270"
-    version = 2.17
-    date = "06/23/2017"
-
-
 # LOGPROBIT
-class LogProbit_32(Dichotomous):
+class LogProbit_34(Dichotomous):
+    bmds_version_dir = "BMDS270"
+    version = 3.4
+    date = "05/21/2017"
     minimum_dose_groups = 3
     model_name = "LogProbit"
-    bmds_version_dir = "BMDS231"
     exe = "probit"
     exe_plot = "10probit"
-    version = 3.2
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -368,29 +312,15 @@ class LogProbit_32(Dichotomous):
         return ys
 
 
-class LogProbit_33(LogProbit_32):
-    bmds_version_dir = "BMDS240"
-    version = 3.3
-    date = "02/28/2013"
-    defaults = deepcopy(LogProbit_32.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class LogProbit_34(LogProbit_33):
+# PROBIT
+class Probit_34(Dichotomous):
     bmds_version_dir = "BMDS270"
     version = 3.4
     date = "05/21/2017"
-
-
-# PROBIT
-class Probit_32(Dichotomous):
     minimum_dose_groups = 3
     model_name = "Probit"
-    bmds_version_dir = "BMDS231"
     exe = "probit"
     exe_plot = "10probit"
-    version = 3.2
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -440,29 +370,15 @@ class Probit_32(Dichotomous):
         return ys
 
 
-class Probit_33(Probit_32):
-    bmds_version_dir = "BMDS240"
-    version = 3.3
-    date = "02/28/2013"
-    defaults = deepcopy(Probit_32.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Probit_34(Probit_33):
-    bmds_version_dir = "BMDS270"
-    version = 3.4
-    date = "05/21/2017"
-
-
 # GAMMA
-class Gamma_215(Dichotomous):
+class Gamma_217(Dichotomous):
+    bmds_version_dir = "BMDS270"
+    version = 2.17
+    date = "06/22/2017"
     minimum_dose_groups = 3
     model_name = "Gamma"
-    bmds_version_dir = "BMDS231"
     exe = "gamma"
     exe_plot = "10gammhit"
-    version = 2.15
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
@@ -511,29 +427,15 @@ class Gamma_215(Dichotomous):
         return ys
 
 
-class Gamma_216(Gamma_215):
-    bmds_version_dir = "BMDS240"
-    version = 2.16
-    date = "02/28/2013"
-    defaults = deepcopy(Gamma_215.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Gamma_217(Gamma_216):
-    bmds_version_dir = "BMDS270"
-    version = 2.17
-    date = "06/22/2017"
-
-
 # LOGLOGISTIC
-class LogLogistic_213(Dichotomous):
+class LogLogistic_215(Dichotomous):
+    bmds_version_dir = "BMDS270"
+    version = 2.15
+    date = "03/20/2017"
     minimum_dose_groups = 3
     model_name = "LogLogistic"
-    bmds_version_dir = "BMDS231"
     exe = "logist"
     exe_plot = "10logist"
-    version = 2.13
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "log_transform": DefaultParams.log_transform(d=1),
@@ -586,29 +488,15 @@ class LogLogistic_213(Dichotomous):
         return ys
 
 
-class LogLogistic_214(LogLogistic_213):
-    bmds_version_dir = "BMDS240"
-    version = 2.14
-    date = "02/28/2013"
-    defaults = deepcopy(LogLogistic_213.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class LogLogistic_215(LogLogistic_214):
+# LOGISTIC
+class Logistic_215(Dichotomous):
     bmds_version_dir = "BMDS270"
     version = 2.15
     date = "03/20/2017"
-
-
-# LOGISTIC
-class Logistic_213(Dichotomous):
     minimum_dose_groups = 3
     model_name = "Logistic"
-    bmds_version_dir = "BMDS231"
     exe = "logist"
     exe_plot = "10logist"
-    version = 2.13
-    date = "10/28/2009"
     defaults = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "log_transform": DefaultParams.log_transform(d=0),
@@ -658,20 +546,6 @@ class Logistic_213(Dichotomous):
         return ys
 
 
-class Logistic_214(Logistic_213):
-    bmds_version_dir = "BMDS240"
-    version = 2.14
-    date = "02/28/2013"
-    defaults = deepcopy(Logistic_213.defaults)
-    defaults["max_iterations"]["d"] = 500
-
-
-class Logistic_215(Logistic_214):
-    bmds_version_dir = "BMDS270"
-    version = 2.15
-    date = "03/20/2017"
-
-
 # DICHOTOMOUS HILL
 class DichotomousHill_13(Dichotomous):
     minimum_dose_groups = 4
@@ -681,27 +555,24 @@ class DichotomousHill_13(Dichotomous):
     exe_plot = "10DichoHill"
     version = 1.3
     date = "02/28/2013"
-    defaults = deepcopy(
-        {
-            "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
-            "restrict_power": DefaultParams.log_transform(d=1),
-            "append_or_overwrite": DefaultParams.append_or_overwrite,
-            "smooth_option": DefaultParams.smooth_option,
-            "max_iterations": DefaultParams.max_iterations,
-            "relative_fn_conv": DefaultParams.relative_fn_conv,
-            "parameter_conv": DefaultParams.parameter_conv,
-            "v": DefaultParams.param_generator(),
-            "g": DefaultParams.param_generator(),
-            "intercept": DefaultParams.param_generator(),
-            "slope": DefaultParams.param_generator(),
-            "bmd_calculation": DefaultParams.bmd_calculation,
-            "dose_drop": DefaultParams.dose_drop,
-            "bmr": DefaultParams.dich_bmr,
-            "bmr_type": DefaultParams.dich_bmr_type,
-            "confidence_level": DefaultParams.confidence_level,
-        }
-    )
-    defaults["max_iterations"]["d"] = 500
+    defaults = {
+        "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
+        "restrict_power": DefaultParams.log_transform(d=1),
+        "append_or_overwrite": DefaultParams.append_or_overwrite,
+        "smooth_option": DefaultParams.smooth_option,
+        "max_iterations": DefaultParams.max_iterations,
+        "relative_fn_conv": DefaultParams.relative_fn_conv,
+        "parameter_conv": DefaultParams.parameter_conv,
+        "v": DefaultParams.param_generator(),
+        "g": DefaultParams.param_generator(),
+        "intercept": DefaultParams.param_generator(),
+        "slope": DefaultParams.param_generator(),
+        "bmd_calculation": DefaultParams.bmd_calculation,
+        "dose_drop": DefaultParams.dose_drop,
+        "bmr": DefaultParams.dich_bmr,
+        "bmr_type": DefaultParams.dich_bmr_type,
+        "confidence_level": DefaultParams.confidence_level,
+    }
 
     def as_dfile(self):
         self._set_values()
