@@ -587,7 +587,7 @@ class BMDS_v330(BMDS):
             constants.M_Probit: d3.Probit,
             constants.M_LogProbit: d3.LogProbit,
             constants.M_QuantalLinear: d3.QuantalLinear,
-            constants.M_Multistage: d3.Multistage,
+            # constants.M_Multistage: d3.Multistage,
             constants.M_Gamma: d3.Gamma,
             constants.M_Weibull: d3.Weibull,
             constants.M_DichotomousHill: d3.DichotomousHill,

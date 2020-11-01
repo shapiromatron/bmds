@@ -36,6 +36,46 @@ class DichotomousModelSettings(BaseModel):
     burnin: conint(ge=5, le=1000) = 20
 
 
+class DichotomousAnalysisStruct(ctypes.Structure):
+
+    _fields_ = [
+        ("model", ctypes.c_int),  # Model Type as listed in DichModel
+        ("n", ctypes.c_int),  # total number of observations obs/n
+        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
+        ("doses", ctypes.POINTER(ctypes.c_double)),
+        ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
+        ("prior", ctypes.POINTER(ctypes.c_double)),  # a column order matrix parms X prior_cols
+        ("BMD_type", ctypes.c_int),  # 1 = extra ; added otherwise
+        ("BMR", ctypes.c_double),
+        ("alpha", ctypes.c_double),  # alpha of the analysis
+        ("degree", ctypes.c_int),  # degree of polynomial used only multistage
+        ("samples", ctypes.c_int),  # number of MCMC samples
+        ("burnin", ctypes.c_int),  # size of burnin
+        ("parms", ctypes.c_int),  # number of parameters in the model
+        ("prior_cols", ctypes.c_int),  # columns in the prior
+    ]
+
+    def __str__(self) -> str:
+        return textwrap.dedent(
+            f"""
+            model: {self.model}
+            n: {self.n}
+            Y: {self.Y[:self.n]}
+            doses: {self.doses[:self.n]}
+            n_group: {self.n_group[:self.n]}
+            prior: {self.prior[:self.parms*self.prior_cols]}
+            BMD_type: {self.BMD_type}
+            BMR: {self.BMR}
+            alpha: {self.alpha}
+            degree: {self.degree}
+            samples: {self.samples}
+            burnin: {self.burnin}
+            parms: {self.parms}
+            prior_cols: {self.prior_cols}
+            """
+        )
+
+
 class DichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a dichotomous analysis.
@@ -65,45 +105,6 @@ class DichotomousAnalysis(BaseModel):
             else self.model.num_params
         )
 
-    class Struct(ctypes.Structure):
-
-        _fields_ = [
-            ("model", ctypes.c_int),  # Model Type as listed in DichModel
-            ("n", ctypes.c_int),  # total number of observations obs/n
-            ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
-            ("doses", ctypes.POINTER(ctypes.c_double)),
-            ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
-            ("prior", ctypes.POINTER(ctypes.c_double)),  # a column order matrix parms X prior_cols
-            ("BMD_type", ctypes.c_int),  # 1 = extra ; added otherwise
-            ("BMR", ctypes.c_double),
-            ("alpha", ctypes.c_double),  # alpha of the analysis
-            ("degree", ctypes.c_int),  # degree of polynomial used only multistage
-            ("samples", ctypes.c_int),  # number of MCMC samples
-            ("burnin", ctypes.c_int),  # size of burnin
-            ("parms", ctypes.c_int),  # number of parameters in the model
-            ("prior_cols", ctypes.c_int),  # columns in the prior
-        ]
-
-        def __str__(self) -> str:
-            return textwrap.dedent(
-                f"""
-                model: {self.model}
-                n: {self.n}
-                Y: {self.Y[:self.n]}
-                doses: {self.doses[:self.n]}
-                n_group: {self.n_group[:self.n]}
-                prior: {self.prior[:self.parms*self.prior_cols]}
-                BMD_type: {self.BMD_type}
-                BMR: {self.BMR}
-                alpha: {self.alpha}
-                degree: {self.degree}
-                samples: {self.samples}
-                burnin: {self.burnin}
-                parms: {self.parms}
-                prior_cols: {self.prior_cols}
-                """
-            )
-
     def _priors_to_list(self) -> List[float]:
         """
         allocate memory for all parameters and convert to columnwise matrix
@@ -123,9 +124,9 @@ class DichotomousAnalysis(BaseModel):
             raise ValueError("Unknown state")
         return arr.T.flatten().tolist()
 
-    def to_c(self):
+    def to_c(self) -> DichotomousAnalysisStruct:
         priors = self._priors_to_list()
-        return self.Struct(
+        return DichotomousAnalysisStruct(
             model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             Y=_list_to_c(self.dataset.incidences, ctypes.c_double),
@@ -141,6 +142,20 @@ class DichotomousAnalysis(BaseModel):
             parms=ctypes.c_int(self.num_params),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
         )
+
+
+class DichotomousModelResultStruct(ctypes.Structure):
+    _fields_ = [
+        ("model", ctypes.c_int),  # dichotomous model specification
+        ("nparms", ctypes.c_int),  # number of parameters in the model
+        ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
+        ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
+        ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
+        ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
+        ("model_df", ctypes.c_double),  # Used model degrees of freedom
+        ("total_df", ctypes.c_double),  # Total degrees of freedom
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
+    ]
 
 
 class DichotomousModelResult(BaseModel):
@@ -162,27 +177,11 @@ class DichotomousModelResult(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    class Struct(ctypes.Structure):
-        _fields_ = [
-            ("model", ctypes.c_int),  # dichotomous model specification
-            ("nparms", ctypes.c_int),  # number of parameters in the model
-            ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
-            ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
-            ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
-            ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-            ("model_df", ctypes.c_double),  # Used model degrees of freedom
-            ("total_df", ctypes.c_double),  # Total degrees of freedom
-            (
-                "bmd_dist",
-                ctypes.POINTER(ctypes.c_double),
-            ),  # bmd distribution (dist_numE x 2) matrix
-        ]
-
-    def to_c(self):
+    def to_c(self) -> DichotomousModelResultStruct:
         parms = np.zeros(self.num_params, dtype=np.float64)
         self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
         self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
-        return self.Struct(
+        return DichotomousModelResultStruct(
             model=ctypes.c_int(self.model.id),
             nparms=ctypes.c_int(self.num_params),
             parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -191,7 +190,11 @@ class DichotomousModelResult(BaseModel):
             bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         )
 
-    def from_c(self):
+    def from_c(self, struct: DichotomousModelResultStruct):
+        self.max = struct.max
+        self.model_df = struct.model_df
+        self.total_df = struct.total_df
+
         self.cov = self.cov.reshape(self.num_params, self.num_params)
 
         # reshape; get rid of 0 and inf; must be JSON serializable
@@ -205,11 +208,83 @@ class DichotomousModelResult(BaseModel):
         df = df.query("bmd>0 & bmd < inf")
         df.plot.scatter("bmd", "quantile", xlabel="Dose", ylabel="Propotion")
 
-    def dict(self) -> Dict:
-        d = super().dict(exclude={"cov", "bmd_dist"})
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"cov", "bmd_dist"})
+        d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
         d["bmd_dist"] = self.bmd_dist.T.tolist()
         return d
+
+
+class DichotomousPgofDataStruct(ctypes.Structure):
+    _fields_ = [
+        ("n", ctypes.c_int),  # total number of observations obs/n
+        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
+        ("doses", ctypes.POINTER(ctypes.c_double)),
+        ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
+        ("model_df", ctypes.c_double),
+        ("model", ctypes.c_int),  # Model Type as listed in DichModel
+        ("parms", ctypes.c_int),  # number of parameters in the model
+        ("est_parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
+    ]
+
+    @classmethod
+    def from_fit(
+        cls, fit_input: DichotomousAnalysisStruct, fit_output: DichotomousModelResultStruct
+    ):
+        return cls(
+            n=fit_input.n,
+            Y=fit_input.Y,
+            doses=fit_input.doses,
+            n_group=fit_input.n_group,
+            model_df=fit_output.model_df,
+            model=fit_input.model,
+            parms=fit_output.nparms,
+            est_parms=fit_output.parms,
+        )
+
+
+class DichotomousPgofResultStruct(ctypes.Structure):
+    _fields_ = [
+        ("n", ctypes.c_int),  # total number of observations obs/n
+        ("expected", ctypes.POINTER(ctypes.c_double)),
+        ("residual", ctypes.POINTER(ctypes.c_double)),
+        ("test_statistic", ctypes.c_double),
+        ("p_value", ctypes.c_double),
+        ("df", ctypes.c_double),
+    ]
+
+    @classmethod
+    def from_dataset(cls, dataset: DichotomousDataset):
+        n = dataset.num_dose_groups
+        return cls(
+            n=n,
+            expected=_list_to_c([0.0 for _ in range(n)], ctypes.c_double),
+            residual=_list_to_c([0.0 for _ in range(n)], ctypes.c_double),
+        )
+
+
+class DichotomousPgofResult(BaseModel):
+    expected: List[float]
+    residual: List[float]
+    test_statistic: float
+    p_value: float
+    df: float
+
+    @classmethod
+    def from_c(cls, struct: DichotomousPgofResultStruct):
+        return cls(
+            expected=struct.expected[: struct.n],
+            residual=struct.residual[: struct.n],
+            test_statistic=struct.test_statistic,
+            p_value=struct.p_value,
+            df=struct.df,
+        )
+
+
+class DichotomousResult(BaseModel):
+    fit: DichotomousModelResult
+    gof: DichotomousPgofResult
 
 
 class DichotomousMAAnalysis(BaseModel):
@@ -282,7 +357,7 @@ class DichotomousMAResult(BaseModel):
             ("nmodels", ctypes.c_int),  # number of models for each
             (
                 "models",
-                ctypes.POINTER(ctypes.POINTER(DichotomousModelResult.Struct)),
+                ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct)),
             ),  # individual model fits for each model average
             ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
             ("post_probs", ctypes.POINTER(ctypes.c_double)),  # posterior probabilities
@@ -294,11 +369,11 @@ class DichotomousMAResult(BaseModel):
 
     def to_c(self):
         models_partial = [
-            _list_to_c([y.to_c() for y in x], DichotomousModelResult.Struct) for x in self.models
+            _list_to_c([y.to_c() for y in x], DichotomousModelResultStruct) for x in self.models
         ]
         return self.Struct(
             nmodels=ctypes.c_int(self.nmodels),
-            models=_list_to_c(models_partial, ctypes.POINTER(DichotomousModelResult.Struct),),
+            models=_list_to_c(models_partial, ctypes.POINTER(DichotomousModelResultStruct),),
             dist_numE=ctypes.c_int(self.dist_numE),
             post_probs=_list_to_c(self.post_probs, ctypes.c_double),
             bmd_dist=_list_to_c(self.bmd_dist, ctypes.c_double),
