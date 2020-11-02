@@ -4,8 +4,8 @@ import os
 import pandas as pd
 from six import string_types
 
+from . import exports
 from .reporter import Reporter
-from .session import BMDS
 
 
 class SessionBatch(list):
@@ -104,7 +104,7 @@ class SessionBatch(list):
             Data frame containing models and outputs
 
         """
-        od = BMDS._df_ordered_dict(include_io)
+        od = exports.df_ordered_dict(include_io)
         [session._add_to_to_ordered_dict(od, i, recommended_only) for i, session in enumerate(self)]
         return pd.DataFrame(od)
 

@@ -1,5 +1,5 @@
 import ctypes
-from typing import List, Tuple
+from typing import List
 
 from .. import types33
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior
