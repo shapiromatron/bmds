@@ -18,6 +18,23 @@ class Bmds3Version(BMDS):
     TODO - refactor! and make sure it works with bmds2
     """
 
+    def add_default_models(self, global_settings=None):
+        for name in self.model_options[self.dtype].keys():
+            model_settings = deepcopy(global_settings) if global_settings is not None else None
+            if name in constants.VARIABLE_POLYNOMIAL:
+                min_poly_order = 1 if name == constants.M_MultistageCancer else 2
+                max_poly_order = min(
+                    self.dataset.num_dose_groups - 1, settings.MAXIMUM_POLYNOMIAL_ORDER + 1
+                )
+                for i in range(min_poly_order, max_poly_order):
+                    poly_model_settings = (
+                        deepcopy(model_settings) if model_settings is not None else {}
+                    )
+                    poly_model_settings["degree"] = i
+                    self.add_model(name, settings=poly_model_settings)
+            else:
+                self.add_model(name, settings=model_settings)
+
     def _can_execute_locally(self) -> bool:
         return True
 

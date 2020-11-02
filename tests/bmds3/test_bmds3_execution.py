@@ -16,11 +16,10 @@ def test_bmds3_dichotomous_session():
         doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
     )
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=ds)
-    # session.add_model(bmds.constants.M_Logistic)
     session.add_default_models()
     session.execute()
-    # for model in session.models:
-    #     model.results = model.execute(debug=True)
+    for model in session.models:
+        model.results = model.execute(debug=True)
     d = session.to_dict(0)
     # ensure json-serializable
     print(json.dumps(d))
