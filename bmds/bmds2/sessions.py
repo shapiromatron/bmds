@@ -67,7 +67,7 @@ class BMDS:
             if name in constants.VARIABLE_POLYNOMIAL:
                 min_poly_order = 1 if name == constants.M_MultistageCancer else 2
                 max_poly_order = min(
-                    self.dataset.num_dose_groups - 1, settings.MAXIMUM_POLYNOMIAL_ORDER + 1
+                    self.dataset.num_dose_groups, settings.MAXIMUM_POLYNOMIAL_ORDER + 1
                 )
                 for i in range(min_poly_order, max_poly_order):
                     poly_model_settings = (
