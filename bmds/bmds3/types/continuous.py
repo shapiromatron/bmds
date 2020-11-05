@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from .common import list_t_c
 
 
-class BMRType_t(IntEnum):
+class ContinuousRiskType(IntEnum):
     eAbsoluteDev = 1
     eStandardDev = 2
     eRelativeDev = 3
