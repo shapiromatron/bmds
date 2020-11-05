@@ -3,6 +3,7 @@ import os
 import subprocess
 from datetime import datetime
 from enum import IntEnum
+from pathlib import Path
 
 import numpy as np
 from simple_settings import settings
@@ -12,7 +13,9 @@ from ...utils import TempFileList
 from ..parser import OutputParser
 
 logger = logging.getLogger(__name__)
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bin"))
+ROOT = Path(__file__).parents[2] / "bin"
+
+print(ROOT.resolve())
 
 
 class RunStatus(IntEnum):

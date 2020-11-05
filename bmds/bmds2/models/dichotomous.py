@@ -550,7 +550,7 @@ class Logistic_215(Dichotomous):
 class DichotomousHill_13(Dichotomous):
     minimum_dose_groups = 4
     model_name = "Dichotomous-Hill"
-    bmds_version_dir = "BMDS260"
+    bmds_version_dir = "BMDS270"
     exe = "DichoHill"
     exe_plot = "10DichoHill"
     version = 1.3
