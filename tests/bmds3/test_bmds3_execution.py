@@ -23,4 +23,3 @@ def test_bmds3_dichotomous_session():
     d = session.to_dict(0)
     # ensure json-serializable
     print(json.dumps(d))
-

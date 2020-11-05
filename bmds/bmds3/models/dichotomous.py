@@ -1,9 +1,16 @@
 import ctypes
 from typing import List
 
-from .. import types33
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior
-from ..types33 import DichotomousModelSettings
+from ..types.dichotomous import (
+    DichotomousAnalysis,
+    DichotomousModelResult,
+    DichotomousModelSettings,
+    DichotomousPgofDataStruct,
+    DichotomousPgofResult,
+    DichotomousPgofResultStruct,
+    DichotomousResult,
+)
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
 
 
@@ -24,10 +31,10 @@ class Dichotomous(BaseModel):
 
         return model
 
-    def execute(self, debug=False) -> types33.DichotomousResult:
+    def execute(self, debug=False) -> DichotomousResult:
         # setup inputs
         priors = self.default_frequentist_priors()
-        inputs = types33.DichotomousAnalysis(
+        inputs = DichotomousAnalysis(
             model=self.model,
             dataset=self.dataset,
             priors=priors,
@@ -40,7 +47,7 @@ class Dichotomous(BaseModel):
         )
 
         # setup outputs
-        fit_results = types33.DichotomousModelResult(
+        fit_results = DichotomousModelResult(
             model=self.model, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
@@ -57,21 +64,19 @@ class Dichotomous(BaseModel):
         fit_results.from_c(fit_results_struct)
 
         # gof results call
-        gof_data_struct = types33.DichotomousPgofDataStruct.from_fit(
-            inputs_struct, fit_results_struct
-        )
-        gof_results_struct = types33.DichotomousPgofResultStruct.from_dataset(self.dataset)
+        gof_data_struct = DichotomousPgofDataStruct.from_fit(inputs_struct, fit_results_struct)
+        gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
         dll.compute_dichotomous_pearson_GOF(
             ctypes.pointer(gof_data_struct), ctypes.pointer(gof_results_struct)
         )
-        gof_results = types33.DichotomousPgofResult.from_c(gof_results_struct)
+        gof_results = DichotomousPgofResult.from_c(gof_results_struct)
         # TODO - `dll.compute_dichotomous_pearson_GOF` fails w/ multistage - fix?
 
-        result = types33.DichotomousResult(fit=fit_results, gof=gof_results)
+        result = DichotomousResult(fit=fit_results, gof=gof_results)
         return result
 
     def default_frequentist_priors(self) -> List[Prior]:
-        pass
+        ...
 
     def get_default_model_degree(self) -> int:
         return self.model.num_params - 1

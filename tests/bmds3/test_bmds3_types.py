@@ -1,5 +1,5 @@
 from bmds.bmds3.constants import DichotomousModelChoices, Prior
-from bmds.bmds3.types33 import DichotomousAnalysis
+from bmds.bmds3.types.dichotomous import DichotomousAnalysis
 
 
 class TestDichotomousAnalysis:

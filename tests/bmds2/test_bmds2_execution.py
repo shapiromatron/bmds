@@ -3,8 +3,6 @@ import os
 
 import numpy as np
 import pytest
-from simple_settings import settings
-from simple_settings.utils import settings_stub
 
 import bmds
 
