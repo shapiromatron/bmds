@@ -15,8 +15,6 @@ from ..parser import OutputParser
 logger = logging.getLogger(__name__)
 ROOT = Path(__file__).parents[2] / "bin"
 
-print(ROOT.resolve())
-
 
 class RunStatus(IntEnum):
     SUCCESS = 1
