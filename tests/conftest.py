@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -9,6 +11,12 @@ def vcr_config():
     return {
         "filter_headers": [("authorization", "<omitted>")],
     }
+
+
+@pytest.fixture(scope="module")
+def vcr_cassette_dir(request):
+    cassette_dir = Path(__file__).parent.absolute() / "cassettes" / request.module.__name__
+    return str(cassette_dir)
 
 
 @pytest.fixture
