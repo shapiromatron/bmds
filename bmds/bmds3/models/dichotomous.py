@@ -70,9 +70,17 @@ class Dichotomous(BaseModel):
             ctypes.pointer(gof_data_struct), ctypes.pointer(gof_results_struct)
         )
         gof_results = DichotomousPgofResult.from_c(gof_results_struct)
-        # TODO - `dll.compute_dichotomous_pearson_GOF` fails w/ multistage - fix?
 
-        result = DichotomousResult(fit=fit_results, gof=gof_results)
+        result = DichotomousResult(
+            model_class=self.model_class(),
+            model_name=self.model_name(),
+            bmdl=1,
+            bmd=2,
+            bmdu=3,
+            aic=555,
+            fit=fit_results,
+            gof=gof_results,
+        )
         return result
 
     def default_frequentist_priors(self) -> List[Prior]:
@@ -80,6 +88,12 @@ class Dichotomous(BaseModel):
 
     def get_default_model_degree(self) -> int:
         return self.model.num_params - 1
+
+    def model_class(self) -> str:
+        return self.model.verbose
+
+    def model_name(self) -> str:
+        return self.model_class()
 
 
 class Logistic(Dichotomous):
@@ -189,3 +203,6 @@ class Multistage(Dichotomous):
             raise ValueError(f"Multistage must be ≥ 2; got {model.degree}")
 
         return model
+
+    def model_name(self) -> str:
+        return f"Multistage {self.settings.degree}°"

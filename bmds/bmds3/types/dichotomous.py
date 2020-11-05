@@ -158,7 +158,7 @@ class DichotomousModelResult(BaseModel):
     model: constants.DichotomousModel
     num_params: int
     dist_numE: int
-    params: Optional[Dict[str, float]]
+    params: Optional[List[float]]
     cov: Optional[np.ndarray]
     max: Optional[float]
     model_df: Optional[float]
@@ -182,11 +182,11 @@ class DichotomousModelResult(BaseModel):
         )
 
     def from_c(self, struct: DichotomousModelResultStruct):
+        self.params = struct.parms[: self.num_params]
+        self.cov = self.cov.reshape(self.num_params, self.num_params)
         self.max = struct.max
         self.model_df = struct.model_df
         self.total_df = struct.total_df
-
-        self.cov = self.cov.reshape(self.num_params, self.num_params)
 
         # reshape; get rid of 0 and inf; must be JSON serializable
         arr = self.bmd_dist.reshape(2, self.dist_numE).T
@@ -274,5 +274,11 @@ class DichotomousPgofResult(BaseModel):
 
 
 class DichotomousResult(BaseModel):
+    model_class: str
+    model_name: str
+    bmdl: float
+    bmd: float
+    bmdu: float
+    aic: float
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
