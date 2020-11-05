@@ -2,11 +2,12 @@
 History
 =======
 
-v0.12.0 (NEXT)
+v1.0.0 (NEXT)
 --------------------
+* Added BMDS 3.3 support
+* Removed BMDS < 2.7 support
 * Added black and flake8 to enforce code style
 * Increase minimum python version to 3.6
-* Added BMDS 3.* support
 * Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
 * Removed `asyncio`; use `ThreadPoolExecutor` instead
 
