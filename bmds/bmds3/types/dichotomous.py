@@ -11,7 +11,7 @@ from bmds.bmds3.constants import DichotomousModelChoices
 
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import list_t_c
+from .common import BMDS_BLANK_VALUE, list_t_c
 
 
 class DichotomousRiskType(IntEnum):
@@ -255,6 +255,26 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         )
 
 
+class DichotomousBmdsResultsStruct(ctypes.Structure):
+    _fields_ = [
+        ("bmd", ctypes.c_double),
+        ("bmdl", ctypes.c_double),
+        ("bmdu", ctypes.c_double),
+        ("aic", ctypes.c_double),
+        ("bounded", ctypes.POINTER(ctypes.c_bool)),
+    ]
+
+    @classmethod
+    def from_results(cls, results: DichotomousModelResult) -> "DichotomousBmdsResultsStruct":
+        return cls(
+            bmd=BMDS_BLANK_VALUE,
+            bmdl=BMDS_BLANK_VALUE,
+            bmdu=BMDS_BLANK_VALUE,
+            aic=BMDS_BLANK_VALUE,
+            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
+        )
+
+
 class DichotomousPgofResult(BaseModel):
     expected: List[float]
     residual: List[float]
@@ -280,5 +300,6 @@ class DichotomousResult(BaseModel):
     bmd: float
     bmdu: float
     aic: float
+    bounded: List[bool]
     fit: DichotomousModelResult
     gof: DichotomousPgofResult

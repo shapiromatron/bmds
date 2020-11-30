@@ -4,6 +4,7 @@ from typing import List
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior
 from ..types.dichotomous import (
     DichotomousAnalysis,
+    DichotomousBmdsResultsStruct,
     DichotomousModelResult,
     DichotomousModelSettings,
     DichotomousPgofDataStruct,
@@ -71,13 +72,20 @@ class Dichotomous(BaseModel):
         )
         gof_results = DichotomousPgofResult.from_c(gof_results_struct)
 
+        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
+        dll.collect_dicho_bmd_values(
+            ctypes.pointer(inputs_struct),
+            ctypes.pointer(fit_results_struct),
+            ctypes.pointer(bmds_results_struct),
+        )
         result = DichotomousResult(
             model_class=self.model_class(),
             model_name=self.model_name(),
-            bmdl=1,
-            bmd=2,
-            bmdu=3,
-            aic=555,
+            bmdl=bmds_results_struct.bmdl,
+            bmd=bmds_results_struct.bmd,
+            bmdu=bmds_results_struct.bmdu,
+            aic=bmds_results_struct.aic,
+            bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             gof=gof_results,
         )
