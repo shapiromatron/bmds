@@ -4,12 +4,12 @@ from typing import List
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior
 from ..types.dichotomous import (
     DichotomousAnalysis,
+    DichotomousBmdsResultsStruct,
     DichotomousModelResult,
     DichotomousModelSettings,
     DichotomousPgofDataStruct,
     DichotomousPgofResult,
     DichotomousPgofResultStruct,
-    DichotomousBmdsResultsStruct,
     DichotomousResult,
 )
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings

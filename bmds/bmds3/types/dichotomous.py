@@ -11,7 +11,7 @@ from bmds.bmds3.constants import DichotomousModelChoices
 
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import list_t_c, BMDS_BLANK_VALUE
+from .common import BMDS_BLANK_VALUE, list_t_c
 
 
 class DichotomousRiskType(IntEnum):
