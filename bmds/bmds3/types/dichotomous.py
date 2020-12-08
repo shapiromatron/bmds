@@ -149,6 +149,21 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
     ]
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            model: {self.model}
+            nparms: {self.nparms}
+            parms: {self.parms[:self.nparms]}
+            cov: {self.cov[:self.nparms**2]}
+            max: {self.max}
+            dist_numE: {self.dist_numE}
+            model_df: {self.model_df}
+            total_df: {self.total_df}
+            bmd_dist: {self.bmd_dist[:self.dist_numE*2]}
+            """
+        )
+
 
 class DichotomousModelResult(BaseModel):
     """
@@ -219,6 +234,20 @@ class DichotomousPgofDataStruct(ctypes.Structure):
         ("est_parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
     ]
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            n: {self.n}
+            Y: {self.Y[:self.n]}
+            doses: {self.doses[:self.n]}
+            n_group: {self.n_group[:self.n]}
+            model_df: {self.model_df}
+            model: {self.model}
+            parms: {self.parms}
+            est_parms: {self.est_parms[:self.parms]}
+            """
+        )
+
     @classmethod
     def from_fit(
         cls, fit_input: DichotomousAnalysisStruct, fit_output: DichotomousModelResultStruct
@@ -245,6 +274,18 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         ("df", ctypes.c_double),
     ]
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            n: {self.n}
+            expected: {self.expected[:self.n]}
+            residual: {self.residual[:self.n]}
+            test_statistic: {self.test_statistic}
+            p_value: {self.p_value}
+            df: {self.df}
+            """
+        )
+
     @classmethod
     def from_dataset(cls, dataset: DichotomousDataset):
         n = dataset.num_dose_groups
@@ -264,14 +305,25 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         ("bounded", ctypes.POINTER(ctypes.c_bool)),
     ]
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            bmd: {self.bmd}
+            bmdl: {self.bmdl}
+            bmdu: {self.bmdu}
+            aic: {self.aic}
+            bounded: <not shown>
+            """
+        )
+
     @classmethod
-    def from_results(cls, results: DichotomousModelResult) -> "DichotomousBmdsResultsStruct":
+    def from_results(cls, num_params: int) -> "DichotomousBmdsResultsStruct":
         return cls(
             bmd=BMDS_BLANK_VALUE,
             bmdl=BMDS_BLANK_VALUE,
             bmdu=BMDS_BLANK_VALUE,
             aic=BMDS_BLANK_VALUE,
-            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
+            bounded=list_t_c([False for _ in range(num_params)], ctypes.c_bool),
         )
 
 

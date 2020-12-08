@@ -72,7 +72,7 @@ class Dichotomous(BaseModel):
         )
         gof_results = DichotomousPgofResult.from_c(gof_results_struct)
 
-        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
+        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results.num_params)
         dll.collect_dicho_bmd_values(
             ctypes.pointer(inputs_struct),
             ctypes.pointer(fit_results_struct),
