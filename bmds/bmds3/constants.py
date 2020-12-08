@@ -47,6 +47,19 @@ class DichotomousModelChoices(Enum):
     d_weibull = DichotomousModel(id=9, verbose="Weibull", params=("a", "b", "c"))
 
 
+class ContinuousModel(BaseModel):
+    id: int
+    verbose: str
+    params: Tuple[str, ...]
+
+    @property
+    def num_params(self):
+        return len(self.params)
+
+
+class ContinuousModelChoices(Enum):
+    c_power = ContinuousModel(id=1, verbose="Power", params=("a", "b", "c", "d"))
+
 class PriorType(IntEnum):
     eNone = 0
     eNormal = 1

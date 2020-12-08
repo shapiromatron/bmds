@@ -6,6 +6,7 @@ from simple_settings import settings
 from .. import constants
 from ..bmds2.sessions import BMDS
 from .models import dichotomous as d3
+from .models import continuous as c3
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class BMDS_v330(Bmds3Version):
         constants.CONTINUOUS: {
             # constants.M_Linear: c3.Linear,
             # constants.M_Polynomial: c3.Polynomial,
-            # constants.M_Power: c3.Power,
+            constants.M_Power: c3.Power,
             # constants.M_Hill: c3.Hill,
             # constants.M_ExponentialM2: c3.ExponentialM2,
             # constants.M_ExponentialM3: c3.ExponentialM3,
