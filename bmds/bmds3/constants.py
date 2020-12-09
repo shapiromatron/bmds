@@ -43,7 +43,7 @@ class DichotomousModelChoices(Enum):
     d_logprobit = DichotomousModel(id=5, verbose="LogProbit", params=("a", "b", "c"))
     d_multistage = DichotomousModel(id=6, verbose="Multistage", params=("a", "b"))
     d_probit = DichotomousModel(id=7, verbose="Probit", params=("a", "b"))
-    d_qlinear = DichotomousModel(id=8, verbose="QuantalLinear", params=("a", "b"))
+    d_qlinear = DichotomousModel(id=8, verbose="Quantal Linear", params=("a", "b"))
     d_weibull = DichotomousModel(id=9, verbose="Weibull", params=("a", "b", "c"))
 
 
