@@ -114,7 +114,7 @@ class DichotomousAnalysis(BaseModel):
             arr = np.array(data)
         else:
             raise ValueError("Unknown state")
-        return arr.T.flatten().tolist()
+        return arr.flatten("F").tolist()
 
     def to_c(self) -> DichotomousAnalysisStruct:
         priors = self._priors_to_list()
