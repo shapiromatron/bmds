@@ -2,9 +2,9 @@ import ctypes
 from typing import Dict, List
 
 import numpy as np
-from scipy.stats import norm, gamma
+from scipy.stats import gamma, norm
 
-from ..constants import DichotomousModel, DichotomousModelChoices, Prior
+from ..constants import DichotomousModel, DichotomousModelChoices, Prior, PriorClass
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
@@ -16,6 +16,7 @@ from ..types.dichotomous import (
     DichotomousResult,
 )
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
+from .priors import DichotomousPriorLookup
 
 
 class Dichotomous(BaseModel):
@@ -37,7 +38,7 @@ class Dichotomous(BaseModel):
 
     def execute(self, debug=False) -> DichotomousResult:
         # setup inputs
-        priors = self.default_frequentist_priors()
+        priors = self.get_priors()
         inputs = DichotomousAnalysis(
             model=self.model,
             dataset=self.dataset,
@@ -96,8 +97,10 @@ class Dichotomous(BaseModel):
         )
         return result
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        ...
+    def get_priors(
+        self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
+    ) -> List[Prior]:
+        return DichotomousPriorLookup[(self.model.id, prior_class.value)]
 
     def get_default_model_degree(self) -> int:
         return self.model.num_params - 1
@@ -115,25 +118,12 @@ class Dichotomous(BaseModel):
 class Logistic(Dichotomous):
     model = DichotomousModelChoices.d_logistic.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0.1, stdev=1, min_value=1, max_value=10),
-        ]
-
     def dr_curve(self, params) -> np.ndarray:
         return 1.0 / (1.0 + np.exp(-params[0] - params[1] * self.dataset.dose_linspace))
 
 
 class LogLogistic(Dichotomous):
     model = DichotomousModelChoices.d_loglogistic.value
-
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
-        ]
 
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (1.0 - params[0]) / (
@@ -144,25 +134,12 @@ class LogLogistic(Dichotomous):
 class Probit(Dichotomous):
     model = DichotomousModelChoices.d_probit.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=18),
-        ]
-
     def dr_curve(self, params) -> np.ndarray:
         return norm.cdf(params[0] + params[1] * self.dataset.dose_linspace)
 
 
 class LogProbit(Dichotomous):
     model = DichotomousModelChoices.d_logprobit.value
-
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=-3.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
-        ]
 
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (1 - params[0]) * norm.cdf(
@@ -173,13 +150,6 @@ class LogProbit(Dichotomous):
 class Gamma(Dichotomous):
     model = DichotomousModelChoices.d_gamma.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=1.0, stdev=1, min_value=0.2, max_value=18),
-            Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=100),
-        ]
-
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (1 - params[1]) * gamma.cdf(
             self.dataset.dose_linspace * params[1], params[2]
@@ -189,25 +159,12 @@ class Gamma(Dichotomous):
 class QuantalLinear(Dichotomous):
     model = DichotomousModelChoices.d_qlinear.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0.5, stdev=1, min_value=0, max_value=100),
-        ]
-
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (1 - params[0]) * (1 - np.exp(-params[1] * self.dataset.dose_linspace))
 
 
 class Weibull(Dichotomous):
     model = DichotomousModelChoices.d_weibull.value
-
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0.5, stdev=1, min_value=1e-6, max_value=18),
-            Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-6, max_value=100),
-        ]
 
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (1 - params[0]) * (
@@ -218,14 +175,6 @@ class Weibull(Dichotomous):
 class DichotomousHill(Dichotomous):
     model = DichotomousModelChoices.d_hill.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e-8, max_value=18),
-        ]
-
     def dr_curve(self, params) -> np.ndarray:
         return params[0] + (params[1] - params[1] * params[0]) / (
             1 + np.exp(-params[2] - params[3] * np.log(self.dataset.dose_linspace))
@@ -234,14 +183,6 @@ class DichotomousHill(Dichotomous):
 
 class Multistage(Dichotomous):
     model = DichotomousModelChoices.d_multistage.value
-
-    def default_frequentist_priors(self) -> List[Prior]:
-        # underlying dll code is duplicated based on the degree
-        return [
-            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=18),
-            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=100),
-            Prior(type=0, initial_value=0, stdev=0, min_value=-18, max_value=1e4),
-        ]
 
     def get_default_model_degree(self) -> int:
         return self.dataset.num_dose_groups - 1
@@ -256,3 +197,10 @@ class Multistage(Dichotomous):
 
     def model_name(self) -> str:
         return f"Multistage {self.settings.degree}°"
+
+    def dr_curve(self, params) -> np.ndarray:
+        # TODO - handle higher degrees
+        xs = self.dataset.dose_linspace
+        return params[0] + (1 - params[0]) * (
+            1 - np.exp((-params[1] * xs) - (1 - params[2] * xs) ** 2)
+        )

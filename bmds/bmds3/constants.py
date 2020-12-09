@@ -53,9 +53,19 @@ class PriorType(IntEnum):
     eLognormal = 2
 
 
+class PriorClass(IntEnum):
+    frequentist_unrestricted = 0
+    frequentist_restricted = 1
+    bayesian = 2
+
+
 class Prior(BaseModel):
     type: PriorType
     initial_value: float
     stdev: float
     min_value: float
     max_value: float
+
+    @classmethod
+    def parse_args(cls, *args) -> "Prior":
+        return cls(**{key: arg for key, arg in zip(cls.__fields__.keys(), args)})
