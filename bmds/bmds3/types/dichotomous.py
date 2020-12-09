@@ -355,3 +355,5 @@ class DichotomousResult(BaseModel):
     bounded: List[bool]
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
+    dr_x: List[float]
+    dr_y: List[float]

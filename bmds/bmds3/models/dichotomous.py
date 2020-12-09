@@ -1,5 +1,8 @@
 import ctypes
-from typing import List
+from typing import Dict, List
+
+import numpy as np
+from scipy.stats import norm, gamma
 
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior
 from ..types.dichotomous import (
@@ -88,6 +91,8 @@ class Dichotomous(BaseModel):
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             gof=gof_results,
+            dr_x=self.dataset.dose_linspace.tolist(),
+            dr_y=self.dr_curve(fit_results.params).tolist(),
         )
         return result
 
@@ -103,6 +108,9 @@ class Dichotomous(BaseModel):
     def model_name(self) -> str:
         return self.model_class()
 
+    def dr_curve(self, params) -> Dict:
+        raise NotImplementedError()
+
 
 class Logistic(Dichotomous):
     model = DichotomousModelChoices.d_logistic.value
@@ -112,6 +120,9 @@ class Logistic(Dichotomous):
             Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
             Prior(type=0, initial_value=0.1, stdev=1, min_value=1, max_value=10),
         ]
+
+    def dr_curve(self, params) -> np.ndarray:
+        return 1.0 / (1.0 + np.exp(-params[0] - params[1] * self.dataset.dose_linspace))
 
 
 class LogLogistic(Dichotomous):
@@ -124,6 +135,11 @@ class LogLogistic(Dichotomous):
             Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
         ]
 
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (1.0 - params[0]) / (
+            1.0 + np.exp(-params[1] - params[2] * np.log(self.dataset.dose_linspace))
+        )
+
 
 class Probit(Dichotomous):
     model = DichotomousModelChoices.d_probit.value
@@ -133,6 +149,9 @@ class Probit(Dichotomous):
             Prior(type=0, initial_value=-2, stdev=1, min_value=-18, max_value=18),
             Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=18),
         ]
+
+    def dr_curve(self, params) -> np.ndarray:
+        return norm.cdf(params[0] + params[1] * self.dataset.dose_linspace)
 
 
 class LogProbit(Dichotomous):
@@ -145,6 +164,11 @@ class LogProbit(Dichotomous):
             Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-4, max_value=18),
         ]
 
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (1 - params[0]) * norm.cdf(
+            params[1] + params[2] * np.log(self.dataset.dose_linspace)
+        )
+
 
 class Gamma(Dichotomous):
     model = DichotomousModelChoices.d_gamma.value
@@ -156,6 +180,11 @@ class Gamma(Dichotomous):
             Prior(type=0, initial_value=0.1, stdev=1, min_value=0, max_value=100),
         ]
 
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (1 - params[1]) * gamma.cdf(
+            self.dataset.dose_linspace * params[1], params[2]
+        )
+
 
 class QuantalLinear(Dichotomous):
     model = DichotomousModelChoices.d_qlinear.value
@@ -165,6 +194,9 @@ class QuantalLinear(Dichotomous):
             Prior(type=0, initial_value=-2.0, stdev=1, min_value=-18, max_value=18),
             Prior(type=0, initial_value=0.5, stdev=1, min_value=0, max_value=100),
         ]
+
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (1 - params[0]) * (1 - np.exp(-params[1] * self.dataset.dose_linspace))
 
 
 class Weibull(Dichotomous):
@@ -177,6 +209,11 @@ class Weibull(Dichotomous):
             Prior(type=0, initial_value=1.0, stdev=1, min_value=1e-6, max_value=100),
         ]
 
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (1 - params[0]) * (
+            1 - np.exp(-1 * params[2] * self.dataset.dose_linspace ** params[1])
+        )
+
 
 class DichotomousHill(Dichotomous):
     model = DichotomousModelChoices.d_hill.value
@@ -188,6 +225,11 @@ class DichotomousHill(Dichotomous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-18, max_value=18),
             Prior(type=0, initial_value=0, stdev=1, min_value=-1e-8, max_value=18),
         ]
+
+    def dr_curve(self, params) -> np.ndarray:
+        return params[0] + (params[1] - params[1] * params[0]) / (
+            1 + np.exp(-params[2] - params[3] * np.log(self.dataset.dose_linspace))
+        )
 
 
 class Multistage(Dichotomous):
