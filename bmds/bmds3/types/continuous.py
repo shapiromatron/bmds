@@ -9,7 +9,7 @@ import pandas as pd
 from pydantic import BaseModel
 
 from .. import constants
-from .common import list_t_c
+from .common import BMDS_BLANK_VALUE, list_t_c
 
 
 class ContinuousRiskType(IntEnum):
@@ -24,14 +24,15 @@ class ContinuousRiskType(IntEnum):
 
 class ContinuousModelSettings(BaseModel):
     suff_stat: bool = True
-    bmr_type: ContinuousRiskType = ContinuousRiskType.eAbsoluteDev
-    isIncreasing: bool = True
+    bmr_type: int = 2
+    isIncreasing: bool = False
     bmr: float = 1.0
-    tail_prob: float = 1.0
+    tail_prob: float = 0.01
     disttype: int = 1
-    alpha: float = 1.0
-    samples: int = 1
-    burnin: int = 1
+    alpha: float = 0.05
+    samples: int = 0
+    degree: int = 0  # multistage only
+    burnin: int = 20
 
 
 class ContinuousAnalysisStruct(ctypes.Structure):
@@ -60,7 +61,8 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("disttype", ctypes.c_int),  # distribution type defined in the enum distribution
         ("alpha", ctypes.c_double),  # specified alpha
         ("samples", ctypes.c_int),  # number of MCMC samples
-        ("burnin", ctypes.c_int),  # burn in
+        ("degree", ctypes.c_int),
+        ("burnin", ctypes.c_int),
         ("parms", ctypes.c_int),  # number of parameters
         ("prior_cols", ctypes.c_int),
     ]
@@ -85,6 +87,8 @@ class ContinuousAnalysis(BaseModel):
     disttype: int
     alpha: float
     samples: int
+    burnin: int
+    degree: int
 
     class Config:
         arbitrary_types_allowed = True
@@ -119,6 +123,8 @@ class ContinuousAnalysis(BaseModel):
             BMR=ctypes.c_double(self.BMR),
             Y=list_t_c(self.dataset.means, ctypes.c_double),
             alpha=ctypes.c_double(self.alpha),
+            burnin=ctypes.c_int(self.burnin),
+            degree=ctypes.c_int(self.degree),
             disttype=ctypes.c_int(self.disttype),
             doses=list_t_c(self.dataset.doses, ctypes.c_double),
             isIncreasing=ctypes.c_bool(self.isIncreasing),
@@ -143,6 +149,8 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
         ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
+        ("model_df",ctypes.c_double),
+        ("total_df",ctypes.c_double),
         (
             "bmd_dist",
             ctypes.POINTER(ctypes.c_double),
@@ -152,11 +160,11 @@ class ContinuousModelResultStruct(ctypes.Structure):
 class ContinuousModelResult(BaseModel):
 
     model: constants.ContinuousModel
-    dist: Optional[int] = 1
+    dist: Optional[int]
     num_params: int
     params: Optional[List[float]]
     cov: Optional[np.ndarray]
-    max: Optional[float] = 1.0
+    max: Optional[float]
     dist_numE: int
     bmd_dist: Optional[np.ndarray]
 
@@ -170,11 +178,8 @@ class ContinuousModelResult(BaseModel):
         self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return ContinuousModelResultStruct(
             model=ctypes.c_int(self.model.id),
-            dist=ctypes.c_int(self.dist),
-            nparms=ctypes.c_int(self.num_params),
             parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            max=ctypes.c_double(self.max),
             dist_numE=ctypes.c_int(self.dist_numE),
             bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         )
@@ -183,3 +188,40 @@ class ContinuousModelResult(BaseModel):
         self.params = struct.parms[: self.num_params]
         self.cov = self.cov.reshape(self.num_params, self.num_params)
         self.max = struct.max
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"cov", "bmd_dist"})
+        d = super().dict(**kw)
+        d["cov"] = self.cov.tolist()
+        d["bmd_dist"] = self.bmd_dist.T.tolist()
+        return d
+
+
+class ContinuousBmdsResultsStruct(ctypes.Structure):
+    _fields_ = [
+        ("bmd", ctypes.c_double),
+        ("bmdl", ctypes.c_double),
+        ("bmdu", ctypes.c_double),
+        ("aic", ctypes.c_double),
+        ("bounded", ctypes.POINTER(ctypes.c_bool)),
+    ]
+
+    @classmethod
+    def from_results(cls, results: ContinuousModelResult) -> "ContinuousBmdsResultsStruct":
+        return cls(
+            bmd=BMDS_BLANK_VALUE,
+            bmdl=BMDS_BLANK_VALUE,
+            bmdu=BMDS_BLANK_VALUE,
+            aic=BMDS_BLANK_VALUE,
+            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
+        )
+
+class ContinuousResult(BaseModel):
+    model_class: str
+    model_name: str
+    bmdl: float
+    bmd: float
+    bmdu: float
+    aic: float
+    bounded: List[bool]
+    fit: ContinuousModelResult

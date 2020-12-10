@@ -58,7 +58,13 @@ class ContinuousModel(BaseModel):
 
 
 class ContinuousModelChoices(Enum):
-    c_power = ContinuousModel(id=1, verbose="Power", params=("a", "b", "c", "d"))
+    c_power = ContinuousModel(id=8, verbose="Power", params=("a", "b", "c","d"))
+    c_hill = ContinuousModel(id=6, verbose="Hill", params=("a", "b", "c","d","e"))
+    c_polynomial = ContinuousModel(id=666, verbose="Polynomial", params=("a", ))
+    c_exp_m2 = ContinuousModel(id=2, verbose="ExponentialM3", params=("a", "b", "c","d","e"))
+    c_exp_m3 = ContinuousModel(id=3, verbose="ExponentialM3", params=("a", "b", "c","d","e"))
+    c_exp_m4 = ContinuousModel(id=4, verbose="ExponentialM3", params=("a", "b", "c","d","e"))
+    c_exp_m5 = ContinuousModel(id=5, verbose="ExponentialM3", params=("a", "b", "c","d","e"))
 
 class PriorType(IntEnum):
     eNone = 0
