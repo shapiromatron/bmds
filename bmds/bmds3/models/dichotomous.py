@@ -82,6 +82,7 @@ class Dichotomous(BaseModel):
             ctypes.pointer(fit_results_struct),
             ctypes.pointer(bmds_results_struct),
         )
+        dr_x = self.dataset.dose_linspace
         result = DichotomousResult(
             model_class=self.model_class(),
             model_name=self.model_name(),
@@ -92,8 +93,8 @@ class Dichotomous(BaseModel):
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             gof=gof_results,
-            dr_x=self.dataset.dose_linspace.tolist(),
-            dr_y=self.dr_curve(fit_results.params).tolist(),
+            dr_x=dr_x.tolist(),
+            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
         )
         return result
 
@@ -111,74 +112,87 @@ class Dichotomous(BaseModel):
     def model_name(self) -> str:
         return self.model_class()
 
-    def dr_curve(self, params) -> Dict:
+    def dr_curve(self, doses, params) -> Dict:
         raise NotImplementedError()
 
 
 class Logistic(Dichotomous):
     model = DichotomousModelChoices.d_logistic.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return 1.0 / (1.0 + np.exp(-params[0] - params[1] * self.dataset.dose_linspace))
+    def dr_curve(self, doses, params) -> np.ndarray:
+        a = params[0]
+        b = params[1]
+        return 1 / (1 + np.exp(-a - b * doses))
 
 
 class LogLogistic(Dichotomous):
     model = DichotomousModelChoices.d_loglogistic.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (1.0 - params[0]) / (
-            1.0 + np.exp(-params[1] - params[2] * np.log(self.dataset.dose_linspace))
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = 1 / (1 + np.exp(-params[0]))
+        a = params[1]
+        b = params[2]
+        return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
 class Probit(Dichotomous):
     model = DichotomousModelChoices.d_probit.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return norm.cdf(params[0] + params[1] * self.dataset.dose_linspace)
+    def dr_curve(self, doses, params) -> np.ndarray:
+        a = params[0]
+        b = params[1]
+        return norm.cdf(a + b * doses)
 
 
 class LogProbit(Dichotomous):
     model = DichotomousModelChoices.d_logprobit.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (1 - params[0]) * norm.cdf(
-            params[1] + params[2] * np.log(self.dataset.dose_linspace)
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = 1 / (1 + np.exp(-params[0]))
+        a = params[1]
+        b = params[2]
+        return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
 class Gamma(Dichotomous):
     model = DichotomousModelChoices.d_gamma.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (1 - params[1]) * gamma.cdf(
-            self.dataset.dose_linspace * params[1], params[2]
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        # https://github.com/wheelemw/RBMDS/pull/11/files
+        g = 1 / (1 + np.exp(-params[0]))
+        a = params[1]
+        b = params[2]
+        return g + (1 - g) * gamma.cdf(b * doses, a)
 
 
 class QuantalLinear(Dichotomous):
     model = DichotomousModelChoices.d_qlinear.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (1 - params[0]) * (1 - np.exp(-params[1] * self.dataset.dose_linspace))
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = 1 / (1 + np.exp(-params[0]))
+        a = params[1]
+        return g + (1 - g) * 1 - np.exp(-a * doses)
 
 
 class Weibull(Dichotomous):
     model = DichotomousModelChoices.d_weibull.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (1 - params[0]) * (
-            1 - np.exp(-1 * params[2] * self.dataset.dose_linspace ** params[1])
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = 1 / (1 + np.exp(-params[0]))
+        a = params[1]
+        b = params[2]
+        return g + (1 - g) * (1 - np.exp(-b * doses ** a))
 
 
 class DichotomousHill(Dichotomous):
     model = DichotomousModelChoices.d_hill.value
 
-    def dr_curve(self, params) -> np.ndarray:
-        return params[0] + (params[1] - params[1] * params[0]) / (
-            1 + np.exp(-params[2] - params[3] * np.log(self.dataset.dose_linspace))
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = 1 / (1 + np.exp(-params[0]))
+        n = 1 / (1 + np.exp(-params[1]))
+        a = params[2]
+        b = params[3]
+        return g + (1 - g) * n * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
 class Multistage(Dichotomous):
@@ -198,9 +212,11 @@ class Multistage(Dichotomous):
     def model_name(self) -> str:
         return f"Multistage {self.settings.degree}°"
 
-    def dr_curve(self, params) -> np.ndarray:
-        # TODO - handle higher degrees
-        xs = self.dataset.dose_linspace
-        return params[0] + (1 - params[0]) * (
-            1 - np.exp((-params[1] * xs) - (1 - params[2] * xs) ** 2)
-        )
+    def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO - test!
+        # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
+        g = 1 / (1 + np.exp(-params[0]))
+        val = doses * 0
+        for i in range(1, len(params)):
+            val -= -params[i] * doses ** i
+        return g + (1 - g) * 1 - np.exp(val)
