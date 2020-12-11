@@ -36,15 +36,15 @@ class DichotomousModel(BaseModel):
 
 
 class DichotomousModelChoices(Enum):
-    d_hill = DichotomousModel(id=1, verbose="Hill", params=("a", "b", "c", "d"))
-    d_gamma = DichotomousModel(id=2, verbose="Gamma", params=("a", "b", "c"))
+    d_hill = DichotomousModel(id=1, verbose="Hill", params=("g", "n", "a", "b"))
+    d_gamma = DichotomousModel(id=2, verbose="Gamma", params=("g", "a", "b"))
     d_logistic = DichotomousModel(id=3, verbose="Logistic", params=("a", "b"))
-    d_loglogistic = DichotomousModel(id=4, verbose="LogLogistic", params=("a", "b", "c"))
-    d_logprobit = DichotomousModel(id=5, verbose="LogProbit", params=("a", "b", "c"))
-    d_multistage = DichotomousModel(id=6, verbose="Multistage", params=("a", "b"))
+    d_loglogistic = DichotomousModel(id=4, verbose="LogLogistic", params=("g", "a", "b"))
+    d_logprobit = DichotomousModel(id=5, verbose="LogProbit", params=("g", "a", "b"))
+    d_multistage = DichotomousModel(id=6, verbose="Multistage", params=("g", "x1", "x2"))
     d_probit = DichotomousModel(id=7, verbose="Probit", params=("a", "b"))
-    d_qlinear = DichotomousModel(id=8, verbose="Quantal Linear", params=("a", "b"))
-    d_weibull = DichotomousModel(id=9, verbose="Weibull", params=("a", "b", "c"))
+    d_qlinear = DichotomousModel(id=8, verbose="Quantal Linear", params=("g", "a"))
+    d_weibull = DichotomousModel(id=9, verbose="Weibull", params=("g", "a", "b"))
 
 
 class PriorType(IntEnum):
