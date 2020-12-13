@@ -91,7 +91,7 @@ class BaseModel:
 
     @property
     def output_created(self) -> bool:
-        return self.execution_start is not None and self.execution_halted is False
+        return self.results is not None
 
     def get_model_settings(self, settings: InputModelSettings) -> PydanticBaseModel:
         raise NotImplementedError("Requires abstract implementation")

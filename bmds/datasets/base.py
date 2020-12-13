@@ -1,3 +1,8 @@
+from typing import Optional
+
+import numpy as np
+
+
 class DatasetBase:
     # Abstract parent-class for dataset-types.
 
@@ -19,6 +24,14 @@ class DatasetBase:
     @property
     def num_dose_groups(self):
         return len(set(self.doses))
+
+    _dose_linspace: Optional[np.ndarray]
+
+    @property
+    def dose_linspace(self) -> np.ndarray:
+        if not hasattr(self, "_dose_linspace"):
+            self._dose_linspace = np.linspace(np.min(self.doses), np.max(self.doses), 100)
+        return self._dose_linspace
 
     def _get_dose_units_text(self):
         return " ({})".format(self.kwargs["dose_units"]) if "dose_units" in self.kwargs else ""
