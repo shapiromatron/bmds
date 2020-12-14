@@ -1,6 +1,5 @@
 import json
 import os
-import platform
 
 import pytest
 
@@ -24,6 +23,7 @@ def test_bmds3_dichotomous_session():
     # ensure json-serializable
     print(json.dumps(d))
 
+
 @pytest.mark.skipif(not should_run, reason="dlls only exist for Mac")
 def test_bmds3_dichotomous_ma_session():
     ds = bmds.DichotomousDataset(
@@ -34,7 +34,6 @@ def test_bmds3_dichotomous_ma_session():
     session.execute()
     for model in session.models:
         model.results = model.execute(debug=True)
-    import pdb; pdb.set_trace()
     d = session.to_dict(0)
     # ensure json-serializable
     print(json.dumps(d))

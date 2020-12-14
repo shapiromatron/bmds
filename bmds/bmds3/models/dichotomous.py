@@ -5,16 +5,17 @@ from ..constants import DichotomousModel, DichotomousModelChoices, Prior
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
+    DichotomousMAAnalysis,
+    DichotomousMAResult,
     DichotomousModelResult,
     DichotomousModelSettings,
     DichotomousPgofDataStruct,
     DichotomousPgofResult,
     DichotomousPgofResultStruct,
     DichotomousResult,
-    DichotomousMAAnalysis,
-    DichotomousMAResult
 )
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
+
 
 class DichotomousMA(BaseModel):
     def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
@@ -30,57 +31,62 @@ class DichotomousMA(BaseModel):
     def execute(self, debug=False):
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
-        models = [DichotomousHill(self.dataset),Gamma(self.dataset)]
+        models = [DichotomousHill(self.dataset), Gamma(self.dataset)]
 
         analysis = DichotomousAnalysis(
-                model=models[0].model, # not used, needed for init
-                dataset=self.dataset,
-                priors=models[0].default_frequentist_priors(), # not used, needed for init
-                BMD_type=self.settings.bmr_type,
-                BMR=self.settings.bmr,
-                alpha=self.settings.alpha,
-                degree=self.settings.degree,
-                samples=self.settings.samples,
-                burnin=self.settings.burnin,
-            )
+            model=models[0].model,  # not used, needed for init
+            dataset=self.dataset,
+            priors=models[0].default_frequentist_priors(),  # not used, needed for init
+            BMD_type=self.settings.bmr_type,
+            BMR=self.settings.bmr,
+            alpha=self.settings.alpha,
+            degree=self.settings.degree,
+            samples=self.settings.samples,
+            burnin=self.settings.burnin,
+        )
         analysis_struct = analysis.to_c()
 
         priors = [model.default_frequentist_priors() for model in models]
         model_priors = [0] * len(models)
 
-        ma_analysis = DichotomousMAAnalysis(models=[model.model for model in models],priors=priors, model_priors=model_priors)
+        ma_analysis = DichotomousMAAnalysis(
+            models=[model.model for model in models], priors=priors, model_priors=model_priors
+        )
         ma_analysis_struct = ma_analysis.to_c()
 
         dist_numE = 300
-
 
         results = []
 
         for model in models:
             result = DichotomousModelResult(
-            model=model.model, dist_numE=dist_numE, num_params=model.model.num_params)
+                model=model.model, dist_numE=dist_numE, num_params=model.model.num_params
+            )
             result_struct = result.to_c()
             results.append(result_struct)
-
-
 
         post_probs = [0] * len(models)
         bmd_dist = [0] * (dist_numE)
 
-        import pdb; pdb.set_trace()
-
-        ma_result = DichotomousMAResult(results = results, num_models = len(models), dist_numE = dist_numE, post_probs = post_probs, bmd_dist = bmd_dist)
+        ma_result = DichotomousMAResult(
+            results=results,
+            num_models=len(models),
+            dist_numE=dist_numE,
+            post_probs=post_probs,
+            bmd_dist=bmd_dist,
+        )
         ma_result_struct = ma_result.to_c()
 
-
-        dll.estimate_ma_laplace_dicho(ctypes.pointer(ma_analysis_struct),ctypes.pointer(analysis_struct),ctypes.pointer(ma_result_struct))
+        dll.estimate_ma_laplace_dicho(
+            ctypes.pointer(ma_analysis_struct),
+            ctypes.pointer(analysis_struct),
+            ctypes.pointer(ma_result_struct),
+        )
 
         return None
 
-    def to_dict(self,_):
-        return {"results":self.results}
-
-
+    def to_dict(self, _):
+        return {"results": self.results}
 
 
 class Dichotomous(BaseModel):

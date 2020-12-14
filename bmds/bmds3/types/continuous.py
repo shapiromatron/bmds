@@ -1,4 +1,3 @@
-from bmds.datasets.continuous import ContinuousDataset
 import ctypes
 from enum import IntEnum
 from textwrap import dedent
@@ -7,6 +6,8 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
+
+from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
 from .common import BMDS_BLANK_VALUE, list_t_c
@@ -75,6 +76,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             """
         )
 
+
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
     dataset: ContinuousDataset
@@ -140,6 +142,7 @@ class ContinuousAnalysis(BaseModel):
             tail_prob=ctypes.c_double(self.tail_prob),
         )
 
+
 class ContinuousModelResultStruct(ctypes.Structure):
     _fields_ = [
         ("model", ctypes.c_int),  # continuous model specification
@@ -149,13 +152,11 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
         ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-        ("model_df",ctypes.c_double),
-        ("total_df",ctypes.c_double),
-        (
-            "bmd_dist",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # bmd distribution (dist_numE x 2) matrix
+        ("model_df", ctypes.c_double),
+        ("total_df", ctypes.c_double),
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
     ]
+
 
 class ContinuousModelResult(BaseModel):
 
@@ -170,7 +171,6 @@ class ContinuousModelResult(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
 
     def to_c(self):
         parms = np.zeros(self.num_params, dtype=np.float64)
@@ -215,6 +215,7 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
             aic=BMDS_BLANK_VALUE,
             bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
+
 
 class ContinuousResult(BaseModel):
     model_class: str

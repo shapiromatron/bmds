@@ -4,10 +4,10 @@ from typing import List
 from ..constants import ContinuousModel, ContinuousModelChoices, Prior
 from ..types.continuous import (
     ContinuousAnalysis,
+    ContinuousBmdsResultsStruct,
     ContinuousModelResult,
     ContinuousModelSettings,
-    ContinuousBmdsResultsStruct,
-    ContinuousResult
+    ContinuousResult,
 )
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
 
@@ -45,7 +45,7 @@ class Continuous(BaseModel):
             disttype=self.settings.disttype,
             samples=self.settings.samples,
             burnin=self.settings.burnin,
-            degree=self.settings.degree
+            degree=self.settings.degree,
         )
         # setup outputs
         fit_results = ContinuousModelResult(
@@ -59,7 +59,6 @@ class Continuous(BaseModel):
         if debug:
             print(inputs_struct)
 
-
         dll.estimate_sm_laplace_cont(
             ctypes.pointer(inputs_struct), ctypes.pointer(fit_results_struct)
         )
@@ -68,9 +67,11 @@ class Continuous(BaseModel):
 
         bmds_results_struct = ContinuousBmdsResultsStruct.from_results(fit_results)
 
-        dll.collect_cont_bmd_values(ctypes.pointer(inputs_struct),
+        dll.collect_cont_bmd_values(
+            ctypes.pointer(inputs_struct),
             ctypes.pointer(fit_results_struct),
-            ctypes.pointer(bmds_results_struct),)
+            ctypes.pointer(bmds_results_struct),
+        )
 
         result = ContinuousResult(
             model_class=self.model_class(),
@@ -108,6 +109,7 @@ class Power(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
         ]
 
+
 class Hill(Continuous):
     model = ContinuousModelChoices.c_hill.value
 
@@ -120,6 +122,7 @@ class Hill(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
         ]
 
+
 class Polynomial(Continuous):
     model = ContinuousModelChoices.c_polynomial.value
 
@@ -127,6 +130,7 @@ class Polynomial(Continuous):
         return [
             Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
         ]
+
 
 class ExponentialM2(Continuous):
     model = ContinuousModelChoices.c_exp_m2.value
@@ -140,6 +144,7 @@ class ExponentialM2(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
         ]
 
+
 class ExponentialM3(Continuous):
     model = ContinuousModelChoices.c_exp_m3.value
 
@@ -152,6 +157,7 @@ class ExponentialM3(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
         ]
 
+
 class ExponentialM4(Continuous):
     model = ContinuousModelChoices.c_exp_m4.value
 
@@ -163,6 +169,7 @@ class ExponentialM4(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
             Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
         ]
+
 
 class ExponentialM5(Continuous):
     model = ContinuousModelChoices.c_exp_m5.value

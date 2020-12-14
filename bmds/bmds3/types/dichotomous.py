@@ -307,14 +307,21 @@ class DichotomousResult(BaseModel):
 
 class DichotomousMAAnalysisStruct(ctypes.Structure):
     _fields_ = [
-        ("nmodels",ctypes.c_int), # number of models for the model average
-        ("priors",ctypes.POINTER(ctypes.POINTER(ctypes.c_double))), # list of pointers to prior arrays, priors[i] is the prior array for the ith model ect
-        ("nparms", ctypes.POINTER(ctypes.c_int)), # parameters in each model
-        ("actual_parms", ctypes.POINTER(ctypes.c_int)), # actual number of parameters in the model
-        ("prior_cols", ctypes.POINTER(ctypes.c_int)), # columns in the prior if there are more in the future, presently there are only 5
-        ("models", ctypes.POINTER(ctypes.c_int)), # list of models
-        ("modelPriors", ctypes.POINTER(ctypes.c_double)), # prior probability on the model
+        ("nmodels", ctypes.c_int),  # number of models for the model average
+        (
+            "priors",
+            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ),  # list of pointers to prior arrays, priors[i] is the prior array for the ith model ect
+        ("nparms", ctypes.POINTER(ctypes.c_int)),  # parameters in each model
+        ("actual_parms", ctypes.POINTER(ctypes.c_int)),  # actual number of parameters in the model
+        (
+            "prior_cols",
+            ctypes.POINTER(ctypes.c_int),
+        ),  # columns in the prior if there are more in the future, presently there are only 5
+        ("models", ctypes.POINTER(ctypes.c_int)),  # list of models
+        ("modelPriors", ctypes.POINTER(ctypes.c_double)),  # prior probability on the model
     ]
+
 
 class DichotomousMAAnalysis(BaseModel):
     models: List[constants.DichotomousModel]
@@ -334,29 +341,34 @@ class DichotomousMAAnalysis(BaseModel):
 
     def to_c(self) -> DichotomousMAAnalysisStruct:
         _priors = [self._priors_to_list(model_priors) for model_priors in self.priors]
-        _prior_ctypes = [list_t_c(model_priors,ctypes.c_double) for model_priors in _priors]
+        _prior_ctypes = [list_t_c(model_priors, ctypes.c_double) for model_priors in _priors]
         return DichotomousMAAnalysisStruct(
             nmodels=ctypes.c_int(len(self.models)),
-            priors=list_t_c(_prior_ctypes,ctypes.POINTER(ctypes.c_double)),
-            actual_parms=list_t_c([model.num_params for model in self.models],ctypes.c_int),
-            priorCols=list_t_c([constants.NUM_PRIOR_COLS]*len(self.models),ctypes.c_int),
-            models=list_t_c([model.id for model in self.models],ctypes.c_int),
-            modelPriors=list_t_c(self.model_priors, ctypes.c_double)
+            priors=list_t_c(_prior_ctypes, ctypes.POINTER(ctypes.c_double)),
+            actual_parms=list_t_c([model.num_params for model in self.models], ctypes.c_int),
+            priorCols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
+            models=list_t_c([model.id for model in self.models], ctypes.c_int),
+            modelPriors=list_t_c(self.model_priors, ctypes.c_double),
         )
+
 
 class DichotomousMAResultStruct(ctypes.Structure):
     _fields_ = [
-        ("nmodels",ctypes.c_int), # number of models for each
-        ("models",ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct))), # individual model fits for each model average
-        ("dist_numE", ctypes.c_int), # number of entries in rows for the bmd_dist
-        ("post_probs",ctypes.POINTER(ctypes.c_double)), # posterior probabilities
-        ("bmd_dist",ctypes.POINTER(ctypes.c_double)), # bmd ma distribution (dist_numE x 2) matrix
+        ("nmodels", ctypes.c_int),  # number of models for each
+        (
+            "models",
+            ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct)),
+        ),  # individual model fits for each model average
+        ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
+        ("post_probs", ctypes.POINTER(ctypes.c_double)),  # posterior probabilities
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd ma distribution (dist_numE x 2) matrix
     ]
 
+
 class DichotomousMAResult(BaseModel):
-    results : List[DichotomousModelResultStruct]
-    num_models : int
-    dist_numE : int
+    results: List[DichotomousModelResultStruct]
+    num_models: int
+    dist_numE: int
     post_probs: List[int]
     bmd_dist: List[int]
 
@@ -364,12 +376,11 @@ class DichotomousMAResult(BaseModel):
         arbitrary_types_allowed = True
 
     def to_c(self) -> DichotomousMAAnalysisStruct:
-        import pdb; pdb.set_trace()
         _results = [ctypes.pointer(struct) for struct in self.results]
         return DichotomousMAResultStruct(
-            nmodels = ctypes.c_int(self.num_models),
-            models = list_t_c(_results,ctypes.POINTER(DichotomousModelResultStruct)),
+            nmodels=ctypes.c_int(self.num_models),
+            models=list_t_c(_results, ctypes.POINTER(DichotomousModelResultStruct)),
             dist_numE=ctypes.c_int(self.dist_numE),
-            post_probs = list_t_c(self.post_probs,ctypes.c_double),
-            bmd_dist = list_t_c(self.bmd_dist,ctypes.c_double),
-            )
+            post_probs=list_t_c(self.post_probs, ctypes.c_double),
+            bmd_dist=list_t_c(self.bmd_dist, ctypes.c_double),
+        )
