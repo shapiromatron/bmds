@@ -342,14 +342,13 @@ class DichotomousMAAnalysis(BaseModel):
     def to_c(self) -> DichotomousMAAnalysisStruct:
         _priors = [self._priors_to_list(model_priors) for model_priors in self.priors]
         _prior_arrays = [list_t_c(model_priors, ctypes.c_double) for model_priors in _priors]
-        import pdb; pdb.set_trace()
         _prior_pointers = [ctypes.cast(prior_array, ctypes.POINTER(ctypes.c_double)) for prior_array in _prior_arrays]
         priors = list_t_c(_prior_pointers,ctypes.POINTER(ctypes.c_double))
         return DichotomousMAAnalysisStruct(
             nmodels=ctypes.c_int(len(self.models)),
             priors=priors,
             actual_parms=list_t_c([model.num_params for model in self.models], ctypes.c_int),
-            priorCols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
+            prior_cols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
             models=list_t_c([model.id for model in self.models], ctypes.c_int),
             modelPriors=list_t_c(self.model_priors, ctypes.c_double),
         )
