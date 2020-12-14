@@ -196,8 +196,8 @@ class DichotomousModelResult(BaseModel):
             bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         )
 
-    def from_c(self, struct: DichotomousModelResultStruct):
-        self.params = struct.parms[: self.num_params]
+    def from_c(self, struct: DichotomousModelResultStruct, model: "Dichotomous"):
+        self.params = model.transform_params(struct)
         self.cov = self.cov.reshape(self.num_params, self.num_params)
         self.max = struct.max
         self.model_df = struct.model_df
