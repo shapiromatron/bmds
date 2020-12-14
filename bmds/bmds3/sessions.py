@@ -59,8 +59,11 @@ class BMDS_v330(Bmds3Version):
         constants.DICHOTOMOUS_CANCER: {
             # constants.M_MultistageCancer: d3.Multistage
         },
+        constants.DICHOTOMOUS_MA: {
+            "Dichotomous MA": d3.DichotomousMA
+        },
         constants.CONTINUOUS: {
-            # constants.M_Linear: c3.Linear,
+            # constants.M_Linear: c3.Linear, = Polynomial degree=1
             # constants.M_Polynomial: c3.Polynomial,
             constants.M_Power: c3.Power,
             constants.M_Hill: c3.Hill,

@@ -24,7 +24,7 @@ class ContinuousRiskType(IntEnum):
 
 class ContinuousModelSettings(BaseModel):
     suff_stat: bool = True
-    bmr_type: int = 2
+    bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
     isIncreasing: bool = False
     bmr: float = 1.0
     tail_prob: float = 0.01

@@ -24,6 +24,9 @@ class Continuous(BaseModel):
         else:
             model = ContinuousModelSettings.parse_obj(settings)
 
+        if model.degree == 0:
+            model.degree = self.get_default_model_degree()
+
         return model
 
     def execute(self, debug=False):
