@@ -326,7 +326,6 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
 class DichotomousMAAnalysis(BaseModel):
     models: List[constants.DichotomousModel]
     priors: List[List[constants.Prior]]
-    model_priors: List[int]
 
     class Config:
         arbitrary_types_allowed = True
@@ -350,7 +349,7 @@ class DichotomousMAAnalysis(BaseModel):
             actual_parms=list_t_c([model.num_params for model in self.models], ctypes.c_int),
             prior_cols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
             models=list_t_c([model.id for model in self.models], ctypes.c_int),
-            modelPriors=list_t_c(self.model_priors, ctypes.c_double),
+            modelPriors=list_t_c([0]*len(self.models), ctypes.c_double),
         )
 
 
@@ -371,18 +370,18 @@ class DichotomousMAResult(BaseModel):
     results: List[DichotomousModelResultStruct]
     num_models: int
     dist_numE: int
-    post_probs: List[int]
-    bmd_dist: List[int]
 
     class Config:
         arbitrary_types_allowed = True
 
     def to_c(self) -> DichotomousMAAnalysisStruct:
+        post_probs = [0] * self.num_models
+        bmd_dist = [0] * self.dist_numE
         _results = [ctypes.pointer(struct) for struct in self.results]
         return DichotomousMAResultStruct(
             nmodels=ctypes.c_int(self.num_models),
             models=list_t_c(_results, ctypes.POINTER(DichotomousModelResultStruct)),
             dist_numE=ctypes.c_int(self.dist_numE),
-            post_probs=list_t_c(self.post_probs, ctypes.c_double),
-            bmd_dist=list_t_c(self.bmd_dist, ctypes.c_double),
+            post_probs=list_t_c(post_probs, ctypes.c_double),
+            bmd_dist=list_t_c(bmd_dist, ctypes.c_double),
         )

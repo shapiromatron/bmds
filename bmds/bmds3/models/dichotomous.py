@@ -47,10 +47,9 @@ class DichotomousMA(BaseModel):
         analysis_struct = analysis.to_c()
 
         priors = [model.default_frequentist_priors() for model in models]
-        model_priors = [0] * len(models)
 
         ma_analysis = DichotomousMAAnalysis(
-            models=[model.model for model in models], priors=priors, model_priors=model_priors
+            models=[model.model for model in models], priors=priors,
         )
         ma_analysis_struct = ma_analysis.to_c()
 
@@ -65,15 +64,10 @@ class DichotomousMA(BaseModel):
             result_struct = result.to_c()
             results.append(result_struct)
 
-        post_probs = [0] * len(models)
-        bmd_dist = [0] * (dist_numE)
-
         ma_result = DichotomousMAResult(
             results=results,
             num_models=len(models),
             dist_numE=dist_numE,
-            post_probs=post_probs,
-            bmd_dist=bmd_dist,
         )
         ma_result_struct = ma_result.to_c()
 
