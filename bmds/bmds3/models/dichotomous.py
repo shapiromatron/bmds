@@ -31,6 +31,7 @@ class DichotomousMA(BaseModel):
     def execute(self, debug=False):
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
+        # TODO add more models
         models = [DichotomousHill(self.dataset), Gamma(self.dataset)]
 
         analysis = DichotomousAnalysis(
@@ -65,9 +66,7 @@ class DichotomousMA(BaseModel):
             results.append(result_struct)
 
         ma_result = DichotomousMAResult(
-            results=results,
-            num_models=len(models),
-            dist_numE=dist_numE,
+            results=results, num_models=len(models), dist_numE=dist_numE,
         )
         ma_result_struct = ma_result.to_c()
 
@@ -77,6 +76,7 @@ class DichotomousMA(BaseModel):
             ctypes.pointer(ma_result_struct),
         )
 
+        # TODO return results
         return None
 
     def to_dict(self, _):

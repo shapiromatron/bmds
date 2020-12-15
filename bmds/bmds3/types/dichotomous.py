@@ -159,11 +159,11 @@ class DichotomousModelResult(BaseModel):
     num_params: int
     dist_numE: int
     params: Optional[List[float]]
-    cov: Optional[Union[np.ndarray,List[float]]]
+    cov: Optional[Union[np.ndarray, List[float]]]
     max: Optional[float]
     model_df: Optional[float]
     total_df: Optional[float]
-    bmd_dist: Optional[Union[np.ndarray,List[float]]]
+    bmd_dist: Optional[Union[np.ndarray, List[float]]]
 
     class Config:
         arbitrary_types_allowed = True
@@ -171,14 +171,14 @@ class DichotomousModelResult(BaseModel):
     def to_c(self) -> DichotomousModelResultStruct:
         parms = [0] * self.num_params
         self.cov = [0] * (self.num_params ** 2)
-        self.bmd_dist = [0] * (self.dist_numE * 2)
+        self.bmd_dist = [1] * (self.dist_numE * 2)
         return DichotomousModelResultStruct(
             model=ctypes.c_int(self.model.id),
             nparms=ctypes.c_int(self.num_params),
-            parms=list_t_c(parms,ctypes.c_double),
-            cov=list_t_c(self.cov,ctypes.c_double),
+            parms=list_t_c(parms, ctypes.c_double),
+            cov=list_t_c(self.cov, ctypes.c_double),
             dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=list_t_c(self.bmd_dist,ctypes.c_double),
+            bmd_dist=list_t_c(self.bmd_dist, ctypes.c_double),
         )
 
     def from_c(self, struct: DichotomousModelResultStruct):
@@ -341,15 +341,18 @@ class DichotomousMAAnalysis(BaseModel):
     def to_c(self) -> DichotomousMAAnalysisStruct:
         _priors = [self._priors_to_list(model_priors) for model_priors in self.priors]
         _prior_arrays = [list_t_c(model_priors, ctypes.c_double) for model_priors in _priors]
-        _prior_pointers = [ctypes.cast(prior_array, ctypes.POINTER(ctypes.c_double)) for prior_array in _prior_arrays]
-        priors = list_t_c(_prior_pointers,ctypes.POINTER(ctypes.c_double))
+        _prior_pointers = [
+            ctypes.cast(prior_array, ctypes.POINTER(ctypes.c_double))
+            for prior_array in _prior_arrays
+        ]
+        priors = list_t_c(_prior_pointers, ctypes.POINTER(ctypes.c_double))
         return DichotomousMAAnalysisStruct(
             nmodels=ctypes.c_int(len(self.models)),
             priors=priors,
             actual_parms=list_t_c([model.num_params for model in self.models], ctypes.c_int),
             prior_cols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
             models=list_t_c([model.id for model in self.models], ctypes.c_int),
-            modelPriors=list_t_c([0]*len(self.models), ctypes.c_double),
+            modelPriors=list_t_c([0] * len(self.models), ctypes.c_double),
         )
 
 
@@ -385,3 +388,7 @@ class DichotomousMAResult(BaseModel):
             post_probs=list_t_c(post_probs, ctypes.c_double),
             bmd_dist=list_t_c(bmd_dist, ctypes.c_double),
         )
+
+    def from_c(self, struct: DichotomousMAResultStruct):
+        # TODO
+        return None

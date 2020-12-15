@@ -1,10 +1,8 @@
 import ctypes
 from enum import IntEnum
-from textwrap import dedent
 from typing import Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 from pydantic import BaseModel
 
 from bmds.datasets.continuous import ContinuousDataset
@@ -67,14 +65,6 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("parms", ctypes.c_int),  # number of parameters
         ("prior_cols", ctypes.c_int),
     ]
-
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            model: {self.model}
-            BMR: {self.BMR}
-            """
-        )
 
 
 class ContinuousAnalysis(BaseModel):
