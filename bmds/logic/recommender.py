@@ -15,6 +15,8 @@ class Recommender:
         rule_args = dict()
         if dtype == constants.DICHOTOMOUS:
             pass
+        elif dtype == constants.DICHOTOMOUS_MA:
+            pass
         elif dtype in constants.CONTINUOUS_DTYPES:
             rule_args["continuous"] = True
         elif dtype == constants.DICHOTOMOUS_CANCER:
