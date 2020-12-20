@@ -7,6 +7,7 @@ from .. import constants
 from ..bmds2.sessions import BMDS
 from .models import continuous as c3
 from .models import dichotomous as d3
+from .models import ma
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,10 @@ class Bmds3Version(BMDS):
             else:
                 self.add_model(name, settings=model_settings)
 
+    def add_model_averaging(self):
+        instance = ma.DichotomousMA(dataset=self.dataset)
+        self.models.append(instance)
+
     def _can_execute_locally(self) -> bool:
         return True
 
@@ -59,7 +64,6 @@ class BMDS_v330(Bmds3Version):
         constants.DICHOTOMOUS_CANCER: {
             # constants.M_MultistageCancer: d3.Multistage
         },
-        constants.DICHOTOMOUS_MA: {"Dichotomous MA": d3.DichotomousMA},
         constants.CONTINUOUS: {
             # constants.M_Linear: c3.Linear, = Polynomial degree=1
             # constants.M_Polynomial: c3.Polynomial,
