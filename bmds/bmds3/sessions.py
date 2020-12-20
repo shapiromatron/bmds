@@ -1,5 +1,5 @@
 import logging
-from copy import deepcopy
+from copy import copy, deepcopy
 
 from simple_settings import settings
 
@@ -38,7 +38,11 @@ class Bmds3Version(BMDS):
                 self.add_model(name, settings=model_settings)
 
     def add_model_averaging(self):
-        instance = ma.DichotomousMA(dataset=self.dataset)
+        """
+        Must be added average other models are added since a shallow copy is taken, and the
+        execution of model averaging assumes all other models were executed.
+        """
+        instance = ma.DichotomousMA(dataset=self.dataset, models=copy(self.models))
         self.models.append(instance)
 
     def _can_execute_locally(self) -> bool:

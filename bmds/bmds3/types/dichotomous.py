@@ -72,7 +72,7 @@ class DichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a dichotomous analysis.
     It is used do describe a single model analysis, in which all of the
-    informationis used, or a MA analysis, in which all the information
+    information is used, or a MA analysis, in which all the information
     save prior, degree, parms and prior_cols are used.
     """
 

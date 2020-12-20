@@ -24,13 +24,15 @@ def test_bmds3_dichotomous_session():
     print(json.dumps(d))
 
 
-@pytest.mark.skipif(True, reason="TODO - fix")
+@pytest.mark.skipif(not should_run, reason="TODO - fix")
 def test_bmds3_dichotomous_ma_session():
     ds = bmds.DichotomousDataset(
         doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
     )
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=ds)
-    session.add_default_models()
+    # session.add_default_models()
+    session.add_model(bmds.constants.M_Logistic)
+    session.add_model(bmds.constants.M_LogLogistic)
     session.add_model_averaging()
     session.execute()
     for model in session.models:

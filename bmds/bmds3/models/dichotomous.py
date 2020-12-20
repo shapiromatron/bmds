@@ -1,5 +1,5 @@
 import ctypes
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -36,10 +36,10 @@ class Dichotomous(BaseModel):
 
         return model
 
-    def execute(self, debug=False) -> DichotomousResult:
+    def get_analysis_inputs(self) -> DichotomousAnalysis:
         # setup inputs
         priors = self.get_priors()
-        inputs = DichotomousAnalysis(
+        return DichotomousAnalysis(
             model=self.model,
             dataset=self.dataset,
             priors=priors,
@@ -51,11 +51,18 @@ class Dichotomous(BaseModel):
             burnin=self.settings.burnin,
         )
 
+    def execute(self, debug=False) -> DichotomousResult:
+        # setup inputs
+        inputs = self.get_analysis_inputs()
+
         # setup outputs
         fit_results = DichotomousModelResult(
             model=self.model, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
+
+        # can be used for model averaging
+        self.fit_results_struct = fit_results_struct
 
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 

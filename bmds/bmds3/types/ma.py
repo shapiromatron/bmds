@@ -9,6 +9,15 @@ from .common import list_t_c
 from .dichotomous import DichotomousModelResultStruct
 
 
+def _priors_to_list(priors) -> List[float]:
+    """
+    allocate memory for all parameters and convert to columnwise matrix
+    """
+    arr = np.array([list(prior.dict().values()) for prior in priors])
+
+    return arr.T.flatten().tolist()
+
+
 class DichotomousMAAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("nmodels", ctypes.c_int),  # number of models for the model average
@@ -26,37 +35,22 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),  # prior probability on the model
     ]
 
-
-class DichotomousMAAnalysis(BaseModel):
-    models: List[constants.DichotomousModel]
-    priors: List[List[constants.Prior]]
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    def _priors_to_list(self, priors) -> List[float]:
-        """
-        allocate memory for all parameters and convert to columnwise matrix
-        """
-        arr = np.array([list(prior.dict().values()) for prior in priors])
-
-        return arr.T.flatten().tolist()
-
-    def to_c(self) -> DichotomousMAAnalysisStruct:
-        _priors = [self._priors_to_list(model_priors) for model_priors in self.priors]
+    @classmethod
+    def from_python(cls, models, priors):
+        _priors = [_priors_to_list(model_priors) for model_priors in priors]
         _prior_arrays = [list_t_c(model_priors, ctypes.c_double) for model_priors in _priors]
         _prior_pointers = [
             ctypes.cast(prior_array, ctypes.POINTER(ctypes.c_double))
             for prior_array in _prior_arrays
         ]
         priors = list_t_c(_prior_pointers, ctypes.POINTER(ctypes.c_double))
-        return DichotomousMAAnalysisStruct(
-            nmodels=ctypes.c_int(len(self.models)),
+        return cls(
+            nmodels=ctypes.c_int(len(models)),
             priors=priors,
-            actual_parms=list_t_c([model.num_params for model in self.models], ctypes.c_int),
-            prior_cols=list_t_c([constants.NUM_PRIOR_COLS] * len(self.models), ctypes.c_int),
-            models=list_t_c([model.id for model in self.models], ctypes.c_int),
-            modelPriors=list_t_c([0] * len(self.models), ctypes.c_double),
+            actual_parms=list_t_c([model.num_params for model in models], ctypes.c_int),
+            prior_cols=list_t_c([constants.NUM_PRIOR_COLS] * len(models), ctypes.c_int),
+            models=list_t_c([model.id for model in models], ctypes.c_int),
+            modelPriors=list_t_c([0] * len(models), ctypes.c_double),
         )
 
 

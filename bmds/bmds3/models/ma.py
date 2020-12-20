@@ -2,15 +2,13 @@ import ctypes
 
 from ..types.dichotomous import (
     DichotomousAnalysis,
-    DichotomousModelResult,
     DichotomousModelSettings,
 )
-from ..types.ma import DichotomousMAAnalysis, DichotomousMAResult
-from . import dichotomous as dmodels
-from .base import BaseModel, BmdsLibraryManager, InputModelSettings
+from ..types.ma import DichotomousMAAnalysisStruct, DichotomousMAResult
+from .base import BaseModelAveraging, BmdsLibraryManager, InputModelSettings
 
 
-class DichotomousMA(BaseModel):
+class DichotomousMA(BaseModelAveraging):
     def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
         if settings is None:
             model = DichotomousModelSettings()
@@ -24,42 +22,18 @@ class DichotomousMA(BaseModel):
     def execute(self, debug=False):
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
-        # TODO add more models
-        models = [dmodels.DichotomousHill(self.dataset), dmodels.Gamma(self.dataset)]
+        # assumes inputs are the same for first model as the inputs for this analysis
+        analysis_struct = self.models[0].get_analysis_inputs().to_c()
 
-        analysis = DichotomousAnalysis(
-            model=models[0].model,  # not used, needed for init
-            dataset=self.dataset,
-            priors=models[0].get_priors(),  # not used, needed for init
-            BMD_type=self.settings.bmr_type,
-            BMR=self.settings.bmr,
-            alpha=self.settings.alpha,
-            degree=self.settings.degree,
-            samples=self.settings.samples,
-            burnin=self.settings.burnin,
+        ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
+            models=[model.model for model in self.models],
+            priors=[model.get_priors() for model in self.models],
         )
-        analysis_struct = analysis.to_c()
-
-        priors = [model.get_priors() for model in models]
-
-        ma_analysis = DichotomousMAAnalysis(
-            models=[model.model for model in models], priors=priors,
-        )
-        ma_analysis_struct = ma_analysis.to_c()
-
-        dist_numE = 300
-
-        results = []
-
-        for model in models:
-            result = DichotomousModelResult(
-                model=model.model, dist_numE=dist_numE, num_params=model.model.num_params
-            )
-            result_struct = result.to_c()
-            results.append(result_struct)
 
         ma_result = DichotomousMAResult(
-            results=results, num_models=len(models), dist_numE=dist_numE,
+            results=[model.fit_results_struct for model in self.models],
+            num_models=len(self.models),
+            dist_numE=200,
         )
         ma_result_struct = ma_result.to_c()
 
