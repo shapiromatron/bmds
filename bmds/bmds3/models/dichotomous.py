@@ -4,7 +4,13 @@ from typing import Dict, List
 import numpy as np
 from scipy.stats import gamma, norm
 
-from ..constants import DichotomousModel, DichotomousModelChoices, Prior, PriorClass
+from ..constants import (
+    BMDS_BLANK_VALUE,
+    DichotomousModel,
+    DichotomousModelChoices,
+    Prior,
+    PriorClass,
+)
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
@@ -90,11 +96,14 @@ class Dichotomous(BaseModel):
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
             aic=bmds_results_struct.aic,
+            roi=self.residual_of_interest(
+                bmds_results_struct.bmd, self.dataset.doses, gof_results.residual
+            ),
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             gof=gof_results,
             dr_x=dr_x.tolist(),
-            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
+            dr_y=[1.0, 1.0],  # TODO switch back
         )
         return result
 
@@ -114,6 +123,17 @@ class Dichotomous(BaseModel):
 
     def dr_curve(self, doses, params) -> Dict:
         raise NotImplementedError()
+
+    def residual_of_interest(self, bmd, doses, residuals):
+        if bmd > 0 and len(doses) > 0:
+            diff = abs(doses[0] - bmd)
+            r = residuals[0]
+            for i, val in enumerate(doses):
+                if abs(val - bmd) < diff:
+                    diff = abs(val - bmd)
+                    r = residuals[i]
+            return r
+        return BMDS_BLANK_VALUE
 
 
 class Logistic(Dichotomous):

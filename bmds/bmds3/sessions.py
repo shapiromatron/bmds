@@ -5,6 +5,7 @@ from simple_settings import settings
 
 from .. import constants
 from ..bmds2.sessions import BMDS
+from . import logic
 from .models import dichotomous as d3
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,9 @@ class Bmds3Version(BMDS):
 
     def _can_execute_locally(self) -> bool:
         return True
+
+    def add_recommender(self):
+        self.recommender = logic.Recommender(dtype=self.dtype)
 
 
 class BMDS_v330(Bmds3Version):
