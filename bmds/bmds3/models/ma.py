@@ -1,10 +1,12 @@
 import ctypes
+from typing import Dict
 
-from ..types.dichotomous import (
-    DichotomousAnalysis,
-    DichotomousModelSettings,
+from ..types.dichotomous import DichotomousModelSettings
+from ..types.ma import (
+    DichotomousMAAnalysisStruct,
+    DichotomousMAResultStruct,
+    DichotomousModelAverageResult,
 )
-from ..types.ma import DichotomousMAAnalysisStruct, DichotomousMAResult
 from .base import BaseModelAveraging, BmdsLibraryManager, InputModelSettings
 
 
@@ -22,29 +24,41 @@ class DichotomousMA(BaseModelAveraging):
     def execute(self, debug=False):
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
-        # assumes inputs are the same for first model as the inputs for this analysis
-        analysis_struct = self.models[0].get_analysis_inputs().to_c()
-
         ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
-            models=[model.model for model in self.models],
-            priors=[model.get_priors() for model in self.models],
+            models=[model.inputs_struct for model in self.models]
         )
-
-        ma_result = DichotomousMAResult(
-            results=[model.fit_results_struct for model in self.models],
-            num_models=len(self.models),
-            dist_numE=200,
+        ma_inputs_struct = self.models[0].inputs_struct
+        ma_result_struct = DichotomousMAResultStruct.from_python(
+            models=[model.fit_results_struct for model in self.models]
         )
-        ma_result_struct = ma_result.to_c()
 
         dll.estimate_ma_laplace_dicho(
             ctypes.pointer(ma_analysis_struct),
-            ctypes.pointer(analysis_struct),
+            ctypes.pointer(ma_inputs_struct),
             ctypes.pointer(ma_result_struct),
         )
 
-        # TODO return results
-        return None
+        return DichotomousModelAverageResult.from_execution(
+            ma_analysis_struct, ma_result_struct, self.models
+        )
 
-    def to_dict(self, _):
-        return {"results": self.results}
+    def to_dict(self, model_index: int) -> Dict:
+        """
+        Return a summary of the model in a dictionary format for serialization.
+
+        Args:
+            model_index (int): numeric model index in a list of models, should be unique
+
+        Returns:
+            A dictionary of model inputs, and raw and parsed outputs
+        """
+        return dict(
+            model_index=model_index,
+            model_class=-1,
+            model_name="Model average",
+            model_version=self.model_version,
+            has_output=self.output_created,
+            execution_halted=self.execution_halted,
+            settings=self.settings.dict(),
+            results=self.results.dict() if self.results else None,
+        )

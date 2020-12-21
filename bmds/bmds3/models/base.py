@@ -88,6 +88,7 @@ class BaseModel:
         self.execution_halted = False
         self.settings = self.get_model_settings(settings)
         self.results = None
+        self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
         self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
     @property
