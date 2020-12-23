@@ -9,6 +9,7 @@ from bmds.bmds3.models import dichotomous
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
+skip_reason = "DLLs not present on CI"
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def dichds():
     )
 
 
-@pytest.mark.skipif(not should_run, reason="dlls not present on CI")
+@pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_models(dichds):
     # compare bmd, bmdl, bmdu, aic values
     for Model, expected in [
@@ -34,11 +35,11 @@ def test_bmds3_dichotomous_models(dichds):
     ]:
         result = Model(dichds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
-        # for regenerating expected: `print(np.round(actual, 3).tolist())`
-        assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all()
+        # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
+        assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all(), Model.__name__
 
 
-@pytest.mark.skipif(not should_run, reason="dlls not present on CI")
+@pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_session(dichds):
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=dichds)
     session.add_default_models()
@@ -49,7 +50,7 @@ def test_bmds3_dichotomous_session(dichds):
     print(json.dumps(d))
 
 
-@pytest.mark.skipif(not should_run, reason="TODO - fix")
+@pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_ma_session(dichds):
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=dichds)
     session.add_default_models()
