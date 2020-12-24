@@ -15,8 +15,8 @@ from ..types.dichotomous import (
     DichotomousPgofResultStruct,
     DichotomousResult,
 )
+from ..types.priors import DichotomousPriorLookup
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
-from .priors import DichotomousPriorLookup
 
 
 class Dichotomous(BaseModel):

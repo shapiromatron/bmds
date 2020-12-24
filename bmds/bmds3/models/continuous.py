@@ -1,7 +1,9 @@
 import ctypes
-from typing import List
+from typing import Dict, List
 
-from ..constants import ContinuousModel, ContinuousModelChoices, Prior
+import numpy as np
+
+from ..constants import ContinuousModel, ContinuousModelChoices, Prior, PriorClass
 from ..types.continuous import (
     ContinuousAnalysis,
     ContinuousBmdsResultsStruct,
@@ -9,6 +11,7 @@ from ..types.continuous import (
     ContinuousModelSettings,
     ContinuousResult,
 )
+from ..types.priors import ContinuousPriorLookup
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
 
 
@@ -31,7 +34,7 @@ class Continuous(BaseModel):
 
     def execute(self, debug=False):
         # setup inputs
-        priors = self.default_frequentist_priors()
+        priors = self.get_priors()
         inputs = ContinuousAnalysis(
             model=self.model,
             dataset=self.dataset,
@@ -97,30 +100,34 @@ class Continuous(BaseModel):
     def model_name(self) -> str:
         return self.model_class()
 
+    def get_priors(
+        self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
+    ) -> List[Prior]:
+        return ContinuousPriorLookup[(self.model.id, prior_class.value)]
+
+    def dr_curve(self, doses, params) -> Dict:
+        raise NotImplementedError()
+
 
 class Power(Continuous):
     model = ContinuousModelChoices.c_power.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> np.ndarray:
+        g = params[0]
+        b = params[1]
+        a = params[2]
+        return g + b * doses ** a
 
 
 class Hill(Continuous):
     model = ContinuousModelChoices.c_hill.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> Dict:
+        g = params[0]
+        nu = params[1]
+        k = params[2]
+        n = params[3]
+        return g + nu * doses ** n / (k ** n + doses ** n)
 
 
 class Polynomial(Continuous):
@@ -131,54 +138,55 @@ class Polynomial(Continuous):
             Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
         ]
 
+    def dr_curve(self, doses, params) -> Dict:
+        # TODO - test!
+        # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
+        val = params[0]
+        for i in range(1, len(params)):
+            val += params[i] * doses ** i
+        return val
+
+
+class Linear(Polynomial):
+    # TODO - force degree
+    pass
+
 
 class ExponentialM2(Continuous):
     model = ContinuousModelChoices.c_exp_m2.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> Dict:
+        g = params[0]
+        b = params[1]
+        return g * np.exp(b * doses)
 
 
 class ExponentialM3(Continuous):
     model = ContinuousModelChoices.c_exp_m3.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> Dict:
+        g = params[0]
+        b = params[1]
+        e = params[2]
+        return g * np.exp((b * doses) ** e)
 
 
 class ExponentialM4(Continuous):
     model = ContinuousModelChoices.c_exp_m4.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> Dict:
+        g = params[0]
+        b = params[1]
+        c = params[2]
+        return g * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-(b * doses))))
 
 
 class ExponentialM5(Continuous):
     model = ContinuousModelChoices.c_exp_m5.value
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1e8, max_value=1e8),
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-            Prior(type=0, initial_value=0, stdev=1, min_value=-1000, max_value=100),
-        ]
+    def dr_curve(self, doses, params) -> Dict:
+        g = params[0]
+        b = params[1]
+        c = params[2]
+        e = params[3]
+        return g * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** e))))

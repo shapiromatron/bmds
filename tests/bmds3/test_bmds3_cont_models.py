@@ -23,7 +23,7 @@ def contds():
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_dichotomous_models(contds):
+def test_bmds3_continuous_models(contds):
     # compare bmd, bmdl, bmdu, aic values
     for Model, expected in [
         (continuous.ExponentialM2, [-9999.0, -9999.0, -9999.0, -6.0]),
@@ -33,6 +33,7 @@ def test_bmds3_dichotomous_models(contds):
         (continuous.Power, [-9999.0, -9999.0, -9999.0, 301.627]),
         (continuous.Hill, [-9999.0, -9999.0, -9999.0, 303.629]),
         # (continuous.Polynomial, [64.242, 55.219, 72.814, 362.400]),
+        # (continuous.Linear, [64.242, 55.219, 72.814, 362.400]),
     ]:
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
