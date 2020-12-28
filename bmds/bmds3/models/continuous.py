@@ -88,9 +88,6 @@ class Continuous(BaseModel):
         )
         return result
 
-    def default_frequentist_priors(self) -> List[Prior]:
-        ...
-
     def get_default_model_degree(self) -> int:
         return self.model.num_params - 1
 
@@ -132,11 +129,6 @@ class Hill(Continuous):
 
 class Polynomial(Continuous):
     model = ContinuousModelChoices.c_polynomial.value
-
-    def default_frequentist_priors(self) -> List[Prior]:
-        return [
-            Prior(type=0, initial_value=0, stdev=1, min_value=1e-8, max_value=1e8),
-        ]
 
     def dr_curve(self, doses, params) -> Dict:
         # TODO - test!
