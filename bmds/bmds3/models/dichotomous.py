@@ -16,8 +16,8 @@ from ..types.dichotomous import (
     DichotomousPgofResultStruct,
     DichotomousResult,
 )
+from ..types.priors import DichotomousPriorLookup
 from .base import BaseModel, BmdsLibraryManager, InputModelSettings
-from .priors import DichotomousPriorLookup
 
 
 class Dichotomous(BaseModel):
@@ -37,10 +37,10 @@ class Dichotomous(BaseModel):
 
         return model
 
-    def execute(self, debug=False) -> DichotomousResult:
+    def get_analysis_inputs(self) -> DichotomousAnalysis:
         # setup inputs
         priors = self.get_priors()
-        inputs = DichotomousAnalysis(
+        return DichotomousAnalysis(
             model=self.model,
             dataset=self.dataset,
             priors=priors,
@@ -52,15 +52,23 @@ class Dichotomous(BaseModel):
             burnin=self.settings.burnin,
         )
 
+    def execute(self, debug=False) -> DichotomousResult:
+        # setup inputs
+        inputs = self.get_analysis_inputs()
+        inputs_struct = inputs.to_c()
+
         # setup outputs
         fit_results = DichotomousModelResult(
             model=self.model, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
 
+        # can be used for model averaging
+        self.inputs_struct = inputs_struct
+        self.fit_results_struct = fit_results_struct
+
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
-        inputs_struct = inputs.to_c()
         if debug:
             print(inputs_struct)
 

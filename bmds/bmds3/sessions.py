@@ -1,11 +1,13 @@
 import logging
-from copy import deepcopy
+from copy import copy, deepcopy
 
 from simple_settings import settings
 
 from .. import constants
 from ..bmds2.sessions import BMDS
+from .models import continuous as c3
 from .models import dichotomous as d3
+from .models import ma
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,14 @@ class Bmds3Version(BMDS):
             else:
                 self.add_model(name, settings=model_settings)
 
+    def add_model_averaging(self):
+        """
+        Must be added average other models are added since a shallow copy is taken, and the
+        execution of model averaging assumes all other models were executed.
+        """
+        instance = ma.DichotomousMA(dataset=self.dataset, models=copy(self.models))
+        self.models.append(instance)
+
     def _can_execute_locally(self) -> bool:
         return True
 
@@ -59,14 +69,14 @@ class BMDS_v330(Bmds3Version):
             # constants.M_MultistageCancer: d3.Multistage
         },
         constants.CONTINUOUS: {
-            # constants.M_Linear: c3.Linear,
+            # constants.M_Linear: c3.Linear, = Polynomial degree=1
             # constants.M_Polynomial: c3.Polynomial,
-            # constants.M_Power: c3.Power,
-            # constants.M_Hill: c3.Hill,
-            # constants.M_ExponentialM2: c3.ExponentialM2,
-            # constants.M_ExponentialM3: c3.ExponentialM3,
-            # constants.M_ExponentialM4: c3.ExponentialM4,
-            # constants.M_ExponentialM5: c3.ExponentialM5,
+            constants.M_Power: c3.Power,
+            constants.M_Hill: c3.Hill,
+            constants.M_ExponentialM2: c3.ExponentialM2,
+            constants.M_ExponentialM3: c3.ExponentialM3,
+            constants.M_ExponentialM4: c3.ExponentialM4,
+            constants.M_ExponentialM5: c3.ExponentialM5,
         },
         constants.CONTINUOUS_INDIVIDUAL: {
             # constants.M_Linear: c3.Linear,
