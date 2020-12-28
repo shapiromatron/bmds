@@ -1,7 +1,6 @@
 import logging
 import os
 import platform
-from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from datetime import datetime
 from typing import Dict, Tuple
@@ -92,11 +91,16 @@ class BMDS:
             self._execute_remote()
 
     def _execute(self):
-        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-            promises = executor.map(lambda model: model.execute_job(), self.models)
+        for model in self.models:
+            model.execute_job()
+
+        # TODO - restore after we stabilize modeling; currently this is broken becauase
+        # we do not ensure all models are complete before starting model averaging
+        # with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        #     promises = executor.map(lambda model: model.execute_job(), self.models)
 
         # evaluate response; throw Exceptions if raised
-        list(promises)
+        # list(promises)
 
     def _execute_remote(self):
         # submit data
