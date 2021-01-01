@@ -186,6 +186,8 @@ class ContinuousModelResult(BaseModel):
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
         d["bmd_dist"] = self.bmd_dist.T.tolist()
+        # TODO - remove this line one distribution is working as expected
+        d["bmd_dist"] = [np.linspace(0, 1, 100).tolist(), np.linspace(1, 100, 100).tolist()]
         return d
 
 
