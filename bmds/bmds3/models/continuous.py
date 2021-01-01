@@ -34,7 +34,7 @@ class Continuous(BaseModel):
 
     def execute(self, debug=False):
         # setup inputs
-        priors = self.get_priors()
+        priors = self.get_priors(self.settings.prior)
         inputs = ContinuousAnalysis(
             model=self.model,
             dataset=self.dataset,

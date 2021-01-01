@@ -9,6 +9,7 @@ from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
 from .common import BMDS_BLANK_VALUE, list_t_c
+from .priors import PriorClass
 
 
 class ContinuousRiskType(IntEnum):
@@ -32,6 +33,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # multistage only
     burnin: int = 20
+    prior: PriorClass = PriorClass.frequentist_unrestricted
 
 
 class ContinuousAnalysisStruct(ctypes.Structure):
