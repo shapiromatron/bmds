@@ -24,12 +24,19 @@ def test_rules_df():
 
 def test_apply_logic(ddataset):
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=ddataset)
-    session.add_default_models()
+    session.add_model(bmds.constants.M_DichotomousHill)
+    session.add_model(bmds.constants.M_Gamma)
     session.execute()
     session.add_recommender()
     recommended = session.recommend()
-    assert recommended is not None
-    # TODO check logic bins on models
+
+    assert session.models[0].model_name() == "Hill" and session.models[1].model_name() == "Gamma"
+    # Hill BMD is much lower than lowest dose, setting the bin to warning
+    assert session.models[0].logic_bin == 1
+    assert "BMD/lowest dose ratio is greater than threshold" in session.models[0].logic_notes[1][0]
+    # Gamma logic bin has no warnings/failures, making it recommended
+    assert session.models[1].logic_bin == 0
+    assert recommended.model_name() == "Gamma"
 
 
 def test_exists_rules(ddataset):
@@ -86,6 +93,25 @@ def test_less_than_rules(ddataset):
         assert msg is None
 
     outputs = [{"roi": threshold + 0.01}]
+    for output in outputs:
+        bin, msg = rule.apply_rule(ddataset, output)
+        assert bin == bmds.constants.BIN_FAILURE
+
+
+def test_zero_df(ddataset):
+    rule_type = "dof_zero"
+    rule_args = constants.DEFAULT_RULE_ARGS[rule_type]
+    rule_args["failure_bin"] = bmds.constants.BIN_FAILURE
+    Rule = constants.RULE_TYPES[rule_type]
+    rule = Rule(**rule_args)
+
+    outputs = [{"gof": {"df": 1}}, {"gof": {"df": 0.01}}]
+    for output in outputs:
+        bin, msg = rule.apply_rule(ddataset, output)
+        assert bin == bmds.constants.BIN_NO_CHANGE
+        assert msg is None
+
+    outputs = [{"gof": {"df": 0}}]
     for output in outputs:
         bin, msg = rule.apply_rule(ddataset, output)
         assert bin == bmds.constants.BIN_FAILURE

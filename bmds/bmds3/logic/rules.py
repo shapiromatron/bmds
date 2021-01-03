@@ -16,7 +16,8 @@ def nested_get(d: Dict, key_str: str):
 
 
 class Rule(BaseModel):
-    rule_name: Optional[str]
+    rule_name: str
+    field_name: Optional[str]
     failure_bin: int
     threshold: Optional[float]
     enabled_nested: bool
@@ -39,6 +40,9 @@ class Rule(BaseModel):
             return self.apply_rule(dataset, output)
         else:
             return self.return_pass()
+
+    def get_value(self, dataset, output):
+        return nested_get(output, self.field_name)
 
     @property
     def binmoji(self):
@@ -75,11 +79,10 @@ class Rule(BaseModel):
 
 class NumericValueExists(Rule):
     # Test succeeds if value is numeric and not -999
-    field_name: str
     field_name_verbose: str
 
     def apply_rule(self, dataset, output):
-        val = nested_get(output, self.field_name)
+        val = self.get_value(dataset, output)
         if self._is_valid_number(val):
             return self.return_pass()
         else:
@@ -121,11 +124,7 @@ class BmduExists(NumericValueExists):
 
 class ShouldBeGreaterThan(Rule):
     # Test fails if value is less-than threshold.
-    field_name: Optional[str]
     field_name_verbose: str
-
-    def get_value(self, dataset, output):
-        return nested_get(output, self.field_name)
 
     def apply_rule(self, dataset, output):
         val = self.get_value(dataset, output)
@@ -150,16 +149,13 @@ class GoodnessOfFitCancer(ShouldBeGreaterThan):
     rule_name = "Goodness of fit p-test (cancer)"
     field_name = "gof.p_value"
     field_name_verbose = "Goodness of fit p-value (cancer)"
-    # TODO
+
+    # TODO for cancer models
 
 
 class ShouldBeLessThan(Rule):
     # Test fails if value is less-than threshold.
-    field_name: Optional[str]
     field_name_verbose: str
-
-    def get_value(self, dataset, output):
-        return nested_get(output, self.field_name)
 
     def apply_rule(self, dataset, output):
         val = self.get_value(dataset, output)
@@ -178,11 +174,10 @@ class ShouldBeLessThan(Rule):
 
 class LargeRoi(ShouldBeLessThan):
     rule_name = "Abs(Residual of interest) too large"
-    field_name = "roi"
     field_name_verbose = "Residual of interest"
 
     def get_value(self, dataset, output):
-        return abs(super().get_value(dataset, output))
+        return abs(output.get("roi"))
 
 
 class BmdBmdlRatio(ShouldBeLessThan):
@@ -198,7 +193,6 @@ class BmdBmdlRatio(ShouldBeLessThan):
 
 class LowBmd(ShouldBeLessThan):
     rule_name = "BMD lower than lowest dose"
-    field_name = "bmd"
     field_name_verbose = "BMD/lowest dose ratio"
 
     def get_value(self, dataset, output):
@@ -210,7 +204,6 @@ class LowBmd(ShouldBeLessThan):
 
 class LowBmdl(ShouldBeLessThan):
     rule_name = "BMDL lower than lowest dose"
-    field_name = "bmdl"
     field_name_verbose = "BMDL/lowest dose ratio"
 
     def get_value(self, dataset, output):
@@ -222,7 +215,6 @@ class LowBmdl(ShouldBeLessThan):
 
 class HighBmd(ShouldBeLessThan):
     rule_name = "BMD higher than highest dose"
-    field_name = "bmd"
     field_name_verbose = "BMD/highest dose ratio"
 
     def get_value(self, dataset, output):
@@ -234,7 +226,6 @@ class HighBmd(ShouldBeLessThan):
 
 class HighBmdl(ShouldBeLessThan):
     rule_name = "BMDL higher than highest dose"
-    field_name = "bmd"
     field_name_verbose = "BMDL/highest dose ratio"
 
     def get_value(self, dataset, output):
@@ -261,7 +252,7 @@ class ControlStdevFit(ShouldBeLessThan):
     def apply_rule(self, dataset, output):
         return self.return_pass()
 
-    # TODO
+    # TODO for continuous
 
 
 class VarianceFit(Rule):
@@ -270,7 +261,7 @@ class VarianceFit(Rule):
     def apply_rule(self, dataset, output):
         return self.return_pass()
 
-    # TODO
+    # TODO for continuous
 
 
 class VarianceType(Rule):
@@ -279,16 +270,20 @@ class VarianceType(Rule):
     def apply_rule(self, dataset, output):
         return self.return_pass()
 
-    # TODO
+    # TODO for continuous
 
 
 class NoDegreesOfFreedom(Rule):
     rule_name = "D.O.F equal 0"
+    field_name = "gof.df"
 
     def apply_rule(self, dataset, output):
-        return self.return_pass()
+        val = self.get_value(dataset, output)
 
-    # TODO
+        if val == 0:
+            return self.failure_bin, "Zero degrees of freedom; saturated model"
+        else:
+            return self.return_pass()
 
 
 class Warnings(Rule):
@@ -297,4 +292,4 @@ class Warnings(Rule):
     def apply_rule(self, dataset, output):
         return self.return_pass()
 
-    # TODO
+    # TODO not present on bmds3 output
