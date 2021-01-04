@@ -1,7 +1,7 @@
 import ctypes
 import logging
 import platform
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -88,6 +88,8 @@ class BaseModel:
         self.execution_halted = False
         self.settings = self.get_model_settings(settings)
         self.results = None
+        self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
+        self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
     @property
     def output_created(self) -> bool:
@@ -122,3 +124,29 @@ class BaseModel:
             settings=self.settings.dict(),
             results=self.results.dict() if self.results else None,
         )
+
+
+class BaseModelAveraging(BaseModel):
+    """
+    Captures modeling configuration for model execution.
+    Should save no results form model execution or any dataset-specific settings.
+    """
+
+    model: Any
+    model_version = "BMDS330"
+
+    def __init__(
+        self,
+        dataset: DatasetBase,
+        models: List[BaseModel],
+        settings: InputModelSettings = None,
+        id: Optional[Union[int, str]] = None,
+    ):
+        self.id = id
+        self.dataset = dataset
+        self.models = models
+        self.execution_start = None
+        self.execution_end = None
+        self.execution_halted = False
+        self.settings = self.get_model_settings(settings)
+        self.results = None

@@ -1,7 +1,7 @@
 import ctypes
 from enum import IntEnum
 from textwrap import dedent
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -72,7 +72,7 @@ class DichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a dichotomous analysis.
     It is used do describe a single model analysis, in which all of the
-    informationis used, or a MA analysis, in which all the information
+    information is used, or a MA analysis, in which all the information
     save prior, degree, parms and prior_cols are used.
     """
 
@@ -174,37 +174,37 @@ class DichotomousModelResult(BaseModel):
     num_params: int
     dist_numE: int
     params: Optional[List[float]]
-    cov: Optional[np.ndarray]
+    cov: Optional[Union[np.ndarray, List[float]]]
     max: Optional[float]
     model_df: Optional[float]
     total_df: Optional[float]
-    bmd_dist: Optional[np.ndarray]
+    bmd_dist: Optional[Union[np.ndarray, List[float]]]
 
     class Config:
         arbitrary_types_allowed = True
 
     def to_c(self) -> DichotomousModelResultStruct:
-        parms = np.zeros(self.num_params, dtype=np.float64)
-        self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
-        self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
+        parms = [0] * self.num_params
+        self.cov = [0] * (self.num_params ** 2)
+        self.bmd_dist = [1] * (self.dist_numE * 2)
         return DichotomousModelResultStruct(
             model=ctypes.c_int(self.model.id),
             nparms=ctypes.c_int(self.num_params),
-            parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            parms=list_t_c(parms, ctypes.c_double),
+            cov=list_t_c(self.cov, ctypes.c_double),
             dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            bmd_dist=list_t_c(self.bmd_dist, ctypes.c_double),
         )
 
-    def from_c(self, struct: DichotomousModelResultStruct):
-        self.params = struct.parms[: self.num_params]
-        self.cov = self.cov.reshape(self.num_params, self.num_params)
+    def from_c(self, struct: DichotomousModelResultStruct, model):
+        self.params = model.transform_params(struct)
+        self.cov = np.array(self.cov).reshape(self.num_params, self.num_params)
         self.max = struct.max
         self.model_df = struct.model_df
         self.total_df = struct.total_df
 
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = self.bmd_dist.reshape(2, self.dist_numE).T
+        arr = np.array(self.bmd_dist).reshape(2, self.dist_numE).T
         arr = arr[np.isfinite(arr[:, 0])]
         arr = arr[arr[:, 0] > 0]
         self.bmd_dist = arr

@@ -90,6 +90,53 @@ class DichotomousModelChoices(Enum):
     )
 
 
+class ContinuousModel(BaseModel):
+    id: int
+    verbose: str
+    params: Tuple[str, ...]
+    model_form_str: str
+
+    @property
+    def num_params(self):
+        return len(self.params)
+
+
+class ContinuousModelChoices(Enum):
+    c_power = ContinuousModel(
+        id=8, verbose="Power", params=("g", "b", "a", "x"), model_form_str="P[dose] = ...",
+    )
+    c_hill = ContinuousModel(
+        id=6, verbose="Hill", params=("g", "nu", "k", "n", "x"), model_form_str="P[dose] = ...",
+    )
+    c_polynomial = ContinuousModel(
+        id=666, verbose="Polynomial", params=("b0", "b1", "b2"), model_form_str="P[dose] = ...",
+    )
+    c_exp_m2 = ContinuousModel(
+        id=2,
+        verbose="ExponentialM2",
+        params=("g", "b", "x", "y", "z"),
+        model_form_str="P[dose] = ...",
+    )
+    c_exp_m3 = ContinuousModel(
+        id=3,
+        verbose="ExponentialM3",
+        params=("g", "b", "e", "x", "y"),
+        model_form_str="P[dose] = ...",
+    )
+    c_exp_m4 = ContinuousModel(
+        id=4,
+        verbose="ExponentialM4",
+        params=("g", "b", "c", "x", "y"),
+        model_form_str="P[dose] = ...",
+    )
+    c_exp_m5 = ContinuousModel(
+        id=5,
+        verbose="ExponentialM5",
+        params=("g", "b", "c", "e", "x"),
+        model_form_str="P[dose] = ...",
+    )
+
+
 class PriorType(IntEnum):
     eNone = 0
     eNormal = 1
