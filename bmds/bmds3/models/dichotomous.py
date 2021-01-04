@@ -124,7 +124,7 @@ class Dichotomous(BaseModel):
     def transform_params(self, struct: DichotomousModelResultStruct):
         return struct.parms[: struct.nparms]
 
-    def dr_curve(self, doses, params) -> Dict:
+    def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
 
