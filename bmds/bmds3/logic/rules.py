@@ -253,7 +253,7 @@ class ControlStdevFit(ShouldBeLessThan):
     def apply_rule(self, settings, dataset, output):
         return self.return_pass()
 
-    # TODO for continuous
+    # TODO no modeled std dev in continuous results
 
 
 class VarianceFit(Rule):

@@ -111,7 +111,7 @@ class Dichotomous(BaseModel):
             fit=fit_results,
             gof=gof_results,
             dr_x=dr_x.tolist(),
-            dr_y=[1.0, 1.0],  # TODO switch back
+            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
         )
         return result
 
