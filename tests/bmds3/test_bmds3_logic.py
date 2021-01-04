@@ -2,7 +2,6 @@ import pytest
 
 import bmds
 from bmds.bmds3.logic import Recommender, constants
-from bmds.bmds3.constants import BMDS_BLANK_VALUE
 
 
 def test_init():

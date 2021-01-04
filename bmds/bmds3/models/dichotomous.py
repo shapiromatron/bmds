@@ -4,12 +4,7 @@ from typing import Dict, List
 import numpy as np
 from scipy.stats import gamma, norm
 
-from ..constants import (
-    DichotomousModel,
-    DichotomousModelChoices,
-    Prior,
-    PriorClass,
-)
+from ..constants import DichotomousModel, DichotomousModelChoices, Prior, PriorClass
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
