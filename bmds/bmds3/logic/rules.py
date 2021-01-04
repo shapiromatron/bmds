@@ -3,6 +3,7 @@ from typing import Dict, Optional
 from pydantic import BaseModel
 
 from ... import constants
+from ..types.continuous import DistType
 
 
 def nested_get(d: Dict, key_str: str):
@@ -32,12 +33,14 @@ class Rule(BaseModel):
         return f"{enabled_nested}{enabled_continuous}{enabled_dichotomous} {self.rule_name} [bin={self.binmoji}{threshold}]"
 
     def enabled(self, dtype):
-        # TODO add conditionals for continuous and nested
-        return self.enabled_dichotomous and dtype in constants.DICHOTOMOUS_DTYPES
+        # TODO add conditional for nested
+        enabled_continuous = self.enabled_continuous and dtype in constants.CONTINUOUS_DTYPES
+        enabled_dichotomous = self.enabled_dichotomous and dtype in constants.DICHOTOMOUS_DTYPES
+        return enabled_continuous or enabled_dichotomous
 
-    def check(self, dtype, dataset, output):
+    def check(self, dtype, settings, dataset, output):
         if self.enabled(dtype):
-            return self.apply_rule(dataset, output)
+            return self.apply_rule(settings, dataset, output)
         else:
             return self.return_pass()
 
@@ -65,7 +68,7 @@ class Rule(BaseModel):
     def return_pass(self):
         return constants.BIN_NO_CHANGE, None
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         # return tuple of (bin, notes) associated with rule or None
         raise NotImplementedError("Abstract method.")
 
@@ -81,7 +84,7 @@ class NumericValueExists(Rule):
     # Test succeeds if value is numeric and not -999
     field_name_verbose: str
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         val = self.get_value(dataset, output)
         if self._is_valid_number(val):
             return self.return_pass()
@@ -126,7 +129,7 @@ class ShouldBeGreaterThan(Rule):
     # Test fails if value is less-than threshold.
     field_name_verbose: str
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         val = self.get_value(dataset, output)
         threshold = self.threshold
 
@@ -155,7 +158,7 @@ class ShouldBeLessThan(Rule):
     # Test fails if value is less-than threshold.
     field_name_verbose: str
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         val = self.get_value(dataset, output)
         threshold = self.threshold
 
@@ -247,7 +250,7 @@ class ControlStdevFit(ShouldBeLessThan):
     field_name = ""
     field_name_verbose = ""
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         return self.return_pass()
 
     # TODO for continuous
@@ -256,26 +259,59 @@ class ControlStdevFit(ShouldBeLessThan):
 class VarianceFit(Rule):
     rule_name = "Constant Variance"
 
-    def apply_rule(self, dataset, output):
-        return self.return_pass()
+    def apply_rule(self, settings, dataset, output):
+        constant_variance = settings.disttype != DistType.normal_ncv
 
-    # TODO for continuous
+        p_value2 = dataset.anova()[1].TEST
+
+        p_value3 = dataset.anova()[2].TEST
+
+        msg = None
+        if self._is_valid_number(p_value2) and constant_variance and p_value2 < 0.1:
+            msg = "Variance model poorly fits dataset (p-value 2 = {})".format(p_value2)
+
+        if self._is_valid_number(p_value3) and not constant_variance and p_value3 < 0.1:
+            msg = "Variance model poorly fits dataset (p-value 3 = {})".format(p_value3)
+
+        if msg:
+            return self.failure_bin, msg
+        else:
+            return self.return_pass()
 
 
 class VarianceType(Rule):
     rule_name = "Non-Constant Variance"
 
-    def apply_rule(self, dataset, output):
-        return self.return_pass()
+    def apply_rule(self, settings, dataset, output):
+        constant_variance = settings.disttype != DistType.normal_ncv
 
-    # TODO for continuous
+        p_value2 = dataset.anova()[1].TEST
+
+        msg = None
+        if self._is_valid_number(p_value2):
+            # constant variance
+            if constant_variance and p_value2 < 0.1:
+                msg = "Incorrect variance model (p-value 2 = {}), constant variance selected".format(
+                    p_value2
+                )
+            elif not constant_variance and p_value2 > 0.1:
+                msg = "Incorrect variance model (p-value 2 = {}), modeled variance selected".format(
+                    p_value2
+                )
+        else:
+            msg = "Correct variance model cannot be determined (p-value 2 = {})".format(p_value2)
+
+        if msg:
+            return self.failure_bin, msg
+        else:
+            return self.return_pass()
 
 
 class NoDegreesOfFreedom(Rule):
     rule_name = "D.O.F equal 0"
     field_name = "gof.df"
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         val = self.get_value(dataset, output)
 
         if val == 0:
@@ -287,7 +323,7 @@ class NoDegreesOfFreedom(Rule):
 class Warnings(Rule):
     rule_name = "BMDS model Warning"
 
-    def apply_rule(self, dataset, output):
+    def apply_rule(self, settings, dataset, output):
         return self.return_pass()
 
     # TODO not present on bmds3 output

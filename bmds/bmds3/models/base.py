@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel as PydanticBaseModel
 
+from ..constants import BMDS_BLANK_VALUE
 from ...datasets import DatasetBase
 from ...utils import package_root
 
@@ -124,6 +125,17 @@ class BaseModel:
             settings=self.settings.dict(),
             results=self.results.dict() if self.results else None,
         )
+
+    def residual_of_interest(self, bmd, doses, residuals):
+        if bmd > 0 and len(doses) > 0:
+            diff = abs(doses[0] - bmd)
+            r = residuals[0]
+            for i, val in enumerate(doses):
+                if abs(val - bmd) < diff:
+                    diff = abs(val - bmd)
+                    r = residuals[i]
+            return r
+        return BMDS_BLANK_VALUE
 
 
 class BaseModelAveraging(BaseModel):

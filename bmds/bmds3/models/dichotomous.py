@@ -5,7 +5,6 @@ import numpy as np
 from scipy.stats import gamma, norm
 
 from ..constants import (
-    BMDS_BLANK_VALUE,
     DichotomousModel,
     DichotomousModelChoices,
     Prior,
@@ -135,17 +134,6 @@ class Dichotomous(BaseModel):
 
     def dr_curve(self, doses, params) -> Dict:
         raise NotImplementedError()
-
-    def residual_of_interest(self, bmd, doses, residuals):
-        if bmd > 0 and len(doses) > 0:
-            diff = abs(doses[0] - bmd)
-            r = residuals[0]
-            for i, val in enumerate(doses):
-                if abs(val - bmd) < diff:
-                    diff = abs(val - bmd)
-                    r = residuals[i]
-            return r
-        return BMDS_BLANK_VALUE
 
 
 class Logistic(Dichotomous):

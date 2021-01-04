@@ -58,7 +58,7 @@ class Recommender(BaseModel):
 
             # apply tests for each model
             for rule in self.rules:
-                bin_, notes = rule.check(self.dtype, dataset, model.results.dict())
+                bin_, notes = rule.check(self.dtype, model.settings, dataset, model.results.dict())
                 model.logic_bin = max(bin_, model.logic_bin)
                 if notes:
                     model.logic_notes[bin_].append(notes)

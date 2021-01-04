@@ -37,11 +37,11 @@ DEFAULT_RULE_ARGS = {
         "enabled_continuous": True,
         "enabled_dichotomous": True,
     },
-    "roi_large": {
+    "roi_large": {  # TODO residuals not available for cont
         "threshold": 2,
         "failure_bin": constants.BIN_NO_CHANGE,
         "enabled_nested": True,
-        "enabled_continuous": True,
+        "enabled_continuous": False,
         "enabled_dichotomous": True,
     },
     "gof_cancer": {
@@ -65,11 +65,11 @@ DEFAULT_RULE_ARGS = {
         "enabled_continuous": True,
         "enabled_dichotomous": True,
     },
-    "roi_missing": {
+    "roi_missing": {  # TODO residuals not available for cont
         "threshold": None,
         "failure_bin": constants.BIN_FAILURE,
         "enabled_nested": True,
-        "enabled_continuous": True,
+        "enabled_continuous": False,
         "enabled_dichotomous": True,
     },
     "bmdl_missing": {
@@ -155,11 +155,11 @@ DEFAULT_RULE_ARGS = {
         "enabled_continuous": True,
         "enabled_dichotomous": True,
     },
-    "control_residual_high": {
+    "control_residual_high": {  # TODO residuals not available for cont
         "threshold": 2,
         "failure_bin": constants.BIN_WARNING,
         "enabled_nested": True,
-        "enabled_continuous": True,
+        "enabled_continuous": False,
         "enabled_dichotomous": True,
     },
 }
