@@ -221,11 +221,10 @@ class BMDS:
             d["doses_dropped"].append(self.doses_dropped)
             model._to_df(d, model_index, show_null)
 
-    def to_dict(self, dataset_index):
+    def to_dict(self):
         return dict(
             bmds_version=self.version_str,
             bmds_python_version=__version__,
-            dataset_index=dataset_index,
             dataset=self.dataset.to_dict(),
             models=[model.to_dict(i) for i, model in enumerate(self.models)],
             recommended_model_index=getattr(self, "recommended_model_index", None),
