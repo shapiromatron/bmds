@@ -26,16 +26,19 @@ def test_apply_logic(ddataset):
     session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=ddataset)
     session.add_model(bmds.constants.M_DichotomousHill)
     session.add_model(bmds.constants.M_Gamma)
-    session.execute()
+    try:
+        session.execute()
+    except FileNotFoundError:
+        pytest.skip("bmds library not found")
     session.add_recommender()
     recommended = session.recommend()
 
     assert session.models[0].model_name() == "Hill" and session.models[1].model_name() == "Gamma"
-    # Hill BMD is much lower than lowest dose, setting the bin to warning
-    assert session.models[0].logic_bin == 1
-    assert "BMD/lowest dose ratio is greater than threshold" in session.models[0].logic_notes[1][0]
-    # Gamma logic bin has no warnings/failures, making it recommended
+    # both models have no bin warnings/errors
+    assert session.models[0].logic_bin == 0
     assert session.models[1].logic_bin == 0
+    # however, gamma has a smaller AIC
+    assert session.models[1].results.aic < session.models[0].results.aic
     assert recommended.model_name() == "Gamma"
 
 
