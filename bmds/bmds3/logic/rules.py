@@ -150,8 +150,6 @@ class GoodnessOfFitCancer(ShouldBeGreaterThan):
     field_name = "gof.p_value"
     field_name_verbose = "Goodness of fit p-value (cancer)"
 
-    # TODO for cancer models
-
 
 class ShouldBeLessThan(Rule):
     # Test fails if value is less-than threshold.
