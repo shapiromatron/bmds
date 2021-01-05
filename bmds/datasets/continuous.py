@@ -1,6 +1,7 @@
-from collections import defaultdict
+from typing import List
 
 import numpy as np
+import pandas as pd
 from scipy import stats
 from simple_settings import settings
 
@@ -9,45 +10,8 @@ from .anova import AnovaTests
 from .base import DatasetBase
 
 
-class ContinuousDataset(DatasetBase):
-    """
-    Dataset object for continuous datasets.
-
-    A continuous dataset contains a list of 4 identically sized arrays of
-    input values, for the dose, number of subjects, mean of response values for
-    dose group, and standard-deviation of response for that dose group.
-
-    Example
-    -------
-    >>> dataset = bmds.ContinuousDataset(
-            doses=[0, 10, 50, 150, 400],
-            ns=[25, 25, 24, 24, 24],
-            means=[2.61, 2.81, 2.96, 4.66, 11.23],
-            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
-        )
-    """
-
-    _BMDS_DATASET_TYPE = 1  # group data
-    MINIMUM_DOSE_GROUPS = 3
-
-    def __init__(self, doses, ns, means, stdevs, **kwargs):
-        self.doses = doses
-        self.ns = ns
-        self.means = means
-        self.stdevs = stdevs
-        self.kwargs = kwargs
-        self._sort_by_dose_group()
-        self._validate()
-
-    def _sort_by_dose_group(self):
-        # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.doses).argsort(kind="mergesort")
-        for fld in ("doses", "ns", "means", "stdevs"):
-            arr = getattr(self, fld)
-            setattr(self, fld, np.array(arr)[indexes].tolist())
-        self._validate()
-
-    def _validate(self):
+class ContinuousSummaryDataMixin:
+    def _validate_summary_data(self):
         length = len(self.doses)
         if not all(len(lst) == length for lst in [self.doses, self.ns, self.means, self.stdevs]):
             raise ValueError("All input lists must be same length")
@@ -68,26 +32,6 @@ class ContinuousDataset(DatasetBase):
             change += self.means[i] - self.means[0]
         return change >= 0
 
-    def drop_dose(self):
-        """
-        Drop the maximum dose and related response values.
-        """
-        for fld in ("doses", "ns", "means", "stdevs"):
-            arr = getattr(self, fld)[:-1]
-            setattr(self, fld, arr)
-        self._validate()
-
-    def as_dfile(self):
-        """
-        Return the dataset representation in BMDS .(d) file.
-        """
-        rows = ["Dose NumAnimals Response Stdev"]
-        for i, v in enumerate(self.doses):
-            if i >= self.num_dose_groups:
-                continue
-            rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
-        return "\n".join(rows)
-
     @property
     def variances(self):
         if not hasattr(self, "_variances"):
@@ -107,20 +51,79 @@ class ContinuousDataset(DatasetBase):
             tests = None
         return tests
 
+    def get_anova_report(self):
+        return AnovaTests.output_3tests(self.anova())
+
     @property
     def dataset_length(self):
         return self.num_dose_groups
 
-    def get_anova_report(self):
-        return AnovaTests.output_3tests(self.anova())
 
-    def to_dict(self):
+class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
+    """
+    Dataset object for continuous datasets.
+
+    A continuous dataset contains a list of 4 identically sized arrays of
+    input values, for the dose, number of subjects, mean of response values for
+    dose group, and standard-deviation of response for that dose group.
+
+    Example
+    -------
+    >>> dataset = bmds.ContinuousDataset(
+            doses=[0, 10, 50, 150, 400],
+            ns=[25, 25, 24, 24, 24],
+            means=[2.61, 2.81, 2.96, 4.66, 11.23],
+            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
+        )
+    """
+
+    _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
+
+    doses: List[float]
+    ns: List[int]
+    means: List[float]
+    stdevs: List[float]
+
+    class Config:
+        extra = "allow"
+
+    def __init__(self, doses, ns, means, stdevs, **kwargs):
+        super().__init__(doses=doses, ns=ns, means=means, stdevs=stdevs)
+        self.kwargs = kwargs
+        self._sort_by_dose_group()
+        self._validate()
+
+    def _validate(self):
+        self._validate_summary_data()
+
+    def _sort_by_dose_group(self):
+        # use mergesort since it's a stable-sorting algorithm in numpy
+        indexes = np.array(self.doses).argsort(kind="mergesort")
+        for fld in ("doses", "ns", "means", "stdevs"):
+            arr = getattr(self, fld)
+            setattr(self, fld, np.array(arr)[indexes].tolist())
+        self._validate()
+
+    def drop_dose(self):
         """
-        Return a dictionary representation of the dataset.
+        Drop the maximum dose and related response values.
         """
-        d = dict(doses=self.doses, ns=self.ns, means=self.means, stdevs=self.stdevs)
-        d.update(self.kwargs)
-        return d
+        for fld in ("doses", "ns", "means", "stdevs"):
+            arr = getattr(self, fld)[:-1]
+            setattr(self, fld, arr)
+        self._validate()
+
+    def as_dfile(self):
+        """
+        Return the dataset representation in BMDS .(d) file.
+        """
+        rows = ["Dose NumAnimals Response Stdev"]
+        for i, v in enumerate(self.doses):
+            if i >= self.num_dose_groups:
+                continue
+            rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
+        return "\n".join(rows)
 
     @property
     def errorbars(self):
@@ -169,7 +172,7 @@ class ContinuousDataset(DatasetBase):
         return fig
 
 
-class ContinuousIndividualDataset(ContinuousDataset):
+class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     """
     Dataset object for continuous individual datasets.
 
@@ -180,7 +183,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
     Example
     -------
     >>> dataset = bmds.ContinuousIndividualDataset(
-            doses=[
+            individual_doses=[
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
                 1, 1, 1, 1, 1, 1,
@@ -202,21 +205,32 @@ class ContinuousIndividualDataset(ContinuousDataset):
     """
 
     _BMDS_DATASET_TYPE = 0  # individual data
+    MINIMUM_DOSE_GROUPS = 3
 
-    def __init__(self, doses, responses, **kwargs):
-        self.individual_doses = doses
-        self.responses = responses
+    individual_doses: List[float]
+    responses: List[float]
+
+    class Config:
+        extra = "allow"
+
+    def __init__(self, individual_doses, responses, **kwargs):
+        data = self._prepare_summary_data(individual_doses, responses)
+        super().__init__(**data)
         self.kwargs = kwargs
-        self._sort_by_dose_group()
-        self.set_summary_data()
         self._validate()
 
-    def _sort_by_dose_group(self):
-        # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.individual_doses).argsort(kind="mergesort")
-        for fld in ("individual_doses", "responses"):
-            arr = getattr(self, fld)
-            setattr(self, fld, np.array(arr)[indexes].tolist())
+    def _prepare_summary_data(self, individual_doses, responses):
+        data = pd.DataFrame(
+            data=dict(individual_doses=individual_doses, responses=responses)
+        ).groupby("individual_doses")
+        return dict(
+            individual_doses=individual_doses,
+            responses=responses,
+            doses=list(data.groups.keys()),
+            ns=data.responses.count().tolist(),
+            means=data.responses.mean().tolist(),
+            stdevs=data.responses.std(ddof=0).fillna(0).tolist(),
+        )
 
     def _validate(self):
         length = len(self.individual_doses)
@@ -228,32 +242,23 @@ class ContinuousIndividualDataset(ContinuousDataset):
                 f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
             )
 
-    def set_summary_data(self):
-        doses = list(set(self.individual_doses))
-        doses.sort()
-
-        dd = defaultdict(list)
-        for d, r in zip(self.individual_doses, self.responses):
-            dd[d].append(r)
-
-        def _get_stats(lst):
-            arr = np.array(lst, dtype=np.float64)
-            return [arr.size, arr.mean(), arr.std()]
-
-        vals = [_get_stats(dd[dose]) for dose in doses]
-        self.ns, self.means, self.stdevs = zip(*vals)
-        self.doses = doses
+        self._validate_summary_data()
 
     def drop_dose(self):
         """
         Drop the maximum dose and related response values.
         """
-        doses = np.array(self.individual_doses)
+        individual_doses = np.array(self.individual_doses)
         responses = np.array(self.responses)
-        mask = doses != doses.max()
-        self.individual_doses = doses[mask].tolist()
-        self.responses = responses[mask].tolist()
-        self.set_summary_data()
+
+        mask = individual_doses != individual_doses.max()
+        doses = individual_doses[mask].tolist()
+        responses = responses[mask].tolist()
+
+        summary_data = self._prepare_summary_data(doses, responses)
+        for key, value in summary_data.items():
+            setattr(self, key, value)
+
         self._validate()
 
     def as_dfile(self):
@@ -276,14 +281,6 @@ class ContinuousIndividualDataset(ContinuousDataset):
     @property
     def dataset_length(self):
         return len(self.individual_doses)
-
-    def to_dict(self):
-        """
-        Return a dictionary representation of the dataset.
-        """
-        d = dict(individual_doses=self.individual_doses, responses=self.responses)
-        d.update(self.kwargs)
-        return d
 
     def plot(self):
         """

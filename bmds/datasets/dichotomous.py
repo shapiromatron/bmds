@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 from scipy import stats
 from simple_settings import settings
@@ -23,13 +25,18 @@ class DichotomousDataset(DatasetBase):
         )
     """
 
+    doses: List[float]
+    ns: List[float]
+    incidences: List[float]
+
+    class Config:
+        extra = "allow"
+
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
 
     def __init__(self, doses, ns, incidences, **kwargs):
-        self.doses = doses
-        self.ns = ns
-        self.incidences = incidences
+        super().__init__(doses=doses, ns=ns, incidences=incidences)
         self.remainings = [n - p for n, p in zip(ns, incidences)]
         self.kwargs = kwargs
         self._sort_by_dose_group()
@@ -91,14 +98,6 @@ class DichotomousDataset(DatasetBase):
         Return the length of the vector of doses-used.
         """
         return self.num_dose_groups
-
-    def to_dict(self):
-        """
-        Returns a dictionary representation of the dataset.
-        """
-        d = dict(doses=self.doses, ns=self.ns, incidences=self.incidences)
-        d.update(self.kwargs)
-        return d
 
     @staticmethod
     def _calculate_plotting(n, incidence):

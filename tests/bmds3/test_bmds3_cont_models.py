@@ -48,6 +48,6 @@ def test_bmds3_continuous_session(contds: bmds.ContinuousDataset):
     session.execute()
     for model in session.models:
         model.results = model.execute(debug=True)
-    d = session.to_dict(0)
+    d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))

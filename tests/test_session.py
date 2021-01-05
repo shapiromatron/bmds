@@ -40,7 +40,7 @@ def test_default_model_additions(cdataset, ddataset):
     assert len(session.models) == 3
 
     for i in range(3, 9):
-        array = range(i)
+        array = list(range(i))
 
         # expected [2-8]
         cds = bmds.ContinuousDataset(doses=array, ns=array, means=array, stdevs=array)

@@ -1,5 +1,6 @@
 import logging
 from copy import copy, deepcopy
+from typing import Dict
 
 from simple_settings import settings
 
@@ -47,6 +48,10 @@ class Bmds3Version(BMDS):
 
     def _can_execute_locally(self) -> bool:
         return True
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Bmds3Version":
+        raise NotImplementedError("TODO - implement!")
 
 
 class BMDS_v330(Bmds3Version):

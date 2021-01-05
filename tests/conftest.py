@@ -33,7 +33,7 @@ def cdataset():
 def cidataset():
     # fmt: off
     return bmds.ContinuousIndividualDataset(
-        doses=[
+        individual_doses=[
             0, 0, 0, 0, 0, 0, 0, 0,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             1, 1, 1, 1, 1, 1,
@@ -78,7 +78,7 @@ def anova_dataset():
         doses=[1, 2, 3, 4, 5, 6, 7],
         ns=[8, 6, 6, 6, 6, 6, 6],
         means=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
-        stdevs=stdevs,
+        stdevs=stdevs.tolist(),
     )
 
 

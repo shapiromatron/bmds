@@ -1,18 +1,16 @@
 from typing import Optional
 
 import numpy as np
+from pydantic import BaseModel
 
 
-class DatasetBase:
+class DatasetBase(BaseModel):
     # Abstract parent-class for dataset-types.
 
     def _validate(self):
         raise NotImplementedError("Abstract method; requires implementation")
 
     def as_dfile(self):
-        raise NotImplementedError("Abstract method; requires implementation")
-
-    def to_dict(self):
         raise NotImplementedError("Abstract method; requires implementation")
 
     def plot(self):
@@ -26,6 +24,11 @@ class DatasetBase:
         return len(set(self.doses))
 
     _dose_linspace: Optional[np.ndarray]
+
+    def to_dict(self):
+        d = self.dict(exclude={"_dose_linspace"})
+        d.update(self.kwargs)
+        return d
 
     @property
     def dose_linspace(self) -> np.ndarray:

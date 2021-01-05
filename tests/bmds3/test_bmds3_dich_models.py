@@ -45,7 +45,7 @@ def test_bmds3_dichotomous_session(dichds):
     session.add_default_models()
     for model in session.models:
         model.results = model.execute(debug=True)
-    d = session.to_dict(0)
+    d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))
 
@@ -56,6 +56,6 @@ def test_bmds3_dichotomous_ma_session(dichds):
     session.add_default_models()
     session.add_model_averaging()
     session.execute()
-    d = session.to_dict(0)
+    d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))
