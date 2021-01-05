@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import stats
 from simple_settings import settings
 
-from .. import plotting
+from .. import constants, plotting
 from .anova import AnovaTests
 from .base import DatasetBase
 
@@ -79,6 +79,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.CONTINUOUS
 
     doses: List[float]
     ns: List[int]
@@ -203,6 +204,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     _BMDS_DATASET_TYPE = 0  # individual data
     MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
 
     individual_doses: List[float]
     responses: List[float]

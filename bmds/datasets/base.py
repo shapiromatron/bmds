@@ -3,9 +3,13 @@ from typing import Optional
 import numpy as np
 from pydantic import BaseModel
 
+from ..constants import Dtype
+
 
 class DatasetBase(BaseModel):
     # Abstract parent-class for dataset-types.
+
+    dtype: Dtype
 
     class Config:
         extra = "allow"

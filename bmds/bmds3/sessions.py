@@ -1,11 +1,12 @@
 import logging
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, Tuple
 
+import pandas as pd
 from simple_settings import settings
 
 from .. import __version__, constants
-from ..bmds2.sessions import BMDS
+from ..datasets import DatasetType
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -13,17 +14,28 @@ from .models import ma
 logger = logging.getLogger(__name__)
 
 
-class Bmds3Version(BMDS):
-    """
-    A bmds3 session.
+class BmdsSession:
+    """A BmdsSession is bmd modeling session for a single dataset.
 
-    TODO - update API to make it so you can use the same session
-    TODO - refactor! and make sure it works with bmds2
+    The session contains the dataset, model configuration and results, and model recommendations
+    and potentially model averaging results too. BmdsSessions are a primary data type that
+    should be able to be serialized and deserialized.
     """
+
+    version_str: str
+    version_pretty: str
+    version_tuple: Tuple[int, ...]
+    model_options: Dict[str, Dict]
+
+    def __init__(self, dataset: DatasetType):
+        self.models = []
+        self.dataset = dataset
 
     def add_default_models(self, global_settings=None):
-        for name in self.model_options[self.dtype].keys():
+        for name in self.model_options[self.dataset.dtype].keys():
             model_settings = deepcopy(global_settings) if global_settings is not None else None
+
+            # TODO - change this; use `degree` in settings
             if name in constants.VARIABLE_POLYNOMIAL:
                 min_poly_order = 1 if name == constants.M_MultistageCancer else 2
                 max_poly_order = min(
@@ -38,6 +50,11 @@ class Bmds3Version(BMDS):
             else:
                 self.add_model(name, settings=model_settings)
 
+    def add_model(self, name, settings=None, id=None):
+        Model = self.model_options[self.dataset.dtype][name]
+        instance = Model(dataset=self.dataset, settings=settings, id=id)
+        self.models.append(instance)
+
     def add_model_averaging(self):
         """
         Must be added average other models are added since a shallow copy is taken, and the
@@ -46,16 +63,18 @@ class Bmds3Version(BMDS):
         instance = ma.DichotomousMA(dataset=self.dataset, models=list(range(len(self.models))))
         self.models.append(instance)
 
-    def _execute(self):
+    def execute(self):
         for model in self.models:
             if isinstance(model, ma.BaseModelAveraging):
                 model.execute_job(self)
             else:
                 model.execute_job()
 
-    def _can_execute_locally(self) -> bool:
-        return True
+    def execute_and_recommend(self, drop_doses=False):
+        raise NotImplementedError("TODO")
 
+    # serializing
+    # -----------
     def to_dict(self):
         return dict(
             bmds_version=self.version_str,
@@ -65,12 +84,25 @@ class Bmds3Version(BMDS):
             recommended_model_index=getattr(self, "recommended_model_index", None),
         )
 
-    @classmethod
-    def from_dict(cls, data: Dict) -> "Bmds3Version":
+    # reporting
+    # ---------
+    def to_df(self, filename) -> pd.DataFrame:
+        raise NotImplementedError("TODO - implement!")
+
+    def to_docx(
+        self,
+        filename=None,
+        title=None,
+        input_dataset=True,
+        summary_table=True,
+        recommendation_details=True,
+        recommended_model=True,
+        all_models=False,
+    ):
         raise NotImplementedError("TODO - implement!")
 
 
-class BMDS_v330(Bmds3Version):
+class BMDS_v330(BmdsSession):
     version_str = constants.BMDS330
     version_pretty = "BMDS v3.3.0"
     version_tuple = (3, 3, 0)

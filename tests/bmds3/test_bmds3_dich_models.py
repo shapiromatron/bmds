@@ -42,7 +42,7 @@ def test_bmds3_dichotomous_models(dichds):
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_session(dichds):
-    session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=dichds)
+    session = bmds.session.BMDS_v330(dataset=dichds)
     session.add_default_models()
     session.execute()
     d = session.to_dict()

@@ -4,7 +4,7 @@ import numpy as np
 from scipy import stats
 from simple_settings import settings
 
-from .. import plotting
+from .. import constants, plotting
 from .base import DatasetBase
 
 
@@ -31,6 +31,7 @@ class DichotomousDataset(DatasetBase):
 
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.DICHOTOMOUS
 
     def __init__(self, doses, ns, incidences, **kwargs):
         super().__init__(doses=doses, ns=ns, incidences=incidences)
@@ -189,6 +190,7 @@ class DichotomousCancerDataset(DichotomousDataset):
     """
 
     MINIMUM_DOSE_GROUPS = 2
+    dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
 
     def _validate(self):
         length = len(self.doses)
