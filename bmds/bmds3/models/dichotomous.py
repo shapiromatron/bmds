@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 from scipy.stats import gamma, norm
 
+from ...datasets import DichotomousDataset
 from ..constants import DichotomousModel, DichotomousModelChoices, Prior, PriorClass
 from ..types.dichotomous import (
     DichotomousAnalysis,
@@ -17,14 +18,13 @@ from ..types.dichotomous import (
     DichotomousResult,
 )
 from ..types.priors import DichotomousPriorLookup
-from .base import BaseModel, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdsLibraryManager, InputModelSettings
 
 
-class Dichotomous(BaseModel):
-    # required settings
-    model: DichotomousModel
-
-    def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
+class Dichotomous(BmdModel):
+    def get_model_settings(
+        self, dataset: DichotomousDataset, settings: InputModelSettings
+    ) -> DichotomousModelSettings:
         if settings is None:
             model = DichotomousModelSettings()
         elif isinstance(settings, DichotomousModelSettings):
@@ -33,7 +33,7 @@ class Dichotomous(BaseModel):
             model = DichotomousModelSettings.parse_obj(settings)
 
         if model.degree == 0:
-            model.degree = self.get_default_model_degree()
+            model.degree = self.get_default_model_degree(dataset)
 
         return model
 
@@ -41,7 +41,7 @@ class Dichotomous(BaseModel):
         # setup inputs
         priors = self.get_priors(self.settings.prior)
         return DichotomousAnalysis(
-            model=self.model,
+            model=self.bmd_model_class,
             dataset=self.dataset,
             priors=priors,
             BMD_type=self.settings.bmr_type,
@@ -59,7 +59,7 @@ class Dichotomous(BaseModel):
 
         # setup outputs
         fit_results = DichotomousModelResult(
-            model=self.model, dist_numE=200, num_params=inputs.num_params
+            model=self.bmd_model_class, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
 
@@ -110,13 +110,13 @@ class Dichotomous(BaseModel):
     def get_priors(
         self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
     ) -> List[Prior]:
-        return DichotomousPriorLookup[(self.model.id, prior_class.value)]
+        return DichotomousPriorLookup[(self.bmd_model_class.id, prior_class.value)]
 
-    def get_default_model_degree(self) -> int:
-        return self.model.num_params - 1
+    def get_default_model_degree(self, dataset) -> int:
+        return self.bmd_model_class.num_params - 1
 
     def model_class(self) -> str:
-        return self.model.verbose
+        return self.bmd_model_class.verbose
 
     def model_name(self) -> str:
         return self.model_class()
@@ -127,9 +127,15 @@ class Dichotomous(BaseModel):
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        raise NotImplementedError()
+
 
 class Logistic(Dichotomous):
-    model = DichotomousModelChoices.d_logistic.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -138,7 +144,9 @@ class Logistic(Dichotomous):
 
 
 class LogLogistic(Dichotomous):
-    model = DichotomousModelChoices.d_loglogistic.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_loglogistic.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -152,7 +160,9 @@ class LogLogistic(Dichotomous):
 
 
 class Probit(Dichotomous):
-    model = DichotomousModelChoices.d_probit.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_probit.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -161,7 +171,9 @@ class Probit(Dichotomous):
 
 
 class LogProbit(Dichotomous):
-    model = DichotomousModelChoices.d_logprobit.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_logprobit.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -175,7 +187,9 @@ class LogProbit(Dichotomous):
 
 
 class Gamma(Dichotomous):
-    model = DichotomousModelChoices.d_gamma.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_gamma.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -189,7 +203,9 @@ class Gamma(Dichotomous):
 
 
 class QuantalLinear(Dichotomous):
-    model = DichotomousModelChoices.d_qlinear.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_qlinear.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -202,7 +218,9 @@ class QuantalLinear(Dichotomous):
 
 
 class Weibull(Dichotomous):
-    model = DichotomousModelChoices.d_weibull.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_weibull.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -216,7 +234,9 @@ class Weibull(Dichotomous):
 
 
 class DichotomousHill(Dichotomous):
-    model = DichotomousModelChoices.d_hill.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_hill.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -231,13 +251,17 @@ class DichotomousHill(Dichotomous):
 
 
 class Multistage(Dichotomous):
-    model = DichotomousModelChoices.d_multistage.value
+    @property
+    def bmd_model_class(self) -> DichotomousModel:
+        return DichotomousModelChoices.d_multistage.value
 
-    def get_default_model_degree(self) -> int:
-        return self.dataset.num_dose_groups - 1
+    def get_default_model_degree(self, dataset) -> int:
+        return dataset.num_dose_groups - 1
 
-    def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
-        model = super().get_model_settings(settings)
+    def get_model_settings(
+        self, dataset: DichotomousDataset, settings: InputModelSettings
+    ) -> DichotomousModelSettings:
+        model = super().get_model_settings(dataset, settings)
 
         if model.degree < 2:
             raise ValueError(f"Multistage must be ≥ 2; got {model.degree}")

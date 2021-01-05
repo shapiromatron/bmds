@@ -7,6 +7,9 @@ from pydantic import BaseModel
 class DatasetBase(BaseModel):
     # Abstract parent-class for dataset-types.
 
+    class Config:
+        extra = "allow"
+
     def _validate(self):
         raise NotImplementedError("Abstract method; requires implementation")
 
@@ -25,10 +28,15 @@ class DatasetBase(BaseModel):
 
     _dose_linspace: Optional[np.ndarray]
 
-    def to_dict(self):
-        d = self.dict(exclude={"_dose_linspace"})
+    def dict(self, **kw):
+        kw.update(exclude={"_dose_linspace"})
+        d = super().dict(**kw)
         d.update(self.kwargs)
         return d
+
+    def to_dict(self):
+        # alias used for bmds2
+        return self.dict()
 
     @property
     def dose_linspace(self) -> np.ndarray:

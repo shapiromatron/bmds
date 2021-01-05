@@ -85,9 +85,6 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
     means: List[float]
     stdevs: List[float]
 
-    class Config:
-        extra = "allow"
-
     def __init__(self, doses, ns, means, stdevs, **kwargs):
         super().__init__(doses=doses, ns=ns, means=means, stdevs=stdevs)
         self.kwargs = kwargs
@@ -209,9 +206,6 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     individual_doses: List[float]
     responses: List[float]
-
-    class Config:
-        extra = "allow"
 
     def __init__(self, individual_doses, responses, **kwargs):
         data = self._prepare_summary_data(individual_doses, responses)

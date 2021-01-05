@@ -3,7 +3,7 @@ import logging
 import platform
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel as PydanticBaseModel
+from pydantic import BaseModel
 
 from ...datasets import DatasetBase
 from ...utils import package_root
@@ -63,48 +63,60 @@ class BmdsLibraryManager:
         return dll
 
 
-InputModelSettings = Optional[Union[Dict, PydanticBaseModel]]
+InputModelSettings = Optional[Union[Dict, BaseModel]]
 
 
-class BaseModel:
+class BmdModel(BaseModel):
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model: Any
-    model_version = "BMDS330"
+    model_version: str = "BMDS330"
+
+    id: Optional[Any]
+    dataset: DatasetBase
+    settings: BaseModel
+    results: Optional[BaseModel]
+    inputs_struct: Optional[ctypes.Structure]  # used for model averaging
+    fit_results_struct: Optional[ctypes.Structure]  # used for model averaging
+
+    class Config:
+        extra = "allow"
+        arbitrary_types_allowed = True
 
     def __init__(
         self,
         dataset: DatasetBase,
         settings: InputModelSettings = None,
         id: Optional[Union[int, str]] = None,
+        results: Optional[BaseModel] = None,
     ):
-        self.id = id
-        self.dataset = dataset
-        self.execution_start = None
-        self.execution_end = None
-        self.execution_halted = False
-        self.settings = self.get_model_settings(settings)
-        self.results = None
-        self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
-        self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
+        super().__init__(
+            id=id,
+            dataset=dataset,
+            settings=self.get_model_settings(dataset, settings),
+            results=results,
+        )
 
     @property
-    def output_created(self) -> bool:
+    def bmd_model_class(self) -> Any:
+        raise NotImplementedError()
+
+    @property
+    def has_output(self) -> bool:
         return self.results is not None
 
-    def get_model_settings(self, settings: InputModelSettings) -> PydanticBaseModel:
+    def get_model_settings(self, dataset: DatasetBase, settings: InputModelSettings) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def execute(self) -> PydanticBaseModel:
+    def execute(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
     def execute_job(self):
         self.results = self.execute()
 
-    def to_dict(self, model_index: int) -> Dict:
+    def dict(self, model_index: int) -> Dict:
         """
         Return a summary of the model in a dictionary format for serialization.
 
@@ -114,16 +126,13 @@ class BaseModel:
         Returns:
             A dictionary of model inputs, and raw and parsed outputs
         """
-        return dict(
+        d = super().dict(exclude={"inputs_struct", "fit_results_struct"})
+        d.update(
+            bmd_model_class=self.bmd_model_class.dict(),
             model_index=model_index,
-            model_class=self.model.id,
-            model_name=self.model.verbose,
-            model_version=self.model_version,
-            has_output=self.output_created,
-            execution_halted=self.execution_halted,
-            settings=self.settings.dict(),
-            results=self.results.dict() if self.results else None,
+            has_output=self.has_output,
         )
+        return d
 
 
 class BaseModelAveraging(BaseModel):
@@ -132,21 +141,46 @@ class BaseModelAveraging(BaseModel):
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model: Any
     model_version = "BMDS330"
+
+    dataset: DatasetBase
+    models: List[int]
+    settings: InputModelSettings
+    id: Optional[Any]
+    results: Optional[BaseModel]
 
     def __init__(
         self,
         dataset: DatasetBase,
-        models: List[BaseModel],
+        models: List[int],
         settings: InputModelSettings = None,
         id: Optional[Union[int, str]] = None,
+        results: Optional[BaseModel] = None,
     ):
-        self.id = id
-        self.dataset = dataset
-        self.models = models
-        self.execution_start = None
-        self.execution_end = None
-        self.execution_halted = False
-        self.settings = self.get_model_settings(settings)
-        self.results = None
+        super().__init__(
+            dataset=dataset,
+            models=models,
+            settings=self.get_model_settings(dataset, settings),
+            id=id,
+            results=results,
+        )
+
+    def get_model_settings(self, dataset: DatasetBase, settings: InputModelSettings) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
+
+    def execute(self, session) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
+
+    def execute_job(self, session):
+        self.results = self.execute(session)
+
+    @property
+    def has_output(self) -> bool:
+        return self.results is not None
+
+    def dict(self, model_index: int) -> Dict:
+        d = super().dict()
+        d.update(
+            model_index=model_index, has_output=self.has_output,
+        )
+        return d

@@ -29,9 +29,6 @@ class DichotomousDataset(DatasetBase):
     ns: List[float]
     incidences: List[float]
 
-    class Config:
-        extra = "allow"
-
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
 

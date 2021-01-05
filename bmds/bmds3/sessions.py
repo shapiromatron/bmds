@@ -1,10 +1,10 @@
 import logging
-from copy import copy, deepcopy
+from copy import deepcopy
 from typing import Dict
 
 from simple_settings import settings
 
-from .. import constants
+from .. import __version__, constants
 from ..bmds2.sessions import BMDS
 from .models import continuous as c3
 from .models import dichotomous as d3
@@ -43,11 +43,27 @@ class Bmds3Version(BMDS):
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
         """
-        instance = ma.DichotomousMA(dataset=self.dataset, models=copy(self.models))
+        instance = ma.DichotomousMA(dataset=self.dataset, models=list(range(len(self.models))))
         self.models.append(instance)
+
+    def _execute(self):
+        for model in self.models:
+            if isinstance(model, ma.BaseModelAveraging):
+                model.execute_job(self)
+            else:
+                model.execute_job()
 
     def _can_execute_locally(self) -> bool:
         return True
+
+    def to_dict(self):
+        return dict(
+            bmds_version=self.version_str,
+            bmds_python_version=__version__,
+            dataset=self.dataset.dict(),
+            models=[model.dict(i) for i, model in enumerate(self.models)],
+            recommended_model_index=getattr(self, "recommended_model_index", None),
+        )
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Bmds3Version":
