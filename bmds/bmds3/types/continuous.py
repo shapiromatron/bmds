@@ -220,3 +220,5 @@ class ContinuousResult(BaseModel):
     aic: float
     bounded: List[bool]
     fit: ContinuousModelResult
+    dr_x: List[float]
+    dr_y: List[float]
