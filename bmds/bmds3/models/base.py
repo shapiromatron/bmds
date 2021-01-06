@@ -76,15 +76,10 @@ class BmdModel:
     bmd_model_class: BmdModelSchema
     model_version: str
 
-    def __init__(
-        self,
-        dataset: DatasetType,
-        settings: InputModelSettings = None,
-        results: Optional[BaseModel] = None,
-    ):
+    def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
         self.dataset = dataset
         self.settings = self.get_model_settings(dataset, settings)
-        self.results = results
+        self.results: Optional[BaseModel] = None
         self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
         self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
@@ -101,21 +96,8 @@ class BmdModel:
     def execute_job(self):
         self.results = self.execute()
 
-    def serialize(self):
-        """
-        Return a summary of the model in a dictionary format for serialization.
-
-        Args:
-            model_index (int): numeric model index in a list of models, should be unique
-
-        Returns:
-            A dictionary of model inputs, and raw and parsed outputs
-        """
-        d = super().dict(exclude={"inputs_struct", "fit_results_struct"})
-        d.update(
-            bmd_model_class=self.bmd_model_class.dict(), has_output=self.has_output,
-        )
-        return d
+    def serialize(self) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()
@@ -163,3 +145,7 @@ class BaseModelAveraging:
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()
+
+
+class BmdModelSchema(BaseModel):
+    pass

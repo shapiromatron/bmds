@@ -1,8 +1,9 @@
-from typing import Tuple
+from typing import List, Tuple
 
 from pydantic import BaseModel
 
 from ...datasets.base import DatasetSchemaBase
+from ..models.base import BmdModelSchema
 
 
 class VersionSchema(BaseModel):
@@ -14,3 +15,4 @@ class VersionSchema(BaseModel):
 class SessionSchemaBase(BaseModel):
     version: VersionSchema
     dataset: DatasetSchemaBase
+    models: List[BmdModelSchema]

@@ -145,15 +145,17 @@ class Bmds330(BmdsSession):
     }
 
     def serialize(self) -> "Bmds330Schema":
-        data = dict(
+        return Bmds330Schema(
             version=dict(
                 string=self.version_str, pretty=self.version_pretty, numeric=self.version_tuple,
             ),
             dataset=self.dataset.serialize(),
+            models=[model.serialize() for model in self.models],
         )
-        return Bmds330Schema.parse_obj(data)
 
 
 class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
-        return Bmds330(dataset=self.dataset.deserialize())
+        ds = Bmds330(dataset=self.dataset.deserialize())
+        ds.models = [model.deserialize(ds.dataset) for model in self.models]
+        return ds

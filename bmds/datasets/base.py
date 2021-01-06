@@ -53,7 +53,7 @@ class DatasetBase:
         raise NotImplementedError("Abstract method; requires implementation")
 
 
-DatasetType = TypeVar("DatasetType", bound=DatasetBase)  # noqa
+DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 
 
 class DatasetSchemaBase(BaseModel):

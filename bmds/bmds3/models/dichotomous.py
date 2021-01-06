@@ -5,7 +5,13 @@ import numpy as np
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
-from ..constants import DichotomousModel, DichotomousModelChoices, Prior, PriorClass
+from ..constants import (
+    DichotomousModel,
+    DichotomousModelChoices,
+    DichotomousModelIds,
+    Prior,
+    PriorClass,
+)
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
@@ -18,10 +24,10 @@ from ..types.dichotomous import (
     DichotomousResult,
 )
 from ..types.priors import DichotomousPriorLookup
-from .base import BmdModel, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdsLibraryManager, InputModelSettings, BmdModelSchema
 
 
-class Dichotomous(BmdModel):
+class BmdModelDichotomous(BmdModel):
     bmd_model_class: DichotomousModel
 
     def get_model_settings(
@@ -129,8 +135,25 @@ class Dichotomous(BmdModel):
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
+    def serialize(self) -> "BmdModelDichotomousSchema":
+        return BmdModelDichotomousSchema(
+            model_class=self.bmd_model_class, settings=self.settings, results=self.results
+        )
 
-class Logistic(Dichotomous):
+
+class BmdModelDichotomousSchema(BmdModelSchema):
+    model_class: DichotomousModel
+    settings: DichotomousModelSettings
+    results: DichotomousResult
+
+    def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
+        Model = bmd_model_map[self.model_class.id]
+        model = Model(dataset=dataset, settings=self.settings)
+        model.results = self.results
+        return model
+
+
+class Logistic(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -139,7 +162,7 @@ class Logistic(Dichotomous):
         return 1 / (1 + np.exp(-a - b * doses))
 
 
-class LogLogistic(Dichotomous):
+class LogLogistic(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_loglogistic.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -153,7 +176,7 @@ class LogLogistic(Dichotomous):
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
-class Probit(Dichotomous):
+class Probit(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_probit.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -162,7 +185,7 @@ class Probit(Dichotomous):
         return norm.cdf(a + b * doses)
 
 
-class LogProbit(Dichotomous):
+class LogProbit(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_logprobit.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -176,7 +199,7 @@ class LogProbit(Dichotomous):
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
-class Gamma(Dichotomous):
+class Gamma(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_gamma.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -190,7 +213,7 @@ class Gamma(Dichotomous):
         return g + (1 - g) * gamma.cdf(b * doses, a)
 
 
-class QuantalLinear(Dichotomous):
+class QuantalLinear(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_qlinear.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -203,7 +226,7 @@ class QuantalLinear(Dichotomous):
         return g + (1 - g) * 1 - np.exp(-a * doses)
 
 
-class Weibull(Dichotomous):
+class Weibull(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_weibull.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -217,7 +240,7 @@ class Weibull(Dichotomous):
         return g + (1 - g) * (1 - np.exp(-b * doses ** a))
 
 
-class DichotomousHill(Dichotomous):
+class DichotomousHill(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_hill.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -232,7 +255,7 @@ class DichotomousHill(Dichotomous):
         return g + (1 - g) * n * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
-class Multistage(Dichotomous):
+class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
 
     def get_default_model_degree(self, dataset) -> int:
@@ -264,3 +287,16 @@ class Multistage(Dichotomous):
         for i in range(1, len(params)):
             val -= -params[i] * doses ** i
         return g + (1 - g) * 1 - np.exp(val)
+
+
+bmd_model_map = {
+    DichotomousModelIds.d_hill.value: DichotomousHill,
+    DichotomousModelIds.d_gamma.value: Gamma,
+    DichotomousModelIds.d_logistic.value: Logistic,
+    DichotomousModelIds.d_loglogistic.value: LogLogistic,
+    DichotomousModelIds.d_logprobit.value: LogProbit,
+    DichotomousModelIds.d_multistage.value: Multistage,
+    DichotomousModelIds.d_probit.value: Probit,
+    DichotomousModelIds.d_qlinear.value: QuantalLinear,
+    DichotomousModelIds.d_weibull.value: Weibull,
+}

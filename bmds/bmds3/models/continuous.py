@@ -4,7 +4,13 @@ from typing import List
 import numpy as np
 
 from ...datasets import ContinuousDataset
-from ..constants import ContinuousModel, ContinuousModelChoices, Prior, PriorClass
+from ..constants import (
+    ContinuousModel,
+    ContinuousModelChoices,
+    ContinuousModelIds,
+    Prior,
+    PriorClass,
+)
 from ..types.continuous import (
     ContinuousAnalysis,
     ContinuousBmdsResultsStruct,
@@ -13,10 +19,10 @@ from ..types.continuous import (
     ContinuousResult,
 )
 from ..types.priors import ContinuousPriorLookup
-from .base import BmdModel, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdsLibraryManager, InputModelSettings, BmdModelSchema
 
 
-class Continuous(BmdModel):
+class BmdModelContinuous(BmdModel):
     bmd_model_class: ContinuousModel
 
     def get_model_settings(
@@ -110,8 +116,25 @@ class Continuous(BmdModel):
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
+    def serialize(self) -> "BmdModelContinuousSchema":
+        return BmdModelContinuousSchema(
+            model_class=self.bmd_model_class, settings=self.settings, results=self.results
+        )
 
-class Power(Continuous):
+
+class BmdModelContinuousSchema(BmdModelSchema):
+    model_class: ContinuousModel
+    settings: ContinuousModelSettings
+    results: ContinuousResult
+
+    def deserialize(self, dataset: ContinuousDataset) -> BmdModelContinuous:
+        Model = bmd_model_map[self.model_class.id]
+        model = Model(dataset=dataset, settings=self.settings)
+        model.results = self.results
+        return model
+
+
+class Power(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_power.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -121,7 +144,7 @@ class Power(Continuous):
         return g + v * doses ** n
 
 
-class Hill(Continuous):
+class Hill(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_hill.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -132,7 +155,7 @@ class Hill(Continuous):
         return g + v * doses ** n / (k ** n + doses ** n)
 
 
-class Polynomial(Continuous):
+class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -149,7 +172,7 @@ class Linear(Polynomial):
     pass
 
 
-class ExponentialM2(Continuous):
+class ExponentialM2(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m2.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -159,7 +182,7 @@ class ExponentialM2(Continuous):
         return np.nan_to_num(a * np.exp(b * doses))
 
 
-class ExponentialM3(Continuous):
+class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -170,7 +193,7 @@ class ExponentialM3(Continuous):
         return np.nan_to_num(a * np.exp((b * doses) ** d))
 
 
-class ExponentialM4(Continuous):
+class ExponentialM4(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m4.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -181,7 +204,7 @@ class ExponentialM4(Continuous):
         return np.nan_to_num(a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses))))))
 
 
-class ExponentialM5(Continuous):
+class ExponentialM5(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m5.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
@@ -190,3 +213,14 @@ class ExponentialM5(Continuous):
         c = params[2]
         d = params[3]
         return a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** d))))
+
+
+bmd_model_map = {
+    ContinuousModelIds.c_power.value: Power,
+    ContinuousModelIds.c_hill.value: Hill,
+    ContinuousModelIds.c_polynomial.value: Polynomial,
+    ContinuousModelIds.c_exp_m2.value: ExponentialM2,
+    ContinuousModelIds.c_exp_m3.value: ExponentialM3,
+    ContinuousModelIds.c_exp_m4.value: ExponentialM4,
+    ContinuousModelIds.c_exp_m5.value: ExponentialM5,
+}
