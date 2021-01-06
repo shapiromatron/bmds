@@ -180,12 +180,13 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         return fig
 
     def serialize(self) -> "ContinuousDatasetSchema":
+        anova = self.anova()
         return ContinuousDatasetSchema(
             doses=self.doses,
             ns=self.ns,
             means=self.means,
             stdevs=self.stdevs,
-            anova=self.anova(),
+            anova=anova,
             plotting=self.get_plotting(),
             metadata=self.metadata,
         )
@@ -201,13 +202,15 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     plotting: DatasetPlottingSchema
 
     def deserialize(self) -> ContinuousDataset:
-        return ContinuousDataset(
+        ds = ContinuousDataset(
             doses=self.doses,
             ns=self.ns,
             means=self.means,
             stdevs=self.stdevs,
             **self.metadata.dict(),
         )
+        ds._anova = self.anova
+        return ds
 
 
 class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
@@ -353,10 +356,11 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         return fig
 
     def serialize(self) -> "ContinuousIndividualDatasetSchema":
+        anova = self.anova()
         return ContinuousIndividualDatasetSchema(
             doses=self.individual_doses,
             responses=self.responses,
-            anova=self.anova(),
+            anova=anova,
             metadata=self.metadata,
         )
 
@@ -368,6 +372,8 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     anova: Optional[AnovaTests]
 
     def deserialize(self) -> ContinuousIndividualDataset:
-        return ContinuousIndividualDataset(
+        ds = ContinuousIndividualDataset(
             doses=self.doses, responses=self.responses, **self.metadata.dict(),
         )
+        ds._anova = self.anova
+        return ds
