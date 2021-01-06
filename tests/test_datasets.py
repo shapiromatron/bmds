@@ -57,7 +57,7 @@ class TestDichotomousDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict() == {
+        assert serialized.dict(exclude={"plotting"}) == {
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -106,7 +106,7 @@ class TestDichotomousCancerDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict() == {
+        assert serialized.dict(exclude={"plotting"}) == {
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -243,7 +243,7 @@ class TestContinuousSummaryDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict() == {
+        assert serialized.dict(exclude={"plotting"}) == {
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -256,6 +256,7 @@ class TestContinuousSummaryDataset:
             "ns": [1, 2, 3, 4],
             "means": [1.0, 2.0, 3.0, 4.0],
             "stdevs": [1.0, 2.0, 3.0, 4.0],
+            "anova": None,
         }
 
         # make sure we get the correct class back
@@ -332,7 +333,7 @@ class TestContinuousIndividualDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict() == {
+        assert serialized.dict(exclude={"anova"}) == {
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -363,7 +364,7 @@ def test_correct_variance_model(cdataset):
     session.execute()
     model = session.models[0]
     anova = cdataset.anova()
-    calc_pvalue2 = anova[1].TEST
+    calc_pvalue2 = anova.test2.TEST
     correct_pvalue2 = model.output["p_value2"]
     # large tolerance due to reporting in text-file
     atol = 1e-3

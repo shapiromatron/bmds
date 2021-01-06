@@ -5,7 +5,7 @@ from scipy import stats
 from simple_settings import settings
 
 from .. import constants, plotting
-from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
+from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase, DatasetPlottingSchema
 
 
 class DichotomousDataset(DatasetBase):
@@ -127,9 +127,11 @@ class DichotomousDataset(DatasetBase):
     def _set_plot_data(self):
         if hasattr(self, "_means"):
             return
-        self._means, self._lls, self._uls = zip(
-            *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
-        )
+
+        if not hasattr(self, "_means"):
+            self._means, self._lls, self._uls = zip(
+                *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
+            )
 
     def plot(self):
         """
@@ -170,8 +172,13 @@ class DichotomousDataset(DatasetBase):
         return fig
 
     def serialize(self) -> "DichotomousDatasetSchema":
+        self._set_plot_data()
         return DichotomousDatasetSchema(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.metadata
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+            plotting=dict(mean=self._means, ll=self._lls, ul=self._uls),
+            metadata=self.metadata,
         )
 
 
@@ -180,6 +187,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
     doses: List[float]
     ns: List[int]
     incidences: List[int]
+    plotting: DatasetPlottingSchema
 
     def deserialize(self) -> DichotomousDataset:
         return DichotomousDataset(
@@ -221,13 +229,19 @@ class DichotomousCancerDataset(DichotomousDataset):
             )
 
     def serialize(self) -> "DichotomousCancerDatasetSchema":
+        self._set_plot_data()
         return DichotomousCancerDatasetSchema(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.metadata
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+            plotting=dict(mean=self._means, ll=self._lls, ul=self._uls),
+            metadata=self.metadata,
         )
 
 
 class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
     def deserialize(self) -> DichotomousDataset:
         return DichotomousCancerDataset(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict(),
         )
+

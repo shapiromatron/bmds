@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import Optional, List, TypeVar
 
 import numpy as np
 from pydantic import BaseModel
@@ -70,3 +70,9 @@ class DatasetMetadata(BaseModel):
     response_units: Optional[str]
     dose_name: Optional[str]
     response_name: Optional[str]
+
+
+class DatasetPlottingSchema(BaseModel):
+    mean: Optional[List[float]]
+    ll: List[float]
+    ul: List[float]

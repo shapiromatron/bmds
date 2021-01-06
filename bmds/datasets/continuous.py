@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,7 @@ from simple_settings import settings
 
 from .. import constants, plotting
 from .anova import AnovaTests
-from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
+from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase, DatasetPlottingSchema
 
 
 class ContinuousSummaryDataMixin:
@@ -39,17 +39,20 @@ class ContinuousSummaryDataMixin:
             self._variances = np.power(stds, 2).tolist()
         return self._variances
 
-    def anova(self):
-        # Returns either a tuple of 3 Test objects, or None if anova failed
-        try:
-            num_params = 3  # assume linear model
-            (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                self.num_dose_groups, self.ns, self.means, self.variances
-            )
-            tests = AnovaTests.get_anova_c3_tests(num_params, self.num_dose_groups, A1, A2, A3, AR)
-        except ValueError:
-            tests = None
-        return tests
+    def anova(self) -> Optional[AnovaTests]:
+        if not hasattr(self, "_anova"):
+            # Returns either a tuple of 3 Test objects, or None if anova failed
+            try:
+                num_params = 3  # assume linear model
+                (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
+                    self.num_dose_groups, self.ns, self.means, self.variances
+                )
+                self._anova = AnovaTests.get_anova_c3_tests(
+                    num_params, self.num_dose_groups, A1, A2, A3, AR
+                )
+            except ValueError:
+                self._anova = None
+        return self._anova
 
     def get_anova_report(self):
         return AnovaTests.output_3tests(self.anova())
@@ -123,7 +126,6 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
         return "\n".join(rows)
 
-    @property
     def errorbars(self):
         # 95% confidence interval
         if not hasattr(self, "_errorbars"):
@@ -132,6 +134,14 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
                 for stdev, n in zip(self.stdevs, self.ns)
             ]
         return self._errorbars
+
+    def get_plotting(self):
+        errorbars = self.errorbars()
+        return DatasetPlottingSchema(
+            mean=self.means,
+            ll=[mean - err for mean, err in zip(self.means, errorbars)],
+            ul=[mean + err for mean, err in zip(self.means, errorbars)],
+        )
 
     def plot(self):
         """
@@ -160,7 +170,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         ax.errorbar(
             self.doses,
             self.means,
-            yerr=self.errorbars,
+            yerr=self.errorbars(),
             label="Mean ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
@@ -175,6 +185,8 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             ns=self.ns,
             means=self.means,
             stdevs=self.stdevs,
+            anova=self.anova(),
+            plotting=self.get_plotting(),
             metadata=self.metadata,
         )
 
@@ -185,6 +197,8 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     ns: List[int]
     means: List[float]
     stdevs: List[float]
+    anova: Optional[AnovaTests]
+    plotting: DatasetPlottingSchema
 
     def deserialize(self) -> ContinuousDataset:
         return ContinuousDataset(
@@ -340,7 +354,10 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def serialize(self) -> "ContinuousIndividualDatasetSchema":
         return ContinuousIndividualDatasetSchema(
-            doses=self.individual_doses, responses=self.responses, metadata=self.metadata
+            doses=self.individual_doses,
+            responses=self.responses,
+            anova=self.anova(),
+            metadata=self.metadata,
         )
 
 
@@ -348,6 +365,7 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     metadata: DatasetMetadata
     doses: List[float]
     responses: List[float]
+    anova: Optional[AnovaTests]
 
     def deserialize(self) -> ContinuousIndividualDataset:
         return ContinuousIndividualDataset(

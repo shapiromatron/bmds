@@ -1,19 +1,23 @@
 from math import log
 
+from pydantic import BaseModel
 from scipy import stats
 
 
-class Test:
-    def __init__(self):
-        self.DF = -1
-        self.CDF = -1
-        self.SS = 0.0
-        self.MSE = 0.0
-        self.AIC = 0.0
-        self.TEST = -1.0
+class Test(BaseModel):
+    DF: float = -1
+    CDF: float = -1
+    SS: float = 0.0
+    MSE: float = 0.0
+    AIC: float = 0.0
+    TEST: float = -1.0
 
 
-class AnovaTests:
+class AnovaTests(BaseModel):
+    test1: Test
+    test2: Test
+    test3: Test
+
     @staticmethod
     def compute_likelihoods(n_obs, ns, ym, yd):
         Ntot = ns[0]
@@ -38,8 +42,8 @@ class AnovaTests:
         lkA3 = lkA1
         return lkA1, lkA2, lkA3, lkR
 
-    @staticmethod
-    def get_anova_c3_tests(nparm, n_obs, a1, a2, a3, ar):
+    @classmethod
+    def get_anova_c3_tests(cls, nparm, n_obs, a1, a2, a3, ar) -> "AnovaTests":
         # Based on Hill model, modified from DTMS3ANOVAC.c
 
         # The xlk is not real
@@ -82,10 +86,10 @@ class AnovaTests:
                 anova.TEST = 1 - stats.chi2.cdf(anova.MSE, anova.CDF)
 
         # Only return test 1, test 2 and test 3 in the order
-        return (anovaList[3], anovaList[0], anovaList[1])
+        return cls(test1=anovaList[3], test2=anovaList[0], test3=anovaList[1])
 
     @staticmethod
-    def output_3tests(tests):
+    def output_3tests(tests) -> str:
         if tests is None:
             return "ANOVA cannot be calculated for this dataset."
 
@@ -93,6 +97,6 @@ class AnovaTests:
             "                     Tests of Interest    ",
             "   Test    -2*log(Likelihood Ratio)  Test df        p-value    ",
         ]
-        for i, test in enumerate(tests):
+        for i, test in enumerate([tests.test1, tests.test2, tests.test3]):
             outputs.append("   Test %d %20.6g %10d %16.4g" % (i + 1, test.MSE, test.CDF, test.TEST))
         return "\n".join(outputs)
