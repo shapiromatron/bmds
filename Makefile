@@ -57,15 +57,11 @@ format:  ## Modify python code using black & show flake8 issues
 test:
 	# This runs all of the tests.
 	#
-	# To run an individual test, use the -k flag to grep for matching:
-	# 	$ py.test -k test_monkey_has_tail
-	#
-	# To show print statements when debugging tests, use the -s flag:
-	# 	$ py.test -k test_monkey_has_tail -s
+	# To compare mpl to baseline images (without it test just make sure test executes)
+	#   $ py.test --mpl
 	#
 	# To generate baseline matplotlib images:
-	#   $ py.test --mpl-generate-path=tests/resources
-	#
+	#   $ py.test --mpl-generate-path=tests/data/mpl
 	py.test
 
 docs: ## generate Sphinx HTML documentation, including API docs

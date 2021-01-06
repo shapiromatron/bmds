@@ -1,7 +1,21 @@
+import os
+
 import pytest
 
 import bmds
 from bmds.bmds3.logic import Recommender, constants
+
+
+# TODO remove this restriction
+should_run = os.getenv("CI") is None
+skip_reason = "DLLs not present on CI"
+
+
+@pytest.fixture
+def dichds():
+    return bmds.DichotomousDataset(
+        doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
+    )
 
 
 def test_init():
@@ -22,14 +36,12 @@ def test_rules_df():
     assert df.shape == (17, 6)
 
 
-def test_apply_logic_dich(ddataset):
-    session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=ddataset)
+@pytest.mark.skipif(not should_run, reason=skip_reason)
+def test_apply_logic_dich(dichds):
+    session = bmds.session.Bmds330(dataset=dichds)
     session.add_model(bmds.constants.M_DichotomousHill)
     session.add_model(bmds.constants.M_Gamma)
-    try:
-        session.execute()
-    except FileNotFoundError:
-        pytest.skip("bmds library not found")
+    session.execute()
     session.add_recommender()
     recommended = session.recommend()
 
@@ -42,14 +54,12 @@ def test_apply_logic_dich(ddataset):
     assert recommended.model_name() == "Gamma"
 
 
+@pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_apply_logic_cont(cdataset):
-    session = bmds.session.BMDS_v330(bmds.constants.CONTINUOUS, dataset=cdataset)
+    session = bmds.session.Bmds330(dataset=cdataset)
     session.add_model(bmds.constants.M_Hill)
     session.add_model(bmds.constants.M_Power)
-    try:
-        session.execute()
-    except FileNotFoundError:
-        pytest.skip("bmds library not found")
+    session.execute()
     session.add_recommender()
     recommended = session.recommend()
 

@@ -1,53 +1,17 @@
-from collections import defaultdict
+from typing import List, Optional
 
 import numpy as np
+import pandas as pd
 from scipy import stats
 from simple_settings import settings
 
-from .. import plotting
+from .. import constants, plotting
 from .anova import AnovaTests
-from .base import DatasetBase
+from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
-class ContinuousDataset(DatasetBase):
-    """
-    Dataset object for continuous datasets.
-
-    A continuous dataset contains a list of 4 identically sized arrays of
-    input values, for the dose, number of subjects, mean of response values for
-    dose group, and standard-deviation of response for that dose group.
-
-    Example
-    -------
-    >>> dataset = bmds.ContinuousDataset(
-            doses=[0, 10, 50, 150, 400],
-            ns=[25, 25, 24, 24, 24],
-            means=[2.61, 2.81, 2.96, 4.66, 11.23],
-            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
-        )
-    """
-
-    _BMDS_DATASET_TYPE = 1  # group data
-    MINIMUM_DOSE_GROUPS = 3
-
-    def __init__(self, doses, ns, means, stdevs, **kwargs):
-        self.doses = doses
-        self.ns = ns
-        self.means = means
-        self.stdevs = stdevs
-        self.kwargs = kwargs
-        self._sort_by_dose_group()
-        self._validate()
-
-    def _sort_by_dose_group(self):
-        # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.doses).argsort(kind="mergesort")
-        for fld in ("doses", "ns", "means", "stdevs"):
-            arr = getattr(self, fld)
-            setattr(self, fld, np.array(arr)[indexes].tolist())
-        self._validate()
-
-    def _validate(self):
+class ContinuousSummaryDataMixin:
+    def _validate_summary_data(self):
         length = len(self.doses)
         if not all(len(lst) == length for lst in [self.doses, self.ns, self.means, self.stdevs]):
             raise ValueError("All input lists must be same length")
@@ -67,6 +31,80 @@ class ContinuousDataset(DatasetBase):
         for i in range(1, len(self.means)):
             change += self.means[i] - self.means[0]
         return change >= 0
+
+    @property
+    def variances(self):
+        if not hasattr(self, "_variances"):
+            stds = np.array(self.stdevs)
+            self._variances = np.power(stds, 2).tolist()
+        return self._variances
+
+    def anova(self) -> Optional[AnovaTests]:
+        if not hasattr(self, "_anova"):
+            # Returns either a tuple of 3 Test objects, or None if anova failed
+            try:
+                num_params = 3  # assume linear model
+                (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
+                    self.num_dose_groups, self.ns, self.means, self.variances
+                )
+                self._anova = AnovaTests.get_anova_c3_tests(
+                    num_params, self.num_dose_groups, A1, A2, A3, AR
+                )
+            except ValueError:
+                self._anova = None
+        return self._anova
+
+    def get_anova_report(self):
+        return AnovaTests.output_3tests(self.anova())
+
+    @property
+    def dataset_length(self):
+        return self.num_dose_groups
+
+
+class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
+    """
+    Dataset object for continuous datasets.
+
+    A continuous dataset contains a list of 4 identically sized arrays of
+    input values, for the dose, number of subjects, mean of response values for
+    dose group, and standard-deviation of response for that dose group.
+
+    Example
+    -------
+    >>> dataset = bmds.ContinuousDataset(
+            doses=[0, 10, 50, 150, 400],
+            ns=[25, 25, 24, 24, 24],
+            means=[2.61, 2.81, 2.96, 4.66, 11.23],
+            stdevs=[0.81, 1.19, 1.37, 1.72, 2.84]
+        )
+    """
+
+    _BMDS_DATASET_TYPE = 1  # group data
+    MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.CONTINUOUS
+
+    def __init__(
+        self, doses: List[float], ns: List[int], means: List[float], stdevs: List[float], **metadata
+    ):
+        self.doses = doses
+        self.ns = ns
+        self.means = means
+        self.stdevs = stdevs
+        self.metadata = metadata
+        self._sort_by_dose_group()
+        self._validate()
+
+    def _validate(self):
+        self._validate_summary_data()
+
+    def _sort_by_dose_group(self):
+        # use mergesort since it's a stable-sorting algorithm in numpy
+        indexes = np.array(self.doses).argsort(kind="mergesort")
+        for fld in ("doses", "ns", "means", "stdevs"):
+            arr = getattr(self, fld)
+            setattr(self, fld, np.array(arr)[indexes].tolist())
+        self._validate()
 
     def drop_dose(self):
         """
@@ -88,41 +126,6 @@ class ContinuousDataset(DatasetBase):
             rows.append("%f %d %f %f" % (self.doses[i], self.ns[i], self.means[i], self.stdevs[i]))
         return "\n".join(rows)
 
-    @property
-    def variances(self):
-        if not hasattr(self, "_variances"):
-            stds = np.array(self.stdevs)
-            self._variances = np.power(stds, 2).tolist()
-        return self._variances
-
-    def anova(self):
-        # Returns either a tuple of 3 Test objects, or None if anova failed
-        try:
-            num_params = 3  # assume linear model
-            (A1, A2, A3, AR) = AnovaTests.compute_likelihoods(
-                self.num_dose_groups, self.ns, self.means, self.variances
-            )
-            tests = AnovaTests.get_anova_c3_tests(num_params, self.num_dose_groups, A1, A2, A3, AR)
-        except ValueError:
-            tests = None
-        return tests
-
-    @property
-    def dataset_length(self):
-        return self.num_dose_groups
-
-    def get_anova_report(self):
-        return AnovaTests.output_3tests(self.anova())
-
-    def to_dict(self):
-        """
-        Return a dictionary representation of the dataset.
-        """
-        d = dict(doses=self.doses, ns=self.ns, means=self.means, stdevs=self.stdevs)
-        d.update(self.kwargs)
-        return d
-
-    @property
     def errorbars(self):
         # 95% confidence interval
         if not hasattr(self, "_errorbars"):
@@ -131,6 +134,14 @@ class ContinuousDataset(DatasetBase):
                 for stdev, n in zip(self.stdevs, self.ns)
             ]
         return self._errorbars
+
+    def get_plotting(self):
+        errorbars = self.errorbars()
+        return DatasetPlottingSchema(
+            mean=self.means,
+            ll=[mean - err for mean, err in zip(self.means, errorbars)],
+            ul=[mean + err for mean, err in zip(self.means, errorbars)],
+        )
 
     def plot(self):
         """
@@ -141,7 +152,7 @@ class ContinuousDataset(DatasetBase):
         >>> fig = dataset.plot()
         >>> fig.show()
 
-        .. image:: ../tests/resources/test_cdataset_plot.png
+        .. image:: ../tests/data/mpl/test_cdataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 
@@ -152,14 +163,14 @@ class ContinuousDataset(DatasetBase):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Response")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses,
             self.means,
-            yerr=self.errorbars,
+            yerr=self.errorbars(),
             label="Mean ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
@@ -168,8 +179,41 @@ class ContinuousDataset(DatasetBase):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def serialize(self) -> "ContinuousDatasetSchema":
+        anova = self.anova()
+        return ContinuousDatasetSchema(
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+            anova=anova,
+            plotting=self.get_plotting(),
+            metadata=self.metadata,
+        )
 
-class ContinuousIndividualDataset(ContinuousDataset):
+
+class ContinuousDatasetSchema(DatasetSchemaBase):
+    metadata: DatasetMetadata
+    doses: List[float]
+    ns: List[int]
+    means: List[float]
+    stdevs: List[float]
+    anova: Optional[AnovaTests]
+    plotting: DatasetPlottingSchema
+
+    def deserialize(self) -> ContinuousDataset:
+        ds = ContinuousDataset(
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+            **self.metadata.dict(),
+        )
+        ds._anova = self.anova
+        return ds
+
+
+class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     """
     Dataset object for continuous individual datasets.
 
@@ -202,21 +246,28 @@ class ContinuousIndividualDataset(ContinuousDataset):
     """
 
     _BMDS_DATASET_TYPE = 0  # individual data
+    MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
 
-    def __init__(self, doses, responses, **kwargs):
-        self.individual_doses = doses
-        self.responses = responses
-        self.kwargs = kwargs
-        self._sort_by_dose_group()
-        self.set_summary_data()
+    def __init__(self, doses: List[float], responses: List[float], **metadata):
+        data = self._prepare_summary_data(doses, responses)
+        for key, value in data.items():
+            setattr(self, key, value)
+        self.metadata = metadata
         self._validate()
 
-    def _sort_by_dose_group(self):
-        # use mergesort since it's a stable-sorting algorithm in numpy
-        indexes = np.array(self.individual_doses).argsort(kind="mergesort")
-        for fld in ("individual_doses", "responses"):
-            arr = getattr(self, fld)
-            setattr(self, fld, np.array(arr)[indexes].tolist())
+    def _prepare_summary_data(self, individual_doses, responses):
+        data = pd.DataFrame(
+            data=dict(individual_doses=individual_doses, responses=responses)
+        ).groupby("individual_doses")
+        return dict(
+            individual_doses=individual_doses,
+            responses=responses,
+            doses=list(data.groups.keys()),
+            ns=data.responses.count().tolist(),
+            means=data.responses.mean().tolist(),
+            stdevs=data.responses.std(ddof=0).fillna(0).tolist(),
+        )
 
     def _validate(self):
         length = len(self.individual_doses)
@@ -228,32 +279,23 @@ class ContinuousIndividualDataset(ContinuousDataset):
                 f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
             )
 
-    def set_summary_data(self):
-        doses = list(set(self.individual_doses))
-        doses.sort()
-
-        dd = defaultdict(list)
-        for d, r in zip(self.individual_doses, self.responses):
-            dd[d].append(r)
-
-        def _get_stats(lst):
-            arr = np.array(lst, dtype=np.float64)
-            return [arr.size, arr.mean(), arr.std()]
-
-        vals = [_get_stats(dd[dose]) for dose in doses]
-        self.ns, self.means, self.stdevs = zip(*vals)
-        self.doses = doses
+        self._validate_summary_data()
 
     def drop_dose(self):
         """
         Drop the maximum dose and related response values.
         """
-        doses = np.array(self.individual_doses)
+        individual_doses = np.array(self.individual_doses)
         responses = np.array(self.responses)
-        mask = doses != doses.max()
-        self.individual_doses = doses[mask].tolist()
-        self.responses = responses[mask].tolist()
-        self.set_summary_data()
+
+        mask = individual_doses != individual_doses.max()
+        doses = individual_doses[mask].tolist()
+        responses = responses[mask].tolist()
+
+        summary_data = self._prepare_summary_data(doses, responses)
+        for key, value in summary_data.items():
+            setattr(self, key, value)
+
         self._validate()
 
     def as_dfile(self):
@@ -277,14 +319,6 @@ class ContinuousIndividualDataset(ContinuousDataset):
     def dataset_length(self):
         return len(self.individual_doses)
 
-    def to_dict(self):
-        """
-        Return a dictionary representation of the dataset.
-        """
-        d = dict(individual_doses=self.individual_doses, responses=self.responses)
-        d.update(self.kwargs)
-        return d
-
     def plot(self):
         """
         Return a matplotlib figure of the dose-response dataset.
@@ -295,7 +329,7 @@ class ContinuousIndividualDataset(ContinuousDataset):
         >>> fig.show()
         >>> fig.clear()
 
-        .. image:: ../tests/resources/test_cidataset_plot.png
+        .. image:: ../tests/data/mpl/test_cidataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 
@@ -306,8 +340,8 @@ class ContinuousIndividualDataset(ContinuousDataset):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Response")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.scatter(
@@ -320,3 +354,26 @@ class ContinuousIndividualDataset(ContinuousDataset):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
+
+    def serialize(self) -> "ContinuousIndividualDatasetSchema":
+        anova = self.anova()
+        return ContinuousIndividualDatasetSchema(
+            doses=self.individual_doses,
+            responses=self.responses,
+            anova=anova,
+            metadata=self.metadata,
+        )
+
+
+class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
+    metadata: DatasetMetadata
+    doses: List[float]
+    responses: List[float]
+    anova: Optional[AnovaTests]
+
+    def deserialize(self) -> ContinuousIndividualDataset:
+        ds = ContinuousIndividualDataset(
+            doses=self.doses, responses=self.responses, **self.metadata.dict(),
+        )
+        ds._anova = self.anova
+        return ds

@@ -50,7 +50,7 @@ class Recommender(BaseModel):
             }
 
             # if no output is created, place model in failure bin
-            if model.output_created:
+            if model.has_results:
                 model.logic_bin = constants.BIN_NO_CHANGE
             else:
                 model.logic_bin = constants.BIN_FAILURE

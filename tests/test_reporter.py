@@ -13,10 +13,10 @@ def test_reporter(cdataset, ddataset, cidataset):
     reporter1 = bmds.Reporter()
 
     for ds in [cdataset, ddataset, cidataset]:
-        ds.kwargs.update(
+        ds.metadata.update(
             dataset_name="Smith 2017: Relative Liver Weight in Male SD Rats",
-            xlabel="Dose (μg/m³)",
-            ylabel="Relative liver weight (mg/kg)",
+            dose_name="Dose (μg/m³)",
+            response_name="Relative liver weight (mg/kg)",
             dose_units="μg/m³",
             response_units="mg/kg",
         )

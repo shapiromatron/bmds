@@ -1,17 +1,20 @@
 import ctypes
-from typing import Dict
+from typing import List
 
+from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import (
     DichotomousMAAnalysisStruct,
     DichotomousMAResultStruct,
     DichotomousModelAverageResult,
 )
-from .base import BaseModelAveraging, BmdsLibraryManager, InputModelSettings
+from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
 
 
-class DichotomousMA(BaseModelAveraging):
-    def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
+class BmdModelAveragingDichotomous(BmdModelAveraging):
+    def get_model_settings(
+        self, dataset: DichotomousDataset, settings: InputModelSettings
+    ) -> DichotomousModelSettings:
         if settings is None:
             model = DichotomousModelSettings()
         elif isinstance(settings, DichotomousModelSettings):
@@ -21,7 +24,7 @@ class DichotomousMA(BaseModelAveraging):
 
         return model
 
-    def execute(self, debug=False):
+    def execute(self, debug=False) -> DichotomousModelAverageResult:
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
         ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
@@ -42,23 +45,22 @@ class DichotomousMA(BaseModelAveraging):
             ma_analysis_struct, ma_result_struct, self.models
         )
 
-    def to_dict(self, model_index: int) -> Dict:
-        """
-        Return a summary of the model in a dictionary format for serialization.
-
-        Args:
-            model_index (int): numeric model index in a list of models, should be unique
-
-        Returns:
-            A dictionary of model inputs, and raw and parsed outputs
-        """
-        return dict(
-            model_index=model_index,
-            model_class=-1,
-            model_name="Model average",
-            model_version=self.model_version,
-            has_output=self.output_created,
-            execution_halted=self.execution_halted,
-            settings=self.settings.dict(),
-            results=self.results.dict() if self.results else None,
+    def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
+        model_indexes = [session.models.index(model) for model in self.models]
+        return BmdModelAveragingDichotomousSchema(
+            settings=self.settings, model_indexes=model_indexes, results=self.results
         )
+
+
+class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
+    settings: DichotomousModelSettings
+    results: DichotomousModelAverageResult
+    model_indexes: List[int]
+
+    def deserialize(self, session) -> BmdModelAveragingDichotomous:
+        models = [session.models[idx] for idx in self.model_indexes]
+        ma = BmdModelAveragingDichotomous(
+            dataset=session.dataset, models=models, settings=self.settings
+        )
+        ma.results = self.results
+        return ma

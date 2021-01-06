@@ -261,10 +261,9 @@ class VarianceFit(Rule):
 
     def apply_rule(self, settings, dataset, output):
         constant_variance = settings.disttype != DistType.normal_ncv
-
-        p_value2 = dataset.anova()[1].TEST
-
-        p_value3 = dataset.anova()[2].TEST
+        anova = dataset.anova()
+        p_value2 = anova.test2.TEST
+        p_value3 = anova.test3.TEST
 
         msg = None
         if self._is_valid_number(p_value2) and constant_variance and p_value2 < self.threshold:
@@ -285,7 +284,8 @@ class VarianceType(Rule):
     def apply_rule(self, settings, dataset, output):
         constant_variance = settings.disttype != DistType.normal_ncv
 
-        p_value2 = dataset.anova()[1].TEST
+        anova = dataset.anova()
+        p_value2 = anova.test2.TEST
 
         msg = None
         if self._is_valid_number(p_value2):
