@@ -1,18 +1,20 @@
-from typing import Optional
+from typing import List, Optional, TypeVar
 
 import numpy as np
+from pydantic import BaseModel
+
+from ..constants import Dtype
 
 
 class DatasetBase:
     # Abstract parent-class for dataset-types.
 
+    dtype: Dtype
+
     def _validate(self):
         raise NotImplementedError("Abstract method; requires implementation")
 
     def as_dfile(self):
-        raise NotImplementedError("Abstract method; requires implementation")
-
-    def to_dict(self):
         raise NotImplementedError("Abstract method; requires implementation")
 
     def plot(self):
@@ -25,7 +27,8 @@ class DatasetBase:
     def num_dose_groups(self):
         return len(set(self.doses))
 
-    _dose_linspace: Optional[np.ndarray]
+    def to_dict(self):
+        return self.serialize().dict()
 
     @property
     def dose_linspace(self) -> np.ndarray:
@@ -34,12 +37,42 @@ class DatasetBase:
         return self._dose_linspace
 
     def _get_dose_units_text(self):
-        return " ({})".format(self.kwargs["dose_units"]) if "dose_units" in self.kwargs else ""
+        if "dose_units" in self.metadata:
+            return f" ({self.metadata['dose_units']})"
+        return ""
 
     def _get_response_units_text(self):
-        return (
-            " ({})".format(self.kwargs["response_units"]) if "response_units" in self.kwargs else ""
-        )
+        if "response_units" in self.metadata:
+            return f" ({self.metadata['response_units']})"
+        return ""
 
     def _get_dataset_name(self):
-        return self.kwargs.get("dataset_name", "BMDS output results")
+        return self.metadata.get("dataset_name", "BMDS output results")
+
+    def serialize(self) -> "DatasetSchemaBase":
+        raise NotImplementedError("Abstract method; requires implementation")
+
+
+DatasetType = TypeVar("DatasetType", bound=DatasetBase)
+
+
+class DatasetSchemaBase(BaseModel):
+    pass
+
+    def deserialize(self) -> DatasetType:
+        raise NotImplementedError("Abstract method; requires implementation")
+
+
+class DatasetMetadata(BaseModel):
+    id: Optional[int]
+    name: Optional[str]
+    dose_units: Optional[str]
+    response_units: Optional[str]
+    dose_name: Optional[str]
+    response_name: Optional[str]
+
+
+class DatasetPlottingSchema(BaseModel):
+    mean: Optional[List[float]]
+    ll: List[float]
+    ul: List[float]

@@ -22,7 +22,7 @@ def contds():
     )
 
 
-@pytest.mark.skipif(True, reason="TODO - figure out why this one randomly fails")
+@pytest.mark.skipif(not should_run, reason="TODO - figure out why this one randomly fails")
 def test_bmds3_continuous_models(contds):
     # compare bmd, bmdl, bmdu, aic values
     for Model, expected in [
@@ -38,16 +38,16 @@ def test_bmds3_continuous_models(contds):
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
         # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
-        assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all(), Model.__name__
+        assert np.isclose(np.array(actual), np.array(expected), atol=1e-1).all(), Model.__name__
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_continuous_session(contds: bmds.ContinuousDataset):
-    session = bmds.session.BMDS_v330(bmds.constants.CONTINUOUS, dataset=contds)
+    session = bmds.session.Bmds330(dataset=contds)
     session.add_default_models()
     session.execute()
     for model in session.models:
         model.results = model.execute(debug=True)
-    d = session.to_dict(0)
+    d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))

@@ -55,7 +55,12 @@ class SessionBatch(list):
         out : list
             List of output dictionaries.
         """
-        return [session.to_dict(i) for i, session in enumerate(self)]
+        dicts = []
+        for idx, session in enumerate(self):
+            d = session.to_dict()
+            d.update(dataset_index=idx)
+            dicts.append(d)
+        return dicts
 
     def to_json(self, filename, indent=2):
         """

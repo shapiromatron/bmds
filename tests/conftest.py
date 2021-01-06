@@ -13,9 +13,14 @@ def vcr_config():
     }
 
 
+@pytest.fixture(scope="session")
+def data_path():
+    return Path(__file__).parent.absolute() / "data"
+
+
 @pytest.fixture(scope="module")
 def vcr_cassette_dir(request):
-    cassette_dir = Path(__file__).parent.absolute() / "cassettes" / request.module.__name__
+    cassette_dir = Path(__file__).parent.absolute() / "data/cassettes" / request.module.__name__
     return str(cassette_dir)
 
 
@@ -78,7 +83,7 @@ def anova_dataset():
         doses=[1, 2, 3, 4, 5, 6, 7],
         ns=[8, 6, 6, 6, 6, 6, 6],
         means=[9.9264, 10.18886667, 10.17755, 10.35711667, 10.02756667, 11.4933, 10.85275],
-        stdevs=stdevs,
+        stdevs=stdevs.tolist(),
     )
 
 

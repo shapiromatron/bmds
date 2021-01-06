@@ -25,121 +25,146 @@ class VarType_t(Enum):
         return entry
 
 
-class DichotomousModel(BaseModel):
+class BmdModelSchema(BaseModel):
     id: int
     verbose: str
-    params: Tuple[str, ...]
     model_form_str: str
+
+
+class DichotomousModel(BmdModelSchema):
+    params: Tuple[str, ...]
 
     @property
     def num_params(self):
         return len(self.params)
 
 
+class DichotomousModelIds(IntEnum):
+    d_hill = 1
+    d_gamma = 2
+    d_logistic = 3
+    d_loglogistic = 4
+    d_logprobit = 5
+    d_multistage = 6
+    d_probit = 7
+    d_qlinear = 8
+    d_weibull = 9
+
+
 class DichotomousModelChoices(Enum):
     d_hill = DichotomousModel(
-        id=1,
+        id=DichotomousModelIds.d_hill.value,
         verbose="Hill",
         params=("g", "n", "a", "b"),
         model_form_str="P[dose] = g + (v - v * g) / (1 + exp(-a - b * Log(dose)))",
     )
     d_gamma = DichotomousModel(
-        id=2,
+        id=DichotomousModelIds.d_gamma.value,
         verbose="Gamma",
         params=("g", "a", "b"),
         model_form_str="P[dose]= g + (1 - g) * CumGamma(b * dose, a)",
     )
     d_logistic = DichotomousModel(
-        id=3,
+        id=DichotomousModelIds.d_logistic.value,
         verbose="Logistic",
         params=("a", "b"),
         model_form_str="P[dose] = 1 / [1 + exp(-a - b * dose)]",
     )
     d_loglogistic = DichotomousModel(
-        id=4,
+        id=DichotomousModelIds.d_loglogistic.value,
         verbose="LogLogistic",
         params=("g", "a", "b"),
         model_form_str="P[dose] = g + (1 - g)/(1 + exp(-a - b * Log(dose)))",
     )
     d_logprobit = DichotomousModel(
-        id=5,
+        id=DichotomousModelIds.d_logprobit.value,
         verbose="LogProbit",
         params=("g", "a", "b"),
         model_form_str="P[dose] = g + (1 - g) * CumNorm(a + b * Log(Dose))",
     )
     d_multistage = DichotomousModel(
-        id=6,
+        id=DichotomousModelIds.d_multistage.value,
         verbose="Multistage",
         params=("g", "x1", "x2"),
         model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b1 * dose^1 - b2 * dose^2 - ...))",
     )
     d_probit = DichotomousModel(
-        id=7, verbose="Probit", params=("a", "b"), model_form_str="P[dose] = CumNorm(a + b * Dose)"
+        id=DichotomousModelIds.d_probit.value,
+        verbose="Probit",
+        params=("a", "b"),
+        model_form_str="P[dose] = CumNorm(a + b * Dose)",
     )
     d_qlinear = DichotomousModel(
-        id=8,
+        id=DichotomousModelIds.d_qlinear.value,
         verbose="Quantal Linear",
         params=("g", "a"),
         model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b * dose)",
     )
     d_weibull = DichotomousModel(
-        id=9,
+        id=DichotomousModelIds.d_weibull.value,
         verbose="Weibull",
         params=("g", "a", "b"),
         model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b * dose^a))",
     )
 
 
-class ContinuousModel(BaseModel):
-    id: int
-    verbose: str
+class ContinuousModel(BmdModelSchema):
     params: Tuple[str, ...]
-    model_form_str: str
 
     @property
     def num_params(self):
         return len(self.params)
 
 
+class ContinuousModelIds(IntEnum):
+    c_exp_m2 = 2
+    c_exp_m3 = 3
+    c_exp_m4 = 4
+    c_exp_m5 = 5
+    c_hill = 6
+    c_power = 8
+    c_polynomial = 666
+
+
 class ContinuousModelChoices(Enum):
     c_power = ContinuousModel(
-        id=8,
+        id=ContinuousModelIds.c_power.value,
         verbose="Power",
         params=("g", "v", "n", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n",
     )
     c_hill = ContinuousModel(
-        id=6,
+        id=ContinuousModelIds.c_hill.value,
         verbose="Hill",
         params=("g", "v", "k", "n", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n / (k ^ n + dose ^ n)",
     )
     c_polynomial = ContinuousModel(
-        id=666,
+        id=ContinuousModelIds.c_polynomial.value,
         verbose="Polynomial",
         params=("g", "b1", "b2"),
         model_form_str="P[dose] = g + b1*dose + b2*dose^2 + b3*dose^3...",
     )
     c_exp_m2 = ContinuousModel(
-        id=2,
+        id=ContinuousModelIds.c_exp_m2.value,
         verbose="ExponentialM2",
         params=("a", "b", "c", "d", "alpha"),
         model_form_str="P[dose] = a * exp(±1 * b * dose)",
     )
     c_exp_m3 = ContinuousModel(
-        id=3,
+        id=ContinuousModelIds.c_exp_m3.value,
         verbose="ExponentialM3",
         params=("a", "b", "c", "d", "alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
     )
     c_exp_m4 = ContinuousModel(
-        id=4,
+        id=ContinuousModelIds.c_exp_m4.value,
         verbose="ExponentialM4",
         params=("a", "b", "c", "d", "alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-b * dose)",
     )
     c_exp_m5 = ContinuousModel(
-        id=5,
+        id=ContinuousModelIds.c_exp_m5.value,
         verbose="ExponentialM5",
         params=("a", "b", "c", "d", "alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-(b * dose) ^ d)",

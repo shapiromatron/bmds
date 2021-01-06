@@ -216,7 +216,7 @@ class BMDModel:
         >>> fig.savefig(fn)
         >>> fig.clear()
 
-        .. figure:: ../tests/resources/test_exponential_m4_plot.png
+        .. figure:: ../tests/data/mpl/test_exponential_m4_plot.png
            :scale: 80%
            :align: center
            :alt: Example generated BMD plot
