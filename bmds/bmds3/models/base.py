@@ -103,7 +103,11 @@ class BmdModel:
         return self.serialize.dict()
 
 
-class BaseModelAveraging:
+class BmdModelSchema(BaseModel):
+    pass
+
+
+class BmdModelAveraging:
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
@@ -112,40 +116,32 @@ class BaseModelAveraging:
     model_version = "BMDS330"
 
     def __init__(
-        self,
-        dataset: DatasetType,
-        models: List[int],
-        settings: InputModelSettings = None,
-        results: Optional[BaseModel] = None,
+        self, dataset: DatasetType, models: List[BmdModel], settings: InputModelSettings = None
     ):
         self.dataset = dataset
         self.models = models
         self.settings = self.get_model_settings(dataset, settings)
-        self.results = results
+        self.results: Optional[BaseModel] = None
 
     def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def execute(self, session) -> BaseModel:
+    def execute(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def execute_job(self, session):
-        self.results = self.execute(session)
+    def execute_job(self):
+        self.results = self.execute()
 
     @property
     def has_output(self) -> bool:
         return self.results is not None
 
-    def serialize(self, model_index: int) -> Dict:
-        d = super().dict()
-        d.update(
-            model_index=model_index, has_output=self.has_output,
-        )
-        return d
+    def serialize(self, model_index: int) -> "BmdModelAveragingSchema":
+        raise NotImplementedError("Requires abstract implementation")
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()
 
 
-class BmdModelSchema(BaseModel):
+class BmdModelAveragingSchema(BaseModel):
     pass

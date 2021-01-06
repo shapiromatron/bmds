@@ -1,9 +1,9 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel
 
 from ...datasets.base import DatasetSchemaBase
-from ..models.base import BmdModelSchema
+from ..models.base import BmdModelAveragingSchema, BmdModelSchema
 
 
 class VersionSchema(BaseModel):
@@ -16,3 +16,4 @@ class SessionSchemaBase(BaseModel):
     version: VersionSchema
     dataset: DatasetSchemaBase
     models: List[BmdModelSchema]
+    model_average: Optional[BmdModelAveragingSchema]

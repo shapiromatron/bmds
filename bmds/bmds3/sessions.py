@@ -1,12 +1,13 @@
 import logging
-from copy import deepcopy
-from typing import Dict, Tuple
+from copy import copy, deepcopy
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 from simple_settings import settings
 
 from .. import constants
 from ..datasets import DatasetType
+from .models.base import BmdModel, BmdModelAveraging
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -29,8 +30,9 @@ class BmdsSession:
     model_options: Dict[str, Dict]
 
     def __init__(self, dataset: DatasetType):
-        self.models = []
         self.dataset = dataset
+        self.models: List[BmdModel] = []
+        self.model_average: Optional[BmdModelAveraging] = None
 
     def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dataset.dtype].keys():
@@ -61,15 +63,17 @@ class BmdsSession:
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
         """
-        instance = ma.DichotomousMA(dataset=self.dataset, models=list(range(len(self.models))))
-        self.models.append(instance)
+        instance = ma.BmdModelAveragingDichotomous(dataset=self.dataset, models=copy((self.models)))
+        self.model_average = instance
 
     def execute(self):
+        # execute individual models
         for model in self.models:
-            if isinstance(model, ma.BaseModelAveraging):
-                model.execute_job(self)
-            else:
-                model.execute_job()
+            model.execute_job()
+
+        # execute model average
+        if self.model_average is not None:
+            self.model_average.execute_job()
 
     def execute_and_recommend(self, drop_doses=False):
         raise NotImplementedError("TODO")
@@ -145,17 +149,23 @@ class Bmds330(BmdsSession):
     }
 
     def serialize(self) -> "Bmds330Schema":
-        return Bmds330Schema(
+        schema = Bmds330Schema(
             version=dict(
                 string=self.version_str, pretty=self.version_pretty, numeric=self.version_tuple,
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],
         )
+        if self.model_average is not None:
+            schema.model_average = self.model_average.serialize(self)
+
+        return schema
 
 
 class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
-        ds = Bmds330(dataset=self.dataset.deserialize())
-        ds.models = [model.deserialize(ds.dataset) for model in self.models]
-        return ds
+        session = Bmds330(dataset=self.dataset.deserialize())
+        session.models = [model.deserialize(session.dataset) for model in self.models]
+        if self.model_average:
+            session.model_average = self.model_average.deserialize(session)
+        return session

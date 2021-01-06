@@ -69,7 +69,11 @@ class DichotomousMAResultStruct(ctypes.Structure):
         )
 
 
-class DichotomousModelAverageResult(BaseModel):
+class ModelAverageResult(BaseModel):
+    pass
+
+
+class DichotomousModelAverageResult(ModelAverageResult):
     """
     Model average fit
     """
