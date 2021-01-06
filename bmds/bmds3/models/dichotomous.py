@@ -24,7 +24,7 @@ from ..types.dichotomous import (
     DichotomousResult,
 )
 from ..types.priors import DichotomousPriorLookup
-from .base import BmdModel, BmdsLibraryManager, InputModelSettings, BmdModelSchema
+from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
 class BmdModelDichotomous(BmdModel):

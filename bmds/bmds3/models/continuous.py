@@ -19,7 +19,7 @@ from ..types.continuous import (
     ContinuousResult,
 )
 from ..types.priors import ContinuousPriorLookup
-from .base import BmdModel, BmdsLibraryManager, InputModelSettings, BmdModelSchema
+from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
 class BmdModelContinuous(BmdModel):

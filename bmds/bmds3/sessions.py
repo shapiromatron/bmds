@@ -7,10 +7,10 @@ from simple_settings import settings
 
 from .. import constants
 from ..datasets import DatasetType
-from .models.base import BmdModel, BmdModelAveraging
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
+from .models.base import BmdModel, BmdModelAveraging
 from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
