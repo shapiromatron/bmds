@@ -14,8 +14,8 @@
             "name": null,
             "dose_units": null,
             "response_units": null,
-            "dose_name": "Dose",
-            "response_name": "Response"
+            "dose_name": null,
+            "response_name": null
         },
         "doses": [
             0.0,

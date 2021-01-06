@@ -6,13 +6,10 @@ from pydantic import BaseModel
 from ..constants import Dtype
 
 
-class DatasetBase(BaseModel):
+class DatasetBase:
     # Abstract parent-class for dataset-types.
 
     dtype: Dtype
-
-    class Config:
-        extra = "allow"
 
     def _validate(self):
         raise NotImplementedError("Abstract method; requires implementation")
@@ -30,17 +27,8 @@ class DatasetBase(BaseModel):
     def num_dose_groups(self):
         return len(set(self.doses))
 
-    _dose_linspace: Optional[np.ndarray]
-
-    def dict(self, **kw):
-        kw.update(exclude={"_dose_linspace"})
-        d = super().dict(**kw)
-        d.update(self.kwargs)
-        return d
-
     def to_dict(self):
-        # alias used for bmds2
-        return self.dict()
+        return self.serialize().dict()
 
     @property
     def dose_linspace(self) -> np.ndarray:
@@ -49,15 +37,17 @@ class DatasetBase(BaseModel):
         return self._dose_linspace
 
     def _get_dose_units_text(self):
-        return " ({})".format(self.kwargs["dose_units"]) if "dose_units" in self.kwargs else ""
+        if "dose_units" in self.metadata:
+            return f" ({self.metadata['dose_units']})"
+        return ""
 
     def _get_response_units_text(self):
-        return (
-            " ({})".format(self.kwargs["response_units"]) if "response_units" in self.kwargs else ""
-        )
+        if "response_units" in self.metadata:
+            return f" ({self.metadata['response_units']})"
+        return ""
 
     def _get_dataset_name(self):
-        return self.kwargs.get("dataset_name", "BMDS output results")
+        return self.metadata.get("dataset_name", "BMDS output results")
 
     def serialize(self) -> "DatasetSchemaBase":
         raise NotImplementedError("Abstract method; requires implementation")
@@ -78,5 +68,5 @@ class DatasetMetadata(BaseModel):
     name: Optional[str]
     dose_units: Optional[str]
     response_units: Optional[str]
-    dose_name: str = "Dose"
-    response_name: str = "Response"
+    dose_name: Optional[str]
+    response_name: Optional[str]

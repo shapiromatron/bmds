@@ -25,18 +25,16 @@ class DichotomousDataset(DatasetBase):
         )
     """
 
-    doses: List[float]
-    ns: List[int]
-    incidences: List[int]
-
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.DICHOTOMOUS
 
-    def __init__(self, doses, ns, incidences, **kwargs):
-        super().__init__(doses=doses, ns=ns, incidences=incidences)
+    def __init__(self, doses: List[float], ns: List[int], incidences: List[float], **metadata):
+        self.doses = doses
+        self.ns = ns
+        self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences)]
-        self.kwargs = kwargs
+        self.metadata = metadata
         self._sort_by_dose_group()
         self._validate()
 
@@ -155,8 +153,8 @@ class DichotomousDataset(DatasetBase):
         self._set_plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Fraction affected")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Fraction affected")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
@@ -173,7 +171,7 @@ class DichotomousDataset(DatasetBase):
 
     def serialize(self) -> "DichotomousDatasetSchema":
         return DichotomousDatasetSchema(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.kwargs
+            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.metadata
         )
 
 
@@ -224,7 +222,7 @@ class DichotomousCancerDataset(DichotomousDataset):
 
     def serialize(self) -> "DichotomousCancerDatasetSchema":
         return DichotomousCancerDatasetSchema(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.kwargs
+            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.metadata
         )
 
 

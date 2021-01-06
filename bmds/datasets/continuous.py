@@ -81,14 +81,14 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.CONTINUOUS
 
-    doses: List[float]
-    ns: List[int]
-    means: List[float]
-    stdevs: List[float]
-
-    def __init__(self, doses, ns, means, stdevs, **kwargs):
-        super().__init__(doses=doses, ns=ns, means=means, stdevs=stdevs)
-        self.kwargs = kwargs
+    def __init__(
+        self, doses: List[float], ns: List[int], means: List[float], stdevs: List[float], **metadata
+    ):
+        self.doses = doses
+        self.ns = ns
+        self.means = means
+        self.stdevs = stdevs
+        self.metadata = metadata
         self._sort_by_dose_group()
         self._validate()
 
@@ -153,8 +153,8 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Response")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
@@ -171,7 +171,11 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def serialize(self) -> "ContinuousDatasetSchema":
         return ContinuousDatasetSchema(
-            doses=self.doses, ns=self.ns, means=self.means, stdevs=self.stdevs, metadata=self.kwargs
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+            metadata=self.metadata,
         )
 
 
@@ -203,7 +207,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     Example
     -------
     >>> dataset = bmds.ContinuousIndividualDataset(
-            individual_doses=[
+            doses=[
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
                 1, 1, 1, 1, 1, 1,
@@ -228,13 +232,11 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
 
-    individual_doses: List[float]
-    responses: List[float]
-
-    def __init__(self, individual_doses, responses, **kwargs):
-        data = self._prepare_summary_data(individual_doses, responses)
-        super().__init__(**data)
-        self.kwargs = kwargs
+    def __init__(self, doses: List[float], responses: List[float], **metadata):
+        data = self._prepare_summary_data(doses, responses)
+        for key, value in data.items():
+            setattr(self, key, value)
+        self.metadata = metadata
         self._validate()
 
     def _prepare_summary_data(self, individual_doses, responses):
@@ -321,8 +323,8 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Response")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Response")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.scatter(
@@ -338,7 +340,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def serialize(self) -> "ContinuousIndividualDatasetSchema":
         return ContinuousIndividualDatasetSchema(
-            doses=self.individual_doses, responses=self.responses, metadata=self.kwargs
+            doses=self.individual_doses, responses=self.responses, metadata=self.metadata
         )
 
 
@@ -349,5 +351,5 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
 
     def deserialize(self) -> ContinuousIndividualDataset:
         return ContinuousIndividualDataset(
-            individual_doses=self.doses, responses=self.responses, **self.metadata.dict(),
+            doses=self.doses, responses=self.responses, **self.metadata.dict(),
         )

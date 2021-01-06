@@ -38,7 +38,7 @@ def cdataset():
 def cidataset():
     # fmt: off
     return bmds.ContinuousIndividualDataset(
-        individual_doses=[
+        doses=[
             0, 0, 0, 0, 0, 0, 0, 0,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             1, 1, 1, 1, 1, 1,

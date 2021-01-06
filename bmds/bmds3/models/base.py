@@ -143,7 +143,7 @@ class BaseModelAveraging(BaseModel):
 
     model_version = "BMDS330"
 
-    dataset: DatasetBase
+    dataset: Any
     models: List[int]
     settings: InputModelSettings
     id: Optional[Any]
@@ -151,7 +151,7 @@ class BaseModelAveraging(BaseModel):
 
     def __init__(
         self,
-        dataset: DatasetBase,
+        dataset: Any,
         models: List[int],
         settings: InputModelSettings = None,
         id: Optional[Union[int, str]] = None,

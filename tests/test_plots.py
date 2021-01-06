@@ -37,7 +37,7 @@ def test_cdataset_plot_customized():
 def test_cidataset_plot_customized():
     # fmt: off
     return bmds.ContinuousIndividualDataset(
-        individual_doses=[
+        doses=[
             0, 0, 0, 0, 0, 0, 0, 0,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             1, 1, 1, 1, 1, 1,

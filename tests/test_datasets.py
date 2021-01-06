@@ -24,7 +24,7 @@ class TestDichotomousDataset:
         ds = bmds.DichotomousDataset(
             doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14], id=123
         )
-        assert ds.to_dict()["id"] == 123
+        assert ds.to_dict()["metadata"]["id"] == 123
 
     def test_dfile_outputs(self):
         ds = bmds.DichotomousDataset(doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
@@ -63,8 +63,8 @@ class TestDichotomousDataset:
                 "name": "test",
                 "dose_units": None,
                 "response_units": None,
-                "dose_name": "Dose",
-                "response_name": "Response",
+                "dose_name": None,
+                "response_name": None,
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -112,8 +112,8 @@ class TestDichotomousCancerDataset:
                 "name": "test",
                 "dose_units": None,
                 "response_units": None,
-                "dose_name": "Dose",
-                "response_name": "Response",
+                "dose_name": None,
+                "response_name": None,
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -146,10 +146,10 @@ class TestContinuousSummaryDataset:
             ns=[111, 142, 143, 93, 42],
             means=[2.112, 2.095, 1.956, 1.587, 1.254],
             stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
-            id="abc",
+            name="abc",
         )
 
-        assert ds.to_dict()["id"] == "abc"
+        assert ds.to_dict()["metadata"]["name"] == "abc"
 
     def test_is_increasing(self):
         ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4)
@@ -249,8 +249,8 @@ class TestContinuousSummaryDataset:
                 "name": "test",
                 "dose_units": None,
                 "response_units": None,
-                "dose_name": "Dose",
-                "response_name": "Response",
+                "dose_name": None,
+                "response_name": None,
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -270,24 +270,24 @@ class TestContinuousSummaryDataset:
 class TestContinuousIndividualDataset:
     def test_validation(self):
         # these should be valid
-        bmds.ContinuousIndividualDataset(individual_doses=dummy3, responses=dummy3)
+        bmds.ContinuousIndividualDataset(doses=dummy3, responses=dummy3)
         # these should raise errors
         with pytest.raises((IndexError, ValueError)):
             # different sized lists
-            bmds.ContinuousIndividualDataset(individual_doses=dummy4, responses=dummy3)
+            bmds.ContinuousIndividualDataset(doses=dummy4, responses=dummy3)
             # also duplicate, but less than 2 dose-groups
-            bmds.ContinuousIndividualDataset(individual_doses=dummy3_dups, responses=dummy3)
+            bmds.ContinuousIndividualDataset(doses=dummy3_dups, responses=dummy3)
 
     def test_extra_kwargs(self):
         ds = bmds.ContinuousIndividualDataset(
-            individual_doses=[0, 0, 1, 1, 2, 2, 3, 3],
+            doses=[0, 0, 1, 1, 2, 2, 3, 3],
             responses=[8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
             id=None,
         )
-        assert ds.to_dict()["id"] is None
+        assert ds.to_dict()["metadata"]["id"] is None
 
     def test_dfile_outputs(self):
-        ds = bmds.ContinuousIndividualDataset(individual_doses=dummy3, responses=dummy3)
+        ds = bmds.ContinuousIndividualDataset(doses=dummy3, responses=dummy3)
         dfile = ds.as_dfile()
         expected = "Dose Response\n1.000000 1.000000\n2.000000 2.000000\n3.000000 3.000000"
         assert dfile == expected
@@ -324,7 +324,7 @@ class TestContinuousIndividualDataset:
 
     def test_serialize(self):
         ds1 = bmds.ContinuousIndividualDataset(
-            individual_doses=[0, 0, 1, 1, 2, 2, 3, 3],
+            doses=[0, 0, 1, 1, 2, 2, 3, 3],
             responses=[8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
             id=123,
             name="test",
@@ -338,8 +338,8 @@ class TestContinuousIndividualDataset:
                 "name": "test",
                 "dose_units": None,
                 "response_units": None,
-                "dose_name": "Dose",
-                "response_name": "Response",
+                "dose_name": None,
+                "response_name": None,
             },
             "doses": [0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
             "responses": [8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
