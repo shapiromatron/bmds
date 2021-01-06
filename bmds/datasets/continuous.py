@@ -152,7 +152,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         >>> fig = dataset.plot()
         >>> fig.show()
 
-        .. image:: ../tests/resources/test_cdataset_plot.png
+        .. image:: ../tests/data/mpl/test_cdataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 
@@ -329,7 +329,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         >>> fig.show()
         >>> fig.clear()
 
-        .. image:: ../tests/resources/test_cidataset_plot.png
+        .. image:: ../tests/data/mpl/test_cidataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 

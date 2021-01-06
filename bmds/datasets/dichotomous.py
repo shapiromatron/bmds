@@ -142,7 +142,7 @@ class DichotomousDataset(DatasetBase):
         >>> fig.show()
         >>> fig.clear()
 
-        .. image:: ../tests/resources/test_ddataset_plot.png
+        .. image:: ../tests/data/mpl/test_ddataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 

@@ -64,7 +64,7 @@ test:
 	# 	$ py.test -k test_monkey_has_tail -s
 	#
 	# To generate baseline matplotlib images:
-	#   $ py.test --mpl-generate-path=tests/resources
+	#   $ py.test --mpl-generate-path=tests/data/mpl
 	#
 	py.test
 
