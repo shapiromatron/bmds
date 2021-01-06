@@ -36,7 +36,9 @@ class TestBmds330:
         serialized = session1.serialize()
         expected = _format_serialized(fn=data_path / "bmds3_session_serialization.json")
 
-        assert serialized.dict() == expected
+        actual = serialized.dict()
+        actual["dataset"].pop("plotting")
+        assert actual == expected
 
         # make sure we get the correct class back
         session2 = serialized.deserialize()

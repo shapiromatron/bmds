@@ -25,11 +25,14 @@ class VarType_t(Enum):
         return entry
 
 
-class DichotomousModel(BaseModel):
+class BmdModelSchema(BaseModel):
     id: int
     verbose: str
-    params: Tuple[str, ...]
     model_form_str: str
+
+
+class DichotomousModel(BmdModelSchema):
+    params: Tuple[str, ...]
 
     @property
     def num_params(self):
@@ -90,11 +93,8 @@ class DichotomousModelChoices(Enum):
     )
 
 
-class ContinuousModel(BaseModel):
-    id: int
-    verbose: str
+class ContinuousModel(BmdModelSchema):
     params: Tuple[str, ...]
-    model_form_str: str
 
     @property
     def num_params(self):

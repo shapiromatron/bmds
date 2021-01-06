@@ -22,6 +22,8 @@ from .base import BmdModel, BmdsLibraryManager, InputModelSettings
 
 
 class Dichotomous(BmdModel):
+    bmd_model_class: DichotomousModel
+
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
     ) -> DichotomousModelSettings:
@@ -127,15 +129,9 @@ class Dichotomous(BmdModel):
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        raise NotImplementedError()
-
 
 class Logistic(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_logistic.value
+    bmd_model_class = DichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -144,9 +140,7 @@ class Logistic(Dichotomous):
 
 
 class LogLogistic(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_loglogistic.value
+    bmd_model_class = DichotomousModelChoices.d_loglogistic.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -160,9 +154,7 @@ class LogLogistic(Dichotomous):
 
 
 class Probit(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_probit.value
+    bmd_model_class = DichotomousModelChoices.d_probit.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -171,9 +163,7 @@ class Probit(Dichotomous):
 
 
 class LogProbit(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_logprobit.value
+    bmd_model_class = DichotomousModelChoices.d_logprobit.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -187,9 +177,7 @@ class LogProbit(Dichotomous):
 
 
 class Gamma(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_gamma.value
+    bmd_model_class = DichotomousModelChoices.d_gamma.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -203,9 +191,7 @@ class Gamma(Dichotomous):
 
 
 class QuantalLinear(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_qlinear.value
+    bmd_model_class = DichotomousModelChoices.d_qlinear.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -218,9 +204,7 @@ class QuantalLinear(Dichotomous):
 
 
 class Weibull(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_weibull.value
+    bmd_model_class = DichotomousModelChoices.d_weibull.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -234,9 +218,7 @@ class Weibull(Dichotomous):
 
 
 class DichotomousHill(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_hill.value
+    bmd_model_class = DichotomousModelChoices.d_hill.value
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         params = struct.parms
@@ -251,9 +233,7 @@ class DichotomousHill(Dichotomous):
 
 
 class Multistage(Dichotomous):
-    @property
-    def bmd_model_class(self) -> DichotomousModel:
-        return DichotomousModelChoices.d_multistage.value
+    bmd_model_class = DichotomousModelChoices.d_multistage.value
 
     def get_default_model_degree(self, dataset) -> int:
         return dataset.num_dose_groups - 1

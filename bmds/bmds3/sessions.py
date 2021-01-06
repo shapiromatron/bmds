@@ -51,9 +51,9 @@ class BmdsSession:
             else:
                 self.add_model(name, settings=model_settings)
 
-    def add_model(self, name, settings=None, id=None):
+    def add_model(self, name, settings=None):
         Model = self.model_options[self.dataset.dtype][name]
-        instance = Model(dataset=self.dataset, settings=settings, id=id)
+        instance = Model(dataset=self.dataset, settings=settings)
         self.models.append(instance)
 
     def add_model_averaging(self):

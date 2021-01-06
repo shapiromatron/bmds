@@ -17,9 +17,7 @@ from .base import BmdModel, BmdsLibraryManager, InputModelSettings
 
 
 class Continuous(BmdModel):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        raise NotImplementedError()
+    bmd_model_class: ContinuousModel
 
     def get_model_settings(
         self, dataset: ContinuousDataset, settings: InputModelSettings
@@ -114,9 +112,7 @@ class Continuous(BmdModel):
 
 
 class Power(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_power.value
+    bmd_model_class = ContinuousModelChoices.c_power.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -126,9 +122,7 @@ class Power(Continuous):
 
 
 class Hill(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_hill.value
+    bmd_model_class = ContinuousModelChoices.c_hill.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -139,9 +133,7 @@ class Hill(Continuous):
 
 
 class Polynomial(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_polynomial.value
+    bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO - test!
@@ -158,9 +150,7 @@ class Linear(Polynomial):
 
 
 class ExponentialM2(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_exp_m2.value
+    bmd_model_class = ContinuousModelChoices.c_exp_m2.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO fix; remove np.nan_to_num
@@ -170,9 +160,7 @@ class ExponentialM2(Continuous):
 
 
 class ExponentialM3(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_exp_m3.value
+    bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO fix; remove np.nan_to_num
@@ -183,9 +171,7 @@ class ExponentialM3(Continuous):
 
 
 class ExponentialM4(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_exp_m4.value
+    bmd_model_class = ContinuousModelChoices.c_exp_m4.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO fix; remove np.nan_to_num
@@ -196,9 +182,7 @@ class ExponentialM4(Continuous):
 
 
 class ExponentialM5(Continuous):
-    @property
-    def bmd_model_class(self) -> ContinuousModel:
-        return ContinuousModelChoices.c_exp_m5.value
+    bmd_model_class = ContinuousModelChoices.c_exp_m5.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
