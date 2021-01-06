@@ -9,6 +9,7 @@ from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
 from .common import BMDS_BLANK_VALUE, list_t_c
+from .priors import PriorClass
 
 
 class ContinuousRiskType(IntEnum):
@@ -32,6 +33,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # multistage only
     burnin: int = 20
+    prior: PriorClass = PriorClass.frequentist_unrestricted
 
 
 class ContinuousAnalysisStruct(ctypes.Structure):
@@ -184,6 +186,8 @@ class ContinuousModelResult(BaseModel):
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
         d["bmd_dist"] = self.bmd_dist.T.tolist()
+        # TODO - remove this line one distribution is working as expected
+        d["bmd_dist"] = [np.linspace(0, 1, 100).tolist(), np.linspace(1, 100, 100).tolist()]
         return d
 
 

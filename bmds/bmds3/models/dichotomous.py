@@ -39,7 +39,7 @@ class Dichotomous(BaseModel):
 
     def get_analysis_inputs(self) -> DichotomousAnalysis:
         # setup inputs
-        priors = self.get_priors()
+        priors = self.get_priors(self.settings.prior)
         return DichotomousAnalysis(
             model=self.model,
             dataset=self.dataset,

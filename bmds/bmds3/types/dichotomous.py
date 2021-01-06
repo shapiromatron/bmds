@@ -12,6 +12,7 @@ from bmds.bmds3.constants import DichotomousModelChoices
 from ...datasets import DichotomousDataset
 from .. import constants
 from .common import BMDS_BLANK_VALUE, list_t_c
+from .priors import PriorClass
 
 
 class DichotomousRiskType(IntEnum):
@@ -26,6 +27,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
+    prior: PriorClass = PriorClass.frequentist_unrestricted
 
 
 class DichotomousAnalysisStruct(ctypes.Structure):
