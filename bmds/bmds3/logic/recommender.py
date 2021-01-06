@@ -9,6 +9,15 @@ from .constants import DEFAULT_RULE_ARGS, RULE_TYPES
 from .rules import Rule
 
 
+class RuleConfiguration(BaseModel):
+    name: str
+    failure_bin: constants.LogicBin
+    threshold: Optional[float] = None
+    enabled_dichotomous: bool = True
+    enabled_continuous: bool = True
+    enabled_nested: bool = True
+
+
 class Recommender(BaseModel):
     """
     Recommendation logic for a specified data-type.
@@ -84,12 +93,22 @@ class Recommender(BaseModel):
         model.recommended_variable = fld_name
         return model
 
-    def show_rules(self):
-        return "\n".join([rule.__unicode__() for rule in self.rules])
+    def to_str(self) -> str:
+        return "\n".join([str(rule) for rule in self.rules])
 
-    def rules_df(self):
+    def to_df(self) -> pd.DataFrame:
+        def to_row(rule):
+            return [
+                rule.rule_name,
+                rule.enabled_nested,
+                rule.enabled_continuous,
+                rule.enabled_dichotomous,
+                rule.bin_text,
+                rule.threshold,
+            ]
+
         df = pd.DataFrame(
-            data=[rule.as_row() for rule in self.rules if rule.enabled(self.dtype)],
+            data=[to_row(rule) for rule in self.rules if rule.enabled(self.dtype)],
             columns=[
                 "rule_name",
                 "enabled_nested",

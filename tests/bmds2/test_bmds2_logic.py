@@ -3,7 +3,7 @@ import textwrap
 import pytest
 
 import bmds
-from bmds.logic import rules
+from bmds.bmds2.logic import rules, Recommender
 
 
 def dedentify(txt):
@@ -15,11 +15,11 @@ def test_init():
 
     # valid dtypes; no errors should be raised
     for dtype in bmds.constants.DTYPES:
-        bmds.Recommender(dtype)
+        Recommender(dtype)
 
     # invalid dtype; error should be raised
     with pytest.raises(ValueError):
-        bmds.Recommender("💩")
+        Recommender("💩")
 
 
 def test_default_logic():
@@ -51,7 +51,7 @@ def test_default_logic():
     ✕ Control stdev [bin=?, threshold=1.5]
     """
     )
-    assert txt == bmds.Recommender(bmds.constants.DICHOTOMOUS).show_rules()
+    assert txt == Recommender(bmds.constants.DICHOTOMOUS).show_rules()
 
     # dichotomous-cancer:
     txt = dedentify(
@@ -79,7 +79,7 @@ def test_default_logic():
     ✕ Control stdev [bin=?, threshold=1.5]
     """
     )
-    assert txt == bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).show_rules()
+    assert txt == Recommender(bmds.constants.DICHOTOMOUS_CANCER).show_rules()
 
     # continuous:
     txt = dedentify(
@@ -107,18 +107,18 @@ def test_default_logic():
     ✓ Control stdev [bin=?, threshold=1.5]
     """
     )
-    assert txt == bmds.Recommender(bmds.constants.CONTINUOUS).show_rules()
+    assert txt == Recommender(bmds.constants.CONTINUOUS).show_rules()
 
 
 def test_rules_df():
     # assert dataframe with appropriate shape is created
-    df = bmds.Recommender(bmds.constants.DICHOTOMOUS).rules_df()
+    df = Recommender(bmds.constants.DICHOTOMOUS).rules_df()
     assert df.shape == (16, 4)
 
-    df = bmds.Recommender(bmds.constants.DICHOTOMOUS_CANCER).rules_df()
+    df = Recommender(bmds.constants.DICHOTOMOUS_CANCER).rules_df()
     assert df.shape == (17, 4)
 
-    df = bmds.Recommender(bmds.constants.CONTINUOUS).rules_df()
+    df = Recommender(bmds.constants.CONTINUOUS).rules_df()
     assert df.shape == (20, 4)
 
 
@@ -393,17 +393,17 @@ def test_parsimonious_recommendation(reduced_cdataset):
     # exponential M2 < exponential M3
     models = [model for model in session.models if model.output["AIC"] == 158.9155]
     assert len(models) == 2
-    assert bmds.Recommender._get_parsimonious_model(models).name == "Exponential-M2"
+    assert Recommender._get_parsimonious_model(models).name == "Exponential-M2"
 
     # exponential M4 < exponential M5
     models = [model for model in session.models if model.output["AIC"] == 155.5369]
     assert len(models) == 2
-    assert bmds.Recommender._get_parsimonious_model(models).name == "Exponential-M4"
+    assert Recommender._get_parsimonious_model(models).name == "Exponential-M4"
 
     # linear < (polynomial, power)
     models = [model for model in session.models if model.output["AIC"] == 159.370875]
     assert len(models) == 6
-    assert bmds.Recommender._get_parsimonious_model(models).name == "Linear"
+    assert Recommender._get_parsimonious_model(models).name == "Linear"
 
 
 @pytest.mark.vcr()

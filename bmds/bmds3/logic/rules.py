@@ -25,12 +25,12 @@ class Rule(BaseModel):
     enabled_continuous: bool
     enabled_dichotomous: bool
 
-    def __unicode__(self):
+    def __str__(self):
         enabled_nested = "✓" if self.enabled_nested else "✕"
         enabled_continuous = "✓" if self.enabled_continuous else "✕"
         enabled_dichotomous = "✓" if self.enabled_dichotomous else "✕"
         threshold = "" if self.threshold is None else f", threshold={self.threshold}"
-        return f"{enabled_nested}{enabled_continuous}{enabled_dichotomous} {self.rule_name} [bin={self.binmoji}{threshold}]"
+        return f"{enabled_nested}{enabled_continuous}{enabled_dichotomous} {self.rule_name} [bin={self.bin_icon}{threshold}]"
 
     def enabled(self, dtype):
         # TODO add conditional for nested
@@ -48,22 +48,12 @@ class Rule(BaseModel):
         return nested_get(output, self.field_name)
 
     @property
-    def binmoji(self):
-        return constants.BINMOJI[self.failure_bin]
+    def bin_icon(self):
+        return constants.BIN_ICON[self.failure_bin]
 
     @property
     def bin_text(self):
         return constants.BIN_TEXT[self.failure_bin]
-
-    def as_row(self):
-        return [
-            self.rule_name,
-            self.enabled_nested,
-            self.enabled_continuous,
-            self.enabled_dichotomous,
-            self.bin_text,
-            self.threshold,
-        ]
 
     def return_pass(self):
         return constants.BIN_NO_CHANGE, None

@@ -18,56 +18,55 @@ def dichds():
     )
 
 
-def test_init():
-    # Check recommender system can be created for valid data-types.
+class TestRecommender:
+    def test_init(self):
+        # valid dtypes; no errors should be raised
+        for dtype in bmds.constants.DTYPES:
+            Recommender(dtype=dtype)
 
-    # valid dtypes; no errors should be raised
-    for dtype in bmds.constants.DTYPES:
-        Recommender(dtype=dtype)
+        # invalid dtype; error should be raised
+        with pytest.raises(ValueError):
+            Recommender(dtype="💩")
 
-    # invalid dtype; error should be raised
-    with pytest.raises(ValueError):
-        Recommender(dtype="💩")
-
-
-def test_rules_df():
-    # assert dataframe with appropriate shape is created
-    df = Recommender(dtype=bmds.constants.DICHOTOMOUS).rules_df()
-    assert df.shape == (17, 6)
+    def test_df(self):
+        # assert dataframe with appropriate shape is created
+        df = Recommender(dtype=bmds.constants.DICHOTOMOUS).to_df()
+        assert df.shape == (17, 6)
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_apply_logic_dich(dichds):
-    session = bmds.session.Bmds330(dataset=dichds)
-    session.add_model(bmds.constants.M_DichotomousHill)
-    session.add_model(bmds.constants.M_Gamma)
-    session.execute()
-    session.add_recommender()
-    recommended = session.recommend()
+class TestSessionRecommender:
+    def test_apply_logic_dich(self, dichds):
+        session = bmds.session.Bmds330(dataset=dichds)
+        session.add_model(bmds.constants.M_DichotomousHill)
+        session.add_model(bmds.constants.M_Gamma)
+        session.execute()
+        session.add_recommender()
+        recommended = session.recommend()
 
-    assert session.models[0].model_name() == "Hill" and session.models[1].model_name() == "Gamma"
-    # both models have no bin warnings/errors
-    assert session.models[0].logic_bin == 0
-    assert session.models[1].logic_bin == 0
-    # however, gamma has a smaller AIC
-    assert session.models[1].results.aic < session.models[0].results.aic
-    assert recommended.model_name() == "Gamma"
+        assert (
+            session.models[0].model_name() == "Hill" and session.models[1].model_name() == "Gamma"
+        )
+        # both models have no bin warnings/errors
+        assert session.models[0].logic_bin == 0
+        assert session.models[1].logic_bin == 0
+        # however, gamma has a smaller AIC
+        assert session.models[1].results.aic < session.models[0].results.aic
+        assert recommended.model_name() == "Gamma"
 
+    def test_apply_logic_cont(self, cdataset):
+        session = bmds.session.Bmds330(dataset=cdataset)
+        session.add_model(bmds.constants.M_Hill)
+        session.add_model(bmds.constants.M_Power)
+        session.execute()
+        session.add_recommender()
+        recommended = session.recommend()
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_apply_logic_cont(cdataset):
-    session = bmds.session.Bmds330(dataset=cdataset)
-    session.add_model(bmds.constants.M_Hill)
-    session.add_model(bmds.constants.M_Power)
-    session.execute()
-    session.add_recommender()
-    recommended = session.recommend()
-
-    assert recommended is None
-    assert session.models[0].logic_bin == 1
-    assert len(session.models[0].logic_notes[session.models[0].logic_bin]) == 1
-    assert session.models[1].logic_bin == 1
-    assert len(session.models[1].logic_notes[session.models[1].logic_bin]) == 1
+        assert recommended is None
+        assert session.models[0].logic_bin == 1
+        assert len(session.models[0].logic_notes[session.models[0].logic_bin]) == 1
+        assert session.models[1].logic_bin == 1
+        assert len(session.models[1].logic_notes[session.models[1].logic_bin]) == 1
 
 
 def test_exists_rules(ddataset):

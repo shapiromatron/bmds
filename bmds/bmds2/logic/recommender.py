@@ -1,7 +1,7 @@
 import pandas as pd
 from simple_settings import settings
 
-from .. import constants
+from ... import constants
 from . import rules
 
 

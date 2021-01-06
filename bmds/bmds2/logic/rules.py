@@ -1,6 +1,6 @@
 import math
 
-from .. import constants
+from ... import constants
 
 
 class Rule:
@@ -24,7 +24,7 @@ class Rule:
 
     @property
     def binmoji(self):
-        return constants.BINMOJI[self.failure_bin]
+        return constants.BIN_ICON[self.failure_bin]
 
     @property
     def bin_text(self):

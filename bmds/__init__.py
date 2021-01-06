@@ -13,7 +13,6 @@ from . import constants  # noqa
 from .bmds2 import drunner, models  # noqa
 from .batch import SessionBatch  # noqa
 from .datasets import *  # noqa
-from .logic import *  # noqa
 from .plotting import *  # noqa
 from .reporter import Reporter, ReporterStyleGuide  # noqa
 from .session import *  # noqa
