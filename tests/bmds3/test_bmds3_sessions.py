@@ -18,12 +18,6 @@ def dichds():
     )
 
 
-def _format_serialized(fn: Path):
-    data = json.loads(fn.read_text())
-    data["version"]["numeric"] = tuple(data["version"]["numeric"])  # cast list -> tuple
-    return data
-
-
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmds330:
     def test_serialization(self, dichds):
