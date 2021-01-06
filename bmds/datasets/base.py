@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TypeVar
 
 import numpy as np
 from pydantic import BaseModel
@@ -58,3 +58,25 @@ class DatasetBase(BaseModel):
 
     def _get_dataset_name(self):
         return self.kwargs.get("dataset_name", "BMDS output results")
+
+    def serialize(self) -> "DatasetSchemaBase":
+        raise NotImplementedError("Abstract method; requires implementation")
+
+
+DatasetType = TypeVar("DatasetType", bound=DatasetBase)  # noqa
+
+
+class DatasetSchemaBase(BaseModel):
+    pass
+
+    def deserialize(self) -> DatasetType:
+        raise NotImplementedError("Abstract method; requires implementation")
+
+
+class DatasetMetadata(BaseModel):
+    id: Optional[int]
+    name: Optional[str]
+    dose_units: Optional[str]
+    response_units: Optional[str]
+    dose_name: str = "Dose"
+    response_name: str = "Response"

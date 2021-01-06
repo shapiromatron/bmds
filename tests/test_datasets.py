@@ -50,6 +50,35 @@ class TestDichotomousDataset:
         with pytest.raises(ValueError):
             ddataset.drop_dose()
 
+    def test_serialize(self):
+        ds1 = bmds.DichotomousDataset(
+            doses=[1, 2, 3, 4], ns=[1, 2, 3, 4], incidences=[1, 2, 3, 4], id=123, name="test"
+        )
+
+        # make sure serialize looks correct
+        serialized = ds1.serialize()
+        assert serialized.dict() == {
+            "metadata": {
+                "id": 123,
+                "name": "test",
+                "dose_units": None,
+                "response_units": None,
+                "dose_name": "Dose",
+                "response_name": "Response",
+            },
+            "doses": [1.0, 2.0, 3.0, 4.0],
+            "ns": [1, 2, 3, 4],
+            "incidences": [1, 2, 3, 4],
+        }
+
+        # make sure we get the correct class back
+        ds2 = serialized.deserialize()
+        assert isinstance(ds2, bmds.DichotomousDataset)
+        assert not isinstance(ds2, bmds.DichotomousCancerDataset)
+
+        # make sure we get the same result back after deserializing
+        assert ds1.serialize().dict() == ds2.serialize().dict()
+
 
 class TestDichotomousCancerDataset:
     def test_validation(self):
@@ -69,6 +98,35 @@ class TestDichotomousCancerDataset:
         assert dcdataset.as_dfile() == expected
         with pytest.raises(ValueError):
             dcdataset.drop_dose()
+
+    def test_serialize(self):
+        ds1 = bmds.DichotomousCancerDataset(
+            doses=[1, 2, 3, 4], ns=[1, 2, 3, 4], incidences=[1, 2, 3, 4], id=123, name="test"
+        )
+
+        # make sure serialize looks correct
+        serialized = ds1.serialize()
+        assert serialized.dict() == {
+            "metadata": {
+                "id": 123,
+                "name": "test",
+                "dose_units": None,
+                "response_units": None,
+                "dose_name": "Dose",
+                "response_name": "Response",
+            },
+            "doses": [1.0, 2.0, 3.0, 4.0],
+            "ns": [1, 2, 3, 4],
+            "incidences": [1, 2, 3, 4],
+        }
+
+        # make sure we get the correct class back
+        ds2 = serialized.deserialize()
+        assert isinstance(ds2, bmds.DichotomousDataset)
+        assert isinstance(ds2, bmds.DichotomousCancerDataset)
+
+        # make sure we get the same result back after deserializing
+        assert ds1.serialize().dict() == ds2.serialize().dict()
 
 
 class TestContinuousSummaryDataset:
@@ -173,6 +231,41 @@ class TestContinuousSummaryDataset:
         with pytest.raises(ValueError):
             cdataset.drop_dose()
 
+    def test_serialize(self):
+        ds1 = bmds.ContinuousDataset(
+            doses=[1, 2, 3, 4],
+            ns=[1, 2, 3, 4],
+            means=[1, 2, 3, 4],
+            stdevs=[1, 2, 3, 4],
+            id=123,
+            name="test",
+        )
+
+        # make sure serialize looks correct
+        serialized = ds1.serialize()
+        assert serialized.dict() == {
+            "metadata": {
+                "id": 123,
+                "name": "test",
+                "dose_units": None,
+                "response_units": None,
+                "dose_name": "Dose",
+                "response_name": "Response",
+            },
+            "doses": [1.0, 2.0, 3.0, 4.0],
+            "ns": [1, 2, 3, 4],
+            "means": [1.0, 2.0, 3.0, 4.0],
+            "stdevs": [1.0, 2.0, 3.0, 4.0],
+        }
+
+        # make sure we get the correct class back
+        ds2 = serialized.deserialize()
+        assert isinstance(ds2, bmds.ContinuousDataset)
+        assert not isinstance(ds2, bmds.ContinuousIndividualDataset)
+
+        # make sure we get the same result back after deserializing
+        assert ds1.serialize().dict() == ds2.serialize().dict()
+
 
 class TestContinuousIndividualDataset:
     def test_validation(self):
@@ -228,6 +321,37 @@ class TestContinuousIndividualDataset:
         cidataset.drop_dose()
         with pytest.raises(ValueError):
             cidataset.drop_dose()
+
+    def test_serialize(self):
+        ds1 = bmds.ContinuousIndividualDataset(
+            individual_doses=[0, 0, 1, 1, 2, 2, 3, 3],
+            responses=[8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
+            id=123,
+            name="test",
+        )
+
+        # make sure serialize looks correct
+        serialized = ds1.serialize()
+        assert serialized.dict() == {
+            "metadata": {
+                "id": 123,
+                "name": "test",
+                "dose_units": None,
+                "response_units": None,
+                "dose_name": "Dose",
+                "response_name": "Response",
+            },
+            "doses": [0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
+            "responses": [8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
+        }
+
+        # make sure we get the correct class back
+        ds2 = serialized.deserialize()
+        assert not isinstance(ds2, bmds.ContinuousDataset)
+        assert isinstance(ds2, bmds.ContinuousIndividualDataset)
+
+        # make sure we get the same result back after deserializing
+        assert ds1.serialize().dict() == ds2.serialize().dict()
 
 
 @pytest.mark.vcr()

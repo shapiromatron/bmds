@@ -1,20 +1,16 @@
-from typing import List, TypeVar
+from typing import Tuple
 
 from pydantic import BaseModel
 
-from ...datasets.schema import DatasetSchema
-from ..models.schema import ModelSchema
+from ...datasets.base import DatasetSchemaBase
+
+
+class VersionSchema(BaseModel):
+    string: str
+    pretty: str
+    numeric: Tuple[int, ...]
 
 
 class SessionSchemaBase(BaseModel):
-    pass
-
-
-SessionSchema = TypeVar("SessionSchema", bound=SessionSchemaBase)  # noqa
-
-
-class Bmds330Schema(SessionSchemaBase):
-    bmds_version: str
-    bmds_python_version: str
-    dataset: DatasetSchema
-    models: List[ModelSchema]
+    version: VersionSchema
+    dataset: DatasetSchemaBase

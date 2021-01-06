@@ -19,7 +19,7 @@ def dichds():
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_ma_session(dichds):
-    session = bmds.session.BMDS_v330(dataset=dichds)
+    session = bmds.session.Bmds330(dataset=dichds)
     session.add_default_models()
     session.add_model_averaging()
     session.execute()

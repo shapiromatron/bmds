@@ -7,7 +7,7 @@ from simple_settings import settings
 
 from .. import constants, plotting
 from .anova import AnovaTests
-from .base import DatasetBase
+from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
 
 class ContinuousSummaryDataMixin:
@@ -169,6 +169,28 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def serialize(self) -> "ContinuousDatasetSchema":
+        return ContinuousDatasetSchema(
+            doses=self.doses, ns=self.ns, means=self.means, stdevs=self.stdevs, metadata=self.kwargs
+        )
+
+
+class ContinuousDatasetSchema(DatasetSchemaBase):
+    metadata: DatasetMetadata
+    doses: List[float]
+    ns: List[int]
+    means: List[float]
+    stdevs: List[float]
+
+    def deserialize(self) -> ContinuousDataset:
+        return ContinuousDataset(
+            doses=self.doses,
+            ns=self.ns,
+            means=self.means,
+            stdevs=self.stdevs,
+            **self.metadata.dict(),
+        )
+
 
 class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     """
@@ -313,3 +335,19 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
+
+    def serialize(self) -> "ContinuousIndividualDatasetSchema":
+        return ContinuousIndividualDatasetSchema(
+            doses=self.individual_doses, responses=self.responses, metadata=self.kwargs
+        )
+
+
+class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
+    metadata: DatasetMetadata
+    doses: List[float]
+    responses: List[float]
+
+    def deserialize(self) -> ContinuousIndividualDataset:
+        return ContinuousIndividualDataset(
+            individual_doses=self.doses, responses=self.responses, **self.metadata.dict(),
+        )

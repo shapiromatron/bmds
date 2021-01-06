@@ -5,7 +5,7 @@ from scipy import stats
 from simple_settings import settings
 
 from .. import constants, plotting
-from .base import DatasetBase
+from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
 
 class DichotomousDataset(DatasetBase):
@@ -26,8 +26,8 @@ class DichotomousDataset(DatasetBase):
     """
 
     doses: List[float]
-    ns: List[float]
-    incidences: List[float]
+    ns: List[int]
+    incidences: List[int]
 
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
@@ -171,6 +171,23 @@ class DichotomousDataset(DatasetBase):
         ax.legend(**settings.LEGEND_OPTS)
         return fig
 
+    def serialize(self) -> "DichotomousDatasetSchema":
+        return DichotomousDatasetSchema(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.kwargs
+        )
+
+
+class DichotomousDatasetSchema(DatasetSchemaBase):
+    metadata: DatasetMetadata
+    doses: List[float]
+    ns: List[int]
+    incidences: List[int]
+
+    def deserialize(self) -> DichotomousDataset:
+        return DichotomousDataset(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+        )
+
 
 class DichotomousCancerDataset(DichotomousDataset):
     """
@@ -204,3 +221,15 @@ class DichotomousCancerDataset(DichotomousDataset):
             raise ValueError(
                 f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
             )
+
+    def serialize(self) -> "DichotomousCancerDatasetSchema":
+        return DichotomousCancerDatasetSchema(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, metadata=self.kwargs
+        )
+
+
+class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
+    def deserialize(self) -> DichotomousDataset:
+        return DichotomousCancerDataset(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+        )

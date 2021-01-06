@@ -5,11 +5,12 @@ from typing import Dict, Tuple
 import pandas as pd
 from simple_settings import settings
 
-from .. import __version__, constants
+from .. import constants
 from ..datasets import DatasetType
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
+from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
 
@@ -75,17 +76,17 @@ class BmdsSession:
 
     # serializing
     # -----------
-    def to_dict(self):
-        return dict(
-            bmds_version=self.version_str,
-            bmds_python_version=__version__,
-            dataset=self.dataset.dict(),
-            models=[model.dict(i) for i, model in enumerate(self.models)],
-            recommended_model_index=getattr(self, "recommended_model_index", None),
-        )
+    def serialize(self) -> schema.SessionSchemaBase:
+        raise NotImplementedError("implement!")
+
+    def deserialize(self) -> "BmdsSession":
+        raise NotImplementedError("implement!")
 
     # reporting
     # ---------
+    def to_dict(self):
+        return self.serialize().dict()
+
     def to_df(self, filename) -> pd.DataFrame:
         raise NotImplementedError("TODO - implement!")
 
@@ -102,7 +103,7 @@ class BmdsSession:
         raise NotImplementedError("TODO - implement!")
 
 
-class BMDS_v330(BmdsSession):
+class Bmds330(BmdsSession):
     version_str = constants.BMDS330
     version_pretty = "BMDS v3.3.0"
     version_tuple = (3, 3, 0)
@@ -142,3 +143,17 @@ class BMDS_v330(BmdsSession):
             # constants.M_ExponentialM5: c3.ExponentialM5,
         },
     }
+
+    def serialize(self) -> "Bmds330Schema":
+        data = dict(
+            version=dict(
+                string=self.version_str, pretty=self.version_pretty, numeric=self.version_tuple,
+            ),
+            dataset=self.dataset.serialize(),
+        )
+        return Bmds330Schema.parse_obj(data)
+
+
+class Bmds330Schema(schema.SessionSchemaBase):
+    def deserialize(self) -> Bmds330:
+        return Bmds330(dataset=self.dataset.deserialize())

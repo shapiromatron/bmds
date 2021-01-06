@@ -43,7 +43,7 @@ def test_bmds3_continuous_models(contds):
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_continuous_session(contds: bmds.ContinuousDataset):
-    session = bmds.session.BMDS_v330(dataset=contds)
+    session = bmds.session.Bmds330(dataset=contds)
     session.add_default_models()
     session.execute()
     for model in session.models:
