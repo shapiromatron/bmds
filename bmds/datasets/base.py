@@ -1,4 +1,4 @@
-from typing import Optional, List, TypeVar
+from typing import List, Optional, TypeVar
 
 import numpy as np
 from pydantic import BaseModel

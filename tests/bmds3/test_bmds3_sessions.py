@@ -6,7 +6,6 @@ import pytest
 
 import bmds
 
-
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
 skip_reason = "DLLs not present on CI"

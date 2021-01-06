@@ -7,7 +7,7 @@ from simple_settings import settings
 
 from .. import constants, plotting
 from .anova import AnovaTests
-from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase, DatasetPlottingSchema
+from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
 class ContinuousSummaryDataMixin:

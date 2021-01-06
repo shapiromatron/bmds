@@ -5,7 +5,7 @@ from scipy import stats
 from simple_settings import settings
 
 from .. import constants, plotting
-from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase, DatasetPlottingSchema
+from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
 class DichotomousDataset(DatasetBase):
@@ -244,4 +244,3 @@ class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
         return DichotomousCancerDataset(
             doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict(),
         )
-
