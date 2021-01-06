@@ -117,13 +117,13 @@ class ContinuousModel(BmdModelSchema):
 
 
 class ContinuousModelIds(IntEnum):
-    c_power = 8
-    c_hill = 6
-    c_polynomial = 666
     c_exp_m2 = 2
     c_exp_m3 = 3
     c_exp_m4 = 4
     c_exp_m5 = 5
+    c_hill = 6
+    c_power = 8
+    c_polynomial = 666
 
 
 class ContinuousModelChoices(Enum):
