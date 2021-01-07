@@ -19,8 +19,16 @@ def data_path():
 
 
 @pytest.fixture(scope="session")
-def write_data():
-    return True
+def rewrite_data_files():
+    """
+    If you're making changes to datasets and it's expected that previously saved data will need to
+    be written, then you can set this flag to True and then all saved data will be rewritten.
+
+    Please review changes to ensure they're expected after modifying this flag.
+
+    A test exists in CI to ensure that this flag is set to False on commit.
+    """
+    return False
 
 
 @pytest.fixture(scope="module")

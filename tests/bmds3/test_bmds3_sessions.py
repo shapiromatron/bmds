@@ -18,14 +18,14 @@ def dichds():
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmds330:
-    def test_serialization(self, dichds, data_path, write_data):
+    def test_serialization(self, dichds, data_path, rewrite_data_files):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
         session1.execute_and_recommend()
         serialized = session1.serialize()
 
-        if write_data:
+        if rewrite_data_files:
             (data_path / "session.json").write_text(serialized.json())
 
         # spot check a few keys
