@@ -84,7 +84,7 @@ class BmdModel:
         self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
     @property
-    def has_output(self) -> bool:
+    def has_results(self) -> bool:
         return self.results is not None
 
     def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
@@ -133,7 +133,7 @@ class BmdModelAveraging:
         self.results = self.execute()
 
     @property
-    def has_output(self) -> bool:
+    def has_results(self) -> bool:
         return self.results is not None
 
     def serialize(self, model_index: int) -> "BmdModelAveragingSchema":

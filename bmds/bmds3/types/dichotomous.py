@@ -354,6 +354,7 @@ class DichotomousResult(BaseModel):
     bmd: float
     bmdu: float
     aic: float
+    roi: float
     bounded: List[bool]
     fit: DichotomousModelResult
     gof: DichotomousPgofResult

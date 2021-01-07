@@ -11,6 +11,7 @@ from ..constants import (
     Prior,
     PriorClass,
 )
+from ..types.common import residual_of_interest
 from ..types.continuous import (
     ContinuousAnalysis,
     ContinuousBmdsResultsStruct,
@@ -85,6 +86,7 @@ class BmdModelContinuous(BmdModel):
         )
 
         dr_x = self.dataset.dose_linspace
+        residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
         result = ContinuousResult(
             model_class=self.model_class(),
             model_name=self.model_name(),
@@ -92,6 +94,7 @@ class BmdModelContinuous(BmdModel):
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
             aic=bmds_results_struct.aic,
+            roi=residual_of_interest(bmds_results_struct.bmd, self.dataset.doses, residuals),
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             dr_x=dr_x.tolist(),

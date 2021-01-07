@@ -147,6 +147,15 @@ BIN_WARNING = 1
 BIN_FAILURE = 2
 BIN_TYPES = (BIN_NO_CHANGE, BIN_WARNING, BIN_FAILURE)
 BIN_TEXT = {BIN_NO_CHANGE: "valid", BIN_WARNING: "warning", BIN_FAILURE: "failure"}
-BINMOJI = {0: "✓", 1: "?", 2: "✕"}
+BIN_ICON = {BIN_NO_CHANGE: "✓", BIN_WARNING: "?", BIN_FAILURE: "✕"}
+
+BOOL_ICON = {True: "✓", False: "✕"}
+
+
+class LogicBin(enum.IntEnum):
+    NO_CHANGE = BIN_NO_CHANGE
+    WARNING = BIN_WARNING
+    FAILURE = BIN_FAILURE
+
 
 NULL = "-"

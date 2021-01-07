@@ -22,13 +22,19 @@ class ContinuousRiskType(IntEnum):
     eHybrid_Added = 7
 
 
+class DistType(IntEnum):
+    normal = 1
+    normal_ncv = 2
+    log_normal = 3
+
+
 class ContinuousModelSettings(BaseModel):
     suff_stat: bool = True
     bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
     isIncreasing: bool = False
     bmr: float = 1.0
     tail_prob: float = 0.01
-    disttype: int = 1
+    disttype: DistType = DistType.normal
     alpha: float = 0.05
     samples: int = 0
     degree: int = 0  # multistage only
@@ -218,6 +224,7 @@ class ContinuousResult(BaseModel):
     bmd: float
     bmdu: float
     aic: float
+    roi: float
     bounded: List[bool]
     fit: ContinuousModelResult
     dr_x: List[float]

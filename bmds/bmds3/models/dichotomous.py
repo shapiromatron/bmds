@@ -12,6 +12,7 @@ from ..constants import (
     Prior,
     PriorClass,
 )
+from ..types.common import residual_of_interest
 from ..types.dichotomous import (
     DichotomousAnalysis,
     DichotomousBmdsResultsStruct,
@@ -107,6 +108,9 @@ class BmdModelDichotomous(BmdModel):
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
             aic=bmds_results_struct.aic,
+            roi=residual_of_interest(
+                bmds_results_struct.bmd, self.dataset.doses, gof_results.residual
+            ),
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             gof=gof_results,

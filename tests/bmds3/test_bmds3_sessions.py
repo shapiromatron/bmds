@@ -18,27 +18,37 @@ def dichds():
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmds330:
-    def test_serialization(self, dichds):
+    def test_serialization(self, dichds, data_path, rewrite_data_files):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
-        session1.execute()
+        session1.execute_and_recommend()
         serialized = session1.serialize()
+
+        if rewrite_data_files:
+            (data_path / "session.json").write_text(serialized.json())
 
         # spot check a few keys
         d = serialized.dict()
+        # -> session metadata
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
+        # -> dataset
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
+        # -> models (with results)
         assert len(d["models"]) == 10
         assert list(d["models"][0].keys()) == ["model_class", "settings", "results"]
+        # -> models average
         assert d["model_average"] is None
+        # -> models recommendation
+        assert d["recommender"]["settings"]["enabled"] is True
+        assert d["recommender"]["results"]["recommended_model_variable"] == "aic"
 
         # ensure we can convert back to a session
         session2 = serialized.deserialize()
         assert isinstance(session2, bmds.session.Bmds330)
         assert session2.dataset.doses == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(session2.models) == 10
-        assert session2.models[0].has_output is True
+        assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
         assert session1.serialize().dict() == session2.serialize().dict()
@@ -48,7 +58,7 @@ class TestBmds330:
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
         session1.add_model_averaging()
-        session1.execute()
+        session1.execute_and_recommend()
         serialized = session1.serialize()
 
         # spot check a few keys
@@ -65,7 +75,7 @@ class TestBmds330:
         assert isinstance(session2, bmds.session.Bmds330)
         assert session2.dataset.doses == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(session2.models) == 10
-        assert session2.models[0].has_output is True
+        assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
         assert session1.serialize().dict() == session2.serialize().dict()

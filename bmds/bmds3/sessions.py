@@ -11,6 +11,7 @@ from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
 from .models.base import BmdModel, BmdModelAveraging
+from .recommender import Recommender, RecommenderSettings
 from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
@@ -29,10 +30,14 @@ class BmdsSession:
     version_tuple: Tuple[int, ...]
     model_options: Dict[str, Dict]
 
-    def __init__(self, dataset: DatasetType):
+    def __init__(
+        self, dataset: DatasetType, recommendation_settings: Optional[RecommenderSettings] = None
+    ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
         self.model_average: Optional[BmdModelAveraging] = None
+        self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
+        self.recommender: Optional[Recommender] = None
 
     def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dataset.dtype].keys():
@@ -75,8 +80,15 @@ class BmdsSession:
         if self.model_average is not None:
             self.model_average.execute_job()
 
+    def recommend(self):
+        self.recommender = Recommender(settings=self.recommendation_settings)
+        self.recommender.recommend(self.dataset, self.models)
+
     def execute_and_recommend(self, drop_doses=False):
-        raise NotImplementedError("TODO")
+        self.execute()
+        self.recommend()
+        if drop_doses:
+            raise NotImplementedError("TODO")
 
     # serializing
     # -----------
@@ -159,6 +171,9 @@ class Bmds330(BmdsSession):
         if self.model_average is not None:
             schema.model_average = self.model_average.serialize(self)
 
+        if self.recommender is not None:
+            schema.recommender = self.recommender.serialize()
+
         return schema
 
 
@@ -166,6 +181,9 @@ class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
         session = Bmds330(dataset=self.dataset.deserialize())
         session.models = [model.deserialize(session.dataset) for model in self.models]
-        if self.model_average:
+        if self.model_average is not None:
             session.model_average = self.model_average.deserialize(session)
+        if self.recommender is not None:
+            session.recommendation_settings = self.recommender.settings
+            session.recommender = self.recommender.deserialize()
         return session
