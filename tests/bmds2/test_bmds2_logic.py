@@ -3,7 +3,7 @@ import textwrap
 import pytest
 
 import bmds
-from bmds.bmds2.logic import rules, Recommender
+from bmds.bmds2.logic import Recommender, rules
 
 
 def dedentify(txt):

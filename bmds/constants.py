@@ -153,9 +153,9 @@ BOOL_ICON = {True: "✓", False: "✕"}
 
 
 class LogicBin(enum.IntEnum):
-    BIN_NO_CHANGE = BIN_NO_CHANGE
-    BIN_WARNING = BIN_WARNING
-    BIN_FAILURE = BIN_FAILURE
+    NO_CHANGE = BIN_NO_CHANGE
+    WARNING = BIN_WARNING
+    FAILURE = BIN_FAILURE
 
 
 NULL = "-"

@@ -18,6 +18,11 @@ def data_path():
     return Path(__file__).parent.absolute() / "data"
 
 
+@pytest.fixture(scope="session")
+def write_data():
+    return True
+
+
 @pytest.fixture(scope="module")
 def vcr_cassette_dir(request):
     cassette_dir = Path(__file__).parent.absolute() / "data/cassettes" / request.module.__name__
