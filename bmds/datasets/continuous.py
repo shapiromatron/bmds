@@ -199,7 +199,7 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     means: List[float]
     stdevs: List[float]
     anova: Optional[AnovaTests]
-    plotting: DatasetPlottingSchema
+    plotting: Optional[DatasetPlottingSchema]
 
     def deserialize(self) -> ContinuousDataset:
         ds = ContinuousDataset(

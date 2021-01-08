@@ -218,8 +218,6 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
 
 
 class ContinuousResult(BaseModel):
-    model_class: str
-    model_name: str
     bmdl: float
     bmd: float
     bmdu: float

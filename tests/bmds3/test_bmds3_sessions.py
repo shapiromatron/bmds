@@ -18,15 +18,12 @@ def dichds():
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmds330:
-    def test_serialization(self, dichds, data_path, rewrite_data_files):
+    def test_serialization(self, dichds):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
         session1.execute_and_recommend()
         serialized = session1.serialize()
-
-        if rewrite_data_files:
-            (data_path / "session.json").write_text(serialized.json())
 
         # spot check a few keys
         d = serialized.dict()
@@ -36,7 +33,7 @@ class TestBmds330:
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
         # -> models (with results)
         assert len(d["models"]) == 10
-        assert list(d["models"][0].keys()) == ["model_class", "settings", "results"]
+        assert list(d["models"][0].keys()) == ["name", "model_class", "settings", "results"]
         # -> models average
         assert d["model_average"] is None
         # -> models recommendation
@@ -53,7 +50,7 @@ class TestBmds330:
         # make sure we get the same result back after deserializing
         assert session1.serialize().dict() == session2.serialize().dict()
 
-    def test_serialization_ma(self, dichds):
+    def test_serialization_ma(self, dichds, data_path, rewrite_data_files):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
@@ -61,12 +58,15 @@ class TestBmds330:
         session1.execute_and_recommend()
         serialized = session1.serialize()
 
+        if rewrite_data_files:
+            (data_path / "dichotomous-session.json").write_text(serialized.json())
+
         # spot check a few keys
         d = serialized.dict()
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(d["models"]) == 10
-        assert list(d["models"][0].keys()) == ["model_class", "settings", "results"]
+        assert list(d["models"][0].keys()) == ["name", "model_class", "settings", "results"]
         assert d["model_average"]["model_indexes"] == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         assert "bmd" in d["model_average"]["results"]
 

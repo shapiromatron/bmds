@@ -172,7 +172,6 @@ class DichotomousModelResult(BaseModel):
     Single model fit.
     """
 
-    model: constants.DichotomousModel
     num_params: int
     dist_numE: int
     params: Optional[List[float]]
@@ -185,12 +184,12 @@ class DichotomousModelResult(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    def to_c(self) -> DichotomousModelResultStruct:
+    def to_c(self, model_id: int) -> DichotomousModelResultStruct:
         parms = [0] * self.num_params
         self.cov = [0] * (self.num_params ** 2)
         self.bmd_dist = [1] * (self.dist_numE * 2)
         return DichotomousModelResultStruct(
-            model=ctypes.c_int(self.model.id),
+            model=ctypes.c_int(model_id),
             nparms=ctypes.c_int(self.num_params),
             parms=list_t_c(parms, ctypes.c_double),
             cov=list_t_c(self.cov, ctypes.c_double),
@@ -348,8 +347,6 @@ class DichotomousPgofResult(BaseModel):
 
 
 class DichotomousResult(BaseModel):
-    model_class: str
-    model_name: str
     bmdl: float
     bmd: float
     bmdu: float

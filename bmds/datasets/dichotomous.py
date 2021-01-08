@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from scipy import stats
@@ -186,7 +186,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
     doses: List[float]
     ns: List[int]
     incidences: List[int]
-    plotting: DatasetPlottingSchema
+    plotting: Optional[DatasetPlottingSchema]
 
     def deserialize(self) -> DichotomousDataset:
         ds = DichotomousDataset(
@@ -214,7 +214,7 @@ class DichotomousCancerDataset(DichotomousDataset):
     """
 
     MINIMUM_DOSE_GROUPS = 2
-    dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
+    dtype = constants.Dtype.DICHOTOMOUS_CANCER
 
     def _validate(self):
         length = len(self.doses)
@@ -241,7 +241,7 @@ class DichotomousCancerDataset(DichotomousDataset):
 
 
 class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
-    def deserialize(self) -> DichotomousDataset:
+    def deserialize(self) -> DichotomousCancerDataset:
         ds = DichotomousCancerDataset(
             doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
         )

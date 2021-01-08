@@ -83,6 +83,10 @@ class BmdModel:
         self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
         self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
+    def name(self) -> str:
+        # return name of model; may be setting-specific
+        return self.bmd_model_class.verbose
+
     @property
     def has_results(self) -> bool:
         return self.results is not None
