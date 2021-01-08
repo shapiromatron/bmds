@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
-from .common import BMDS_BLANK_VALUE, list_t_c
+from .common import list_t_c
 from .priors import PriorClass
 
 
@@ -209,10 +209,10 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
     @classmethod
     def from_results(cls, results: ContinuousModelResult) -> "ContinuousBmdsResultsStruct":
         return cls(
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
+            bmd=constants.BMDS_BLANK_VALUE,
+            bmdl=constants.BMDS_BLANK_VALUE,
+            bmdu=constants.BMDS_BLANK_VALUE,
+            aic=constants.BMDS_BLANK_VALUE,
             bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
 

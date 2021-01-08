@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 import bmds
+from bmds.bmds3.constants import BMDS_BLANK_VALUE
 from bmds.bmds3.recommender.checks import AicExists, GoodnessOfFit, LargeRoi, NoDegreesOfFreedom
 from bmds.bmds3.recommender.recommender import Recommender, Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
@@ -71,7 +72,7 @@ class TestChecks:
             assert resp.message == ""
 
         # bad values
-        for value in [None, -9999]:
+        for value in [None, BMDS_BLANK_VALUE]:
             model.results.aic = value
             resp = AicExists.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
@@ -84,7 +85,7 @@ class TestChecks:
         settings = Rule(rule_class=RuleClass.gof, failure_bin=LogicBin.FAILURE, threshold=0.1)
 
         # good values
-        for value in [-9999, None, 0.1, 0.11]:
+        for value in [BMDS_BLANK_VALUE, None, 0.1, 0.11]:
             model.results.gof.p_value = value
             resp = GoodnessOfFit.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE

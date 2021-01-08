@@ -1,6 +1,7 @@
 from typing import Any, List
 
-BMDS_BLANK_VALUE = -9999
+from ..constants import BMDS_BLANK_VALUE
+
 NUM_PRIOR_COLS = 5
 CDF_TABLE_SIZE = 99
 MY_MAX_PARMS = 16
