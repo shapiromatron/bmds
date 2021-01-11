@@ -39,6 +39,7 @@ class TestBmds330:
         # -> models recommendation
         assert d["recommender"]["settings"]["enabled"] is True
         assert d["recommender"]["results"]["recommended_model_variable"] == "aic"
+        assert d["selected"]["model_index"] is None
 
         # ensure we can convert back to a session
         session2 = serialized.deserialize()
