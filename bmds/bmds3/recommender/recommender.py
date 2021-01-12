@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from ...constants import BIN_ICON, BIN_TEXT, LogicBin
 from ...datasets import DatasetBase
@@ -44,6 +44,15 @@ class RecommenderSettings(BaseModel):
     rules: List[Rule]
 
     _default: Optional[str] = None
+
+    @validator("rules")
+    def rules_all_classes(cls, rules):
+        rule_classes = set(rule.rule_class for rule in rules)
+        all_rule_classes = set(RuleClass.__members__)
+        missing = all_rule_classes - rule_classes
+        if missing:
+            raise ValueError(f"Rule list must be complete; missing {missing}")
+        return rules
 
     @classmethod
     def build_default(cls) -> "RecommenderSettings":

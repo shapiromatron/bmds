@@ -2,11 +2,12 @@ import os
 from unittest import mock
 
 import pytest
+from pydantic import ValidationError
 
 import bmds
 from bmds.bmds3.constants import BMDS_BLANK_VALUE
 from bmds.bmds3.recommender.checks import AicExists, GoodnessOfFit, LargeRoi, NoDegreesOfFreedom
-from bmds.bmds3.recommender.recommender import Recommender, Rule, RuleClass
+from bmds.bmds3.recommender.recommender import Recommender, RecommenderSettings, Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
 
 # TODO remove this restriction
@@ -19,6 +20,22 @@ def dichds():
     return bmds.DichotomousDataset(
         doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
     )
+
+
+class TestRecommenderSettings:
+    def test_default(self):
+        # assert the default method actually works
+        settings = RecommenderSettings.build_default()
+        assert isinstance(settings, RecommenderSettings)
+
+    def test_rule_validation(self):
+        # assert that the entire rule list must be present
+        settings = RecommenderSettings.build_default()
+        settings.rules.pop()
+        settings2 = settings.json()
+        with pytest.raises(ValidationError) as err:
+            RecommenderSettings.parse_raw(settings2)
+        assert "Rule list must be complete" in str(err)
 
 
 class TestRecommender:
