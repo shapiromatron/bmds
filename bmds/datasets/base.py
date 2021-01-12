@@ -58,7 +58,7 @@ DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 
 class DatasetSchemaBase(BaseModel):
     @classmethod
-    def get_subclass(cls, dtype: Dtype) -> "DatasetSchemaType":
+    def get_subclass(cls, dtype: Dtype) -> BaseModel:
         from .continuous import ContinuousDatasetSchema, ContinuousIndividualDatasetSchema
         from .dichotomous import DichotomousCancerDatasetSchema, DichotomousDatasetSchema
 
