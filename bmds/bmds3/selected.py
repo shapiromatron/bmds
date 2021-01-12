@@ -1,15 +1,15 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 
 from .models.base import BmdModel
 
 
 class SelectedModelSchema(BaseModel):
-    model_index: Optional[int]
+    model_index: Optional[conint(ge=0)] = None
     notes: Optional[str] = None
 
-    def deserialize(self, session: "BmdsSession") -> "SelectedModel":
+    def deserialize(self, session) -> "SelectedModel":
         return SelectedModel(session, model_index=self.model_index, notes=self.notes)
 
 

@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
+from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
 from ...utils import package_root
 from ..constants import BmdModelSchema
@@ -108,7 +109,17 @@ class BmdModel:
 
 
 class BmdModelSchema(BaseModel):
-    pass
+    @classmethod
+    def get_subclass(cls, dtype: Dtype) -> "BmdModelSchema":
+        from .continuous import BmdModelContinuousSchema
+        from .dichotomous import BmdModelDichotomousSchema
+
+        if dtype in DICHOTOMOUS_DTYPES:
+            return BmdModelDichotomousSchema
+        elif dtype in CONTINUOUS_DTYPES:
+            return BmdModelContinuousSchema
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")
 
 
 class BmdModelAveraging:
@@ -148,4 +159,13 @@ class BmdModelAveraging:
 
 
 class BmdModelAveragingSchema(BaseModel):
-    pass
+    @classmethod
+    def get_subclass(cls, dtype: Dtype) -> "BmdModelAveragingSchema":
+        from .ma import BmdModelAveragingDichotomousSchema
+
+        if dtype in (Dtype.DICHOTOMOUS, Dtype.DICHOTOMOUS_CANCER):
+            return BmdModelAveragingDichotomousSchema
+        elif dtype in (Dtype.CONTINUOUS, Dtype.CONTINUOUS_INDIVIDUAL):
+            raise NotImplementedError()
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")

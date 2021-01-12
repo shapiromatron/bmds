@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
-from .common import list_t_c
+from .common import NumpyFloatArray, list_t_c
 from .priors import PriorClass
 
 
@@ -162,10 +162,10 @@ class ContinuousModelResult(BaseModel):
     dist: Optional[int]
     num_params: int
     params: Optional[List[float]]
-    cov: Optional[np.ndarray]
+    cov: Optional[NumpyFloatArray]
     max: Optional[float]
     dist_numE: int
-    bmd_dist: Optional[np.ndarray]
+    bmd_dist: Optional[NumpyFloatArray]
 
     class Config:
         arbitrary_types_allowed = True

@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar
+from typing import Dict, List, Optional, TypeVar
 
 import numpy as np
 from pydantic import BaseModel
@@ -57,10 +57,21 @@ DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 
 
 class DatasetSchemaBase(BaseModel):
-    pass
+    @classmethod
+    def get_subclass(cls, dtype: Dtype) -> "DatasetSchemaType":
+        from .continuous import ContinuousDatasetSchema, ContinuousIndividualDatasetSchema
+        from .dichotomous import DichotomousCancerDatasetSchema, DichotomousDatasetSchema
 
-    def deserialize(self) -> DatasetType:
-        raise NotImplementedError("Abstract method; requires implementation")
+        _dataset_schema_map: Dict = {
+            Dtype.CONTINUOUS: ContinuousDatasetSchema,
+            Dtype.CONTINUOUS_INDIVIDUAL: ContinuousIndividualDatasetSchema,
+            Dtype.DICHOTOMOUS: DichotomousDatasetSchema,
+            Dtype.DICHOTOMOUS_CANCER: DichotomousCancerDatasetSchema,
+        }
+        try:
+            return _dataset_schema_map[dtype]
+        except KeyError:
+            raise ValueError(f"Unknown dtype: {dtype}")
 
 
 class DatasetMetadata(BaseModel):

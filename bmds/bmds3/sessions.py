@@ -6,14 +6,14 @@ import pandas as pd
 from simple_settings import settings
 
 from .. import constants
-from ..datasets import DatasetType
+from ..datasets import DatasetSchemaBase, DatasetType
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
-from .models.base import BmdModel, BmdModelAveraging
+from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
-from .types import sessions as schema
 from .selected import SelectedModel
+from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +96,26 @@ class BmdsSession:
     # -----------
     def serialize(self) -> schema.SessionSchemaBase:
         ...
+
+    @classmethod
+    def from_serialized(cls, data: Dict) -> "BmdsSession":
+        try:
+            version = data["version"]["numeric"]
+            dtype = data["dataset"]["dtype"]
+        except KeyError:
+            raise ValueError("Invalid JSON format")
+
+        dataset = DatasetSchemaBase.get_subclass(dtype).parse_obj(data["dataset"])
+        model_base_class = BmdModelSchema.get_subclass(dtype)
+        data["dataset"] = dataset
+        data["models"] = [model_base_class.parse_obj(model_) for model_ in data["models"]]
+        ma = data.get("model_average")
+        if ma:
+            data["model_average"] = BmdModelAveragingSchema.get_subclass(dtype).parse_obj(ma)
+        if tuple(version) == Bmds330.version_tuple:
+            return Bmds330Schema.parse_obj(data).deserialize()
+        else:
+            raise ValueError("Unknown BMDS version")
 
     # reporting
     # ---------

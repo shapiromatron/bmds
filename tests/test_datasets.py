@@ -58,6 +58,7 @@ class TestDichotomousDataset:
         # make sure serialize looks correct
         serialized = ds1.serialize()
         assert serialized.dict(exclude={"plotting"}) == {
+            "dtype": "D",
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -107,6 +108,7 @@ class TestDichotomousCancerDataset:
         # make sure serialize looks correct
         serialized = ds1.serialize()
         assert serialized.dict(exclude={"plotting"}) == {
+            "dtype": "DC",
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -244,6 +246,7 @@ class TestContinuousSummaryDataset:
         # make sure serialize looks correct
         serialized = ds1.serialize()
         assert serialized.dict(exclude={"plotting"}) == {
+            "dtype": "C",
             "metadata": {
                 "id": 123,
                 "name": "test",
@@ -334,6 +337,7 @@ class TestContinuousIndividualDataset:
         # make sure serialize looks correct
         serialized = ds1.serialize()
         assert serialized.dict(exclude={"anova"}) == {
+            "dtype": "CI",
             "metadata": {
                 "id": 123,
                 "name": "test",

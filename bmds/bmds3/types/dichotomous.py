@@ -1,7 +1,7 @@
 import ctypes
 from enum import IntEnum
 from textwrap import dedent
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ from bmds.bmds3.constants import DichotomousModelChoices
 
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import list_t_c
+from .common import NumpyFloatArray, list_t_c
 from .priors import PriorClass
 
 
@@ -175,11 +175,11 @@ class DichotomousModelResult(BaseModel):
     num_params: int
     dist_numE: int
     params: Optional[List[float]]
-    cov: Optional[Union[np.ndarray, List[float]]]
+    cov: Optional[NumpyFloatArray]
     max: Optional[float]
     model_df: Optional[float]
     total_df: Optional[float]
-    bmd_dist: Optional[Union[np.ndarray, List[float]]]
+    bmd_dist: Optional[NumpyFloatArray]
 
     class Config:
         arbitrary_types_allowed = True
@@ -205,7 +205,7 @@ class DichotomousModelResult(BaseModel):
         self.total_df = struct.total_df
 
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = np.array(self.bmd_dist).reshape(2, self.dist_numE).T
+        arr = np.array(self.bmd_dist[: self.dist_numE * 2]).reshape(2, self.dist_numE)
         arr = arr[np.isfinite(arr[:, 0])]
         arr = arr[arr[:, 0] > 0]
         self.bmd_dist = arr
@@ -219,7 +219,7 @@ class DichotomousModelResult(BaseModel):
         kw.update(exclude={"cov", "bmd_dist"})
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
-        d["bmd_dist"] = self.bmd_dist.T.tolist()
+        d["bmd_dist"] = self.bmd_dist.tolist()
         return d
 
 

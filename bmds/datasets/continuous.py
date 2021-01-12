@@ -182,6 +182,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
     def serialize(self) -> "ContinuousDatasetSchema":
         anova = self.anova()
         return ContinuousDatasetSchema(
+            dtype=self.dtype,
             doses=self.doses,
             ns=self.ns,
             means=self.means,
@@ -193,6 +194,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 
 
 class ContinuousDatasetSchema(DatasetSchemaBase):
+    dtype: constants.Dtype
     metadata: DatasetMetadata
     doses: List[float]
     ns: List[int]
@@ -358,6 +360,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     def serialize(self) -> "ContinuousIndividualDatasetSchema":
         anova = self.anova()
         return ContinuousIndividualDatasetSchema(
+            dtype=self.dtype,
             doses=self.individual_doses,
             responses=self.responses,
             anova=anova,
@@ -366,6 +369,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
 
 class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
+    dtype: constants.Dtype
     metadata: DatasetMetadata
     doses: List[float]
     responses: List[float]

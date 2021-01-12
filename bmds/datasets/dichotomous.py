@@ -173,6 +173,7 @@ class DichotomousDataset(DatasetBase):
     def serialize(self) -> "DichotomousDatasetSchema":
         plotting = self.plot_data()
         return DichotomousDatasetSchema(
+            dtype=self.dtype,
             doses=self.doses,
             ns=self.ns,
             incidences=self.incidences,
@@ -182,6 +183,7 @@ class DichotomousDataset(DatasetBase):
 
 
 class DichotomousDatasetSchema(DatasetSchemaBase):
+    dtype: constants.Dtype
     metadata: DatasetMetadata
     doses: List[float]
     ns: List[int]
@@ -232,6 +234,7 @@ class DichotomousCancerDataset(DichotomousDataset):
     def serialize(self) -> "DichotomousCancerDatasetSchema":
         plot_data = self.plot_data()
         return DichotomousCancerDatasetSchema(
+            dtype=self.dtype,
             doses=self.doses,
             ns=self.ns,
             incidences=self.incidences,

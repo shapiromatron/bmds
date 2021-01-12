@@ -1,8 +1,10 @@
+import json
 import os
 
 import pytest
 
 import bmds
+from bmds.bmds3.sessions import BmdsSession
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
@@ -23,10 +25,9 @@ class TestBmds330:
         session1 = bmds.session.Bmds330(dataset=dichds)
         session1.add_default_models()
         session1.execute_and_recommend()
-        serialized = session1.serialize()
+        d = session1.to_dict()
 
         # spot check a few keys
-        d = serialized.dict()
         # -> session metadata
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
         # -> dataset
@@ -41,15 +42,17 @@ class TestBmds330:
         assert d["recommender"]["results"]["recommended_model_variable"] == "aic"
         assert d["selected"]["model_index"] is None
 
-        # ensure we can convert back to a session
-        session2 = serialized.deserialize()
+        # ensure we can convert back to a session from JSON serialization
+        session2 = BmdsSession.from_serialized(json.loads(json.dumps(d)))
         assert isinstance(session2, bmds.session.Bmds330)
         assert session2.dataset.doses == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(session2.models) == 10
         assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
-        assert session1.serialize().dict() == session2.serialize().dict()
+        d1 = session1.serialize().dict()
+        d2 = session2.serialize().dict()
+        assert d1 == d2
 
     def test_serialization_ma(self, dichds, data_path, rewrite_data_files):
         # make sure serialize looks correct
@@ -57,13 +60,12 @@ class TestBmds330:
         session1.add_default_models()
         session1.add_model_averaging()
         session1.execute_and_recommend()
-        serialized = session1.serialize()
+        d = session1.to_dict()
 
         if rewrite_data_files:
-            (data_path / "dichotomous-session.json").write_text(serialized.json())
+            (data_path / "dichotomous-session.json").write_text(d)
 
         # spot check a few keys
-        d = serialized.dict()
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(d["models"]) == 10
@@ -72,11 +74,13 @@ class TestBmds330:
         assert "bmd" in d["model_average"]["results"]
 
         # ensure we can convert back to a session
-        session2 = serialized.deserialize()
+        session2 = BmdsSession.from_serialized(json.loads(json.dumps(d)))
         assert isinstance(session2, bmds.session.Bmds330)
         assert session2.dataset.doses == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(session2.models) == 10
         assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
-        assert session1.serialize().dict() == session2.serialize().dict()
+        d1 = session1.serialize().dict()
+        d2 = session2.serialize().dict()
+        assert d1 == d2
