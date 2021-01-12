@@ -1,4 +1,8 @@
-from bmds.bmds3.types.common import residual_of_interest
+import numpy as np
+import pytest
+from pydantic import BaseModel, ValidationError
+
+from bmds.bmds3.types.common import NumpyFloatArray, residual_of_interest
 
 
 def test_residual_of_interest():
@@ -13,3 +17,21 @@ def test_residual_of_interest():
 
     # exactly between value; chooses smaller value
     assert residual_of_interest(bmd=1, doses=[0, 2, 4], residuals=[0.1, 0.2, 0.3]) == 0.1
+
+
+class ExampleModel(BaseModel):
+    d: NumpyFloatArray
+
+
+class TestNumpyFloatArray:
+    def test_successes(self):
+        for data in [[1], [1, 2, 3], [[1, 2], [3, 4]]]:
+            model = ExampleModel(d=data)
+            assert np.allclose(model.d, data)
+            assert model.d.dtype == np.float
+            assert isinstance(model.d, np.ndarray)
+
+    def test_failures(self):
+        for data in ["a", ["a", "a"], None]:
+            with pytest.raises(ValidationError):
+                ExampleModel(d=data)

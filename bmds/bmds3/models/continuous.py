@@ -1,5 +1,5 @@
 import ctypes
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -88,8 +88,6 @@ class BmdModelContinuous(BmdModel):
         dr_x = self.dataset.dose_linspace
         residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
         result = ContinuousResult(
-            model_class=self.model_class(),
-            model_name=self.model_name(),
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
@@ -105,12 +103,6 @@ class BmdModelContinuous(BmdModel):
     def get_default_model_degree(self, dataset) -> int:
         return self.bmd_model_class.num_params - 1
 
-    def model_class(self) -> str:
-        return self.bmd_model_class.verbose
-
-    def model_name(self) -> str:
-        return self.model_class()
-
     def get_priors(
         self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
     ) -> List[Prior]:
@@ -121,14 +113,18 @@ class BmdModelContinuous(BmdModel):
 
     def serialize(self) -> "BmdModelContinuousSchema":
         return BmdModelContinuousSchema(
-            model_class=self.bmd_model_class, settings=self.settings, results=self.results
+            name=self.name(),
+            model_class=self.bmd_model_class,
+            settings=self.settings,
+            results=self.results,
         )
 
 
 class BmdModelContinuousSchema(BmdModelSchema):
+    name: str
     model_class: ContinuousModel
     settings: ContinuousModelSettings
-    results: ContinuousResult
+    results: Optional[ContinuousResult]
 
     def deserialize(self, dataset: ContinuousDataset) -> BmdModelContinuous:
         Model = bmd_model_map[self.model_class.id]

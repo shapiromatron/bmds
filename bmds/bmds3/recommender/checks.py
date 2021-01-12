@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
-from ..types.common import BMDS_BLANK_VALUE
+from ..constants import BMDS_BLANK_VALUE
 from ..types.continuous import DistType
 from .constants import RuleClass
 

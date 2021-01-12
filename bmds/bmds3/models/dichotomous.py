@@ -1,5 +1,5 @@
 import ctypes
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -67,10 +67,8 @@ class BmdModelDichotomous(BmdModel):
         inputs_struct = inputs.to_c()
 
         # setup outputs
-        fit_results = DichotomousModelResult(
-            model=self.bmd_model_class, dist_numE=200, num_params=inputs.num_params
-        )
-        fit_results_struct = fit_results.to_c()
+        fit_results = DichotomousModelResult(dist_numE=200, num_params=inputs.num_params)
+        fit_results_struct = fit_results.to_c(self.bmd_model_class.id)
 
         # can be used for model averaging
         self.inputs_struct = inputs_struct
@@ -102,8 +100,6 @@ class BmdModelDichotomous(BmdModel):
         )
         dr_x = self.dataset.dose_linspace
         result = DichotomousResult(
-            model_class=self.model_class(),
-            model_name=self.model_name(),
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
@@ -127,12 +123,6 @@ class BmdModelDichotomous(BmdModel):
     def get_default_model_degree(self, dataset) -> int:
         return self.bmd_model_class.num_params - 1
 
-    def model_class(self) -> str:
-        return self.bmd_model_class.verbose
-
-    def model_name(self) -> str:
-        return self.model_class()
-
     def transform_params(self, struct: DichotomousModelResultStruct):
         return struct.parms[: struct.nparms]
 
@@ -141,14 +131,18 @@ class BmdModelDichotomous(BmdModel):
 
     def serialize(self) -> "BmdModelDichotomousSchema":
         return BmdModelDichotomousSchema(
-            model_class=self.bmd_model_class, settings=self.settings, results=self.results
+            name=self.name(),
+            model_class=self.bmd_model_class,
+            settings=self.settings,
+            results=self.results,
         )
 
 
 class BmdModelDichotomousSchema(BmdModelSchema):
+    name: str
     model_class: DichotomousModel
     settings: DichotomousModelSettings
-    results: DichotomousResult
+    results: Optional[DichotomousResult]
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
         Model = bmd_model_map[self.model_class.id]

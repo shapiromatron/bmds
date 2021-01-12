@@ -1,7 +1,7 @@
 import ctypes
 from enum import IntEnum
 from textwrap import dedent
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ from bmds.bmds3.constants import DichotomousModelChoices
 
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import BMDS_BLANK_VALUE, list_t_c
+from .common import NumpyFloatArray, list_t_c
 from .priors import PriorClass
 
 
@@ -172,25 +172,24 @@ class DichotomousModelResult(BaseModel):
     Single model fit.
     """
 
-    model: constants.DichotomousModel
     num_params: int
     dist_numE: int
     params: Optional[List[float]]
-    cov: Optional[Union[np.ndarray, List[float]]]
+    cov: Optional[NumpyFloatArray]
     max: Optional[float]
     model_df: Optional[float]
     total_df: Optional[float]
-    bmd_dist: Optional[Union[np.ndarray, List[float]]]
+    bmd_dist: Optional[NumpyFloatArray]
 
     class Config:
         arbitrary_types_allowed = True
 
-    def to_c(self) -> DichotomousModelResultStruct:
+    def to_c(self, model_id: int) -> DichotomousModelResultStruct:
         parms = [0] * self.num_params
         self.cov = [0] * (self.num_params ** 2)
         self.bmd_dist = [1] * (self.dist_numE * 2)
         return DichotomousModelResultStruct(
-            model=ctypes.c_int(self.model.id),
+            model=ctypes.c_int(model_id),
             nparms=ctypes.c_int(self.num_params),
             parms=list_t_c(parms, ctypes.c_double),
             cov=list_t_c(self.cov, ctypes.c_double),
@@ -206,7 +205,7 @@ class DichotomousModelResult(BaseModel):
         self.total_df = struct.total_df
 
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = np.array(self.bmd_dist).reshape(2, self.dist_numE).T
+        arr = np.array(self.bmd_dist[: self.dist_numE * 2]).reshape(2, self.dist_numE)
         arr = arr[np.isfinite(arr[:, 0])]
         arr = arr[arr[:, 0] > 0]
         self.bmd_dist = arr
@@ -220,7 +219,7 @@ class DichotomousModelResult(BaseModel):
         kw.update(exclude={"cov", "bmd_dist"})
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
-        d["bmd_dist"] = self.bmd_dist.T.tolist()
+        d["bmd_dist"] = self.bmd_dist.tolist()
         return d
 
 
@@ -321,10 +320,10 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
     @classmethod
     def from_results(cls, num_params: int) -> "DichotomousBmdsResultsStruct":
         return cls(
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
+            bmd=constants.BMDS_BLANK_VALUE,
+            bmdl=constants.BMDS_BLANK_VALUE,
+            bmdu=constants.BMDS_BLANK_VALUE,
+            aic=constants.BMDS_BLANK_VALUE,
             bounded=list_t_c([False for _ in range(num_params)], ctypes.c_bool),
         )
 
@@ -348,8 +347,6 @@ class DichotomousPgofResult(BaseModel):
 
 
 class DichotomousResult(BaseModel):
-    model_class: str
-    model_name: str
     bmdl: float
     bmd: float
     bmdu: float

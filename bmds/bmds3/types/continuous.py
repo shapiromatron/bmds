@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
-from .common import BMDS_BLANK_VALUE, list_t_c
+from .common import NumpyFloatArray, list_t_c
 from .priors import PriorClass
 
 
@@ -162,10 +162,10 @@ class ContinuousModelResult(BaseModel):
     dist: Optional[int]
     num_params: int
     params: Optional[List[float]]
-    cov: Optional[np.ndarray]
+    cov: Optional[NumpyFloatArray]
     max: Optional[float]
     dist_numE: int
-    bmd_dist: Optional[np.ndarray]
+    bmd_dist: Optional[NumpyFloatArray]
 
     class Config:
         arbitrary_types_allowed = True
@@ -209,17 +209,15 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
     @classmethod
     def from_results(cls, results: ContinuousModelResult) -> "ContinuousBmdsResultsStruct":
         return cls(
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
+            bmd=constants.BMDS_BLANK_VALUE,
+            bmdl=constants.BMDS_BLANK_VALUE,
+            bmdu=constants.BMDS_BLANK_VALUE,
+            aic=constants.BMDS_BLANK_VALUE,
             bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
 
 
 class ContinuousResult(BaseModel):
-    model_class: str
-    model_name: str
     bmdl: float
     bmd: float
     bmdu: float

@@ -6,12 +6,13 @@ import pandas as pd
 from simple_settings import settings
 
 from .. import constants
-from ..datasets import DatasetType
+from ..datasets import DatasetSchemaBase, DatasetType
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
-from .models.base import BmdModel, BmdModelAveraging
+from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
+from .selected import SelectedModel
 from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
@@ -31,13 +32,14 @@ class BmdsSession:
     model_options: Dict[str, Dict]
 
     def __init__(
-        self, dataset: DatasetType, recommendation_settings: Optional[RecommenderSettings] = None
+        self, dataset: DatasetType, recommendation_settings: Optional[RecommenderSettings] = None,
     ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
         self.model_average: Optional[BmdModelAveraging] = None
         self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
         self.recommender: Optional[Recommender] = None
+        self.selected: SelectedModel = SelectedModel(self)
 
     def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dataset.dtype].keys():
@@ -93,10 +95,27 @@ class BmdsSession:
     # serializing
     # -----------
     def serialize(self) -> schema.SessionSchemaBase:
-        raise NotImplementedError("implement!")
+        ...
 
-    def deserialize(self) -> "BmdsSession":
-        raise NotImplementedError("implement!")
+    @classmethod
+    def from_serialized(cls, data: Dict) -> "BmdsSession":
+        try:
+            version = data["version"]["numeric"]
+            dtype = data["dataset"]["dtype"]
+        except KeyError:
+            raise ValueError("Invalid JSON format")
+
+        dataset = DatasetSchemaBase.get_subclass(dtype).parse_obj(data["dataset"])
+        model_base_class = BmdModelSchema.get_subclass(dtype)
+        data["dataset"] = dataset
+        data["models"] = [model_base_class.parse_obj(model_) for model_ in data["models"]]
+        ma = data.get("model_average")
+        if ma:
+            data["model_average"] = BmdModelAveragingSchema.get_subclass(dtype).parse_obj(ma)
+        if tuple(version) == Bmds330.version_tuple:
+            return Bmds330Schema.parse_obj(data).deserialize()
+        else:
+            raise ValueError("Unknown BMDS version")
 
     # reporting
     # ---------
@@ -167,6 +186,7 @@ class Bmds330(BmdsSession):
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],
+            selected=self.selected.serialize(),
         )
         if self.model_average is not None:
             schema.model_average = self.model_average.serialize(self)
@@ -181,6 +201,7 @@ class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
         session = Bmds330(dataset=self.dataset.deserialize())
         session.models = [model.deserialize(session.dataset) for model in self.models]
+        session.selected = self.selected.deserialize(session)
         if self.model_average is not None:
             session.model_average = self.model_average.deserialize(session)
         if self.recommender is not None:
