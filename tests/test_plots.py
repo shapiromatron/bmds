@@ -1,7 +1,7 @@
 import pytest
 
 import bmds
-from bmds import models
+from bmds.bmds2 import models
 
 
 # dataset tests

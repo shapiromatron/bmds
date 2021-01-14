@@ -15,7 +15,7 @@ class TestBMDS(unittest.TestCase):
 
     def test_get_model(self):
         model = bmds.BMDS.get_model(bmds.constants.BMDS270, bmds.constants.M_Probit)
-        assert model == bmds.models.Probit_34
+        assert model == bmds.bmds2.models.Probit_34
 
 
 def test_default_model_additions(cdataset, ddataset):

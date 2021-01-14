@@ -3,6 +3,7 @@ from copy import copy, deepcopy
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
+from docx import Document
 from simple_settings import settings
 
 from .. import constants
@@ -126,16 +127,21 @@ class BmdsSession:
         raise NotImplementedError("TODO - implement!")
 
     def to_docx(
-        self,
-        filename=None,
-        title=None,
-        input_dataset=True,
-        summary_table=True,
-        recommendation_details=True,
-        recommended_model=True,
-        all_models=False,
+        self, document=None, header_level: int = 1,
     ):
-        raise NotImplementedError("TODO - implement!")
+        """Return a Document object with the session executed
+
+        Args:
+            document ([type], optional): Existing document object for append. Defaults to None.
+            header_level (int, optional): Starting header level. Defaults to 1.
+
+        Returns:
+            A python docx.Document object with content added.
+        """
+        if document is None:
+            doc = Document()
+            doc.add_paragraph("hi")
+        return doc
 
 
 class Bmds330(BmdsSession):

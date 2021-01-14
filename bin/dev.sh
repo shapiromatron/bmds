@@ -11,9 +11,9 @@ tmux select-pane -t 1
 tmux split-window -v
 
 # run commands
-tmux send-keys -t 0 "workon bmds && bpython" enter
-tmux send-keys -t 1 "workon bmds" enter
-tmux send-keys -t 2 "workon bmds && make servedocs" enter
+tmux send-keys -t 0 "source venv/bin/activate && ipython" enter
+tmux send-keys -t 1 "source venv/bin/activate" enter
+tmux send-keys -t 2 "source venv/bin/activate && make servedocs" enter
 
 # attach to shell
 tmux select-pane -t 0

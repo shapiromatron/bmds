@@ -1,16 +1,14 @@
-import os
-
 import pytest
 
 import bmds
 
 
 @pytest.mark.vcr()
-def test_reporter(cdataset, ddataset, cidataset):
+def test_reporter(cdataset, ddataset, cidataset, rewrite_data_files):
     # Check that API works; if VIEW_REPORTS is in test environment then reports
     # are also written to disk for manual inspection.
 
-    reporter1 = bmds.Reporter()
+    reporter1 = bmds.bmds2.Reporter()
 
     for ds in [cdataset, ddataset, cidataset]:
         ds.metadata.update(
@@ -34,6 +32,6 @@ def test_reporter(cdataset, ddataset, cidataset):
 
     reporter2 = sessions[0].to_docx(all_models=True)
 
-    if os.getenv("BMDS_CREATE_OUTPUTS", "").lower() == "true":
-        reporter1.save("~/Desktop/bmds_multi_session.docx")
-        reporter2.save("~/Desktop/bmds_single_session.docx")
+    if rewrite_data_files:
+        reporter1.save("bmds_multi_session.docx")
+        reporter2.save("bmds_single_session.docx")

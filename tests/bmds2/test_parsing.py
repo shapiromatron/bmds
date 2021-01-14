@@ -1,4 +1,4 @@
-import bmds
+from bmds import bmds2
 
 expected_bad_anova_warnings = """THIS USUALLY MEANS THE MODEL HAS NOT CONVERGED!
 BMDL computation failed.
@@ -10,7 +10,7 @@ def test_bad_anova_parsing(bad_anova_dataset, data_path):
     # check bad parsing of power
     with open(data_path / "outfiles/bad_anova_power.out", "r") as f:
         outfile = f.read()
-    model = bmds.models.Power_219(bad_anova_dataset)
+    model = bmds2.models.Power_219(bad_anova_dataset)
     output = model.parse_outfile(outfile)
     warnings = output["warnings"]
     actual = "\n".join(warnings)
@@ -19,6 +19,6 @@ def test_bad_anova_parsing(bad_anova_dataset, data_path):
     # check separate issues with hill
     with open(data_path / "outfiles/bad_anova_hill.out", "r") as f:
         outfile = f.read()
-    model = bmds.models.Hill_218(bad_anova_dataset)
+    model = bmds2.models.Hill_218(bad_anova_dataset)
     output = model.parse_outfile(outfile)
     assert output["Chi2"] == "1.#QNAN"
