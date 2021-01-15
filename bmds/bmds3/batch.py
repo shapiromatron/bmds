@@ -26,6 +26,7 @@ class BmdsSessionBatch:
         Returns:
             A python docx.Document object with content added.
         """
+        # TODO - update to use header styles
         if report is None:
             report = Report.build_default()
 

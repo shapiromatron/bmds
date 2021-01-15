@@ -8,12 +8,12 @@ from simple_settings import settings
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
+from . import reporting
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
 from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
-from .reporting import write_dataset
 from .selected import SelectedModel
 from .types import sessions as schema
 
@@ -203,7 +203,10 @@ class BmdsSession:
         if report is None:
             report = Report.build_default()
 
-        write_dataset(report, self.dataset)
+        report.document.add_paragraph("Session results", report.styles.header_1)
+        reporting.write_dataset(report, self.dataset, header_level + 1)
+        reporting.write_summary_table(report, self, header_level + 1)
+        reporting.write_models(report, self, header_level + 1)
 
         return report.document
 

@@ -73,6 +73,9 @@ class DatasetSchemaBase(BaseModel):
         except KeyError:
             raise ValueError(f"Unknown dtype: {dtype}")
 
+    def deserialize(self) -> DatasetBase:
+        raise NotImplementedError("")
+
 
 class DatasetMetadata(BaseModel):
     id: Optional[int]

@@ -151,7 +151,7 @@ class BmdModelAveraging:
     def has_results(self) -> bool:
         return self.results is not None
 
-    def serialize(self, model_index: int) -> "BmdModelAveragingSchema":
+    def serialize(self, session) -> "BmdModelAveragingSchema":
         raise NotImplementedError("Requires abstract implementation")
 
     def to_dict(self) -> Dict:
