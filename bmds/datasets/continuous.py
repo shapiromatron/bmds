@@ -6,7 +6,7 @@ from scipy import stats
 from simple_settings import settings
 
 from .. import constants, plotting
-from .anova import AnovaTests
+from ..stats.anova import AnovaTests
 from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
