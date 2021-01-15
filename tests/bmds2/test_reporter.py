@@ -11,13 +11,11 @@ def test_reporter(cdataset, ddataset, cidataset, rewrite_data_files):
     reporter1 = bmds.bmds2.Reporter()
 
     for ds in [cdataset, ddataset, cidataset]:
-        ds.metadata.update(
-            dataset_name="Smith 2017: Relative Liver Weight in Male SD Rats",
-            dose_name="Dose (μg/m³)",
-            response_name="Relative liver weight (mg/kg)",
-            dose_units="μg/m³",
-            response_units="mg/kg",
-        )
+        ds.metadata.name = "Smith 2017: Relative Liver Weight in Male SD Rats"
+        ds.metadata.dose_name = "Dose"
+        ds.metadata.response_name = "Relative liver weight"
+        ds.metadata.dose_units = "μg/m³"
+        ds.metadata.response_units = "mg/kg"
 
     sessions = [
         bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset),

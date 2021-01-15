@@ -6,10 +6,33 @@ from pydantic import BaseModel
 from ..constants import Dtype
 
 
+class DatasetMetadata(BaseModel):
+    id: Optional[int]
+    name: str = ""
+    dose_units: str = ""
+    response_units: str = ""
+    dose_name: str = ""
+    response_name: str = ""
+
+    class Config:
+        extra = "allow"
+
+    def get_name(self):
+        if self.name:
+            return self.name
+        if self.id:
+            return f"Dataset #{self.id}"
+        return "BMDS output results"
+
+
 class DatasetBase:
     # Abstract parent-class for dataset-types.
 
     dtype: Dtype
+    metadata: DatasetMetadata
+
+    DEFAULT_XLABEL = "Dose"
+    DEFAULT_YLABEL = "Response"
 
     def _validate(self):
         raise NotImplementedError("Abstract method; requires implementation")
@@ -36,18 +59,34 @@ class DatasetBase:
             self._dose_linspace = np.linspace(np.min(self.doses), np.max(self.doses), 100)
         return self._dose_linspace
 
-    def _get_dose_units_text(self):
-        if "dose_units" in self.metadata:
-            return f" ({self.metadata['dose_units']})"
+    def _get_dose_units_text(self) -> str:
+        if self.metadata.dose_units:
+            return f" ({self.metadata.dose_units})"
         return ""
 
-    def _get_response_units_text(self):
-        if "response_units" in self.metadata:
-            return f" ({self.metadata['response_units']})"
+    def _get_response_units_text(self) -> str:
+        if self.metadata.response_units:
+            return f" ({self.metadata.response_units})"
         return ""
 
-    def _get_dataset_name(self):
-        return self.metadata.get("dataset_name", "BMDS output results")
+    def _get_dataset_name(self) -> str:
+        return self.metadata.get_name()
+
+    def get_xlabel(self):
+        label = self.DEFAULT_XLABEL
+        if self.metadata.dose_name:
+            label = self.metadata.dose_name
+        if self.metadata.dose_units:
+            label += f" ({self.metadata.dose_units})"
+        return label
+
+    def get_ylabel(self):
+        label = self.DEFAULT_YLABEL
+        if self.metadata.response_name:
+            label = self.metadata.response_name
+        if self.metadata.response_units:
+            label += f" ({self.metadata.response_units})"
+        return label
 
     def serialize(self) -> "DatasetSchemaBase":
         raise NotImplementedError("Abstract method; requires implementation")
@@ -75,15 +114,6 @@ class DatasetSchemaBase(BaseModel):
 
     def deserialize(self) -> DatasetBase:
         raise NotImplementedError("")
-
-
-class DatasetMetadata(BaseModel):
-    id: Optional[int]
-    name: Optional[str]
-    dose_units: Optional[str]
-    response_units: Optional[str]
-    dose_name: Optional[str]
-    response_name: Optional[str]
 
 
 class DatasetPlottingSchema(BaseModel):

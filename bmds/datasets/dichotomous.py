@@ -29,12 +29,14 @@ class DichotomousDataset(DatasetBase):
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.DICHOTOMOUS
 
+    DEFAULT_YLABEL = "Fraction affected"
+
     def __init__(self, doses: List[float], ns: List[int], incidences: List[float], **metadata):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences)]
-        self.metadata = metadata
+        self.metadata = DatasetMetadata.parse_obj(metadata)
         self._sort_by_dose_group()
         self._validate()
 
@@ -154,10 +156,8 @@ class DichotomousDataset(DatasetBase):
         plot_data = self.plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.metadata.get("dose_name", "Dose")
-        ylabel = self.metadata.get("response_name", "Fraction affected")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        ax.set_xlabel(self.get_xlabel())
+        ax.set_ylabel(self.get_ylabel())
         ax.errorbar(
             self.doses,
             plot_data.mean,

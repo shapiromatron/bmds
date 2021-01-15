@@ -9,6 +9,59 @@ dummy4 = [1, 2, 3, 4]
 dummy3_dups = [0, 0, 1]
 
 
+class TestBaseDatasetFunctionality:
+    # we use dichotomous as subclass to test; these methods are on base
+
+    def test_dose_space(self):
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
+        )
+        xs = ds.dose_linspace
+        assert xs.min() == 0
+        assert xs.max() == 29.75
+        assert xs.size == 100
+
+    def test_reporting_metadata(self):
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
+        )
+        assert ds._get_dose_units_text() == ""
+        assert ds._get_response_units_text() == ""
+        assert ds._get_dataset_name() == "BMDS output results"
+
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14],
+            id=123,
+            name="example dataset",
+            dose_units="mg/kg/d",
+            response_units="ug/m3",
+            dose_name="Intravenous",
+            response_name="Volume",
+        )
+        assert ds._get_dose_units_text() == " (mg/kg/d)"
+        assert ds._get_response_units_text() == " (ug/m3)"
+        assert ds._get_dataset_name() == "example dataset"
+
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14], id=123,
+        )
+        assert ds._get_dataset_name() == "Dataset #123"
+
+    def test_extra_metadata(self):
+        # extra metadata is allowed, but not used in bmds
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14],
+            id=123,
+            extra=[1, 2, 3],
+        )
+        assert ds.metadata.extra == [1, 2, 3]
+        assert ds.metadata.dict()["extra"] == [1, 2, 3]
+
+
 class TestDichotomousDataset:
     def test_validation(self):
         # these should be valid
@@ -20,11 +73,43 @@ class TestDichotomousDataset:
             # different sized lists
             bmds.DichotomousDataset(doses=dummy4, ns=dummy3, incidences=dummy3)
 
-    def test_extra_kwargs(self):
+    def test_metadata(self):
         ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14], id=123
+            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
         )
-        assert ds.to_dict()["metadata"]["id"] == 123
+        assert ds.to_dict()["metadata"] == {
+            "id": None,
+            "name": "",
+            "dose_units": "",
+            "response_units": "",
+            "dose_name": "",
+            "response_name": "",
+        }
+
+        assert ds.get_xlabel() == "Dose"
+        assert ds.get_ylabel() == "Fraction affected"
+
+        ds = bmds.DichotomousDataset(
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14],
+            id=123,
+            name="example dataset",
+            dose_units="mg/kg/d",
+            response_units="ug/m3",
+            dose_name="Intravenous",
+            response_name="Volume",
+        )
+        assert ds.to_dict()["metadata"] == {
+            "id": 123,
+            "name": "example dataset",
+            "dose_units": "mg/kg/d",
+            "response_units": "ug/m3",
+            "dose_name": "Intravenous",
+            "response_name": "Volume",
+        }
+        assert ds.get_xlabel() == "Intravenous (mg/kg/d)"
+        assert ds.get_ylabel() == "Volume (ug/m3)"
 
     def test_dfile_outputs(self):
         ds = bmds.DichotomousDataset(doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
@@ -62,10 +147,10 @@ class TestDichotomousDataset:
             "metadata": {
                 "id": 123,
                 "name": "test",
-                "dose_units": None,
-                "response_units": None,
-                "dose_name": None,
-                "response_name": None,
+                "dose_units": "",
+                "response_units": "",
+                "dose_name": "",
+                "response_name": "",
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -112,10 +197,10 @@ class TestDichotomousCancerDataset:
             "metadata": {
                 "id": 123,
                 "name": "test",
-                "dose_units": None,
-                "response_units": None,
-                "dose_name": None,
-                "response_name": None,
+                "dose_units": "",
+                "response_units": "",
+                "dose_name": "",
+                "response_name": "",
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -148,10 +233,42 @@ class TestContinuousSummaryDataset:
             ns=[111, 142, 143, 93, 42],
             means=[2.112, 2.095, 1.956, 1.587, 1.254],
             stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
-            name="abc",
         )
+        assert ds.to_dict()["metadata"] == {
+            "id": None,
+            "name": "",
+            "dose_units": "",
+            "response_units": "",
+            "dose_name": "",
+            "response_name": "",
+        }
 
-        assert ds.to_dict()["metadata"]["name"] == "abc"
+        assert ds.get_xlabel() == "Dose"
+        assert ds.get_ylabel() == "Response"
+
+        ds = bmds.ContinuousDataset(
+            doses=[0, 10, 50, 150, 400],
+            ns=[111, 142, 143, 93, 42],
+            means=[2.112, 2.095, 1.956, 1.587, 1.254],
+            stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
+            id=123,
+            name="example dataset",
+            dose_units="mg/kg/d",
+            response_units="ug/m3",
+            dose_name="Intravenous",
+            response_name="Volume",
+        )
+        assert ds.to_dict()["metadata"] == {
+            "id": 123,
+            "name": "example dataset",
+            "dose_units": "mg/kg/d",
+            "response_units": "ug/m3",
+            "dose_name": "Intravenous",
+            "response_name": "Volume",
+        }
+
+        assert ds.get_xlabel() == "Intravenous (mg/kg/d)"
+        assert ds.get_ylabel() == "Volume (ug/m3)"
 
     def test_is_increasing(self):
         ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=dummy4, stdevs=dummy4)
@@ -201,7 +318,7 @@ class TestContinuousSummaryDataset:
             stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
             dose_units="μg/m³",
             response_units="mg/kg",
-            dataset_name="Smith 2017: Relative Liver Weight in Male SD Rats",
+            name="Smith 2017: Relative Liver Weight in Male SD Rats",
         )
         assert ds._get_dataset_name() == "Smith 2017: Relative Liver Weight in Male SD Rats"
         assert ds._get_dose_units_text() == " (μg/m³)"
@@ -250,10 +367,10 @@ class TestContinuousSummaryDataset:
             "metadata": {
                 "id": 123,
                 "name": "test",
-                "dose_units": None,
-                "response_units": None,
-                "dose_name": None,
-                "response_name": None,
+                "dose_units": "",
+                "response_units": "",
+                "dose_name": "",
+                "response_name": "",
             },
             "doses": [1.0, 2.0, 3.0, 4.0],
             "ns": [1, 2, 3, 4],
@@ -286,9 +403,40 @@ class TestContinuousIndividualDataset:
         ds = bmds.ContinuousIndividualDataset(
             doses=[0, 0, 1, 1, 2, 2, 3, 3],
             responses=[8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
-            id=None,
         )
-        assert ds.to_dict()["metadata"]["id"] is None
+        assert ds.to_dict()["metadata"] == {
+            "id": None,
+            "name": "",
+            "dose_units": "",
+            "response_units": "",
+            "dose_name": "",
+            "response_name": "",
+        }
+
+        assert ds.get_xlabel() == "Dose"
+        assert ds.get_ylabel() == "Response"
+
+        ds = bmds.ContinuousIndividualDataset(
+            doses=[0, 0, 1, 1, 2, 2, 3, 3],
+            responses=[8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],
+            id=123,
+            name="example dataset",
+            dose_units="mg/kg/d",
+            response_units="ug/m3",
+            dose_name="Intravenous",
+            response_name="Volume",
+        )
+        assert ds.to_dict()["metadata"] == {
+            "id": 123,
+            "name": "example dataset",
+            "dose_units": "mg/kg/d",
+            "response_units": "ug/m3",
+            "dose_name": "Intravenous",
+            "response_name": "Volume",
+        }
+
+        assert ds.get_xlabel() == "Intravenous (mg/kg/d)"
+        assert ds.get_ylabel() == "Volume (ug/m3)"
 
     def test_dfile_outputs(self):
         ds = bmds.ContinuousIndividualDataset(doses=dummy3, responses=dummy3)
@@ -341,10 +489,10 @@ class TestContinuousIndividualDataset:
             "metadata": {
                 "id": 123,
                 "name": "test",
-                "dose_units": None,
-                "response_units": None,
-                "dose_name": None,
-                "response_name": None,
+                "dose_units": "",
+                "response_units": "",
+                "dose_name": "",
+                "response_name": "",
             },
             "doses": [0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0],
             "responses": [8.1079, 9.3063, 9.7431, 9.7814, 10.0517, 10.6132, 10.7509, 11.0567],

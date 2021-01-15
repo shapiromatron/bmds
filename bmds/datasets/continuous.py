@@ -91,7 +91,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         self.ns = ns
         self.means = means
         self.stdevs = stdevs
-        self.metadata = metadata
+        self.metadata = DatasetMetadata.parse_obj(metadata)
         self._sort_by_dose_group()
         self._validate()
 
@@ -163,10 +163,8 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.metadata.get("dose_name", "Dose")
-        ylabel = self.metadata.get("response_name", "Response")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        ax.set_xlabel(self.get_xlabel())
+        ax.set_ylabel(self.get_ylabel())
         ax.errorbar(
             self.doses,
             self.means,
@@ -255,7 +253,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         data = self._prepare_summary_data(doses, responses)
         for key, value in data.items():
             setattr(self, key, value)
-        self.metadata = metadata
+        self.metadata = DatasetMetadata.parse_obj(metadata)
         self._validate()
 
     def _prepare_summary_data(self, individual_doses, responses):
@@ -342,10 +340,8 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         """
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.metadata.get("dose_name", "Dose")
-        ylabel = self.metadata.get("response_name", "Response")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        ax.set_xlabel(self.get_xlabel())
+        ax.set_ylabel(self.get_ylabel())
         ax.scatter(
             self.individual_doses,
             self.responses,
