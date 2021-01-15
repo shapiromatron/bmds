@@ -4,7 +4,7 @@ import tabulate
 from ..constants import Dtype
 from ..datasets.base import DatasetBase
 from ..reporting.footnotes import TableFootnote
-from ..reporting.styling import Report, set_column_width, write_cell
+from ..reporting.styling import Report, set_column_width, write_cell, add_mpl_figure
 
 
 def write_dataset(report: Report, dataset: DatasetBase, header_level: int):
@@ -125,11 +125,20 @@ def write_models(report: Report, session, header_level: int):
     for model in session.models:
         report.document.add_paragraph(model.name(), styles.header_2)
 
+        if not model.has_results:
+            report.document.add_paragraph(
+                "Model execution failed. No reports returned...", styles.tbl_body
+            )
+            continue
+
+        # print figure
+        add_mpl_figure(report.document, model.plot(), 6)
+
         # demo - build params table
         report.document.add_paragraph(
             "This is just an example of what can be done...", styles.tbl_body
         )
         tbl = tabulate.tabulate(
-            [model.results.fit.params], headers=model.bmd_model_class.params, tablefmt="fancy_grid"
+            [model.results.fit.params], headers=model.bmd_model_class.params, tablefmt="fancy_grid",
         )
         report.document.add_paragraph(tbl, styles.outfile)

@@ -17,7 +17,7 @@ class TestBaseDatasetFunctionality:
             doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
         )
         xs = ds.dose_linspace
-        assert xs.min() == 0
+        assert xs.min() == bmds.constants.ZEROISH
         assert xs.max() == 29.75
         assert xs.size == 100
 

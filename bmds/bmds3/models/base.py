@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
 from ...utils import package_root
+from ... import plotting
 from ..constants import BmdModelSchema
 
 logger = logging.getLogger(__name__)
@@ -103,6 +104,21 @@ class BmdModel:
 
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
+
+    def plot(self):
+        """
+        After model execution, print the dataset, curve-fit, BMD, and BMDL.
+        """
+        if not self.has_results:
+            raise ValueError("Cannot plot if no results avilable")
+
+        fig = self.dataset.plot()
+        ax = fig.gca()
+        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
+        ax.plot(self.results.dr_x, self.results.dr_y, label=self.name(), **plotting.LINE_FORMAT)
+        # self._add_bmr_lines(ax)
+        ax.legend(**plotting.LEGEND_OPTS)
+        return fig
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()

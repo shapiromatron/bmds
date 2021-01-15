@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -50,3 +51,10 @@ def write_cell(cell, value, style, formatter=float_formatter):
 def set_column_width(column, size_in_inches: float):
     for cell in column.cells:
         cell.width = Inches(size_in_inches)
+
+
+def add_mpl_figure(document, fig, size_in_inches: float):
+    with BytesIO() as f:
+        fig.savefig(f)
+        document.add_picture(f, width=Inches(size_in_inches))
+    fig.clf()

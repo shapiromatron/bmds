@@ -9,6 +9,7 @@ PLOT_FIGSIZE = (8, 5)
 PLOT_MARGINS = 0.05
 DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k")
 DATASET_INDIVIDUAL_FORMAT = dict(s=35, alpha=0.60, c="k")
+LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
 LINE_FORMAT = dict(c="#6470C0", lw=3)
 BMD_LINE_FORMAT = dict(c="#BFC05D", lw=2)
 BMD_LABEL_FORMAT = dict(size=9)

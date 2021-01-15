@@ -159,3 +159,4 @@ class LogicBin(enum.IntEnum):
 
 
 NULL = "-"
+ZEROISH = 1e-8

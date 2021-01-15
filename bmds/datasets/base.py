@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, TypeVar
 import numpy as np
 from pydantic import BaseModel
 
-from ..constants import Dtype
+from ..constants import Dtype, ZEROISH
 
 
 class DatasetMetadata(BaseModel):
@@ -57,6 +57,7 @@ class DatasetBase:
     def dose_linspace(self) -> np.ndarray:
         if not hasattr(self, "_dose_linspace"):
             self._dose_linspace = np.linspace(np.min(self.doses), np.max(self.doses), 100)
+            self._dose_linspace[self._dose_linspace == 0] = ZEROISH
         return self._dose_linspace
 
     def _get_dose_units_text(self) -> str:
