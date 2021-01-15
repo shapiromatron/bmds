@@ -3,16 +3,17 @@ from copy import copy, deepcopy
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-from docx import Document
 from simple_settings import settings
 
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
+from ..reporting.styling import Report
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
 from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
+from .reporting import write_dataset
 from .selected import SelectedModel
 from .types import sessions as schema
 
@@ -123,25 +124,88 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self, filename) -> pd.DataFrame:
-        raise NotImplementedError("TODO - implement!")
+    def to_df(self, dropna: bool = True) -> pd.DataFrame:
+        """
+        Export an executed session to a pandas dataframe
+
+        Args:
+            dropna (bool, optional): Drop columns with missing data. Defaults to True.
+
+        Returns:
+            pd.DataFrame: A pandas dataframe
+        """
+
+        def list_to_str(data, default=None):
+            if data is None:
+                return default
+            return "|".join([str(d) for d in data])
+
+        # build dataset
+        dataset_dict = dict(
+            doses=list_to_str(getattr(self.dataset, "doses", None)),
+            ns=list_to_str(getattr(self.dataset, "doses", None)),
+            means=list_to_str(getattr(self.dataset, "means", None)),
+            stdevs=list_to_str(getattr(self.dataset, "stdevs", None)),
+            incidences=list_to_str(getattr(self.dataset, "incidences", None)),
+        )
+
+        # build model rows
+        model_rows = []
+        model_row_names = [
+            "model_index",
+            "model_name",
+            "bmd",
+            "bmdl",
+            "bmdu",
+            "aic",
+            "params",
+        ]
+        for idx, model in enumerate(self.models):
+            model_rows.append(
+                [
+                    idx,
+                    model.name(),
+                    model.results.bmd,
+                    model.results.bmdl,
+                    model.results.bmdu,
+                    model.results.aic,
+                    list_to_str(model.results.fit.params),
+                ]
+            )
+        df = pd.DataFrame(data=model_rows, columns=model_row_names)
+
+        # add dataset rows
+        for key, value in dataset_dict.items():
+            df[key] = value
+
+        # reorder
+        column_order = list(dataset_dict.keys()) + model_row_names
+        df = df.reindex(column_order, axis=1)
+
+        # drop empty columns
+        if dropna:
+            df = df.dropna(axis=1, how="all")
+
+        return df
 
     def to_docx(
-        self, document=None, header_level: int = 1,
+        self, report: Report = None, header_level: int = 1,
     ):
         """Return a Document object with the session executed
 
         Args:
-            document ([type], optional): Existing document object for append. Defaults to None.
+            report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
 
         Returns:
             A python docx.Document object with content added.
         """
-        if document is None:
-            doc = Document()
-            doc.add_paragraph("hi")
-        return doc
+        if report is None:
+            report = Report.build_default()
+
+        write_dataset(report, self.dataset)
+
+        return report.document
 
 
 class Bmds330(BmdsSession):

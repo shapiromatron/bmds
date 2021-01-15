@@ -1,14 +1,12 @@
 import os
 import re
 from io import BytesIO
-from pathlib import Path
 
-import docx
 from docx.shared import Inches
 
 from .. import constants, datasets
 from ..reporting.footnotes import TableFootnote
-from ..reporting.styling import ReporterStyleGuide
+from ..reporting.styling import Report
 from ..reporting.styling import float_formatter as default_float_formatter
 
 
@@ -38,22 +36,17 @@ class Reporter:
         None.
         """
 
-        if template is None:
-            template = str(Path(__file__).parents[1] / "reporting/templates/base.docx")
-
-        if styles is None:
-            styles = ReporterStyleGuide(
-                table="bmdsTbl",
-                tbl_header="bmdsTblHeader",
-                tbl_body="bmdsTblBody",
-                tbl_footnote="bmdsTblFootnote",
-                outfile="bmdsOutputFile",
-                header_1="Heading 1",
-                header_2="Heading 2",
-            )
+        if template is not None and styles is not None:
+            pass
+        elif template is None and styles is None:
+            report = Report.build_default()
+            template = report.document
+            styles = report.styles
+        else:
+            raise ValueError("template and styles most both be specified, or neither")
 
         self.styles = styles
-        self.doc = docx.Document(template) if isinstance(template, str) else template
+        self.doc = template
 
         # remove first paragraph if it's blank
         if len(self.doc.paragraphs) > 0 and self.doc.paragraphs[0].text == "":

@@ -1,10 +1,11 @@
 import json
 import os
+from pathlib import Path
 
 import pytest
 
 import bmds
-from bmds.bmds3.sessions import BmdsSession
+from bmds.bmds3 import BmdsSession, BmdsSessionBatch
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
@@ -15,6 +16,16 @@ skip_reason = "DLLs not present on CI"
 def dichds():
     return bmds.DichotomousDataset(
         doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
+    )
+
+
+@pytest.fixture
+def contds():
+    return bmds.ContinuousDataset(
+        doses=[0, 50, 100, 150, 200],
+        ns=[100, 100, 100, 100, 100],
+        means=[10, 20, 30, 40, 50],
+        stdevs=[3, 4, 5, 6, 7],
     )
 
 
@@ -63,7 +74,7 @@ class TestBmds330:
         d = session1.to_dict()
 
         if rewrite_data_files:
-            (data_path / "dichotomous-session.json").write_text(d)
+            (data_path / "dichotomous-session.json").write_text(session1.serialize().json())
 
         # spot check a few keys
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
@@ -84,3 +95,37 @@ class TestBmds330:
         d1 = session1.serialize().dict()
         d2 = session2.serialize().dict()
         assert d1 == d2
+
+    def test_exports(self, dichds, rewrite_data_files):
+        # make sure serialize looks correct
+        session = bmds.session.Bmds330(dataset=dichds)
+        session.add_default_models()
+        session.execute_and_recommend()
+
+        # dataframe
+        df = session.to_df()
+
+        # docx
+        docx = session.to_docx()
+
+        if rewrite_data_files:
+            df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
+
+
+class TestBmdsSessionBatch:
+    def test_exports(self, dichds, contds, rewrite_data_files):
+        datasets = [dichds, contds]
+        batch = BmdsSessionBatch()
+        for dataset in datasets:
+            session = bmds.session.Bmds330(dataset=dataset)
+            session.add_default_models()
+            session.execute_and_recommend()
+            batch.sessions.append(session)
+
+        df = batch.to_df()
+        docx = batch.to_docx()
+
+        if rewrite_data_files:
+            df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())

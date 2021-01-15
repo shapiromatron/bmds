@@ -1,16 +1,32 @@
-from typing import NamedTuple
+from pathlib import Path
+from typing import Any
 
 import numpy as np
+from docx import Document
+from docx.shared import Inches
+from pydantic import BaseModel
 
 
-class ReporterStyleGuide(NamedTuple):
-    table: str
-    tbl_header: str
-    tbl_body: str
-    tbl_footnote: str
-    outfile: str
-    header_1: str
-    header_2: str
+class ReporterStyleGuide(BaseModel):
+    portrait_width: float = 6.5
+    table: str = "bmdsTbl"
+    tbl_header: str = "bmdsTblHeader"
+    tbl_body: str = "bmdsTblBody"
+    tbl_footnote: str = "bmdsTblFootnote"
+    outfile: str = "bmdsOutputFile"
+    header_1: str = "Heading 1"
+    header_2: str = "Heading 2"
+
+
+class Report(BaseModel):
+    document: Any
+    styles: ReporterStyleGuide
+
+    @classmethod
+    def build_default(cls) -> "Report":
+        fn = Path(__file__).parent / "templates/base.docx"
+        doc = Document(str(fn))
+        return Report(document=doc, styles=ReporterStyleGuide())
 
 
 def float_formatter(value):
@@ -22,3 +38,15 @@ def float_formatter(value):
         return str(int(value))
     else:
         return "{:.3f}".format(value).rstrip("0")
+
+
+def write_cell(cell, value, style, formatter=float_formatter):
+    if isinstance(value, float):
+        value = formatter(value)
+    cell.paragraphs[0].text = str(value)
+    cell.paragraphs[0].style = style
+
+
+def set_column_width(column, size_in_inches: float):
+    for cell in column.cells:
+        cell.width = Inches(size_in_inches)
