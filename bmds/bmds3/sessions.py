@@ -145,14 +145,14 @@ class BmdsSession:
             dataset_id=self.dataset.metadata.id,
             dataset_name=self.dataset.metadata.name,
             doses=list_to_str(getattr(self.dataset, "doses", None)),
-            dose_name=self.dataset.metadata.name,
-            dose_units=self.dataset.metadata.name,
+            dose_name=self.dataset.metadata.dose_name,
+            dose_units=self.dataset.metadata.dose_units,
             ns=list_to_str(getattr(self.dataset, "doses", None)),
             means=list_to_str(getattr(self.dataset, "means", None)),
             stdevs=list_to_str(getattr(self.dataset, "stdevs", None)),
             incidences=list_to_str(getattr(self.dataset, "incidences", None)),
-            response_name=self.dataset.metadata.name,
-            response_units=self.dataset.metadata.name,
+            response_name=self.dataset.metadata.response_name,
+            response_units=self.dataset.metadata.response_units,
         )
 
         # build model rows
