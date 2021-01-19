@@ -4,7 +4,7 @@ import tabulate
 from ..constants import Dtype
 from ..datasets.base import DatasetBase
 from ..reporting.footnotes import TableFootnote
-from ..reporting.styling import Report, set_column_width, write_cell, add_mpl_figure
+from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
 
 
 def write_dataset(report: Report, dataset: DatasetBase, header_level: int):

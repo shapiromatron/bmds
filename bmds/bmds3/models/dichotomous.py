@@ -112,6 +112,9 @@ class BmdModelDichotomous(BmdModel):
             gof=gof_results,
             dr_x=dr_x.tolist(),
             dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
+            bmdl_y=self.dr_curve(bmds_results_struct.bmdl, fit_results.params),
+            bmd_y=self.dr_curve(bmds_results_struct.bmd, fit_results.params),
+            bmdu_y=self.dr_curve(bmds_results_struct.bmdu, fit_results.params),
         )
         return result
 

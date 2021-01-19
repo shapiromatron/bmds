@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, TypeVar
 import numpy as np
 from pydantic import BaseModel
 
-from ..constants import Dtype, ZEROISH
+from ..constants import ZEROISH, Dtype
 
 
 class DatasetMetadata(BaseModel):
