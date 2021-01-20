@@ -227,3 +227,6 @@ class ContinuousResult(BaseModel):
     fit: ContinuousModelResult
     dr_x: List[float]
     dr_y: List[float]
+    bmdl_y: float
+    bmd_y: float
+    bmdu_y: float

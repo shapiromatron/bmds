@@ -6,6 +6,7 @@ from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
 from ..constants import (
+    BMDS_BLANK_VALUE,
     DichotomousModel,
     DichotomousModelChoices,
     DichotomousModelIds,
@@ -99,6 +100,11 @@ class BmdModelDichotomous(BmdModel):
             ctypes.pointer(bmds_results_struct),
         )
         dr_x = self.dataset.dose_linspace
+        critical_xs = np.array(
+            [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
+        )
+        dr_y = self.dr_curve(dr_x, fit_results.params)
+        critical_ys = self.dr_curve(critical_xs, fit_results.params)
         result = DichotomousResult(
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
@@ -111,10 +117,10 @@ class BmdModelDichotomous(BmdModel):
             fit=fit_results,
             gof=gof_results,
             dr_x=dr_x.tolist(),
-            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
-            bmdl_y=self.dr_curve(bmds_results_struct.bmdl, fit_results.params),
-            bmd_y=self.dr_curve(bmds_results_struct.bmd, fit_results.params),
-            bmdu_y=self.dr_curve(bmds_results_struct.bmdu, fit_results.params),
+            dr_y=dr_y.tolist(),
+            bmdl_y=critical_ys[0] if bmds_results_struct.bmdl > 0 else BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
         )
         return result
 

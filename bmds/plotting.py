@@ -27,3 +27,7 @@ def create_empty_figure():
     mpl.rcParams.update({"font.size": 10})
     fig, ax = plt.subplots(figsize=PLOT_FIGSIZE, dpi=300)
     return fig
+
+
+def close_figure(fig):
+    plt.close(fig)

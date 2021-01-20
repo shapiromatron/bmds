@@ -7,6 +7,8 @@ from docx import Document
 from docx.shared import Inches
 from pydantic import BaseModel
 
+from ..plotting import close_figure
+
 
 class ReporterStyleGuide(BaseModel):
     portrait_width: float = 6.5
@@ -58,3 +60,4 @@ def add_mpl_figure(document, fig, size_in_inches: float):
         fig.savefig(f)
         document.add_picture(f, width=Inches(size_in_inches))
     fig.clf()
+    close_figure(fig)

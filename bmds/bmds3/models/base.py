@@ -126,28 +126,34 @@ class BmdModel:
         res = self.results
         xdomain = ax.xaxis.get_view_interval()
         xrng = xdomain[1] - xdomain[0]
-        ax.plot(
-            [res.bmd, res.bmd], [0, res.bmd_y], label="BMR, BMD, BMDL", **plotting.BMD_LINE_FORMAT
-        )
-        ax.plot([res.bmdl, res.bmdl], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT)
-        ax.plot([res.bmdl, res.bmdl], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT)
-        ax.plot([0, res.bmd], [res.bmd_y, res.bmd_y], **plotting.BMD_LINE_FORMAT)
-        ax.text(
-            res.bmd + xrng * 0.01,
-            0,
-            "BMD",
-            horizontalalignment="left",
-            verticalalignment="center",
-            **plotting.BMD_LABEL_FORMAT,
-        )
-        ax.text(
-            res.bmdl - xrng * 0.01,
-            0,
-            "BMDL",
-            horizontalalignment="right",
-            verticalalignment="center",
-            **plotting.BMD_LABEL_FORMAT,
-        )
+
+        if res.bmd > 0:
+            ax.plot([0, res.bmd], [res.bmd_y, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.text(
+                res.bmd + xrng * 0.01,
+                0,
+                "BMD",
+                label="BMR, BMD, BMDL",
+                horizontalalignment="left",
+                verticalalignment="center",
+                **plotting.BMD_LABEL_FORMAT,
+            )
+
+        if res.bmdl > 0:
+            ax.plot([res.bmdl, res.bmdl], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.text(
+                res.bmdl - xrng * 0.01,
+                0,
+                "BMDL",
+                horizontalalignment="right",
+                verticalalignment="center",
+                **plotting.BMD_LABEL_FORMAT,
+            )
+
+        if res.bmd > 0 and res.bmdl > 0:
+            ax.plot(
+                [res.bmd, res.bmd], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT,
+            )
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()

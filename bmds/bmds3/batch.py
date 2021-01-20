@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 import pandas as pd
@@ -34,3 +35,22 @@ class BmdsSessionBatch:
             session.to_docx(report, header_level=header_level)
 
         return report.document
+
+    def serialize(self) -> str:
+        """Export BmdsSession into a json format which can be saved and loaded.
+
+        Returns:
+            str: A JSON string
+        """
+        return json.dumps([session.to_dict() for session in self.sessions])
+
+    @classmethod
+    def deserialize(cls, data: str) -> "BmdsSessionBatch":
+        """Load serialized batch export into a batch session.
+
+        Args:
+            data (str): A JSON export generated from the `BmdsSessionBatch.serialize` method.
+        """
+        sessions_data = json.loads(data)
+        sessions = [BmdsSession.from_serialized(session) for session in sessions_data]
+        return BmdsSessionBatch(sessions=sessions)
