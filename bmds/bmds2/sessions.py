@@ -1,6 +1,7 @@
 import logging
 import os
 import platform
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from datetime import datetime
 from typing import Dict, Tuple
@@ -8,8 +9,8 @@ from typing import Dict, Tuple
 import pandas as pd
 from simple_settings import settings
 
-from .. import __version__, constants, exports, logic, reporter
-from . import models, remote
+from .. import __version__, constants, exports, reporter
+from . import logic, models, remote
 
 logger = logging.getLogger(__name__)
 
@@ -91,16 +92,11 @@ class BMDS:
             self._execute_remote()
 
     def _execute(self):
-        for model in self.models:
-            model.execute_job()
-
-        # TODO - restore after we stabilize modeling; currently this is broken becauase
-        # we do not ensure all models are complete before starting model averaging
-        # with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-        #     promises = executor.map(lambda model: model.execute_job(), self.models)
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+            promises = executor.map(lambda model: model.execute_job(), self.models)
 
         # evaluate response; throw Exceptions if raised
-        # list(promises)
+        list(promises)
 
     def _execute_remote(self):
         # submit data
@@ -221,11 +217,10 @@ class BMDS:
             d["doses_dropped"].append(self.doses_dropped)
             model._to_df(d, model_index, show_null)
 
-    def to_dict(self, dataset_index):
+    def to_dict(self):
         return dict(
             bmds_version=self.version_str,
             bmds_python_version=__version__,
-            dataset_index=dataset_index,
             dataset=self.dataset.to_dict(),
             models=[model.to_dict(i) for i, model in enumerate(self.models)],
             recommended_model_index=getattr(self, "recommended_model_index", None),

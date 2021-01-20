@@ -33,7 +33,8 @@ def test_bmds3_dichotomous_models(dichds):
         (dichotomous.DichotomousHill, [68.173, 59.795, 75.998, 364.982]),
         # (dichotomous.Multistage, [64.127, 52.552, 76.220, 366.384]),
     ]:
-        result = Model(dichds).execute()
+        model = Model(dichds)
+        result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
         # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
         assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all(), Model.__name__
@@ -41,21 +42,9 @@ def test_bmds3_dichotomous_models(dichds):
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_session(dichds):
-    session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=dichds)
+    session = bmds.session.Bmds330(dataset=dichds)
     session.add_default_models()
-    for model in session.models:
-        model.results = model.execute(debug=True)
-    d = session.to_dict(0)
-    # ensure json-serializable
-    print(json.dumps(d))
-
-
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_dichotomous_ma_session(dichds):
-    session = bmds.session.BMDS_v330(bmds.constants.DICHOTOMOUS, dataset=dichds)
-    session.add_default_models()
-    session.add_model_averaging()
     session.execute()
-    d = session.to_dict(0)
+    d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))

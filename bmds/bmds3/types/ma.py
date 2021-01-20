@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from pydantic import BaseModel
 
-from ..models.dichotomous import Dichotomous
+from ..models.dichotomous import BmdModelDichotomous
 from .common import list_t_c
 from .dichotomous import DichotomousAnalysisStruct, DichotomousModelResultStruct
 
@@ -69,7 +69,11 @@ class DichotomousMAResultStruct(ctypes.Structure):
         )
 
 
-class DichotomousModelAverageResult(BaseModel):
+class ModelAverageResult(BaseModel):
+    pass
+
+
+class DichotomousModelAverageResult(ModelAverageResult):
     """
     Model average fit
     """
@@ -89,7 +93,7 @@ class DichotomousModelAverageResult(BaseModel):
         cls,
         inputs: DichotomousMAAnalysisStruct,
         outputs: DichotomousMAResultStruct,
-        models: List[Dichotomous],
+        models: List[BmdModelDichotomous],
     ):
         arr = np.array(outputs.bmd_dist[: outputs.dist_numE * 2]).reshape(2, outputs.dist_numE).T
         arr = arr[np.isfinite(arr[:, 0])]

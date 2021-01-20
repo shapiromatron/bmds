@@ -1,9 +1,11 @@
+from typing import List, Optional
+
 import numpy as np
 from scipy import stats
 from simple_settings import settings
 
-from .. import plotting
-from .base import DatasetBase
+from .. import constants, plotting
+from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
 class DichotomousDataset(DatasetBase):
@@ -25,13 +27,14 @@ class DichotomousDataset(DatasetBase):
 
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
+    dtype = constants.Dtype.DICHOTOMOUS
 
-    def __init__(self, doses, ns, incidences, **kwargs):
+    def __init__(self, doses: List[float], ns: List[int], incidences: List[float], **metadata):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences)]
-        self.kwargs = kwargs
+        self.metadata = metadata
         self._sort_by_dose_group()
         self._validate()
 
@@ -92,14 +95,6 @@ class DichotomousDataset(DatasetBase):
         """
         return self.num_dose_groups
 
-    def to_dict(self):
-        """
-        Returns a dictionary representation of the dataset.
-        """
-        d = dict(doses=self.doses, ns=self.ns, incidences=self.incidences)
-        d.update(self.kwargs)
-        return d
-
     @staticmethod
     def _calculate_plotting(n, incidence):
         """
@@ -129,12 +124,13 @@ class DichotomousDataset(DatasetBase):
         )
         return p, ll, ul
 
-    def _set_plot_data(self):
-        if hasattr(self, "_means"):
-            return
-        self._means, self._lls, self._uls = zip(
-            *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
-        )
+    def plot_data(self) -> DatasetPlottingSchema:
+        if not hasattr(self, "_plot_data"):
+            means, lls, uls = zip(
+                *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
+            )
+            self._plot_data = DatasetPlottingSchema(mean=means, ll=lls, ul=uls)
+        return self._plot_data
 
     def plot(self):
         """
@@ -146,7 +142,7 @@ class DichotomousDataset(DatasetBase):
         >>> fig.show()
         >>> fig.clear()
 
-        .. image:: ../tests/resources/test_ddataset_plot.png
+        .. image:: ../tests/data/mpl/test_ddataset_plot.png
            :align: center
            :alt: Example generated BMD plot
 
@@ -155,17 +151,17 @@ class DichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        self._set_plot_data()
+        plot_data = self.plot_data()
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        xlabel = self.kwargs.get("xlabel", "Dose")
-        ylabel = self.kwargs.get("ylabel", "Fraction affected")
+        xlabel = self.metadata.get("dose_name", "Dose")
+        ylabel = self.metadata.get("response_name", "Fraction affected")
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.errorbar(
             self.doses,
-            self._means,
-            yerr=[self._lls, self._uls],
+            plot_data.mean,
+            yerr=[plot_data.ll, plot_data.ul],
             label="Fraction affected ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
@@ -173,6 +169,33 @@ class DichotomousDataset(DatasetBase):
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)
         return fig
+
+    def serialize(self) -> "DichotomousDatasetSchema":
+        plotting = self.plot_data()
+        return DichotomousDatasetSchema(
+            dtype=self.dtype,
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+            plotting=plotting,
+            metadata=self.metadata,
+        )
+
+
+class DichotomousDatasetSchema(DatasetSchemaBase):
+    dtype: constants.Dtype
+    metadata: DatasetMetadata
+    doses: List[float]
+    ns: List[int]
+    incidences: List[int]
+    plotting: Optional[DatasetPlottingSchema]
+
+    def deserialize(self) -> DichotomousDataset:
+        ds = DichotomousDataset(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+        )
+        ds._plot_data = self.plotting
+        return ds
 
 
 class DichotomousCancerDataset(DichotomousDataset):
@@ -193,6 +216,7 @@ class DichotomousCancerDataset(DichotomousDataset):
     """
 
     MINIMUM_DOSE_GROUPS = 2
+    dtype = constants.Dtype.DICHOTOMOUS_CANCER
 
     def _validate(self):
         length = len(self.doses)
@@ -206,3 +230,23 @@ class DichotomousCancerDataset(DichotomousDataset):
             raise ValueError(
                 f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
             )
+
+    def serialize(self) -> "DichotomousCancerDatasetSchema":
+        plot_data = self.plot_data()
+        return DichotomousCancerDatasetSchema(
+            dtype=self.dtype,
+            doses=self.doses,
+            ns=self.ns,
+            incidences=self.incidences,
+            plotting=plot_data,
+            metadata=self.metadata,
+        )
+
+
+class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
+    def deserialize(self) -> DichotomousCancerDataset:
+        ds = DichotomousCancerDataset(
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+        )
+        ds._plot_data = self.plotting
+        return ds

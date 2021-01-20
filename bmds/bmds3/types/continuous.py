@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
-from .common import BMDS_BLANK_VALUE, list_t_c
+from .common import NumpyFloatArray, list_t_c
+from .priors import PriorClass
 
 
 class ContinuousRiskType(IntEnum):
@@ -21,17 +22,24 @@ class ContinuousRiskType(IntEnum):
     eHybrid_Added = 7
 
 
+class DistType(IntEnum):
+    normal = 1
+    normal_ncv = 2
+    log_normal = 3
+
+
 class ContinuousModelSettings(BaseModel):
     suff_stat: bool = True
     bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
     isIncreasing: bool = False
     bmr: float = 1.0
     tail_prob: float = 0.01
-    disttype: int = 1
+    disttype: DistType = DistType.normal
     alpha: float = 0.05
     samples: int = 0
     degree: int = 0  # multistage only
     burnin: int = 20
+    prior: PriorClass = PriorClass.frequentist_unrestricted
 
 
 class ContinuousAnalysisStruct(ctypes.Structure):
@@ -154,10 +162,10 @@ class ContinuousModelResult(BaseModel):
     dist: Optional[int]
     num_params: int
     params: Optional[List[float]]
-    cov: Optional[np.ndarray]
+    cov: Optional[NumpyFloatArray]
     max: Optional[float]
     dist_numE: int
-    bmd_dist: Optional[np.ndarray]
+    bmd_dist: Optional[NumpyFloatArray]
 
     class Config:
         arbitrary_types_allowed = True
@@ -184,6 +192,8 @@ class ContinuousModelResult(BaseModel):
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
         d["bmd_dist"] = self.bmd_dist.T.tolist()
+        # TODO - remove this line one distribution is working as expected
+        d["bmd_dist"] = [np.linspace(0, 1, 100).tolist(), np.linspace(1, 100, 100).tolist()]
         return d
 
 
@@ -199,20 +209,21 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
     @classmethod
     def from_results(cls, results: ContinuousModelResult) -> "ContinuousBmdsResultsStruct":
         return cls(
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
+            bmd=constants.BMDS_BLANK_VALUE,
+            bmdl=constants.BMDS_BLANK_VALUE,
+            bmdu=constants.BMDS_BLANK_VALUE,
+            aic=constants.BMDS_BLANK_VALUE,
             bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
 
 
 class ContinuousResult(BaseModel):
-    model_class: str
-    model_name: str
     bmdl: float
     bmd: float
     bmdu: float
     aic: float
+    roi: float
     bounded: List[bool]
     fit: ContinuousModelResult
+    dr_x: List[float]
+    dr_y: List[float]

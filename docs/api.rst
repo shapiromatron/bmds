@@ -30,7 +30,7 @@ model version.  To get the latest version BMDS Session, you can use the :func:`b
 .. autoclass:: bmds.session.BMDS_v270
     :members:
 
-.. autoclass:: bmds.session.BMDS_v330
+.. autoclass:: bmds.session.Bmds330
     :members:
 
 Datasets

@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from . import constants
 from .bmds2.sessions import BMDS_v270
-from .bmds3.sessions import BMDS_v330
+from .bmds3.sessions import Bmds330
 
 
 class BMDS:
@@ -12,7 +12,7 @@ class BMDS:
 
     _BMDS_VERSIONS: Dict[str, Any] = {
         constants.BMDS270: BMDS_v270,
-        constants.BMDS330: BMDS_v330,
+        constants.BMDS330: Bmds330,
     }
 
     @classmethod

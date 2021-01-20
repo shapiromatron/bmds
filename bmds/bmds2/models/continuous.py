@@ -21,7 +21,7 @@ class Continuous(BMDModel):
         # 0 = non-homogeneous modeled variance => Var(i) = alpha*mean(i)^rho
         # 1 = constant variance => Var(i) = alpha*mean(i)
         anova = self.dataset.anova()
-        return 0 if (anova is None or anova[1].TEST < 0.1) else 1
+        return 0 if (anova is None or anova.test2.TEST < 0.1) else 1
 
     def get_variance_model_name(self):
         return "Modeled variance" if self.values["constant_variance"] == 0 else "Constant variance"

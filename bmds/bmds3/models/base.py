@@ -1,12 +1,14 @@
 import ctypes
 import logging
 import platform
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel as PydanticBaseModel
+from pydantic import BaseModel
 
-from ...datasets import DatasetBase
+from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
+from ...datasets import DatasetType
 from ...utils import package_root
+from ..constants import BmdModelSchema
 
 logger = logging.getLogger(__name__)
 
@@ -63,90 +65,107 @@ class BmdsLibraryManager:
         return dll
 
 
-InputModelSettings = Optional[Union[Dict, PydanticBaseModel]]
+InputModelSettings = Optional[Union[Dict, BaseModel]]
 
 
-class BaseModel:
+class BmdModel:
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model: Any
-    model_version = "BMDS330"
+    bmd_model_class: BmdModelSchema
+    model_version: str
 
-    def __init__(
-        self,
-        dataset: DatasetBase,
-        settings: InputModelSettings = None,
-        id: Optional[Union[int, str]] = None,
-    ):
-        self.id = id
+    def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
         self.dataset = dataset
-        self.execution_start = None
-        self.execution_end = None
-        self.execution_halted = False
-        self.settings = self.get_model_settings(settings)
-        self.results = None
+        self.settings = self.get_model_settings(dataset, settings)
+        self.results: Optional[BaseModel] = None
         self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
         self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
+    def name(self) -> str:
+        # return name of model; may be setting-specific
+        return self.bmd_model_class.verbose
+
     @property
-    def output_created(self) -> bool:
+    def has_results(self) -> bool:
         return self.results is not None
 
-    def get_model_settings(self, settings: InputModelSettings) -> PydanticBaseModel:
+    def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def execute(self) -> PydanticBaseModel:
+    def execute(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
     def execute_job(self):
         self.results = self.execute()
 
-    def to_dict(self, model_index: int) -> Dict:
-        """
-        Return a summary of the model in a dictionary format for serialization.
+    def serialize(self) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
 
-        Args:
-            model_index (int): numeric model index in a list of models, should be unique
-
-        Returns:
-            A dictionary of model inputs, and raw and parsed outputs
-        """
-        return dict(
-            model_index=model_index,
-            model_class=self.model.id,
-            model_name=self.model.verbose,
-            model_version=self.model_version,
-            has_output=self.output_created,
-            execution_halted=self.execution_halted,
-            settings=self.settings.dict(),
-            results=self.results.dict() if self.results else None,
-        )
+    def to_dict(self) -> Dict:
+        return self.serialize.dict()
 
 
-class BaseModelAveraging(BaseModel):
+class BmdModelSchema(BaseModel):
+    @classmethod
+    def get_subclass(cls, dtype: Dtype) -> "BmdModelSchema":
+        from .continuous import BmdModelContinuousSchema
+        from .dichotomous import BmdModelDichotomousSchema
+
+        if dtype in DICHOTOMOUS_DTYPES:
+            return BmdModelDichotomousSchema
+        elif dtype in CONTINUOUS_DTYPES:
+            return BmdModelContinuousSchema
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")
+
+
+class BmdModelAveraging:
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model: Any
     model_version = "BMDS330"
 
     def __init__(
-        self,
-        dataset: DatasetBase,
-        models: List[BaseModel],
-        settings: InputModelSettings = None,
-        id: Optional[Union[int, str]] = None,
+        self, dataset: DatasetType, models: List[BmdModel], settings: InputModelSettings = None
     ):
-        self.id = id
         self.dataset = dataset
         self.models = models
-        self.execution_start = None
-        self.execution_end = None
-        self.execution_halted = False
-        self.settings = self.get_model_settings(settings)
-        self.results = None
+        self.settings = self.get_model_settings(dataset, settings)
+        self.results: Optional[BaseModel] = None
+
+    def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
+
+    def execute(self) -> BaseModel:
+        raise NotImplementedError("Requires abstract implementation")
+
+    def execute_job(self):
+        self.results = self.execute()
+
+    @property
+    def has_results(self) -> bool:
+        return self.results is not None
+
+    def serialize(self, model_index: int) -> "BmdModelAveragingSchema":
+        raise NotImplementedError("Requires abstract implementation")
+
+    def to_dict(self) -> Dict:
+        return self.serialize.dict()
+
+
+class BmdModelAveragingSchema(BaseModel):
+    @classmethod
+    def get_subclass(cls, dtype: Dtype) -> "BmdModelAveragingSchema":
+        from .ma import BmdModelAveragingDichotomousSchema
+
+        if dtype in (Dtype.DICHOTOMOUS, Dtype.DICHOTOMOUS_CANCER):
+            return BmdModelAveragingDichotomousSchema
+        elif dtype in (Dtype.CONTINUOUS, Dtype.CONTINUOUS_INDIVIDUAL):
+            raise NotImplementedError()
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")

@@ -1,9 +1,17 @@
 import ctypes
-from typing import Dict, List
+from typing import List, Optional
 
 import numpy as np
 
-from ..constants import ContinuousModel, ContinuousModelChoices, Prior, PriorClass
+from ...datasets import ContinuousDataset
+from ..constants import (
+    ContinuousModel,
+    ContinuousModelChoices,
+    ContinuousModelIds,
+    Prior,
+    PriorClass,
+)
+from ..types.common import residual_of_interest
 from ..types.continuous import (
     ContinuousAnalysis,
     ContinuousBmdsResultsStruct,
@@ -12,14 +20,15 @@ from ..types.continuous import (
     ContinuousResult,
 )
 from ..types.priors import ContinuousPriorLookup
-from .base import BaseModel, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
-class Continuous(BaseModel):
-    # required settings
-    model: ContinuousModel
+class BmdModelContinuous(BmdModel):
+    bmd_model_class: ContinuousModel
 
-    def get_model_settings(self, settings: InputModelSettings) -> ContinuousModelSettings:
+    def get_model_settings(
+        self, dataset: ContinuousDataset, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
         if settings is None:
             model = ContinuousModelSettings()
         elif isinstance(settings, ContinuousModelSettings):
@@ -28,15 +37,15 @@ class Continuous(BaseModel):
             model = ContinuousModelSettings.parse_obj(settings)
 
         if model.degree == 0:
-            model.degree = self.get_default_model_degree()
+            model.degree = self.get_default_model_degree(dataset)
 
         return model
 
     def execute(self, debug=False):
         # setup inputs
-        priors = self.get_priors()
+        priors = self.get_priors(self.settings.prior)
         inputs = ContinuousAnalysis(
-            model=self.model,
+            model=self.bmd_model_class,
             dataset=self.dataset,
             priors=priors,
             BMD_type=self.settings.bmr_type,
@@ -56,7 +65,7 @@ class Continuous(BaseModel):
 
         # setup outputs
         fit_results = ContinuousModelResult(
-            model=self.model, dist_numE=200, num_params=inputs.num_params
+            model=self.bmd_model_class, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
         bmds_results_struct = ContinuousBmdsResultsStruct.from_results(fit_results)
@@ -71,62 +80,80 @@ class Continuous(BaseModel):
         )
 
         fit_results.from_c(fit_results_struct)
+        dr_x = self.dataset.dose_linspace
+        residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
 
         result = ContinuousResult(
-            model_class=self.model_class(),
-            model_name=self.model_name(),
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
             aic=bmds_results_struct.aic,
+            roi=residual_of_interest(bmds_results_struct.bmd, self.dataset.doses, residuals),
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
+            dr_x=dr_x.tolist(),
+            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
         )
         return result
 
-    def get_default_model_degree(self) -> int:
-        return self.model.num_params - 1
-
-    def model_class(self) -> str:
-        return self.model.verbose
-
-    def model_name(self) -> str:
-        return self.model_class()
+    def get_default_model_degree(self, dataset) -> int:
+        return self.bmd_model_class.num_params - 1
 
     def get_priors(
         self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
     ) -> List[Prior]:
-        return ContinuousPriorLookup[(self.model.id, prior_class.value)]
+        return ContinuousPriorLookup[(self.bmd_model_class.id, prior_class.value)]
 
-    def dr_curve(self, doses, params) -> Dict:
+    def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
+    def serialize(self) -> "BmdModelContinuousSchema":
+        return BmdModelContinuousSchema(
+            name=self.name(),
+            model_class=self.bmd_model_class,
+            settings=self.settings,
+            results=self.results,
+        )
 
-class Power(Continuous):
-    model = ContinuousModelChoices.c_power.value
+
+class BmdModelContinuousSchema(BmdModelSchema):
+    name: str
+    model_class: ContinuousModel
+    settings: ContinuousModelSettings
+    results: Optional[ContinuousResult]
+
+    def deserialize(self, dataset: ContinuousDataset) -> BmdModelContinuous:
+        Model = bmd_model_map[self.model_class.id]
+        model = Model(dataset=dataset, settings=self.settings)
+        model.results = self.results
+        return model
+
+
+class Power(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_power.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        b = params[1]
-        a = params[2]
-        return g + b * doses ** a
+        v = params[1]
+        n = params[2]
+        return g + v * doses ** n
 
 
-class Hill(Continuous):
-    model = ContinuousModelChoices.c_hill.value
+class Hill(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_hill.value
 
-    def dr_curve(self, doses, params) -> Dict:
+    def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        nu = params[1]
+        v = params[1]
         k = params[2]
         n = params[3]
-        return g + nu * doses ** n / (k ** n + doses ** n)
+        return g + v * doses ** n / (k ** n + doses ** n)
 
 
-class Polynomial(Continuous):
-    model = ContinuousModelChoices.c_polynomial.value
+class Polynomial(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
-    def dr_curve(self, doses, params) -> Dict:
+    def dr_curve(self, doses, params) -> np.ndarray:
         # TODO - test!
         # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
         val = params[0]
@@ -140,41 +167,55 @@ class Linear(Polynomial):
     pass
 
 
-class ExponentialM2(Continuous):
-    model = ContinuousModelChoices.c_exp_m2.value
+class ExponentialM2(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_exp_m2.value
 
-    def dr_curve(self, doses, params) -> Dict:
-        g = params[0]
+    def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO fix; remove np.nan_to_num
+        a = params[0]
         b = params[1]
-        return g * np.exp(b * doses)
+        return np.nan_to_num(a * np.exp(b * doses))
 
 
-class ExponentialM3(Continuous):
-    model = ContinuousModelChoices.c_exp_m3.value
+class ExponentialM3(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
-    def dr_curve(self, doses, params) -> Dict:
-        g = params[0]
+    def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO fix; remove np.nan_to_num
+        a = params[0]
         b = params[1]
-        e = params[2]
-        return g * np.exp((b * doses) ** e)
+        d = params[3]
+        return np.nan_to_num(a * np.exp((b * doses) ** d))
 
 
-class ExponentialM4(Continuous):
-    model = ContinuousModelChoices.c_exp_m4.value
+class ExponentialM4(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_exp_m4.value
 
-    def dr_curve(self, doses, params) -> Dict:
-        g = params[0]
-        b = params[1]
-        c = params[2]
-        return g * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-(b * doses))))
-
-
-class ExponentialM5(Continuous):
-    model = ContinuousModelChoices.c_exp_m5.value
-
-    def dr_curve(self, doses, params) -> Dict:
-        g = params[0]
+    def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO fix; remove np.nan_to_num
+        a = params[0]
         b = params[1]
         c = params[2]
-        e = params[3]
-        return g * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** e))))
+        return np.nan_to_num(a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses))))))
+
+
+class ExponentialM5(BmdModelContinuous):
+    bmd_model_class = ContinuousModelChoices.c_exp_m5.value
+
+    def dr_curve(self, doses, params) -> np.ndarray:
+        a = params[0]
+        b = params[1]
+        c = params[2]
+        d = params[3]
+        return a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** d))))
+
+
+bmd_model_map = {
+    ContinuousModelIds.c_power.value: Power,
+    ContinuousModelIds.c_hill.value: Hill,
+    ContinuousModelIds.c_polynomial.value: Polynomial,
+    ContinuousModelIds.c_exp_m2.value: ExponentialM2,
+    ContinuousModelIds.c_exp_m3.value: ExponentialM3,
+    ContinuousModelIds.c_exp_m4.value: ExponentialM4,
+    ContinuousModelIds.c_exp_m5.value: ExponentialM5,
+}
