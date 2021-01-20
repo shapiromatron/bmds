@@ -127,7 +127,7 @@ class DichotomousDataset(DatasetBase):
         return p, ll, ul
 
     def plot_data(self) -> DatasetPlottingSchema:
-        if not hasattr(self, "_plot_data"):
+        if not getattr(self, "_plot_data", None):
             means, lls, uls = zip(
                 *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
             )
@@ -171,13 +171,12 @@ class DichotomousDataset(DatasetBase):
         return fig
 
     def serialize(self) -> "DichotomousDatasetSchema":
-        plotting = self.plot_data()
         return DichotomousDatasetSchema(
             dtype=self.dtype,
             doses=self.doses,
             ns=self.ns,
             incidences=self.incidences,
-            plotting=plotting,
+            plotting=self.plot_data(),
             metadata=self.metadata,
         )
 
@@ -232,13 +231,12 @@ class DichotomousCancerDataset(DichotomousDataset):
             )
 
     def serialize(self) -> "DichotomousCancerDatasetSchema":
-        plot_data = self.plot_data()
         return DichotomousCancerDatasetSchema(
             dtype=self.dtype,
             doses=self.doses,
             ns=self.ns,
             incidences=self.incidences,
-            plotting=plot_data,
+            plotting=self.plot_data(),
             metadata=self.metadata,
         )
 

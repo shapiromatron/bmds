@@ -129,6 +129,9 @@ class BmdModel:
 
         if res.bmd > 0:
             ax.plot([0, res.bmd], [res.bmd_y, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.plot(
+                [res.bmd, res.bmd], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT,
+            )
             ax.text(
                 res.bmd + xrng * 0.01,
                 0,
@@ -148,11 +151,6 @@ class BmdModel:
                 horizontalalignment="right",
                 verticalalignment="center",
                 **plotting.BMD_LABEL_FORMAT,
-            )
-
-        if res.bmd > 0 and res.bmdl > 0:
-            ax.plot(
-                [res.bmd, res.bmd], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT,
             )
 
     def to_dict(self) -> Dict:
