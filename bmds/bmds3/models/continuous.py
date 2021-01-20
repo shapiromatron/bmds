@@ -50,31 +50,27 @@ class Continuous(BaseModel):
             burnin=self.settings.burnin,
             degree=self.settings.degree,
         )
+        inputs_struct = inputs.to_c()
+        if not debug:
+            print(inputs_struct)
+
         # setup outputs
         fit_results = ContinuousModelResult(
             model=self.model, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
-
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-
-        inputs_struct = inputs.to_c()
-        if debug:
-            print(inputs_struct)
-
-        dll.estimate_sm_laplace_cont(
-            ctypes.pointer(inputs_struct), ctypes.pointer(fit_results_struct)
-        )
-
-        fit_results.from_c(fit_results_struct)
-
         bmds_results_struct = ContinuousBmdsResultsStruct.from_results(fit_results)
 
-        dll.collect_cont_bmd_values(
+        # run the analysis
+        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+
+        dll.runBMDSContAnalysis(
             ctypes.pointer(inputs_struct),
             ctypes.pointer(fit_results_struct),
             ctypes.pointer(bmds_results_struct),
         )
+
+        fit_results.from_c(fit_results_struct)
 
         result = ContinuousResult(
             model_class=self.model_class(),

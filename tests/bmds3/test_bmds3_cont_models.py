@@ -26,12 +26,12 @@ def contds():
 def test_bmds3_continuous_models(contds):
     # compare bmd, bmdl, bmdu, aic values
     for Model, expected in [
-        (continuous.ExponentialM2, [-9999.0, -9999.0, -9999.0, -6.0]),
-        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0, 295.8651958579271]),
-        (continuous.ExponentialM4, [-9999.0, -9999.0, -9999.0, -6.0]),
-        (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0, 303.631]),
-        (continuous.Power, [-9999.0, -9999.0, -9999.0, 301.627]),
-        (continuous.Hill, [-9999.0, -9999.0, -9999.0, 303.629]),
+        (continuous.ExponentialM2, [-9999.0, -9999.0, -9999.0, -4.0]),
+        (continuous.ExponentialM3, [20.220, 19.211, 21.845, 3368.294]),
+        (continuous.ExponentialM4, [-9999.0, -9999.0, -9999.0, -4.0]),
+        (continuous.ExponentialM5, [31.270, 29.849, 34.013, 3073.712]),
+        (continuous.Power, [-9999.0, -9999.0, -9999.0, 3067.833]),
+        (continuous.Hill, [-9999.0, -9999.0, -9999.0, 3071.148]),
         # (continuous.Polynomial, [64.242, 55.219, 72.814, 362.400]),
         # (continuous.Linear, [64.242, 55.219, 72.814, 362.400]),
     ]:
