@@ -60,7 +60,7 @@ class BmdModelContinuous(BmdModel):
             degree=self.settings.degree,
         )
         inputs_struct = inputs.to_c()
-        if not debug:
+        if debug:
             print(inputs_struct)
 
         # setup outputs

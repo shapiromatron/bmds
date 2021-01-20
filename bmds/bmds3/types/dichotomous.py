@@ -223,48 +223,6 @@ class DichotomousModelResult(BaseModel):
         return d
 
 
-class DichotomousPgofDataStruct(ctypes.Structure):
-    _fields_ = [
-        ("n", ctypes.c_int),  # total number of observations obs/n
-        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
-        ("doses", ctypes.POINTER(ctypes.c_double)),
-        ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
-        ("model_df", ctypes.c_double),
-        ("model", ctypes.c_int),  # Model Type as listed in DichModel
-        ("parms", ctypes.c_int),  # number of parameters in the model
-        ("est_parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
-    ]
-
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            n: {self.n}
-            Y: {self.Y[:self.n]}
-            doses: {self.doses[:self.n]}
-            n_group: {self.n_group[:self.n]}
-            model_df: {self.model_df}
-            model: {self.model}
-            parms: {self.parms}
-            est_parms: {self.est_parms[:self.parms]}
-            """
-        )
-
-    @classmethod
-    def from_fit(
-        cls, fit_input: DichotomousAnalysisStruct, fit_output: DichotomousModelResultStruct
-    ):
-        return cls(
-            n=fit_input.n,
-            Y=fit_input.Y,
-            doses=fit_input.doses,
-            n_group=fit_input.n_group,
-            model_df=fit_output.model_df,
-            model=fit_input.model,
-            parms=fit_output.nparms,
-            est_parms=fit_output.parms,
-        )
-
-
 class DichotomousPgofResultStruct(ctypes.Structure):
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n

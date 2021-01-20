@@ -19,7 +19,6 @@ from ..types.dichotomous import (
     DichotomousModelResult,
     DichotomousModelResultStruct,
     DichotomousModelSettings,
-    DichotomousPgofDataStruct,
     DichotomousPgofResult,
     DichotomousPgofResultStruct,
     DichotomousResult,
