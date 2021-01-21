@@ -6,6 +6,7 @@ import pytest
 
 import bmds
 from bmds.bmds3.models import dichotomous
+from bmds.bmds3.types.dichotomous import DichotomousModelSettings
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
@@ -31,7 +32,6 @@ def test_bmds3_dichotomous_models(dichds):
         (dichotomous.QuantalLinear, [17.679, 15.645, 20.062, 425.594]),
         (dichotomous.Weibull, [64.242, 55.219, 72.814, 358.400]),
         (dichotomous.DichotomousHill, [68.173, 59.795, 75.998, 364.982]),
-        # (dichotomous.Multistage, [64.127, 52.552, 76.220, 366.384]),
     ]:
         model = Model(dichds)
         result = model.execute()
@@ -39,6 +39,26 @@ def test_bmds3_dichotomous_models(dichds):
         # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
         assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all(), Model.__name__
 
+
+@pytest.mark.skipif(not should_run, reason=skip_reason)
+def test_bmds3_dichotomous_multistage(dichds):
+    # compare bmd, bmdl, bmdu, aic values
+    for degree, expected in [
+        #(1, [69.583, 61.194, 77.945, 363.957]),
+        #(2, [69.583, 61.194, 77.945, 363.957]),
+        #(3, [69.583, 61.194, 77.945, 363.957]),
+        # (4, [69.583, 61.194, 77.945, 363.957]),
+        (5, [69.583, 61.194, 77.945, 363.957]),
+        (6, [69.583, 61.194, 77.945, 363.957]),
+        # (7, [69.583, 61.194, 77.945, 363.957]),
+        (8, [69.583, 61.194, 77.945, 363.957]),
+    ]:
+        settings = DichotomousModelSettings(degree=degree)
+        model = dichotomous.Multistage(dichds,settings)
+        result = model.execute()
+        actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
+        # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
+        #assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all()
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_session(dichds):
