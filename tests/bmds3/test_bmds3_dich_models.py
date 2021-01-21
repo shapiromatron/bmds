@@ -44,21 +44,22 @@ def test_bmds3_dichotomous_models(dichds):
 def test_bmds3_dichotomous_multistage(dichds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, expected in [
-        #(1, [69.583, 61.194, 77.945, 363.957]),
-        #(2, [69.583, 61.194, 77.945, 363.957]),
-        #(3, [69.583, 61.194, 77.945, 363.957]),
+        (1, [17.680, 15.645, 20.062, 425.594]),
+        (2, [62.562, 54.921, 67.765, 361.663]),
+        (3, [64.131, 52.344, 73.011, 364.385]),
         # (4, [69.583, 61.194, 77.945, 363.957]),
-        (5, [69.583, 61.194, 77.945, 363.957]),
-        (6, [69.583, 61.194, 77.945, 363.957]),
+        (5, [63.476, 51.826, 78.311, 356.416]),
+        (6, [63.665, 11.083, 82.846, 366.384]),
         # (7, [69.583, 61.194, 77.945, 363.957]),
-        (8, [69.583, 61.194, 77.945, 363.957]),
+        (8, [64.501, 51.366, 85.041, 366.382]),
     ]:
         settings = DichotomousModelSettings(degree=degree)
-        model = dichotomous.Multistage(dichds,settings)
+        model = dichotomous.Multistage(dichds, settings)
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
         # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
-        #assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all()
+        assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all()
+
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_session(dichds):

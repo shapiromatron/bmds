@@ -248,16 +248,13 @@ class DichotomousHill(BmdModelDichotomous):
 class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
 
-    def get_default_model_degree(self, dataset) -> int:
-        return dataset.num_dose_groups - 1
-
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
     ) -> DichotomousModelSettings:
         model = super().get_model_settings(dataset, settings)
 
-        if model.degree < 2:
-            raise ValueError(f"Multistage must be ≥ 2; got {model.degree}")
+        if model.degree < 1:
+            raise ValueError(f"Multistage must be ≥ 1; got {model.degree}")
 
         return model
 

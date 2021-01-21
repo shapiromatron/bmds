@@ -103,9 +103,10 @@ class DichotomousAnalysis(BaseModel):
         """
         allocate memory for all parameters and convert to columnwise matrix
         """
-        if len(self.priors) == self.num_params:
+        if len(self.priors) >= self.num_params:
             # most cases
-            arr = np.array([list(prior.dict().values()) for prior in self.priors])
+            priors = self.priors[: self.num_params]
+            arr = np.array([list(prior.dict().values()) for prior in priors])
         elif len(self.priors) < self.num_params:
             # special case for multistage; apply all priors; copy last one
             data: List[List[float]] = []
@@ -114,8 +115,6 @@ class DichotomousAnalysis(BaseModel):
             for _ in range(len(self.priors) - 1, self.num_params):
                 data.append(list(self.priors[-1].dict().values()))
             arr = np.array(data)
-        else:
-            raise ValueError("Unknown state")
         return arr.flatten("F").tolist()
 
     def to_c(self) -> DichotomousAnalysisStruct:
