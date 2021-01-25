@@ -107,7 +107,7 @@ class DichotomousAnalysis(BaseModel):
             # most cases
             priors = self.priors[: self.num_params]
             arr = np.array([list(prior.dict().values()) for prior in priors])
-        elif len(self.priors) < self.num_params:
+        else:
             # special case for multistage; apply all priors; copy last one
             data: List[List[float]] = []
             for prior in self.priors[:-1]:
