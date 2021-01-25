@@ -71,7 +71,7 @@ class BmdModelDichotomous(BmdModel):
         fit_results = DichotomousModelResult(dist_numE=200, num_params=inputs.num_params)
         fit_results_struct = fit_results.to_c(self.bmd_model_class.id)
         gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
-        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results.num_params)
+        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
 
         # can be used for model averaging
         self.inputs_struct = inputs_struct

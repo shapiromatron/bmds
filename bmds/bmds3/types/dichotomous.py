@@ -275,13 +275,13 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         )
 
     @classmethod
-    def from_results(cls, num_params: int) -> "DichotomousBmdsResultsStruct":
+    def from_results(cls, results: DichotomousModelResult) -> "DichotomousBmdsResultsStruct":
         return cls(
             bmd=constants.BMDS_BLANK_VALUE,
             bmdl=constants.BMDS_BLANK_VALUE,
             bmdu=constants.BMDS_BLANK_VALUE,
             aic=constants.BMDS_BLANK_VALUE,
-            bounded=list_t_c([False for _ in range(num_params)], ctypes.c_bool),
+            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
 
 

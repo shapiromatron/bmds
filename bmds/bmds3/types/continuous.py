@@ -6,8 +6,8 @@ import numpy as np
 from pydantic import BaseModel
 
 from bmds.bmds3.constants import ContinuousModelChoices
-
 from bmds.datasets.continuous import ContinuousDataset
+
 from .. import constants
 from .common import NumpyFloatArray, list_t_c
 from .priors import PriorClass
