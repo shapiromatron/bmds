@@ -38,7 +38,7 @@ class ContinuousModelSettings(BaseModel):
     disttype: DistType = DistType.normal
     alpha: float = 0.05
     samples: int = 0
-    degree: int = 0  # multistage only
+    degree: int = 0  # polynomial only
     burnin: int = 20
     prior: PriorClass = PriorClass.frequentist_unrestricted
 
@@ -111,7 +111,7 @@ class ContinuousAnalysis(BaseModel):
             priors = self.priors[: self.num_params]
             arr = np.array([list(prior.dict().values()) for prior in priors])
         else:
-            # special case for multistage; apply all priors; copy last one
+            # special case for polynomial; apply all priors; copy last one
             data: List[List[float]] = []
             for prior in self.priors[:-1]:
                 data.append(list(prior.dict().values()))
