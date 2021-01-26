@@ -61,32 +61,27 @@ class BmdModelContinuous(BmdModel):
             burnin=self.settings.burnin,
             degree=self.settings.degree,
         )
+        inputs_struct = inputs.to_c()
+        if debug:
+            print(inputs_struct)
+
         # setup outputs
         fit_results = ContinuousModelResult(
             model=self.bmd_model_class, dist_numE=200, num_params=inputs.num_params
         )
         fit_results_struct = fit_results.to_c()
-
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-
-        inputs_struct = inputs.to_c()
-        if debug:
-            print(inputs_struct)
-
-        dll.estimate_sm_laplace_cont(
-            ctypes.pointer(inputs_struct), ctypes.pointer(fit_results_struct)
-        )
-
-        fit_results.from_c(fit_results_struct)
-
         bmds_results_struct = ContinuousBmdsResultsStruct.from_results(fit_results)
 
-        dll.collect_cont_bmd_values(
+        # run the analysis
+        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+
+        dll.runBMDSContAnalysis(
             ctypes.pointer(inputs_struct),
             ctypes.pointer(fit_results_struct),
             ctypes.pointer(bmds_results_struct),
         )
 
+        fit_results.from_c(fit_results_struct)
         dr_x = self.dataset.dose_linspace
         critical_xs = np.array(
             [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
@@ -114,7 +109,7 @@ class BmdModelContinuous(BmdModel):
         return result
 
     def get_default_model_degree(self, dataset) -> int:
-        return self.bmd_model_class.num_params - 1
+        return self.bmd_model_class.num_params - 2
 
     def get_priors(
         self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
@@ -170,6 +165,16 @@ class Hill(BmdModelContinuous):
 class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDataset, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model = super().get_model_settings(dataset, settings)
+
+        if model.degree < 1:
+            raise ValueError(f"Polynomial must be ≥ 1; got {model.degree}")
+
+        return model
+
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO - test!
         # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
@@ -180,8 +185,12 @@ class Polynomial(BmdModelContinuous):
 
 
 class Linear(Polynomial):
-    # TODO - force degree
-    pass
+    def get_model_settings(
+        self, dataset: ContinuousDataset, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model = super().get_model_settings(dataset, settings)
+        model.degree = 1
+        return model
 
 
 class ExponentialM2(BmdModelContinuous):

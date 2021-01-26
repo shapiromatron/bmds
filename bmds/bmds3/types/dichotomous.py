@@ -103,10 +103,11 @@ class DichotomousAnalysis(BaseModel):
         """
         allocate memory for all parameters and convert to columnwise matrix
         """
-        if len(self.priors) == self.num_params:
+        if len(self.priors) >= self.num_params:
             # most cases
-            arr = np.array([list(prior.dict().values()) for prior in self.priors])
-        elif len(self.priors) < self.num_params:
+            priors = self.priors[: self.num_params]
+            arr = np.array([list(prior.dict().values()) for prior in priors])
+        else:
             # special case for multistage; apply all priors; copy last one
             data: List[List[float]] = []
             for prior in self.priors[:-1]:
@@ -114,8 +115,6 @@ class DichotomousAnalysis(BaseModel):
             for _ in range(len(self.priors) - 1, self.num_params):
                 data.append(list(self.priors[-1].dict().values()))
             arr = np.array(data)
-        else:
-            raise ValueError("Unknown state")
         return arr.flatten("F").tolist()
 
     def to_c(self) -> DichotomousAnalysisStruct:
@@ -223,48 +222,6 @@ class DichotomousModelResult(BaseModel):
         return d
 
 
-class DichotomousPgofDataStruct(ctypes.Structure):
-    _fields_ = [
-        ("n", ctypes.c_int),  # total number of observations obs/n
-        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
-        ("doses", ctypes.POINTER(ctypes.c_double)),
-        ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
-        ("model_df", ctypes.c_double),
-        ("model", ctypes.c_int),  # Model Type as listed in DichModel
-        ("parms", ctypes.c_int),  # number of parameters in the model
-        ("est_parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
-    ]
-
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            n: {self.n}
-            Y: {self.Y[:self.n]}
-            doses: {self.doses[:self.n]}
-            n_group: {self.n_group[:self.n]}
-            model_df: {self.model_df}
-            model: {self.model}
-            parms: {self.parms}
-            est_parms: {self.est_parms[:self.parms]}
-            """
-        )
-
-    @classmethod
-    def from_fit(
-        cls, fit_input: DichotomousAnalysisStruct, fit_output: DichotomousModelResultStruct
-    ):
-        return cls(
-            n=fit_input.n,
-            Y=fit_input.Y,
-            doses=fit_input.doses,
-            n_group=fit_input.n_group,
-            model_df=fit_output.model_df,
-            model=fit_input.model,
-            parms=fit_output.nparms,
-            est_parms=fit_output.parms,
-        )
-
-
 class DichotomousPgofResultStruct(ctypes.Structure):
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n
@@ -318,13 +275,13 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         )
 
     @classmethod
-    def from_results(cls, num_params: int) -> "DichotomousBmdsResultsStruct":
+    def from_results(cls, results: DichotomousModelResult) -> "DichotomousBmdsResultsStruct":
         return cls(
             bmd=constants.BMDS_BLANK_VALUE,
             bmdl=constants.BMDS_BLANK_VALUE,
             bmdu=constants.BMDS_BLANK_VALUE,
             aic=constants.BMDS_BLANK_VALUE,
-            bounded=list_t_c([False for _ in range(num_params)], ctypes.c_bool),
+            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
         )
 
 
