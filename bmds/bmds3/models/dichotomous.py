@@ -19,7 +19,6 @@ from ..types.dichotomous import (
     DichotomousModelResult,
     DichotomousModelResultStruct,
     DichotomousModelSettings,
-    DichotomousPgofDataStruct,
     DichotomousPgofResult,
     DichotomousPgofResultStruct,
     DichotomousResult,
@@ -65,40 +64,33 @@ class BmdModelDichotomous(BmdModel):
         # setup inputs
         inputs = self.get_analysis_inputs()
         inputs_struct = inputs.to_c()
+        if debug:
+            print(inputs_struct)
 
         # setup outputs
         fit_results = DichotomousModelResult(dist_numE=200, num_params=inputs.num_params)
         fit_results_struct = fit_results.to_c(self.bmd_model_class.id)
+        gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
+        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
 
         # can be used for model averaging
         self.inputs_struct = inputs_struct
         self.fit_results_struct = fit_results_struct
 
+        # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
-        if debug:
-            print(inputs_struct)
-
-        dll.estimate_sm_laplace_dicho(
-            ctypes.pointer(inputs_struct), ctypes.pointer(fit_results_struct), True
-        )
-        fit_results.from_c(fit_results_struct, self)
-
-        # gof results call
-        gof_data_struct = DichotomousPgofDataStruct.from_fit(inputs_struct, fit_results_struct)
-        gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
-        dll.compute_dichotomous_pearson_GOF(
-            ctypes.pointer(gof_data_struct), ctypes.pointer(gof_results_struct)
-        )
-        gof_results = DichotomousPgofResult.from_c(gof_results_struct)
-
-        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results.num_params)
-        dll.collect_dicho_bmd_values(
+        dll.runBMDSDichoAnalysis(
             ctypes.pointer(inputs_struct),
             ctypes.pointer(fit_results_struct),
+            ctypes.pointer(gof_results_struct),
             ctypes.pointer(bmds_results_struct),
         )
+
+        fit_results.from_c(fit_results_struct, self)
+        gof_results = DichotomousPgofResult.from_c(gof_results_struct)
         dr_x = self.dataset.dose_linspace
+
         result = DichotomousResult(
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
@@ -256,16 +248,13 @@ class DichotomousHill(BmdModelDichotomous):
 class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
 
-    def get_default_model_degree(self, dataset) -> int:
-        return dataset.num_dose_groups - 1
-
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
     ) -> DichotomousModelSettings:
         model = super().get_model_settings(dataset, settings)
 
-        if model.degree < 2:
-            raise ValueError(f"Multistage must be ≥ 2; got {model.degree}")
+        if model.degree < 1:
+            raise ValueError(f"Multistage must be ≥ 1; got {model.degree}")
 
         return model
 

@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 import numpy as np
 from pydantic import BaseModel
 
+from bmds.bmds3.constants import ContinuousModelChoices
 from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
@@ -37,7 +38,7 @@ class ContinuousModelSettings(BaseModel):
     disttype: DistType = DistType.normal
     alpha: float = 0.05
     samples: int = 0
-    degree: int = 0  # multistage only
+    degree: int = 0  # polynomial only
     burnin: int = 20
     prior: PriorClass = PriorClass.frequentist_unrestricted
 
@@ -95,25 +96,28 @@ class ContinuousAnalysis(BaseModel):
 
     @property
     def num_params(self) -> int:
-        return self.model.num_params
+        return (
+            self.degree + 2
+            if self.model == ContinuousModelChoices.c_polynomial.value
+            else self.model.num_params
+        )
 
     def _priors_to_list(self) -> List[float]:
         """
         allocate memory for all parameters and convert to columnwise matrix
         """
-        if len(self.priors) == self.model.num_params:
+        if len(self.priors) >= self.num_params:
             # most cases
-            arr = np.array([list(prior.dict().values()) for prior in self.priors])
-        elif len(self.priors) < self.model.num_params:
-            # special case for multistage; apply all priors; copy last one
+            priors = self.priors[: self.num_params]
+            arr = np.array([list(prior.dict().values()) for prior in priors])
+        else:
+            # special case for polynomial; apply all priors; copy last one
             data: List[List[float]] = []
             for prior in self.priors[:-1]:
                 data.append(list(prior.dict().values()))
-            for _ in range(len(self.priors) - 1, self.model.num_params):
+            for _ in range(len(self.priors) - 1, self.num_params):
                 data.append(list(self.priors[-1].dict().values()))
             arr = np.array(data)
-        else:
-            raise ValueError("Unknown state")
         return arr.T.flatten().tolist()
 
     def to_c(self) -> ContinuousAnalysisStruct:
@@ -131,7 +135,7 @@ class ContinuousAnalysis(BaseModel):
             model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             n_group=list_t_c(self.dataset.ns, ctypes.c_double),
-            parms=ctypes.c_int(self.model.num_params),
+            parms=ctypes.c_int(self.num_params),
             prior=list_t_c(priors, ctypes.c_double),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
