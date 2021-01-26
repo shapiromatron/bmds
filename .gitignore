@@ -9,6 +9,7 @@
 build/
 dist/
 docs/_build/
+notebooks/private
 venv/
 
 # files

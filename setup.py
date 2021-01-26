@@ -26,6 +26,7 @@ requirements = [
     "matplotlib",
     "scipy",
     "simple-settings",
+    "tabulate",
 ]
 
 setup(

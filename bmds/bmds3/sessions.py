@@ -7,6 +7,8 @@ from simple_settings import settings
 
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
+from ..reporting.styling import Report
+from . import reporting
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -122,20 +124,97 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self, filename) -> pd.DataFrame:
-        raise NotImplementedError("TODO - implement!")
+    def to_df(self, dropna: bool = True) -> pd.DataFrame:
+        """
+        Export an executed session to a pandas dataframe
+
+        Args:
+            dropna (bool, optional): Drop columns with missing data. Defaults to True.
+
+        Returns:
+            pd.DataFrame: A pandas dataframe
+        """
+
+        def list_to_str(data, default=None):
+            if data is None:
+                return default
+            return "|".join([str(d) for d in data])
+
+        # build dataset
+        dataset_dict = dict(
+            dataset_id=self.dataset.metadata.id,
+            dataset_name=self.dataset.metadata.name,
+            doses=list_to_str(getattr(self.dataset, "doses", None)),
+            dose_name=self.dataset.metadata.dose_name,
+            dose_units=self.dataset.metadata.dose_units,
+            ns=list_to_str(getattr(self.dataset, "doses", None)),
+            means=list_to_str(getattr(self.dataset, "means", None)),
+            stdevs=list_to_str(getattr(self.dataset, "stdevs", None)),
+            incidences=list_to_str(getattr(self.dataset, "incidences", None)),
+            response_name=self.dataset.metadata.response_name,
+            response_units=self.dataset.metadata.response_units,
+        )
+
+        # build model rows
+        model_rows = []
+        model_row_names = [
+            "model_index",
+            "model_name",
+            "bmd",
+            "bmdl",
+            "bmdu",
+            "aic",
+            "params",
+        ]
+        for idx, model in enumerate(self.models):
+            model_rows.append(
+                [
+                    idx,
+                    model.name(),
+                    model.results.bmd,
+                    model.results.bmdl,
+                    model.results.bmdu,
+                    model.results.aic,
+                    list_to_str(model.results.fit.params),
+                ]
+            )
+        df = pd.DataFrame(data=model_rows, columns=model_row_names)
+
+        # add dataset rows
+        for key, value in dataset_dict.items():
+            df[key] = value
+
+        # reorder
+        column_order = list(dataset_dict.keys()) + model_row_names
+        df = df.reindex(column_order, axis=1)
+
+        # drop empty columns
+        if dropna:
+            df = df.dropna(axis=1, how="all")
+
+        return df
 
     def to_docx(
-        self,
-        filename=None,
-        title=None,
-        input_dataset=True,
-        summary_table=True,
-        recommendation_details=True,
-        recommended_model=True,
-        all_models=False,
+        self, report: Report = None, header_level: int = 1,
     ):
-        raise NotImplementedError("TODO - implement!")
+        """Return a Document object with the session executed
+
+        Args:
+            report (Report, optional): A Report dataclass, or None to use default.
+            header_level (int, optional): Starting header level. Defaults to 1.
+
+        Returns:
+            A python docx.Document object with content added.
+        """
+        if report is None:
+            report = Report.build_default()
+
+        report.document.add_paragraph("Session results", report.styles.header_1)
+        reporting.write_dataset(report, self.dataset, header_level + 1)
+        reporting.write_summary_table(report, self, header_level + 1)
+        reporting.write_models(report, self, header_level + 1)
+
+        return report.document
 
 
 class Bmds330(BmdsSession):

@@ -5,11 +5,12 @@ import numpy as np
 import pytest
 
 import bmds
+from bmds.bmds2 import models
 
 
 def test_executable_path():
 
-    parents = (bmds.models.Dichotomous, bmds.models.DichotomousCancer, bmds.models.Continuous)
+    parents = (models.Dichotomous, models.DichotomousCancer, models.Continuous)
 
     for name, obj in inspect.getmembers(bmds):
         if inspect.isclass(obj):
@@ -214,10 +215,10 @@ def test_can_be_executed(bad_cdataset):
 
     assert bad_cdataset.num_dose_groups == 3
 
-    model = bmds.models.Power_219(bad_cdataset)
+    model = models.Power_219(bad_cdataset)
     assert model.can_be_executed is True
 
-    model = bmds.models.Exponential_M5_111(bad_cdataset)
+    model = models.Exponential_M5_111(bad_cdataset)
     assert model.can_be_executed is False
 
 

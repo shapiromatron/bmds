@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
+from ... import plotting
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
 from ...utils import package_root
@@ -104,6 +105,54 @@ class BmdModel:
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
+    def plot(self):
+        """
+        After model execution, print the dataset, curve-fit, BMD, and BMDL.
+        """
+        if not self.has_results:
+            raise ValueError("Cannot plot if results are unavailable")
+
+        fig = self.dataset.plot()
+        ax = fig.gca()
+        if self.dataset.dtype in DICHOTOMOUS_DTYPES:
+            ax.set_ylim(-0.05, 1.05)
+        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
+        ax.plot(self.results.dr_x, self.results.dr_y, label=self.name(), **plotting.LINE_FORMAT)
+        self._add_bmr_lines(ax)
+        ax.legend(**plotting.LEGEND_OPTS)
+        return fig
+
+    def _add_bmr_lines(self, ax):
+        res = self.results
+        xdomain = ax.xaxis.get_view_interval()
+        xrng = xdomain[1] - xdomain[0]
+
+        if res.bmd > 0:
+            ax.plot([0, res.bmd], [res.bmd_y, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.plot(
+                [res.bmd, res.bmd], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT,
+            )
+            ax.text(
+                res.bmd + xrng * 0.01,
+                0,
+                "BMD",
+                label="BMR, BMD, BMDL",
+                horizontalalignment="left",
+                verticalalignment="center",
+                **plotting.BMD_LABEL_FORMAT,
+            )
+
+        if res.bmdl > 0:
+            ax.plot([res.bmdl, res.bmdl], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.text(
+                res.bmdl - xrng * 0.01,
+                0,
+                "BMDL",
+                horizontalalignment="right",
+                verticalalignment="center",
+                **plotting.BMD_LABEL_FORMAT,
+            )
+
     def to_dict(self) -> Dict:
         return self.serialize.dict()
 
@@ -151,7 +200,7 @@ class BmdModelAveraging:
     def has_results(self) -> bool:
         return self.results is not None
 
-    def serialize(self, model_index: int) -> "BmdModelAveragingSchema":
+    def serialize(self, session) -> "BmdModelAveragingSchema":
         raise NotImplementedError("Requires abstract implementation")
 
     def to_dict(self) -> Dict:

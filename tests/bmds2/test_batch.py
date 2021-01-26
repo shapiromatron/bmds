@@ -7,7 +7,7 @@ import bmds
 @pytest.mark.vcr()
 def test_batch(cdataset, ddataset):
 
-    batch = bmds.SessionBatch()
+    batch = bmds.bmds2.SessionBatch()
 
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_default_models()

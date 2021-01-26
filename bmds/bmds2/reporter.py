@@ -1,51 +1,13 @@
 import os
 import re
-from collections import namedtuple
 from io import BytesIO
 
-import docx
-import numpy as np
 from docx.shared import Inches
 
-from . import constants, datasets
-
-ReporterStyleGuide = namedtuple(
-    "ReporterStyleGuide",
-    ["table", "tbl_header", "tbl_body", "tbl_footnote", "outfile", "header_1", "header_2"],
-)
-
-
-def default_float_formatter(value):
-    if isinstance(value, str):
-        return value
-    elif value != 0 and abs(value) < 0.001 or abs(value) > 1e6:
-        return "{:.1E}".format(value)
-    elif np.isclose(value, int(value)):
-        return str(int(value))
-    else:
-        return "{:.3f}".format(value).rstrip("0")
-
-
-class TableFootnote(dict):
-    def __init__(self):
-        super().__init__()
-        self.ascii_char = 96
-
-    def add_footnote(self, p, text):
-        if text not in self:
-            self.ascii_char += 1
-            self[text] = chr(self.ascii_char)
-        self._add_footnote_character(p, self[text])
-
-    def _add_footnote_character(self, p, symbol):
-        run = p.add_run(symbol)
-        run.font.superscript = True
-
-    def add_footnote_text(self, doc, style):
-        for text, char in self.items():
-            p = doc.add_paragraph("", style=style)
-            self._add_footnote_character(p, char)
-            p.add_run(" {}".format(text))
+from .. import constants, datasets
+from ..reporting.footnotes import TableFootnote
+from ..reporting.styling import Report
+from ..reporting.styling import float_formatter as default_float_formatter
 
 
 class Reporter:
@@ -74,22 +36,17 @@ class Reporter:
         None.
         """
 
-        if template is None:
-            template = os.path.join(os.path.dirname(__file__), "templates/base.docx")
-
-        if styles is None:
-            styles = ReporterStyleGuide(
-                "bmdsTbl",
-                "bmdsTblHeader",
-                "bmdsTblBody",
-                "bmdsTblFootnote",
-                "bmdsOutputFile",
-                "Heading 1",
-                "Heading 2",
-            )
+        if template is not None and styles is not None:
+            pass
+        elif template is None and styles is None:
+            report = Report.build_default()
+            template = report.document
+            styles = report.styles
+        else:
+            raise ValueError("template and styles most both be specified, or neither")
 
         self.styles = styles
-        self.doc = docx.Document(template) if isinstance(template, str) else template
+        self.doc = template
 
         # remove first paragraph if it's blank
         if len(self.doc.paragraphs) > 0 and self.doc.paragraphs[0].text == "":
@@ -274,8 +231,8 @@ class Reporter:
 
         if isinstance(value, float):
             if float_formatter is None:
-                float_formatter = default_float_formatter
-                value = float_formatter(value)
+                ff = default_float_formatter
+                value = ff(value)
 
         cell.paragraphs[0].text = str(value)
         cell.paragraphs[0].style = style

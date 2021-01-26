@@ -1,10 +1,12 @@
 import ctypes
+import math
 from typing import List, Optional
 
 import numpy as np
 
 from ...datasets import ContinuousDataset
 from ..constants import (
+    BMDS_BLANK_VALUE,
     ContinuousModel,
     ContinuousModelChoices,
     ContinuousModelIds,
@@ -81,18 +83,28 @@ class BmdModelContinuous(BmdModel):
 
         fit_results.from_c(fit_results_struct)
         dr_x = self.dataset.dose_linspace
+        critical_xs = np.array(
+            [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
+        )
+        dr_y = self.dr_curve(dr_x, fit_results.params)
+        critical_ys = self.dr_curve(critical_xs, fit_results.params)
         residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
-
+        aic = (
+            bmds_results_struct.aic if math.isfinite(bmds_results_struct.aic) else BMDS_BLANK_VALUE
+        )  # TODO - after models fixed; remove this check?
         result = ContinuousResult(
             bmdl=bmds_results_struct.bmdl,
             bmd=bmds_results_struct.bmd,
             bmdu=bmds_results_struct.bmdu,
-            aic=bmds_results_struct.aic,
+            aic=aic,
             roi=residual_of_interest(bmds_results_struct.bmd, self.dataset.doses, residuals),
             bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
             fit=fit_results,
             dr_x=dr_x.tolist(),
-            dr_y=self.dr_curve(dr_x, fit_results.params).tolist(),
+            dr_y=dr_y.tolist(),
+            bmdl_y=critical_ys[0] if bmds_results_struct.bmdl > 0 else BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
         )
         return result
 
