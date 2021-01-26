@@ -113,6 +113,7 @@ class TestBmds330:
             docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
 
 
+@pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmdsSessionBatch:
     def test_exports(self, dichds, contds, rewrite_data_files):
         # datasets = [dichds, contds]
