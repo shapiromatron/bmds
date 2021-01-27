@@ -237,13 +237,11 @@ class Bmds330(BmdsSession):
             # constants.M_MultistageCancer: d3.Multistage
         },
         constants.CONTINUOUS: {
-            # constants.M_Linear: c3.Linear, = Polynomial degree=1
-            # constants.M_Polynomial: c3.Polynomial,
+            constants.M_Linear: c3.Linear,
+            constants.M_Polynomial: c3.Polynomial,
             constants.M_Power: c3.Power,
             constants.M_Hill: c3.Hill,
-            constants.M_ExponentialM2: c3.ExponentialM2,
             constants.M_ExponentialM3: c3.ExponentialM3,
-            constants.M_ExponentialM4: c3.ExponentialM4,
             constants.M_ExponentialM5: c3.ExponentialM5,
         },
         constants.CONTINUOUS_INDIVIDUAL: {

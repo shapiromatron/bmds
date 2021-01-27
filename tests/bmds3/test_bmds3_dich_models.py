@@ -57,8 +57,8 @@ def test_bmds3_dichotomous_multistage(dichds):
         model = dichotomous.Multistage(dichds, settings)
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu, result.aic]
-        # for regenerating expected: `print(Model.__name__, np.round(actual, 3).tolist())`
-        assert np.isclose(np.array(actual), np.array(expected), atol=1e-2).all()
+        # for regenerating expected: `print(degree, np.round(actual, 3).tolist())`
+        assert np.isclose(np.array(actual), np.array(expected), atol=1e-1).all()
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)

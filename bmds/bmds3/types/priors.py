@@ -133,28 +133,6 @@ DichotomousPriorLookup: Dict[Tuple, List[Prior]] = {
 
 
 ContinuousPriorLookup: Dict[Tuple, List[Prior]] = {
-    # exponential 2
-    (ContinuousModelChoices.c_exp_m2.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m2.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m2.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
     # exponential 3
     (ContinuousModelChoices.c_exp_m3.value.id, PriorClass.frequentist_unrestricted): [
         Prior.parse_args(0, 0, 1, 1e-8, 1e8),
@@ -171,28 +149,6 @@ ContinuousPriorLookup: Dict[Tuple, List[Prior]] = {
         Prior.parse_args(0, 0, 1, -1000, 100),
     ],
     (ContinuousModelChoices.c_exp_m3.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    # exponential 4
-    (ContinuousModelChoices.c_exp_m4.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m4.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m4.value.id, PriorClass.bayesian): [
         Prior.parse_args(0, 0, 1, 1e-8, 1e8),
         Prior.parse_args(0, 0, 1, -1e8, 1e8),
         Prior.parse_args(0, 0, 1, 1e-8, 100),

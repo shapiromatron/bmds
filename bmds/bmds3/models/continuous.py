@@ -193,16 +193,6 @@ class Linear(Polynomial):
         return model
 
 
-class ExponentialM2(BmdModelContinuous):
-    bmd_model_class = ContinuousModelChoices.c_exp_m2.value
-
-    def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO fix; remove np.nan_to_num
-        a = params[0]
-        b = params[1]
-        return np.nan_to_num(a * np.exp(b * doses))
-
-
 class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
@@ -212,17 +202,6 @@ class ExponentialM3(BmdModelContinuous):
         b = params[1]
         d = params[3]
         return np.nan_to_num(a * np.exp((b * doses) ** d))
-
-
-class ExponentialM4(BmdModelContinuous):
-    bmd_model_class = ContinuousModelChoices.c_exp_m4.value
-
-    def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO fix; remove np.nan_to_num
-        a = params[0]
-        b = params[1]
-        c = params[2]
-        return np.nan_to_num(a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses))))))
 
 
 class ExponentialM5(BmdModelContinuous):
@@ -240,8 +219,6 @@ bmd_model_map = {
     ContinuousModelIds.c_power.value: Power,
     ContinuousModelIds.c_hill.value: Hill,
     ContinuousModelIds.c_polynomial.value: Polynomial,
-    ContinuousModelIds.c_exp_m2.value: ExponentialM2,
     ContinuousModelIds.c_exp_m3.value: ExponentialM3,
-    ContinuousModelIds.c_exp_m4.value: ExponentialM4,
     ContinuousModelIds.c_exp_m5.value: ExponentialM5,
 }

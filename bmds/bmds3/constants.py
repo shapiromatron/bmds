@@ -117,9 +117,7 @@ class ContinuousModel(BmdModelSchema):
 
 
 class ContinuousModelIds(IntEnum):
-    c_exp_m2 = 2
     c_exp_m3 = 3
-    c_exp_m4 = 4
     c_exp_m5 = 5
     c_hill = 6
     c_power = 8
@@ -145,23 +143,11 @@ class ContinuousModelChoices(Enum):
         params=("g", "b1", "b2"),
         model_form_str="P[dose] = g + b1*dose + b2*dose^2 + b3*dose^3...",
     )
-    c_exp_m2 = ContinuousModel(
-        id=ContinuousModelIds.c_exp_m2.value,
-        verbose="ExponentialM2",
-        params=("a", "b", "c", "d", "alpha"),
-        model_form_str="P[dose] = a * exp(±1 * b * dose)",
-    )
     c_exp_m3 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m3.value,
         verbose="ExponentialM3",
         params=("a", "b", "c", "d", "alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
-    )
-    c_exp_m4 = ContinuousModel(
-        id=ContinuousModelIds.c_exp_m4.value,
-        verbose="ExponentialM4",
-        params=("a", "b", "c", "d", "alpha"),
-        model_form_str="P[dose] = a * (c - (c - 1) * exp(-b * dose)",
     )
     c_exp_m5 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m5.value,
