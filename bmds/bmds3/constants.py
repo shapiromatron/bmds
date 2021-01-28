@@ -11,20 +11,6 @@ NUM_PRIOR_COLS = 5
 NUM_TESTS_OF_INTEREST = 4
 
 
-class VarType_t(Enum):
-    eVarTypeNone = 0, 0, "No variance model"
-    eConstant = 1, 1, "Constant variance"
-    eModeled = 2, 2, "Modeled variance"
-
-    def __new__(cls, id: int, num_params: int, verbose: str):
-        # https://stackoverflow.com/a/12680149/906385
-        entry = object.__new__(cls)
-        entry.id = entry._value_ = id  # set the value, and the extra attribute
-        entry.num_params = num_params
-        entry.verbose = verbose
-        return entry
-
-
 class BmdModelSchema(BaseModel):
     id: int
     verbose: str
