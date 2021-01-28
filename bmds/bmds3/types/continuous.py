@@ -159,6 +159,17 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # reference same memory in struct and numpy
+        # https://stackoverflow.com/a/23330369/906385
+        self.np_parms = np.zeros(kwargs["nparms"], dtype=np.float64)
+        self.parms = np.ctypeslib.as_ctypes(self.np_parms)
+        self.np_cov = np.zeros(kwargs["nparms"] ** 2, dtype=np.float64)
+        self.cov = np.ctypeslib.as_ctypes(self.np_cov)
+        self.np_bmd_dist = np.zeros(kwargs["dist_numE"] * 2, dtype=np.float64)
+        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+
 
 class ContinuousModelResult(BaseModel):
 
@@ -168,6 +179,8 @@ class ContinuousModelResult(BaseModel):
     params: Optional[List[float]]
     cov: Optional[NumpyFloatArray]
     max: Optional[float]
+    model_df: Optional[float]
+    total_df: Optional[float]
     dist_numE: int
     bmd_dist: Optional[NumpyFloatArray]
 
@@ -175,29 +188,26 @@ class ContinuousModelResult(BaseModel):
         arbitrary_types_allowed = True
 
     def to_c(self):
-        parms = np.zeros(self.num_params, dtype=np.float64)
-        self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
-        self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
         return ContinuousModelResultStruct(
-            model=ctypes.c_int(self.model.id),
-            parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            model=self.model.id, nparms=self.num_params, dist_numE=self.dist_numE
         )
 
     def from_c(self, struct: ContinuousModelResultStruct):
-        self.params = struct.parms[: self.num_params]
-        self.cov = self.cov.reshape(self.num_params, self.num_params)
+        self.params = struct.np_parms.tolist()
+        self.cov = struct.np_cov.reshape(self.num_params, self.num_params)
         self.max = struct.max
+        self.model_df = struct.model_df
+        self.total_df = struct.total_df
+        arr = struct.np_bmd_dist.reshape(2, self.dist_numE)
+        arr = arr[:, np.isfinite(arr[0, :])]
+        arr = arr[:, arr[0, :] > 0]
+        self.bmd_dist = arr
 
     def dict(self, **kw) -> Dict:
         kw.update(exclude={"cov", "bmd_dist"})
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
-        d["bmd_dist"] = self.bmd_dist.T.tolist()
-        # TODO - remove this line one distribution is working as expected
-        d["bmd_dist"] = [np.linspace(0, 1, 100).tolist(), np.linspace(1, 100, 100).tolist()]
+        d["bmd_dist"] = self.bmd_dist.tolist()
         return d
 
 
