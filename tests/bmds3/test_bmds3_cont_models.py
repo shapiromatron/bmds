@@ -1,13 +1,11 @@
 import json
 import os
 
-import numpy as np
 import pytest
 
 import bmds
-from bmds.bmds3.types.continuous import DistType
 from bmds.bmds3.models import continuous
-from bmds.bmds3.types.continuous import ContinuousModelSettings
+from bmds.bmds3.types.continuous import ContinuousModelSettings, DistType
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
@@ -44,12 +42,15 @@ def test_bmds3_continuous_models(contds):
 def test_bmds3_variance(contds):
     model = continuous.Power(contds, dict(disttype=DistType.normal))
     result = model.execute()
+    assert pytest.approx(result.bmd, abs=0.1) == 123
 
     model = continuous.Power(contds, dict(disttype=DistType.normal_ncv))
     result = model.execute()
+    assert pytest.approx(result.bmd, abs=0.1) == 123
 
-    # model = continuous.Power(contds, dict(disttype=DistType.log_normal))
-    # result = model.execute()
+    model = continuous.Power(contds, dict(disttype=DistType.log_normal))
+    result = model.execute()
+    assert pytest.approx(result.bmd, abs=0.1) == 123
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)

@@ -275,13 +275,11 @@ class Multistage(BmdModelDichotomous):
         return params
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO - test!
-        # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
         g = params[0]
         val = doses * 0
         for i in range(1, len(params)):
-            val -= -params[i] * doses ** i
-        return g + (1 - g) * 1 - np.exp(val)
+            val += params[i] * doses ** i
+        return g + (1 - g) * (1 - np.exp(-1.0 * val))
 
 
 bmd_model_map = {
