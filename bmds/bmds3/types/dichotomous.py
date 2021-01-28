@@ -150,6 +150,17 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # reference same memory in struct and numpy
+        # https://stackoverflow.com/a/23330369/906385
+        self.np_parms = np.zeros(kwargs["nparms"], dtype=np.float64)
+        self.parms = np.ctypeslib.as_ctypes(self.np_parms)
+        self.np_cov = np.zeros(kwargs["nparms"] ** 2, dtype=np.float64)
+        self.cov = np.ctypeslib.as_ctypes(self.np_cov)
+        self.np_bmd_dist = np.zeros(kwargs["dist_numE"] * 2, dtype=np.float64)
+        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+
     def __str__(self) -> str:
         return dedent(
             f"""
@@ -184,29 +195,21 @@ class DichotomousModelResult(BaseModel):
         arbitrary_types_allowed = True
 
     def to_c(self, model_id: int) -> DichotomousModelResultStruct:
-        parms = [0] * self.num_params
-        self.cov = [0] * (self.num_params ** 2)
-        self.bmd_dist = [1] * (self.dist_numE * 2)
         return DichotomousModelResultStruct(
-            model=ctypes.c_int(model_id),
-            nparms=ctypes.c_int(self.num_params),
-            parms=list_t_c(parms, ctypes.c_double),
-            cov=list_t_c(self.cov, ctypes.c_double),
-            dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=list_t_c(self.bmd_dist, ctypes.c_double),
+            model=model_id, nparms=self.num_params, dist_numE=self.dist_numE
         )
 
     def from_c(self, struct: DichotomousModelResultStruct, model):
         self.params = model.transform_params(struct)
-        self.cov = np.array(self.cov).reshape(self.num_params, self.num_params)
+        self.cov = struct.np_cov.reshape(self.num_params, self.num_params)
         self.max = struct.max
         self.model_df = struct.model_df
         self.total_df = struct.total_df
 
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = np.array(self.bmd_dist[: self.dist_numE * 2]).reshape(2, self.dist_numE)
-        arr = arr[np.isfinite(arr[:, 0])]
-        arr = arr[arr[:, 0] > 0]
+        arr = struct.np_bmd_dist.reshape(2, self.dist_numE)
+        arr = arr[:, np.isfinite(arr[0, :])]
+        arr = arr[:, arr[0, :] > 0]
         self.bmd_dist = arr
 
     def bmd_plot(self):
