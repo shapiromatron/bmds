@@ -37,6 +37,7 @@ class BmdModelContinuous(BmdModel):
             model = settings
         else:
             model = ContinuousModelSettings.parse_obj(settings)
+            model.isIncreasing = dataset.is_increasing
 
         if model.degree == 0:
             model.degree = self.get_default_model_degree(dataset)
@@ -176,10 +177,8 @@ class Polynomial(BmdModelContinuous):
         return model
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO - test!
-        # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
-        val = params[0]
-        for i in range(1, len(params)):
+        val = doses * 0.0 + params[0]
+        for i in range(1, self.settings.degree + 1):
             val += params[i] * doses ** i
         return val
 
@@ -197,11 +196,11 @@ class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO fix; remove np.nan_to_num
         a = params[0]
         b = params[1]
         d = params[3]
-        return np.nan_to_num(a * np.exp((b * doses) ** d))
+        sign = 1.0 if self.settings.isIncreasing else -1.0
+        return a * np.exp(sign * ((b * doses) ** d))
 
 
 class ExponentialM5(BmdModelContinuous):
