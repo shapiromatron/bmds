@@ -99,7 +99,7 @@ class DichotomousAnalysis(BaseModel):
         )
 
     def _priors_array(self) -> np.ndarray:
-        if self.model.id is constants.DichotomousModelIds.d_multistage:
+        if self.model.id == constants.DichotomousModelIds.d_multistage:
             return self.priors.to_c(degree=self.degree)
         else:
             return self.priors.to_c()

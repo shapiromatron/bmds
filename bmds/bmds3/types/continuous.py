@@ -123,7 +123,7 @@ class ContinuousAnalysis(BaseModel):
         )
 
     def _priors_array(self) -> np.ndarray:
-        if self.model.id is constants.ContinuousModelIds.c_polynomial:
+        if self.model.id == constants.ContinuousModelIds.c_polynomial:
             return self.priors.to_c(degree=self.degree, dist_type=self.disttype)
         else:
             return self.priors.to_c(dist_type=self.disttype)
