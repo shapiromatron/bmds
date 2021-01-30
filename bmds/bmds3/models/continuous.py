@@ -236,6 +236,9 @@ class Hill(BmdModelContinuous):
 class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
+    def name(self) -> str:
+        return f"Polynomial {self.settings.degree}°"
+
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
@@ -257,6 +260,9 @@ class Polynomial(BmdModelContinuous):
 
 
 class Linear(Polynomial):
+    def name(self) -> str:
+        return "Linear"
+
     def get_default_model_degree(self, dataset) -> int:
         return 1
 

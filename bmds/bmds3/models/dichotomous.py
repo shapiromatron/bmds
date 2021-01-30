@@ -285,7 +285,7 @@ class Multistage(BmdModelDichotomous):
 
         return model
 
-    def model_name(self) -> str:
+    def name(self) -> str:
         return f"Multistage {self.settings.degree}°"
 
     def transform_params(self, struct: DichotomousModelResultStruct):
