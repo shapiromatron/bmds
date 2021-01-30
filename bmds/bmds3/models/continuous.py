@@ -80,7 +80,7 @@ def get_default_priors(
             raise ValueError("Can't set prior; disttype unknown")
 
     # linear/poly
-    elif model_class == ContinuousModelChoices.c_power.value:
+    elif model_class == ContinuousModelChoices.c_polynomial.value:
         if settings.is_increasing is True:
             model_priors.priors[1].min_value = 0
             model_priors.priors[1].max_value = 1e8
