@@ -22,7 +22,7 @@ def dichds():
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_models(dichds):
     # compare bmd, bmdl, bmdu, aic values
-    for Model, expected, aic in [
+    for Model, bmd_values, aic in [
         (dichotomous.Logistic, [69.583, 61.194, 77.945], 364.0),
         (dichotomous.LogLogistic, [68.163, 59.795, 75.998], 365.0),
         (dichotomous.Probit, [66.874, 58.335, 75.368], 362.1),
@@ -34,36 +34,35 @@ def test_bmds3_dichotomous_models(dichds):
     ]:
         model = Model(dichds)
         result = model.execute()
-        bmd_values = [result.bmd, result.bmdl, result.bmdu]
+        actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
         # print(
-        #     f"(dichotomous.{Model.__name__}, {np.round(bmd_values, 3).tolist()}, {round(result.aic, 1)})"
+        #     f"(dichotomous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})"
         # )
-        assert pytest.approx(expected, abs=0.1) == bmd_values
+        assert pytest.approx(bmd_values, abs=0.1) == actual
         assert pytest.approx(aic, abs=3.0) == result.aic
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_multistage(dichds):
     # compare bmd, bmdl, bmdu, aic values
-    for degree, expected, aic in [
+    for degree, bmd_values, aic in [
         (1, [17.680, 15.645, 20.062], 425.6),
         (2, [48.016, 44.136, 51.240], 369.7),
         (3, [63.873, 52.260, 72.126], 358.5),
-        # TODO - add back higher degrees
-        # (4, [69.583, 61.194, 77.945], 363.957),
-        # (5, [63.476, 51.826, 78.311], 356.416),
-        # (6, [63.665, 11.083, 82.846], 366.384),
-        # (7, [69.583, 61.194, 77.945], 363.957),
-        # (8, [64.501, 51.366, 85.041], 366.382),
+        # (4, [69.583, 61.194, 77.945], 363.957),  # TODO -fix
+        # (5, [63.476, 51.826, 78.311], 356.416),  # TODO -fix
+        # (6, [63.665, 11.083, 82.846], 366.384),  # TODO -fix
+        # (7, [69.583, 61.194, 77.945], 363.957),  # TODO -fix
+        # (8, [64.501, 51.366, 85.041], 366.382),  # TODO -fix
     ]:
         settings = DichotomousModelSettings(degree=degree)
         model = dichotomous.Multistage(dichds, settings)
         result = model.execute()
-        bmd_values = [result.bmd, result.bmdl, result.bmdu]
+        actual = [result.bmd, result.bmdl, result.bmdu]
         # for modifying values
-        # print(f"({degree}, {np.round(bmd_values, 3).tolist()}, {round(result.aic, 1)})")
-        assert pytest.approx(expected, abs=0.1) == bmd_values
+        # print(f"({degree}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})")
+        assert pytest.approx(bmd_values, abs=0.1) == actual
         assert pytest.approx(aic, abs=3.0) == result.aic
 
 

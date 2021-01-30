@@ -42,7 +42,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("model", ctypes.c_int),
         ("n", ctypes.c_int),
-        ("suff_stat", ctypes.c_bool),  # true if the data are in sufficient statistics format
+        ("suff_stat", ctypes.c_bool),  # true if continuous summary, false if individual data
         ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
         ("doses", ctypes.POINTER(ctypes.c_double)),
         (
