@@ -24,7 +24,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 
         return model
 
-    def execute(self, debug=False) -> DichotomousModelAverageResult:
+    def execute(self) -> DichotomousModelAverageResult:
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
         ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(

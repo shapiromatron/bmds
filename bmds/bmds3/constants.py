@@ -1,6 +1,7 @@
 from enum import Enum, IntEnum
-from typing import Tuple
+from typing import List, Optional, Tuple
 
+import numpy as np
 from pydantic import BaseModel
 
 BMDS_BLANK_VALUE = -9999
@@ -143,25 +144,80 @@ class ContinuousModelChoices(Enum):
     )
 
 
+class DistType(IntEnum):
+    normal = 1
+    normal_ncv = 2
+    log_normal = 3
+
+
 class PriorType(IntEnum):
     eNone = 0
     eNormal = 1
     eLognormal = 2
 
 
-class PriorClass(IntEnum):
-    frequentist_unrestricted = 0
-    frequentist_restricted = 1
-    bayesian = 2
-
-
 class Prior(BaseModel):
+    name: str
     type: PriorType
     initial_value: float
     stdev: float
     min_value: float
     max_value: float
 
-    @classmethod
-    def parse_args(cls, *args) -> "Prior":
-        return cls(**{key: arg for key, arg in zip(cls.__fields__.keys(), args)})
+    def numeric_list(self) -> List[float]:
+        return list(self.dict(exclude={"name"}).values())
+
+
+class PriorClass(IntEnum):
+    frequentist_unrestricted = 0
+    frequentist_restricted = 1
+    bayesian = 2
+    custom = 3
+
+    @property
+    def name(self):
+        return _pc_name_mapping[self]
+
+
+_pc_name_mapping = {
+    PriorClass.frequentist_unrestricted: "Frequentist unrestricted",
+    PriorClass.frequentist_restricted: "Frequentist restricted",
+    PriorClass.bayesian: "Bayesian",
+}
+
+
+class ModelPriors(BaseModel):
+    prior_class: PriorClass  # if this is a predefined model class
+    priors: List[Prior]  # priors for main model
+    variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
+
+    def to_table(self):
+        raise NotImplementedError()
+
+    def to_c(
+        self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
+    ) -> np.ndarray:
+
+        priors = []
+        for prior in self.priors:
+            priors.append(prior.numeric_list())
+
+        # remove degreeN; 1st order multistage/polynomial
+        if degree and degree == 1:
+            priors.pop(2)
+
+        # copy degreeN; > 2rd order poly
+        if degree and degree > 2:
+            for i in range(2, degree):
+                priors.append(priors[2])
+
+        # add constant variance parameter
+        if dist_type and dist_type in {DistType.normal, DistType.log_normal}:
+            priors.append(self.variance_priors[0].numeric_list())
+
+        # add non-constant variance parameter
+        if dist_type and dist_type is DistType.normal_ncv:
+            for prior in self.variance_priors:
+                priors.append(prior.numeric_list())
+
+        return np.array(priors, dtype=np.float64).flatten("F")

@@ -1,237 +1,52 @@
-from typing import Dict, List, Tuple
+from pathlib import Path
+from typing import Dict
 
-from ..constants import ContinuousModelChoices, DichotomousModelChoices, Prior, PriorClass
+import pandas as pd
 
-DichotomousPriorLookup: Dict[Tuple, List[Prior]] = {
-    # loglogistic
-    (DichotomousModelChoices.d_loglogistic.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 0.0001, 18),
-    ],
-    (DichotomousModelChoices.d_loglogistic.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 1.2, 0, 1, 18),
-    ],
-    (DichotomousModelChoices.d_loglogistic.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(1, 0, 1, -40, 40),
-        Prior.parse_args(2, 0.693147, 0.5, 0.0001, 20),
-    ],
-    # gamma
-    (DichotomousModelChoices.d_gamma.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 0.2, 18),
-        Prior.parse_args(0, 0.1, 0, 0, 100),
-    ],
-    (DichotomousModelChoices.d_gamma.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 1, 18),
-        Prior.parse_args(0, 1, 0, 0, 100),
-    ],
-    (DichotomousModelChoices.d_gamma.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -18, 18),
-        Prior.parse_args(2, 0.693147, 0.424264, 0.2, 20),
-        Prior.parse_args(2, 0, 1, 0.0001, 100),
-    ],
-    # logistic
-    (DichotomousModelChoices.d_logistic.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0.1, 0, 0, 100),
-    ],
-    (DichotomousModelChoices.d_logistic.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(2, 0.1, 1, 1e-12, 100),
-    ],
-    # probit
-    (DichotomousModelChoices.d_probit.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0.1, 0, 0, 18),
-    ],
-    (DichotomousModelChoices.d_probit.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -8, 8),
-        Prior.parse_args(2, 0.1, 1, 0, 40),
-    ],
-    # qlinear
-    (DichotomousModelChoices.d_qlinear.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0.5, 0, 0, 100),
-    ],
-    (DichotomousModelChoices.d_qlinear.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(2, 0.5, 1, 0, 100),
-    ],
-    # logprobit
-    (DichotomousModelChoices.d_logprobit.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, -3, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 0.0001, 18),
-    ],
-    (DichotomousModelChoices.d_logprobit.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, -3, 0, -18, 18),
-        Prior.parse_args(0, 1.2, 0, 1, 18),
-    ],
-    (DichotomousModelChoices.d_logprobit.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(1, 0, 1, -8, 8),
-        Prior.parse_args(2, 0.693147, 0.5, 0.0001, 40),
-    ],
-    # weibull
-    (DichotomousModelChoices.d_weibull.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0.5, 0, 0.000001, 18),
-        Prior.parse_args(0, 0.1, 0, 0.000001, 100),
-    ],
-    (DichotomousModelChoices.d_weibull.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 1, 18),
-        Prior.parse_args(0, 0.1, 0, 0.000001, 100),
-    ],
-    (DichotomousModelChoices.d_weibull.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(2, 0.693147, 0.424264, 0.0001, 18),
-        Prior.parse_args(2, 0, 1, 0.0001, 100),
-    ],
-    # multistage
-    (DichotomousModelChoices.d_multistage.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -17, 0, -18, 18),
-        Prior.parse_args(0, 0.1, 0, -18, 100),
-        Prior.parse_args(0, 0.1, 0, -18, 10000),
-    ],
-    (DichotomousModelChoices.d_multistage.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -17, 0, -18, 18),
-        Prior.parse_args(0, 0.1, 0, 0, 100),
-        Prior.parse_args(0, 0.1, 0, 0, 10000),
-    ],
-    (DichotomousModelChoices.d_multistage.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, 0, 2, -20, 20),
-        Prior.parse_args(2, 0, 0.5, 0.0001, 100),
-        Prior.parse_args(2, 0, 1, 0.0001, 1000000),
-    ],
-    # hill
-    (DichotomousModelChoices.d_hill.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0, 0, -18, 18),
-        Prior.parse_args(0, 0, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 0.00000001, 18),
-    ],
-    (DichotomousModelChoices.d_hill.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, -2, 0, -18, 18),
-        Prior.parse_args(0, 0, 0, -18, 18),
-        Prior.parse_args(0, 0, 0, -18, 18),
-        Prior.parse_args(0, 1, 0, 1, 18),
-    ],
-    (DichotomousModelChoices.d_hill.value.id, PriorClass.bayesian): [
-        Prior.parse_args(1, -1, 2, -40, 40),
-        Prior.parse_args(1, 0, 3, -40, 40),
-        Prior.parse_args(1, -3, 3.3, -40, 40),
-        Prior.parse_args(2, 0.693147, 0.5, 0.00000001, 40),
-    ],
-}
+from ...constants import Dtype
+from ..constants import ContinuousModel, DichotomousModel, ModelPriors, PriorClass
+
+# lazy mapping; saves copy as requested
+_model_priors: Dict[str, ModelPriors] = {}
 
 
-ContinuousPriorLookup: Dict[Tuple, List[Prior]] = {
-    # exponential 3
-    (ContinuousModelChoices.c_exp_m3.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m3.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m3.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    # exponential 5
-    (ContinuousModelChoices.c_exp_m5.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m5.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_exp_m5.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    # power
-    (ContinuousModelChoices.c_power.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_power.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_power.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    # hill
-    (ContinuousModelChoices.c_hill.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_hill.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_hill.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1e8, 1e8),
-        Prior.parse_args(0, 0, 1, 1e-8, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    # polynomial
-    (ContinuousModelChoices.c_polynomial.value.id, PriorClass.frequentist_unrestricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_polynomial.value.id, PriorClass.frequentist_restricted): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-    (ContinuousModelChoices.c_polynomial.value.id, PriorClass.bayesian): [
-        Prior.parse_args(0, 0, 1, 1e-8, 1e8),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-        Prior.parse_args(0, 0, 1, -1000, 100),
-    ],
-}
+def _load_model_priors():
+    # lazy load model priors from CSV file
+    def set_param_type(df):
+        return df.assign(variance_param=df.name.map({"rho": True, "alpha": True})).fillna(False)
+
+    def build_priors(df):
+        priors = {}
+        for (data_class, model_id, prior_class), params in df:
+            key = f"{data_class}-{model_id}-{prior_class}"
+            gof_priors = params[params.variance_param == False]  # noqa: E712
+            var_priors = params[params.variance_param == True]  # noqa: E712
+            priors[key] = ModelPriors(
+                prior_class=prior_class,
+                priors=gof_priors.to_dict("records"),
+                variance_priors=var_priors.to_dict("records") if var_priors.shape[0] > 0 else None,
+            )
+        return priors
+
+    filename = Path(__file__).parent / "priors.csv"
+    priors = (
+        pd.read_csv(str(filename))
+        .pipe(set_param_type)
+        .groupby(["data_class", "model_id", "prior_class"])
+        .pipe(build_priors)
+    )
+    _model_priors.update(priors)
+
+
+def get_dichotomous_prior(model: DichotomousModel, prior_class: PriorClass) -> ModelPriors:
+    if len(_model_priors) == 0:
+        _load_model_priors()
+    key = f"{Dtype.DICHOTOMOUS}-{model.id}-{prior_class}"
+    return _model_priors[key].copy(deep=True)
+
+
+def get_continuous_prior(model: ContinuousModel, prior_class: PriorClass) -> ModelPriors:
+    if len(_model_priors) == 0:
+        _load_model_priors()
+    key = f"{Dtype.CONTINUOUS}-{model.id}-{prior_class}"
+    return _model_priors[key].copy(deep=True)

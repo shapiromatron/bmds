@@ -1,5 +1,6 @@
 import ctypes
 from enum import IntEnum
+from textwrap import dedent
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -10,7 +11,7 @@ from bmds.datasets.continuous import ContinuousDataset
 
 from .. import constants
 from .common import NumpyFloatArray, list_t_c
-from .priors import PriorClass
+from .priors import ModelPriors
 
 
 class ContinuousRiskType(IntEnum):
@@ -23,24 +24,18 @@ class ContinuousRiskType(IntEnum):
     eHybrid_Added = 7
 
 
-class DistType(IntEnum):
-    normal = 1
-    normal_ncv = 2
-    log_normal = 3
-
-
 class ContinuousModelSettings(BaseModel):
     suff_stat: bool = True
     bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
-    isIncreasing: bool = False
+    is_increasing: Optional[bool]  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
-    disttype: DistType = DistType.normal
+    disttype: constants.DistType = constants.DistType.normal
     alpha: float = 0.05
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    prior: PriorClass = PriorClass.frequentist_unrestricted
+    priors: Optional[ModelPriors]  # if None; default used
 
 
 class ContinuousAnalysisStruct(ctypes.Structure):
@@ -75,14 +70,39 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("prior_cols", ctypes.c_int),
     ]
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            model: {self.model}
+            n: {self.n}
+            suff_stat: {self.suff_stat}
+            Y: {self.Y[:self.n]}
+            doses: {self.doses[:self.n]}
+            sd: {self.sd[:self.n]}
+            n_group: {self.n_group[:self.n]}
+            prior: {self.prior[:self.parms*self.prior_cols]}
+            BMD_type: {self.BMD_type}
+            isIncreasing: {self.isIncreasing}
+            BMR: {self.BMR}
+            tail_prob: {self.tail_prob}
+            disttype: {self.disttype}
+            alpha: {self.alpha}
+            samples: {self.samples}
+            degree: {self.degree}
+            burnin: {self.burnin}
+            parms: {self.parms}
+            prior_cols: {self.prior_cols}
+            """
+        )
+
 
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
     dataset: ContinuousDataset
-    priors: List[constants.Prior]
+    priors: ModelPriors
     suff_stat: bool
     BMD_type: int
-    isIncreasing: bool
+    is_increasing: bool
     BMR: float
     tail_prob: float
     disttype: int
@@ -102,26 +122,15 @@ class ContinuousAnalysis(BaseModel):
             else self.model.num_params
         )
 
-    def _priors_to_list(self) -> List[float]:
-        """
-        allocate memory for all parameters and convert to columnwise matrix
-        """
-        if len(self.priors) >= self.num_params:
-            # most cases
-            priors = self.priors[: self.num_params]
-            arr = np.array([list(prior.dict().values()) for prior in priors])
+    def _priors_array(self) -> np.ndarray:
+        if self.model.id is constants.ContinuousModelIds.c_polynomial:
+            return self.priors.to_c(degree=self.degree, dist_type=self.disttype)
         else:
-            # special case for polynomial; apply all priors; copy last one
-            data: List[List[float]] = []
-            for prior in self.priors[:-1]:
-                data.append(list(prior.dict().values()))
-            for _ in range(len(self.priors) - 1, self.num_params):
-                data.append(list(self.priors[-1].dict().values()))
-            arr = np.array(data)
-        return arr.T.flatten().tolist()
+            return self.priors.to_c(dist_type=self.disttype)
 
     def to_c(self) -> ContinuousAnalysisStruct:
-        priors = self._priors_to_list()
+        priors = self._priors_array()
+        priors_pointer = np.ctypeslib.as_ctypes(priors)
         return ContinuousAnalysisStruct(
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
@@ -131,12 +140,12 @@ class ContinuousAnalysis(BaseModel):
             degree=ctypes.c_int(self.degree),
             disttype=ctypes.c_int(self.disttype),
             doses=list_t_c(self.dataset.doses, ctypes.c_double),
-            isIncreasing=ctypes.c_bool(self.isIncreasing),
+            isIncreasing=ctypes.c_bool(self.is_increasing),
             model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             n_group=list_t_c(self.dataset.ns, ctypes.c_double),
             parms=ctypes.c_int(self.num_params),
-            prior=list_t_c(priors, ctypes.c_double),
+            prior=priors_pointer,
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
             sd=list_t_c(self.dataset.stdevs, ctypes.c_double),

@@ -7,12 +7,11 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, confloat, conint
 
-from bmds.bmds3.constants import DichotomousModelChoices
+from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...datasets import DichotomousDataset
 from .. import constants
 from .common import NumpyFloatArray, list_t_c
-from .priors import PriorClass
 
 
 class DichotomousRiskType(IntEnum):
@@ -27,7 +26,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    prior: PriorClass = PriorClass.frequentist_unrestricted
+    priors: Optional[ModelPriors]  # if None; default used
 
 
 class DichotomousAnalysisStruct(ctypes.Structure):
@@ -80,7 +79,7 @@ class DichotomousAnalysis(BaseModel):
 
     model: constants.DichotomousModel
     dataset: DichotomousDataset
-    priors: List[constants.Prior]
+    priors: ModelPriors
     BMD_type: int
     BMR: float
     alpha: float
@@ -99,33 +98,22 @@ class DichotomousAnalysis(BaseModel):
             else self.model.num_params
         )
 
-    def _priors_to_list(self) -> List[float]:
-        """
-        allocate memory for all parameters and convert to columnwise matrix
-        """
-        if len(self.priors) >= self.num_params:
-            # most cases
-            priors = self.priors[: self.num_params]
-            arr = np.array([list(prior.dict().values()) for prior in priors])
+    def _priors_array(self) -> np.ndarray:
+        if self.model.id is constants.DichotomousModelIds.d_multistage:
+            return self.priors.to_c(degree=self.degree)
         else:
-            # special case for multistage; apply all priors; copy last one
-            data: List[List[float]] = []
-            for prior in self.priors[:-1]:
-                data.append(list(prior.dict().values()))
-            for _ in range(len(self.priors) - 1, self.num_params):
-                data.append(list(self.priors[-1].dict().values()))
-            arr = np.array(data)
-        return arr.flatten("F").tolist()
+            return self.priors.to_c()
 
     def to_c(self) -> DichotomousAnalysisStruct:
-        priors = self._priors_to_list()
+        priors = self._priors_array()
+        priors_pointer = np.ctypeslib.as_ctypes(priors)
         return DichotomousAnalysisStruct(
             model=ctypes.c_int(self.model.id),
             n=ctypes.c_int(self.dataset.num_dose_groups),
             Y=list_t_c(self.dataset.incidences, ctypes.c_double),
             doses=list_t_c(self.dataset.doses, ctypes.c_double),
             n_group=list_t_c(self.dataset.ns, ctypes.c_double),
-            prior=list_t_c(priors, ctypes.c_double),
+            prior=priors_pointer,
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
             alpha=ctypes.c_double(self.alpha),

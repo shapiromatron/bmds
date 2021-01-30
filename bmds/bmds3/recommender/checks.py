@@ -4,8 +4,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
-from ..constants import BMDS_BLANK_VALUE
-from ..types.continuous import DistType
+from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
 Number = Union[float, int]
