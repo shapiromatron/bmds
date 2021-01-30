@@ -70,10 +70,6 @@ class BmdModelDichotomous(BmdModel):
         gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
         bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
 
-        # can be used for model averaging
-        self.inputs_struct = inputs_struct
-        self.fit_results_struct = fit_results_struct
-
         # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
@@ -109,6 +105,11 @@ class BmdModelDichotomous(BmdModel):
             bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
             bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
         )
+
+        self.inputs_struct = inputs_struct
+        self.fit_results_struct = fit_results_struct
+        self.results = result
+
         return result
 
     def get_default_model_degree(self, dataset) -> int:

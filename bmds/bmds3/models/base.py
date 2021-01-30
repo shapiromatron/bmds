@@ -100,7 +100,7 @@ class BmdModel:
         raise NotImplementedError("Requires abstract implementation")
 
     def execute_job(self):
-        self.results = self.execute()
+        self.execute()
 
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")

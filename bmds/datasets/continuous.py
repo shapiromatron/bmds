@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -377,3 +377,7 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
         )
         ds._anova = self.anova
         return ds
+
+
+ContinuousDatasets = Union[ContinuousDataset, ContinuousIndividualDataset]
+ContinuousDatasetSchemas = Union[ContinuousDatasetSchema, ContinuousIndividualDatasetSchema]

@@ -7,8 +7,9 @@ import numpy as np
 from pydantic import BaseModel
 
 from bmds.bmds3.constants import ContinuousModelChoices
-from bmds.datasets.continuous import ContinuousDataset
+from bmds.datasets.continuous import ContinuousDatasets
 
+from ...constants import Dtype
 from .. import constants
 from .common import NumpyFloatArray, list_t_c
 from .priors import ModelPriors
@@ -25,7 +26,6 @@ class ContinuousRiskType(IntEnum):
 
 
 class ContinuousModelSettings(BaseModel):
-    suff_stat: bool = True
     bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
     is_increasing: Optional[bool]  # if None; autodetect used
     bmr: float = 1.0
@@ -71,6 +71,8 @@ class ContinuousAnalysisStruct(ctypes.Structure):
     ]
 
     def __str__(self) -> str:
+        sd = self.sd[: self.n] if self.suff_stat else []
+        n_group = self.n_group[: self.n] if self.suff_stat else []
         return dedent(
             f"""
             model: {self.model}
@@ -78,8 +80,8 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             suff_stat: {self.suff_stat}
             Y: {self.Y[:self.n]}
             doses: {self.doses[:self.n]}
-            sd: {self.sd[:self.n]}
-            n_group: {self.n_group[:self.n]}
+            sd: {sd}
+            n_group: {n_group}
             prior: {self.prior[:self.parms*self.prior_cols]}
             BMD_type: {self.BMD_type}
             isIncreasing: {self.isIncreasing}
@@ -98,9 +100,8 @@ class ContinuousAnalysisStruct(ctypes.Structure):
 
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
-    dataset: ContinuousDataset
+    dataset: ContinuousDatasets
     priors: ModelPriors
-    suff_stat: bool
     BMD_type: ContinuousRiskType
     is_increasing: bool
     BMR: float
@@ -137,27 +138,41 @@ class ContinuousAnalysis(BaseModel):
     def to_c(self) -> ContinuousAnalysisStruct:
         priors = self._priors_array()
         priors_pointer = np.ctypeslib.as_ctypes(priors)
-        return ContinuousAnalysisStruct(
+
+        struct = ContinuousAnalysisStruct(
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
-            Y=list_t_c(self.dataset.means, ctypes.c_double),
             alpha=ctypes.c_double(self.alpha),
             burnin=ctypes.c_int(self.burnin),
             degree=ctypes.c_int(self.degree),
             disttype=ctypes.c_int(self.disttype),
-            doses=list_t_c(self.dataset.doses, ctypes.c_double),
             isIncreasing=ctypes.c_bool(self.is_increasing),
             model=ctypes.c_int(self.model.id),
-            n=ctypes.c_int(self.dataset.num_dose_groups),
-            n_group=list_t_c(self.dataset.ns, ctypes.c_double),
             parms=ctypes.c_int(self.num_params),
             prior=priors_pointer,
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
-            sd=list_t_c(self.dataset.stdevs, ctypes.c_double),
-            suff_stat=ctypes.c_bool(self.suff_stat),
             tail_prob=ctypes.c_double(self.tail_prob),
         )
+
+        if self.dataset.dtype == Dtype.CONTINUOUS:
+            struct.suff_stat = ctypes.c_bool(True)
+            struct.Y = list_t_c(self.dataset.means, ctypes.c_double)
+            struct.doses = list_t_c(self.dataset.doses, ctypes.c_double)
+            struct.n = ctypes.c_int(self.dataset.num_dose_groups)
+            struct.n_group = list_t_c(self.dataset.ns, ctypes.c_double)
+            struct.sd = list_t_c(self.dataset.stdevs, ctypes.c_double)
+        elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
+            struct.suff_stat = ctypes.c_bool(False)
+            struct.Y = list_t_c(self.dataset.responses, ctypes.c_double)
+            struct.doses = list_t_c(self.dataset.individual_doses, ctypes.c_double)
+            struct.n = ctypes.c_int(len(self.dataset.individual_doses))
+            struct.n_group = list_t_c([], ctypes.c_double)
+            struct.sd = list_t_c([], ctypes.c_double)
+        else:
+            raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
+
+        return struct
 
 
 class ContinuousModelResultStruct(ctypes.Structure):

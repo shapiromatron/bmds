@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from ...datasets import ContinuousDataset
+from ...datasets import ContinuousDatasets
 from ..constants import (
     BMDS_BLANK_VALUE,
     ContinuousModel,
@@ -101,7 +101,7 @@ class BmdModelContinuous(BmdModel):
     bmd_model_class: ContinuousModel
 
     def get_model_settings(
-        self, dataset: ContinuousDataset, settings: InputModelSettings
+        self, dataset: ContinuousDatasets, settings: InputModelSettings,
     ) -> ContinuousModelSettings:
         if settings is None:
             model = ContinuousModelSettings()
@@ -129,7 +129,6 @@ class BmdModelContinuous(BmdModel):
             BMD_type=self.settings.bmr_type,
             BMR=self.settings.bmr,
             alpha=self.settings.alpha,
-            suff_stat=self.settings.suff_stat,
             is_increasing=self.settings.is_increasing,
             tail_prob=self.settings.tail_prob,
             disttype=self.settings.disttype,
@@ -178,6 +177,11 @@ class BmdModelContinuous(BmdModel):
             bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
             bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
         )
+
+        self.inputs_struct = inputs_struct
+        self.fit_results_struct = fit_results_struct
+        self.results = result
+
         return result
 
     def get_default_model_degree(self, dataset) -> int:
@@ -201,7 +205,7 @@ class BmdModelContinuousSchema(BmdModelSchema):
     settings: ContinuousModelSettings
     results: Optional[ContinuousResult]
 
-    def deserialize(self, dataset: ContinuousDataset) -> BmdModelContinuous:
+    def deserialize(self, dataset: ContinuousDatasets) -> BmdModelContinuous:
         Model = bmd_model_map[self.model_class.id]
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
@@ -233,7 +237,7 @@ class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
 
     def get_model_settings(
-        self, dataset: ContinuousDataset, settings: InputModelSettings
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model = super().get_model_settings(dataset, settings)
 
@@ -257,7 +261,7 @@ class Linear(Polynomial):
         return 1
 
     def get_model_settings(
-        self, dataset: ContinuousDataset, settings: InputModelSettings
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model = super().get_model_settings(dataset, settings)
         if model.degree != 1:

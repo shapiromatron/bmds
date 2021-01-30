@@ -143,8 +143,20 @@ def test_bmds3_continuous_polynomial(contds):
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_continuous_session(contds: bmds.ContinuousDataset):
+def test_bmds3_continuous_session(contds):
     session = bmds.session.Bmds330(dataset=contds)
+    session.add_default_models()
+    session.execute()
+    for model in session.models:
+        model.results = model.execute()
+    d = session.to_dict()
+    # ensure json-serializable
+    print(json.dumps(d))
+
+
+@pytest.mark.skipif(not should_run, reason=skip_reason)
+def test_bmds3_continuous_individual_session(cidataset):
+    session = bmds.session.Bmds330(dataset=cidataset)
     session.add_default_models()
     session.execute()
     for model in session.models:
