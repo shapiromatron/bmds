@@ -101,11 +101,11 @@ class ContinuousAnalysis(BaseModel):
     dataset: ContinuousDataset
     priors: ModelPriors
     suff_stat: bool
-    BMD_type: int
+    BMD_type: ContinuousRiskType
     is_increasing: bool
     BMR: float
     tail_prob: float
-    disttype: int
+    disttype: constants.DistType
     alpha: float
     samples: int
     burnin: int
@@ -116,11 +116,17 @@ class ContinuousAnalysis(BaseModel):
 
     @property
     def num_params(self) -> int:
-        return (
-            self.degree + 2
-            if self.model == ContinuousModelChoices.c_polynomial.value
-            else self.model.num_params
-        )
+        if self.model == ContinuousModelChoices.c_polynomial.value:
+            params = self.degree + 1
+        else:
+            params = len(self.model.params)
+
+        if self.disttype is constants.DistType.normal_ncv:
+            params += 2
+        else:
+            params += 1
+
+        return params
 
     def _priors_array(self) -> np.ndarray:
         if self.model.id == constants.ContinuousModelIds.c_polynomial:

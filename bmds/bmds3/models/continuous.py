@@ -110,11 +110,11 @@ class BmdModelContinuous(BmdModel):
         else:
             model = ContinuousModelSettings.parse_obj(settings)
 
-        if model.is_increasing is None:
-            model.is_increasing = dataset.is_increasing
-
         if model.degree == 0:
             model.degree = self.get_default_model_degree(dataset)
+
+        if model.is_increasing is None:
+            model.is_increasing = dataset.is_increasing
 
         if model.priors is None:
             model.priors = get_default_priors(self.bmd_model_class, model)
@@ -243,7 +243,7 @@ class Polynomial(BmdModelContinuous):
         return model
 
     def get_default_model_degree(self, dataset) -> int:
-        return self.bmd_model_class.num_params - 2
+        return 2
 
     def dr_curve(self, doses, params) -> np.ndarray:
         val = doses * 0.0 + params[0]
@@ -253,11 +253,15 @@ class Polynomial(BmdModelContinuous):
 
 
 class Linear(Polynomial):
+    def get_default_model_degree(self, dataset) -> int:
+        return 1
+
     def get_model_settings(
         self, dataset: ContinuousDataset, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model = super().get_model_settings(dataset, settings)
-        model.degree = 1
+        if model.degree != 1:
+            raise ValueError("Linear model must have degree of 1")
         return model
 
 

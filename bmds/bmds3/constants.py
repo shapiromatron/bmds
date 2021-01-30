@@ -97,10 +97,7 @@ class DichotomousModelChoices(Enum):
 
 class ContinuousModel(BmdModelSchema):
     params: Tuple[str, ...]
-
-    @property
-    def num_params(self):
-        return len(self.params)
+    variance_params: Tuple[str, ...]
 
 
 class ContinuousModelIds(IntEnum):
@@ -115,31 +112,36 @@ class ContinuousModelChoices(Enum):
     c_power = ContinuousModel(
         id=ContinuousModelIds.c_power.value,
         verbose="Power",
-        params=("g", "v", "n", "alpha"),
+        params=("g", "v", "n"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n",
     )
     c_hill = ContinuousModel(
         id=ContinuousModelIds.c_hill.value,
         verbose="Hill",
-        params=("g", "v", "k", "n", "alpha"),
+        params=("g", "v", "k", "n"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n / (k ^ n + dose ^ n)",
     )
     c_polynomial = ContinuousModel(
         id=ContinuousModelIds.c_polynomial.value,
         verbose="Polynomial",
         params=("g", "b1", "b2"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + b1*dose + b2*dose^2 + b3*dose^3...",
     )
     c_exp_m3 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m3.value,
         verbose="ExponentialM3",
-        params=("a", "b", "c", "d", "alpha"),
+        params=("a", "b", "c", "d"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
     )
     c_exp_m5 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m5.value,
         verbose="ExponentialM5",
-        params=("a", "b", "c", "d", "alpha"),
+        params=("a", "b", "c", "d"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-(b * dose) ^ d)",
     )
 
