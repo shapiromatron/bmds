@@ -204,7 +204,7 @@ class BmdBmdlRatio(ShouldBeLessThan):
 
 
 class LowBmd(ShouldBeLessThan):
-    failure_message_name = "BMD/lowest dose ratio"
+    failure_message_name = "lowest dose/BMD ratio"
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
@@ -216,7 +216,7 @@ class LowBmd(ShouldBeLessThan):
 
 
 class LowBmdl(ShouldBeLessThan):
-    failure_message_name = "BMDL/lowest dose ratio"
+    failure_message_name = "lowest dose/BMDL ratio"
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
