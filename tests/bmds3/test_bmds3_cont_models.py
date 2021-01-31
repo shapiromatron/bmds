@@ -61,8 +61,8 @@ def test_bmds3_increasing(contds):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [52.867, 50.457, 55.501], 3181.6),
-        (continuous.ExponentialM5, [28.446, 27.025, 30.004], 3070.6),
+        # (continuous.ExponentialM3, [52.867, 50.457, 55.501], 3181.6),
+        # (continuous.ExponentialM5, [28.446, 27.025, 30.004], 3070.6),
         (continuous.Power, [25.85, 24.462, 29.223], 3065.8),
         (continuous.Hill, [30.262, 26.124, 34.602], 3072.8),
         # (continuous.Linear, [70.738, 67.061, 74.722], 11896.4),
