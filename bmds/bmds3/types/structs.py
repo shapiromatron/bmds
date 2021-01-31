@@ -238,3 +238,163 @@ class DichotomousMAResultStruct(ctypes.Structure):
             post_probs=(ctypes.c_double * nmodels)(),
             bmd_dist=(ctypes.c_double * (dist_numE * 2))(),
         )
+
+
+# CONTINUOUS MODELS
+# -----------------
+
+
+class ContinuousAnalysisStruct(ctypes.Structure):
+    _fields_ = [
+        ("model", ctypes.c_int),
+        ("n", ctypes.c_int),
+        ("suff_stat", ctypes.c_bool),  # true if continuous summary, false if individual data
+        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
+        ("doses", ctypes.POINTER(ctypes.c_double)),
+        (
+            "sd",
+            ctypes.POINTER(ctypes.c_double),
+        ),  # SD of the group if suff_stat = true, null otherwise
+        (
+            "n_group",
+            ctypes.POINTER(ctypes.c_double),
+        ),  # N for each group if suff_stat = true, null otherwise
+        (
+            "prior",
+            ctypes.POINTER(ctypes.c_double),
+        ),  # a column order matrix px5 where p is the number of parameters
+        ("BMD_type", ctypes.c_int),  # type of BMD
+        ("isIncreasing", ctypes.c_bool),  # if the BMD is defined increasing or decreasing
+        ("BMR", ctypes.c_double),  # benchmark response related to the BMD type
+        ("tail_prob", ctypes.c_double),  # tail probability
+        ("disttype", ctypes.c_int),  # distribution type defined in the enum distribution
+        ("alpha", ctypes.c_double),  # specified alpha
+        ("samples", ctypes.c_int),  # number of MCMC samples
+        ("degree", ctypes.c_int),
+        ("burnin", ctypes.c_int),
+        ("parms", ctypes.c_int),  # number of parameters
+        ("prior_cols", ctypes.c_int),
+    ]
+
+    def __str__(self) -> str:
+        sd = self.sd[: self.n] if self.suff_stat else []
+        n_group = self.n_group[: self.n] if self.suff_stat else []
+        return dedent(
+            f"""
+            model: {self.model}
+            n: {self.n}
+            suff_stat: {self.suff_stat}
+            Y: {self.Y[:self.n]}
+            doses: {self.doses[:self.n]}
+            sd: {sd}
+            n_group: {n_group}
+            prior: {self.prior[:self.parms*self.prior_cols]}
+            BMD_type: {self.BMD_type}
+            isIncreasing: {self.isIncreasing}
+            BMR: {self.BMR}
+            tail_prob: {self.tail_prob}
+            disttype: {self.disttype}
+            alpha: {self.alpha}
+            samples: {self.samples}
+            degree: {self.degree}
+            burnin: {self.burnin}
+            parms: {self.parms}
+            prior_cols: {self.prior_cols}
+            """
+        )
+
+
+class ContinuousModelResultStruct(ctypes.Structure):
+    _fields_ = [
+        ("model", ctypes.c_int),  # continuous model specification
+        ("dist", ctypes.c_int),  # distribution type
+        ("nparms", ctypes.c_int),  # number of parameters in the model
+        ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
+        ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
+        ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
+        ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
+        ("model_df", ctypes.c_double),
+        ("total_df", ctypes.c_double),
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # this is modified by Exp3
+        self.initial_n = self.nparms
+        # reference same memory in struct and numpy
+        # https://stackoverflow.com/a/23330369/906385
+        self.np_parms = np.zeros(kwargs["nparms"], dtype=np.float64)
+        self.parms = np.ctypeslib.as_ctypes(self.np_parms)
+        self.np_cov = np.zeros(kwargs["nparms"] ** 2, dtype=np.float64)
+        self.cov = np.ctypeslib.as_ctypes(self.np_cov)
+        self.np_bmd_dist = np.zeros(kwargs["dist_numE"] * 2, dtype=np.float64)
+        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            model: {self.model}
+            dist: {self.dist}
+            nparms: {self.nparms}
+            nparms <initial>: {self.initial_n}
+            parms: {self.parms[:self.initial_n]}
+            cov: {self.cov[:self.initial_n**2]}
+            max: {self.max}
+            dist_numE: {self.dist_numE}
+            model_df: {self.model_df}
+            total_df: {self.total_df}
+            bmd_dist: {self.bmd_dist[:self.dist_numE*2]}
+            """
+        )
+
+
+class ContinuousBmdsResultsStruct(ctypes.Structure):
+    _fields_ = [
+        ("bmd", ctypes.c_double),
+        ("bmdl", ctypes.c_double),
+        ("bmdu", ctypes.c_double),
+        ("aic", ctypes.c_double),
+        ("bounded", ctypes.POINTER(ctypes.c_bool)),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.n = kwargs["nparms"]
+        self.bmd = constants.BMDS_BLANK_VALUE
+        self.bmdl = constants.BMDS_BLANK_VALUE
+        self.bmdu = constants.BMDS_BLANK_VALUE
+        self.aic = constants.BMDS_BLANK_VALUE
+        self.np_bounded = np.zeros(self.n, dtype=np.bool_)
+        self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            bmd: {self.bmd}
+            bmdl: {self.bmdl}
+            bmdu: {self.bmdu}
+            aic: {self.aic}
+            bounded: {self.bounded[:self.n]}
+            """
+        )
+
+
+class ContinuousStructs(NamedTuple):
+    analysis: ContinuousAnalysisStruct
+    result: ContinuousModelResultStruct
+    summary: ContinuousBmdsResultsStruct
+
+    def __str__(self):
+        return dedent(
+            f"""
+            Analysis:
+            {self.analysis}
+
+            Result:
+            {self.result}
+
+            Summary:
+            {self.summary}
+            """
+        )

@@ -17,7 +17,6 @@ from ..constants import (
 from ..types.common import residual_of_interest
 from ..types.continuous import (
     ContinuousAnalysis,
-    ContinuousBmdsResultsStruct,
     ContinuousModelResult,
     ContinuousModelSettings,
     ContinuousResult,
@@ -136,50 +135,41 @@ class BmdModelContinuous(BmdModel):
             burnin=self.settings.burnin,
             degree=self.settings.degree,
         )
-        fit_results = ContinuousModelResult(
-            model=self.bmd_model_class, dist_numE=200, num_params=inputs.num_params
-        )
-
-        inputs_struct = inputs.to_c()
-        fit_results_struct = fit_results.to_c()
-        bmds_results_struct = ContinuousBmdsResultsStruct.from_results(fit_results)
+        structs = inputs.to_c()
 
         # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
         dll.runBMDSContAnalysis(
-            ctypes.pointer(inputs_struct),
-            ctypes.pointer(fit_results_struct),
-            ctypes.pointer(bmds_results_struct),
+            ctypes.pointer(structs.analysis),
+            ctypes.pointer(structs.result),
+            ctypes.pointer(structs.summary),
         )
 
-        fit_results.from_c(fit_results_struct)
+        fit_results = ContinuousModelResult.from_c(structs.result)
         dr_x = self.dataset.dose_linspace
-        critical_xs = np.array(
-            [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
-        )
+        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
         dr_y = self.dr_curve(dr_x, fit_results.params)
         critical_ys = self.dr_curve(critical_xs, fit_results.params)
         residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
         aic = (
-            bmds_results_struct.aic if math.isfinite(bmds_results_struct.aic) else BMDS_BLANK_VALUE
+            structs.summary.aic if math.isfinite(structs.summary.aic) else BMDS_BLANK_VALUE
         )  # TODO - after models fixed; remove this check?
         result = ContinuousResult(
-            bmdl=bmds_results_struct.bmdl,
-            bmd=bmds_results_struct.bmd,
-            bmdu=bmds_results_struct.bmdu,
+            bmdl=structs.summary.bmdl,
+            bmd=structs.summary.bmd,
+            bmdu=structs.summary.bmdu,
             aic=aic,
-            roi=residual_of_interest(bmds_results_struct.bmd, self.dataset.doses, residuals),
-            bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
+            roi=residual_of_interest(structs.summary.bmd, self.dataset.doses, residuals),
+            bounded=[structs.summary.bounded[i] for i in range(inputs.num_params)],
             fit=fit_results,
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if bmds_results_struct.bmdl > 0 else BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
+            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else BMDS_BLANK_VALUE,
         )
 
-        self.inputs_struct = inputs_struct
-        self.fit_results_struct = fit_results_struct
+        self.structs = structs
         self.results = result
 
         return result
