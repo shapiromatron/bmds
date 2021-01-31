@@ -28,11 +28,11 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
         ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
-            models=[model.inputs_struct for model in self.models]
+            models=[model.structs.analysis for model in self.models]
         )
-        ma_inputs_struct = self.models[0].inputs_struct
+        ma_inputs_struct = self.models[0].structs.analysis
         ma_result_struct = DichotomousMAResultStruct.from_python(
-            models=[model.fit_results_struct for model in self.models]
+            models=[model.structs.result for model in self.models]
         )
 
         dll.estimate_ma_laplace_dicho(

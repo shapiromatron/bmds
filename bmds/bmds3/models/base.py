@@ -1,7 +1,7 @@
 import ctypes
 import logging
 import platform
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, NamedTuple, Optional, Union
 
 from pydantic import BaseModel
 
@@ -81,9 +81,8 @@ class BmdModel:
     def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
         self.dataset = dataset
         self.settings = self.get_model_settings(dataset, settings)
+        self.structs: Optional[NamedTuple] = None  # used for model averaging
         self.results: Optional[BaseModel] = None
-        self.inputs_struct: Optional[ctypes.Structure] = None  # used for model averaging
-        self.fit_results_struct: Optional[ctypes.Structure] = None  # used for model averaging
 
     def name(self) -> str:
         # return name of model; may be setting-specific

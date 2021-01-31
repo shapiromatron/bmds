@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..models.dichotomous import BmdModelDichotomous
 from .common import list_t_c
-from .dichotomous import DichotomousAnalysisStruct, DichotomousModelResultStruct
+from .structs import DichotomousAnalysisStruct, DichotomousModelResultStruct
 
 
 class DichotomousMAAnalysisStruct(ctypes.Structure):

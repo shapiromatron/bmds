@@ -16,15 +16,13 @@ from ..constants import (
 from ..types.common import residual_of_interest
 from ..types.dichotomous import (
     DichotomousAnalysis,
-    DichotomousBmdsResultsStruct,
     DichotomousModelResult,
-    DichotomousModelResultStruct,
     DichotomousModelSettings,
     DichotomousPgofResult,
-    DichotomousPgofResultStruct,
     DichotomousResult,
 )
 from ..types.priors import get_dichotomous_prior
+from ..types.structs import DichotomousModelResultStruct
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -62,52 +60,39 @@ class BmdModelDichotomous(BmdModel):
             samples=self.settings.samples,
             burnin=self.settings.burnin,
         )
-        inputs_struct = inputs.to_c()
+        structs = inputs.to_c()
 
-        # setup outputs
-        fit_results = DichotomousModelResult(dist_numE=200, num_params=inputs.num_params)
-        fit_results_struct = fit_results.to_c(self.bmd_model_class.id)
-        gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
-        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
-
-        # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-
         dll.runBMDSDichoAnalysis(
-            ctypes.pointer(inputs_struct),
-            ctypes.pointer(fit_results_struct),
-            ctypes.pointer(gof_results_struct),
-            ctypes.pointer(bmds_results_struct),
+            ctypes.pointer(structs.analysis),
+            ctypes.pointer(structs.result),
+            ctypes.pointer(structs.gof),
+            ctypes.pointer(structs.summary),
         )
 
-        fit_results.from_c(fit_results_struct, self)
-        gof_results = DichotomousPgofResult.from_c(gof_results_struct)
+        fit_results = DichotomousModelResult.from_c(structs.result, self)
+        gof_results = DichotomousPgofResult.from_c(structs.gof)
         dr_x = self.dataset.dose_linspace
-        critical_xs = np.array(
-            [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
-        )
+        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
         dr_y = self.dr_curve(dr_x, fit_results.params)
         critical_ys = self.dr_curve(critical_xs, fit_results.params)
         result = DichotomousResult(
-            bmdl=bmds_results_struct.bmdl,
-            bmd=bmds_results_struct.bmd,
-            bmdu=bmds_results_struct.bmdu,
-            aic=bmds_results_struct.aic,
-            roi=residual_of_interest(
-                bmds_results_struct.bmd, self.dataset.doses, gof_results.residual
-            ),
-            bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
+            bmdl=structs.summary.bmdl,
+            bmd=structs.summary.bmd,
+            bmdu=structs.summary.bmdu,
+            aic=structs.summary.aic,
+            roi=residual_of_interest(structs.summary.bmd, self.dataset.doses, gof_results.residual),
+            bounded=[structs.summary.bounded[i] for i in range(inputs.num_params)],
             fit=fit_results,
             gof=gof_results,
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if bmds_results_struct.bmdl > 0 else BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
+            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else BMDS_BLANK_VALUE,
         )
 
-        self.inputs_struct = inputs_struct
-        self.fit_results_struct = fit_results_struct
+        self.structs = structs
         self.results = result
 
         return result
