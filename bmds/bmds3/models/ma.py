@@ -3,11 +3,8 @@ from typing import List
 
 from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
-from ..types.ma import (
-    DichotomousMAAnalysisStruct,
-    DichotomousMAResultStruct,
-    DichotomousModelAverageResult,
-)
+from ..types.ma import DichotomousModelAverageResult
+from ..types.structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
 from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
 
 
