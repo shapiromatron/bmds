@@ -133,17 +133,18 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
-            bounded: <not shown>
+            bounded: {self.bounded[:self.n]}
             """
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.n = kwargs["num_params"]
         self.bmd = constants.BMDS_BLANK_VALUE
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
-        self.np_bounded = np.zeros(kwargs["num_params"], dtype=np.bool_)
+        self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
 
 
@@ -152,3 +153,20 @@ class DichotomousStructs(NamedTuple):
     result: DichotomousModelResultStruct
     gof: DichotomousPgofResultStruct
     summary: DichotomousBmdsResultsStruct
+
+    def __str__(self):
+        return dedent(
+            f"""
+            Analysis:
+            {self.analysis}
+
+            Result:
+            {self.result}
+
+            GoF:
+            {self.gof}
+
+            Summary:
+            {self.summary}
+            """
+        )
