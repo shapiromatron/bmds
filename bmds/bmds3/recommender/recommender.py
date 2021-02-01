@@ -85,7 +85,7 @@ class RecommenderResults(BaseModel):
 
 class RecommenderSchema(BaseModel):
     settings: RecommenderSettings
-    results: RecommenderResults
+    results: Optional[RecommenderResults]
 
     def deserialize(self) -> "Recommender":
         recommender = Recommender(self.settings)
@@ -99,7 +99,9 @@ class Recommender:
     """
 
     def __init__(self, settings: Optional[RecommenderSettings] = None):
-        if settings is None:
+        if settings is not None:
+            settings = RecommenderSettings.parse_obj(settings)
+        else:
             settings = RecommenderSettings.build_default()
         self.settings: RecommenderSettings = settings
         self.results: Optional[RecommenderResults] = None
@@ -113,6 +115,11 @@ class Recommender:
 
         if not self.settings.enabled:
             return
+
+        if hasattr(dataset, "_anova"):
+            # force recalculation - TODO - fix? this shouldn't be necessary - is serialization is causing?
+            del dataset._anova
+            dataset.anova()
 
         # apply rules to each model
         model_bins = []

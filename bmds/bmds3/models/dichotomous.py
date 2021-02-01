@@ -1,5 +1,5 @@
 import ctypes
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -10,21 +10,19 @@ from ..constants import (
     DichotomousModel,
     DichotomousModelChoices,
     DichotomousModelIds,
-    Prior,
+    ModelPriors,
     PriorClass,
 )
 from ..types.common import residual_of_interest
 from ..types.dichotomous import (
     DichotomousAnalysis,
-    DichotomousBmdsResultsStruct,
     DichotomousModelResult,
-    DichotomousModelResultStruct,
     DichotomousModelSettings,
     DichotomousPgofResult,
-    DichotomousPgofResultStruct,
     DichotomousResult,
 )
-from ..types.priors import DichotomousPriorLookup
+from ..types.priors import get_dichotomous_prior
+from ..types.structs import DichotomousModelResultStruct
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -44,15 +42,17 @@ class BmdModelDichotomous(BmdModel):
         if model.degree == 0:
             model.degree = self.get_default_model_degree(dataset)
 
+        if model.priors is None:
+            model.priors = self.get_default_priors()
+
         return model
 
-    def get_analysis_inputs(self) -> DichotomousAnalysis:
+    def execute(self) -> DichotomousResult:
         # setup inputs
-        priors = self.get_priors(self.settings.prior)
-        return DichotomousAnalysis(
+        inputs = DichotomousAnalysis(
             model=self.bmd_model_class,
             dataset=self.dataset,
-            priors=priors,
+            priors=self.settings.priors,
             BMD_type=self.settings.bmr_type,
             BMR=self.settings.bmr,
             alpha=self.settings.alpha,
@@ -60,71 +60,51 @@ class BmdModelDichotomous(BmdModel):
             samples=self.settings.samples,
             burnin=self.settings.burnin,
         )
+        structs = inputs.to_c()
 
-    def execute(self, debug=False) -> DichotomousResult:
-        # setup inputs
-        inputs = self.get_analysis_inputs()
-        inputs_struct = inputs.to_c()
-        if debug:
-            print(inputs_struct)
-
-        # setup outputs
-        fit_results = DichotomousModelResult(dist_numE=200, num_params=inputs.num_params)
-        fit_results_struct = fit_results.to_c(self.bmd_model_class.id)
-        gof_results_struct = DichotomousPgofResultStruct.from_dataset(self.dataset)
-        bmds_results_struct = DichotomousBmdsResultsStruct.from_results(fit_results)
-
-        # can be used for model averaging
-        self.inputs_struct = inputs_struct
-        self.fit_results_struct = fit_results_struct
-
-        # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-
         dll.runBMDSDichoAnalysis(
-            ctypes.pointer(inputs_struct),
-            ctypes.pointer(fit_results_struct),
-            ctypes.pointer(gof_results_struct),
-            ctypes.pointer(bmds_results_struct),
+            ctypes.pointer(structs.analysis),
+            ctypes.pointer(structs.result),
+            ctypes.pointer(structs.gof),
+            ctypes.pointer(structs.summary),
         )
 
-        fit_results.from_c(fit_results_struct, self)
-        gof_results = DichotomousPgofResult.from_c(gof_results_struct)
+        fit_results = DichotomousModelResult.from_c(structs.result, self)
+        gof_results = DichotomousPgofResult.from_c(structs.gof)
         dr_x = self.dataset.dose_linspace
-        critical_xs = np.array(
-            [bmds_results_struct.bmdl, bmds_results_struct.bmd, bmds_results_struct.bmdu]
-        )
+        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
         dr_y = self.dr_curve(dr_x, fit_results.params)
         critical_ys = self.dr_curve(critical_xs, fit_results.params)
         result = DichotomousResult(
-            bmdl=bmds_results_struct.bmdl,
-            bmd=bmds_results_struct.bmd,
-            bmdu=bmds_results_struct.bmdu,
-            aic=bmds_results_struct.aic,
-            roi=residual_of_interest(
-                bmds_results_struct.bmd, self.dataset.doses, gof_results.residual
-            ),
-            bounded=[bmds_results_struct.bounded[i] for i in range(fit_results.num_params)],
+            bmdl=structs.summary.bmdl,
+            bmd=structs.summary.bmd,
+            bmdu=structs.summary.bmdu,
+            aic=structs.summary.aic,
+            roi=residual_of_interest(structs.summary.bmd, self.dataset.doses, gof_results.residual),
+            bounded=[structs.summary.bounded[i] for i in range(inputs.num_params)],
             fit=fit_results,
             gof=gof_results,
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if bmds_results_struct.bmdl > 0 else BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if bmds_results_struct.bmd > 0 else BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if bmds_results_struct.bmdu > 0 else BMDS_BLANK_VALUE,
+            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else BMDS_BLANK_VALUE,
         )
-        return result
 
-    def get_priors(
-        self, prior_class: PriorClass = PriorClass.frequentist_unrestricted
-    ) -> List[Prior]:
-        return DichotomousPriorLookup[(self.bmd_model_class.id, prior_class.value)]
+        self.structs = structs
+        self.results = result
+
+        return result
 
     def get_default_model_degree(self, dataset) -> int:
         return self.bmd_model_class.num_params - 1
 
     def transform_params(self, struct: DichotomousModelResultStruct):
         return struct.parms[: struct.nparms]
+
+    def get_default_priors(self) -> ModelPriors:
+        raise NotImplementedError()
 
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
@@ -159,6 +139,9 @@ class Logistic(BmdModelDichotomous):
         b = params[1]
         return 1 / (1 + np.exp(-a - b * doses))
 
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_unrestricted)
+
 
 class LogLogistic(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_loglogistic.value
@@ -173,6 +156,9 @@ class LogLogistic(BmdModelDichotomous):
         b = params[2]
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
 
 class Probit(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_probit.value
@@ -181,6 +167,9 @@ class Probit(BmdModelDichotomous):
         a = params[0]
         b = params[1]
         return norm.cdf(a + b * doses)
+
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_unrestricted)
 
 
 class LogProbit(BmdModelDichotomous):
@@ -196,6 +185,9 @@ class LogProbit(BmdModelDichotomous):
         b = params[2]
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
 
 class Gamma(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_gamma.value
@@ -210,6 +202,9 @@ class Gamma(BmdModelDichotomous):
         b = params[2]
         return g + (1 - g) * gamma.cdf(b * doses, a)
 
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
 
 class QuantalLinear(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_qlinear.value
@@ -222,6 +217,9 @@ class QuantalLinear(BmdModelDichotomous):
         g = params[0]
         a = params[1]
         return g + (1 - g) * 1 - np.exp(-a * doses)
+
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_unrestricted)
 
 
 class Weibull(BmdModelDichotomous):
@@ -236,6 +234,9 @@ class Weibull(BmdModelDichotomous):
         a = params[1]
         b = params[2]
         return g + (1 - g) * (1 - np.exp(-b * doses ** a))
+
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
 
 
 class DichotomousHill(BmdModelDichotomous):
@@ -252,6 +253,9 @@ class DichotomousHill(BmdModelDichotomous):
         b = params[3]
         return g + (1 - g) * n * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
 
 class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
@@ -266,7 +270,7 @@ class Multistage(BmdModelDichotomous):
 
         return model
 
-    def model_name(self) -> str:
+    def name(self) -> str:
         return f"Multistage {self.settings.degree}°"
 
     def transform_params(self, struct: DichotomousModelResultStruct):
@@ -275,13 +279,14 @@ class Multistage(BmdModelDichotomous):
         return params
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO - test!
-        # adapted from https://github.com/wheelemw/RBMDS/pull/11/files
         g = params[0]
         val = doses * 0
         for i in range(1, len(params)):
-            val -= -params[i] * doses ** i
-        return g + (1 - g) * 1 - np.exp(val)
+            val += params[i] * doses ** i
+        return g + (1 - g) * (1 - np.exp(-1.0 * val))
+
+    def get_default_priors(self) -> ModelPriors:
+        return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
 
 
 bmd_model_map = {

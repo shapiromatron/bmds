@@ -3,11 +3,8 @@ from typing import List
 
 from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
-from ..types.ma import (
-    DichotomousMAAnalysisStruct,
-    DichotomousMAResultStruct,
-    DichotomousModelAverageResult,
-)
+from ..types.ma import DichotomousModelAverageResult
+from ..types.structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
 from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -24,15 +21,15 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 
         return model
 
-    def execute(self, debug=False) -> DichotomousModelAverageResult:
+    def execute(self) -> DichotomousModelAverageResult:
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
 
         ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
-            models=[model.inputs_struct for model in self.models]
+            models=[model.structs.analysis for model in self.models]
         )
-        ma_inputs_struct = self.models[0].inputs_struct
+        ma_inputs_struct = self.models[0].structs.analysis
         ma_result_struct = DichotomousMAResultStruct.from_python(
-            models=[model.fit_results_struct for model in self.models]
+            models=[model.structs.result for model in self.models]
         )
 
         dll.estimate_ma_laplace_dicho(
