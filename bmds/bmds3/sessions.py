@@ -84,9 +84,17 @@ class BmdsSession:
         if self.model_average is not None:
             self.model_average.execute_job()
 
+    @property
+    def recommendation_enabled(self):
+        if self.recommender is None:
+            self.recommender = Recommender(settings=self.recommendation_settings)
+        return self.recommender.settings.enabled
+
     def recommend(self):
-        self.recommender = Recommender(settings=self.recommendation_settings)
-        self.recommender.recommend(self.dataset, self.models)
+        if self.recommendation_enabled:
+            self.recommender.recommend(self.dataset, self.models)
+        else:
+            raise ValueError("Recommendation not enabled.")
 
     def execute_and_recommend(self, drop_doses=False):
         self.execute()

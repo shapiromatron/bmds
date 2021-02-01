@@ -40,7 +40,7 @@ class ContinuousSummaryDataMixin:
         return self._variances
 
     def anova(self) -> Optional[AnovaTests]:
-        if not hasattr(self, "_anova"):
+        if not hasattr(self, "_anova") and not hasattr(self, "_anova_attempted"):
             # Returns either a tuple of 3 Test objects, or None if anova failed
             try:
                 num_params = 3  # assume linear model
@@ -52,6 +52,7 @@ class ContinuousSummaryDataMixin:
                 )
             except ValueError:
                 self._anova = None
+                self._anova_attempted = True
         return self._anova
 
     def get_anova_report(self):
