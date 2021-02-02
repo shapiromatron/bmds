@@ -2,6 +2,6 @@ recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
 recursive-include bmds *.csv
+recursive-include bmds *.docx
 recursive-include bmds *.json
 recursive-include bmds/bin *
-recursive-include bmds/templates *
