@@ -12,6 +12,7 @@ from .. import constants
 from .common import NumpyFloatArray, list_t_c
 from .structs import (
     DichotomousAnalysisStruct,
+    DichotomousAodStruct,
     DichotomousBmdsResultsStruct,
     DichotomousModelResultStruct,
     DichotomousPgofResultStruct,
@@ -94,6 +95,7 @@ class DichotomousAnalysis(BaseModel):
             ),
             gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
             summary=DichotomousBmdsResultsStruct(num_params=self.num_params),
+            aod=DichotomousAodStruct(),
         )
 
 
