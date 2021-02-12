@@ -1,5 +1,4 @@
 import numpy as np
-
 import tabulate
 
 from ..constants import Dtype
