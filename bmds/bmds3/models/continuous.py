@@ -143,6 +143,9 @@ class BmdModelContinuous(BmdModel):
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
             ctypes.pointer(structs.summary),
+            ctypes.pointer(structs.aod),
+            ctypes.pointer(structs.gof),
+            ctypes.c_bool(False),
         )
 
         fit_results = ContinuousModelResult.from_c(structs.result)

@@ -14,7 +14,9 @@ from .common import NumpyFloatArray, list_t_c
 from .priors import ModelPriors
 from .structs import (
     ContinuousAnalysisStruct,
+    ContinuousAodStruct,
     ContinuousBmdsResultsStruct,
+    ContinuousGofStruct,
     ContinuousModelResultStruct,
     ContinuousStructs,
 )
@@ -122,6 +124,8 @@ class ContinuousAnalysis(BaseModel):
             analysis=struct,
             result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
             summary=ContinuousBmdsResultsStruct(nparms=nparms),
+            aod=ContinuousAodStruct(),
+            gof=ContinuousGofStruct(n=struct.n),
         )
 
 
