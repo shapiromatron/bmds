@@ -92,6 +92,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
 
 
 class DichotomousPgofResultStruct(ctypes.Structure):
+
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("expected", ctypes.POINTER(ctypes.c_double)),
@@ -122,6 +123,7 @@ class DichotomousPgofResultStruct(ctypes.Structure):
 
 
 class DichotomousAodStruct(ctypes.Structure):
+    # Dichotomous Analysis of Deviance Struct
 
     _fields_ = [
         ("fullLL", ctypes.c_double),
@@ -174,6 +176,7 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
+            chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
             """
         )
@@ -185,6 +188,7 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
+        self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
 
@@ -193,8 +197,8 @@ class DichotomousStructs(NamedTuple):
     analysis: DichotomousAnalysisStruct
     result: DichotomousModelResultStruct
     gof: DichotomousPgofResultStruct
-    summary: DichotomousBmdsResultsStruct
     aod: DichotomousAodStruct
+    summary: DichotomousBmdsResultsStruct
 
     def __str__(self):
         return dedent(
