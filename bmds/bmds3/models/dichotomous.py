@@ -68,6 +68,7 @@ class BmdModelDichotomous(BmdModel):
             ctypes.pointer(structs.result),
             ctypes.pointer(structs.gof),
             ctypes.pointer(structs.summary),
+            ctypes.pointer(structs.aod),
         )
 
         fit_results = DichotomousModelResult.from_c(structs.result, self)

@@ -121,12 +121,49 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         self.residual = np.ctypeslib.as_ctypes(self.np_residual)
 
 
+class DichotomousAodStruct(ctypes.Structure):
+
+    _fields_ = [
+        ("fullLL", ctypes.c_double),
+        ("nFull", ctypes.c_int),
+        ("redLL", ctypes.c_double),
+        ("nRed", ctypes.c_int),
+        ("fittedLL", ctypes.c_double),
+        ("nFit", ctypes.c_int),
+        ("devFit", ctypes.c_double),
+        ("devRed", ctypes.c_double),
+        ("dfFit", ctypes.c_int),
+        ("dfRed", ctypes.c_int),
+        ("pvFit", ctypes.c_int),
+        ("pvRed", ctypes.c_int),
+    ]
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            fullLL: {self.fullLL}
+            nFull: {self.nFull}
+            redLL: {self.redLL}
+            nRed: {self.nRed}
+            fittedLL: {self.fittedLL}
+            nFit: {self.nFit}
+            devFit: {self.devFit}
+            devRed: {self.devRed}
+            dfFit: {self.dfFit}
+            dfRed: {self.dfRed}
+            pvFit: {self.pvFit}
+            pvRed: {self.pvRed}
+            """
+        )
+
+
 class DichotomousBmdsResultsStruct(ctypes.Structure):
     _fields_ = [
         ("bmd", ctypes.c_double),
         ("bmdl", ctypes.c_double),
         ("bmdu", ctypes.c_double),
         ("aic", ctypes.c_double),
+        ("chisq", ctypes.c_double),
         ("bounded", ctypes.POINTER(ctypes.c_bool)),
     ]
 
@@ -157,6 +194,7 @@ class DichotomousStructs(NamedTuple):
     result: DichotomousModelResultStruct
     gof: DichotomousPgofResultStruct
     summary: DichotomousBmdsResultsStruct
+    aod: DichotomousAodStruct
 
     def __str__(self):
         return dedent(
@@ -172,6 +210,9 @@ class DichotomousStructs(NamedTuple):
 
             Summary:
             {self.summary}
+
+            AoD:
+            {self.aod}
             """
         )
 
@@ -349,12 +390,124 @@ class ContinuousModelResultStruct(ctypes.Structure):
         )
 
 
+class ContinuousGofStruct(ctypes.Structure):
+    _fields_ = [
+        ("dose", ctypes.POINTER(ctypes.c_double)),
+        ("size", ctypes.POINTER(ctypes.c_double)),
+        ("estMean", ctypes.POINTER(ctypes.c_double)),
+        ("calcMean", ctypes.POINTER(ctypes.c_double)),
+        ("obsMean", ctypes.POINTER(ctypes.c_double)),
+        ("estSD", ctypes.POINTER(ctypes.c_double)),
+        ("calcSD", ctypes.POINTER(ctypes.c_double)),
+        ("obsSD", ctypes.POINTER(ctypes.c_double)),
+        ("res", ctypes.POINTER(ctypes.c_double)),
+        ("n", ctypes.c_int),
+    ]
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            dose: {self.dose[:self.n]}
+            size: {self.size[:self.n]}
+            estMean: {self.estMean[:self.n]}
+            calcMean: {self.calcMean[:self.n]}
+            obsMean: {self.obsMean[:self.n]}
+            estSD: {self.estSD[:self.n]}
+            calcSD: {self.calcSD[:self.n]}
+            obsSD: {self.obsSD[:self.n]}
+            res: {self.res[:self.n]}
+            n: {self.n}
+            """
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.np_dose = np.zeros(self.n, dtype=np.float64)
+        self.dose = np.ctypeslib.as_ctypes(self.np_dose)
+        self.np_size = np.zeros(self.n, dtype=np.float64)
+        self.size = np.ctypeslib.as_ctypes(self.np_size)
+        self.np_estMean = np.zeros(self.n, dtype=np.float64)
+        self.estMean = np.ctypeslib.as_ctypes(self.np_estMean)
+        self.np_calcMean = np.zeros(self.n, dtype=np.float64)
+        self.calcMean = np.ctypeslib.as_ctypes(self.np_calcMean)
+        self.np_obsMean = np.zeros(self.n, dtype=np.float64)
+        self.obsMean = np.ctypeslib.as_ctypes(self.np_obsMean)
+        self.np_estSD = np.zeros(self.n, dtype=np.float64)
+        self.estSD = np.ctypeslib.as_ctypes(self.np_estSD)
+        self.np_calcSD = np.zeros(self.n, dtype=np.float64)
+        self.calcSD = np.ctypeslib.as_ctypes(self.np_calcSD)
+        self.np_obsSD = np.zeros(self.n, dtype=np.float64)
+        self.obsSD = np.ctypeslib.as_ctypes(self.np_obsSD)
+        self.np_res = np.zeros(self.n, dtype=np.float64)
+        self.res = np.ctypeslib.as_ctypes(self.np_res)
+
+
+class ContinuousToiStruct(ctypes.Structure):
+    _fields_ = [
+        ("llRatio", ctypes.POINTER(ctypes.c_double)),
+        ("DF", ctypes.POINTER(ctypes.c_double)),
+        ("pVal", ctypes.POINTER(ctypes.c_double)),
+    ]
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            llRatio: {self.llRatio[:4]}
+            DF: {self.DF[:4]}
+            pVal: {self.pVal[:4]}
+            """
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.np_llRatio = np.zeros(4, dtype=np.float64)
+        self.llRatio = np.ctypeslib.as_ctypes(self.np_llRatio)
+        self.np_DF = np.zeros(4, dtype=np.float64)
+        self.DF = np.ctypeslib.as_ctypes(self.np_DF)
+        self.np_pVal = np.zeros(4, dtype=np.float64)
+        self.pVal = np.ctypeslib.as_ctypes(self.np_pVal)
+
+
+class ContinuousAodStruct(ctypes.Structure):
+    _fields_ = [
+        ("LL", ctypes.POINTER(ctypes.c_double)),
+        ("nParms", ctypes.POINTER(ctypes.c_double)),
+        ("AIC", ctypes.POINTER(ctypes.c_double)),
+        ("addConst", ctypes.c_double),
+        ("TOI", ctypes.POINTER(ContinuousToiStruct)),
+    ]
+
+    def __str__(self) -> str:
+        return (
+            dedent(
+                f"""
+                LL: {self.LL[:5]}
+                nParms: {self.nParms[:5]}
+                AIC: {self.AIC[:5]}
+                addConst: {self.addConst}
+                """
+            )
+            + str(self.TOI[0])
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.np_LL = np.zeros(5, dtype=np.float64)
+        self.LL = np.ctypeslib.as_ctypes(self.np_LL)
+        self.np_nParms = np.zeros(5, dtype=np.float64)
+        self.nParms = np.ctypeslib.as_ctypes(self.np_nParms)
+        self.np_AIC = np.zeros(5, dtype=np.float64)
+        self.AIC = np.ctypeslib.as_ctypes(self.np_AIC)
+        self.TOI = ctypes.pointer(ContinuousToiStruct())
+
+
 class ContinuousBmdsResultsStruct(ctypes.Structure):
     _fields_ = [
         ("bmd", ctypes.c_double),
         ("bmdl", ctypes.c_double),
         ("bmdu", ctypes.c_double),
         ("aic", ctypes.c_double),
+        ("chisq", ctypes.c_double),
         ("bounded", ctypes.POINTER(ctypes.c_bool)),
     ]
 
@@ -384,6 +537,8 @@ class ContinuousStructs(NamedTuple):
     analysis: ContinuousAnalysisStruct
     result: ContinuousModelResultStruct
     summary: ContinuousBmdsResultsStruct
+    aod: ContinuousAodStruct
+    gof: ContinuousGofStruct
 
     def __str__(self):
         return dedent(
@@ -396,5 +551,11 @@ class ContinuousStructs(NamedTuple):
 
             Summary:
             {self.summary}
+
+            AoD:
+            {self.aod}
+
+            GoF:
+            {self.gof}
             """
         )
