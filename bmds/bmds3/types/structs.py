@@ -522,6 +522,7 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
+        self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
 
@@ -532,6 +533,7 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
+            chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
             """
         )
