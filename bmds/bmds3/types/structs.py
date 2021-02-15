@@ -136,8 +136,8 @@ class DichotomousAodStruct(ctypes.Structure):
         ("devRed", ctypes.c_double),
         ("dfFit", ctypes.c_int),
         ("dfRed", ctypes.c_int),
-        ("pvFit", ctypes.c_int),
-        ("pvRed", ctypes.c_int),
+        ("pvFit", ctypes.c_double),
+        ("pvRed", ctypes.c_double),
     ]
 
     def __str__(self) -> str:
