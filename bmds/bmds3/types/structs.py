@@ -453,15 +453,6 @@ class ContinuousToiStruct(ctypes.Structure):
         ("pVal", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            llRatio: {self.llRatio[:4]}
-            DF: {self.DF[:4]}
-            pVal: {self.pVal[:4]}
-            """
-        )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.np_llRatio = np.zeros(4, dtype=np.float64)
@@ -482,16 +473,17 @@ class ContinuousAodStruct(ctypes.Structure):
     ]
 
     def __str__(self) -> str:
-        return (
-            dedent(
-                f"""
-                LL: {self.LL[:5]}
-                nParms: {self.nParms[:5]}
-                AIC: {self.AIC[:5]}
-                addConst: {self.addConst}
-                """
-            )
-            + str(self.TOI[0])
+        toi = self.TOI[0]
+        return dedent(
+            f"""
+            LL: {self.LL[:5]}
+            nParms: {self.nParms[:5]}
+            AIC: {self.AIC[:5]}
+            addConst: {self.addConst}
+            llRatio: {toi.llRatio[:4]}
+            DF: {toi.DF[:4]}
+            pVal: {toi.pVal[:4]}
+            """
         )
 
     def __init__(self, *args, **kwargs):
