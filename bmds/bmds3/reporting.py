@@ -139,6 +139,8 @@ def write_models(report: Report, session, header_level: int):
             "This is just an example of what can be done...", styles.tbl_body
         )
         tbl = tabulate.tabulate(
-            [model.results.fit.params], headers=model.bmd_model_class.params, tablefmt="fancy_grid",
+            [model.results.parameters.values],
+            headers=model.bmd_model_class.params,
+            tablefmt="fancy_grid",
         )
         report.document.add_paragraph(tbl, styles.outfile)

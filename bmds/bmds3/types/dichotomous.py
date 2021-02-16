@@ -9,7 +9,7 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import NumpyFloatArray, list_t_c
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
 from .structs import (
     DichotomousAnalysisStruct,
     DichotomousAodStruct,
@@ -100,40 +100,25 @@ class DichotomousAnalysis(BaseModel):
 
 
 class DichotomousModelResult(BaseModel):
-    """
-    Single model fit.
-    """
-
-    params: List[float]
-    cov: NumpyFloatArray
-    max: float
+    max: float  # likelihood
     model_df: float
     total_df: float
     bmd_dist: NumpyFloatArray
 
-    class Config:
-        arbitrary_types_allowed = True
-
     @classmethod
-    def from_c(cls, struct: DichotomousModelResultStruct, model) -> "DichotomousModelResult":
+    def from_c(cls, struct: DichotomousModelResultStruct) -> "DichotomousModelResult":
         # reshape; get rid of 0 and inf; must be JSON serializable
         arr = struct.np_bmd_dist.reshape(2, struct.dist_numE)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
         return DichotomousModelResult(
-            params=model.transform_params(struct),
-            cov=struct.np_cov.reshape(struct.nparms, struct.nparms),
-            max=struct.max,
-            model_df=struct.model_df,
-            total_df=struct.total_df,
-            bmd_dist=arr,
+            max=struct.max, model_df=struct.model_df, total_df=struct.total_df, bmd_dist=arr,
         )
 
     def dict(self, **kw) -> Dict:
         kw.update(exclude={"cov", "bmd_dist"})
         d = super().dict(**kw)
-        d["cov"] = self.cov.tolist()
         d["bmd_dist"] = self.bmd_dist.tolist()
         return d
 
@@ -156,17 +141,86 @@ class DichotomousPgofResult(BaseModel):
         )
 
 
+class DichotomousParameters(BaseModel):
+    names: List[str]
+    values: List[float]
+    bounded: List[bool]
+    cov: NumpyFloatArray
+
+    @classmethod
+    def from_model(cls, model) -> "DichotomousParameters":
+        results = model.structs.result
+        return cls(
+            names=model.get_param_names(),
+            values=model.transform_params(results),
+            bounded=model.structs.summary.np_bounded.tolist(),
+            cov=results.np_cov.reshape(results.nparms, results.nparms),
+        )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"cov"})
+        d = super().dict(**kw)
+        d["cov"] = self.cov.tolist()
+        return d
+
+
+class DichotomousPlotting(BaseModel):
+    dr_x: NumpyFloatArray
+    dr_y: NumpyFloatArray
+    bmdl_y: float
+    bmd_y: float
+    bmdu_y: float
+
+    @classmethod
+    def from_model(cls, model, params) -> "DichotomousPlotting":
+        structs = model.structs
+        dr_x = model.dataset.dose_linspace
+        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
+        dr_y = model.dr_curve(dr_x, params)
+        critical_ys = model.dr_curve(critical_xs, params)
+        return cls(
+            dr_x=dr_x,
+            dr_y=dr_y,
+            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else constants.BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else constants.BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else constants.BMDS_BLANK_VALUE,
+        )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"dr_x", "dr_y"})
+        d = super().dict(**kw)
+        d["dr_x"] = self.dr_x.tolist()
+        d["dr_y"] = self.dr_y.tolist()
+        return d
+
+
 class DichotomousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
     aic: float
     roi: float
-    bounded: List[bool]
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
-    dr_x: List[float]
-    dr_y: List[float]
-    bmdl_y: float
-    bmd_y: float
-    bmdu_y: float
+    parameters: DichotomousParameters
+    plotting: DichotomousPlotting
+
+    @classmethod
+    def from_model(cls, model) -> "DichotomousResult":
+        structs = model.structs
+        fit = DichotomousModelResult.from_c(structs.result)
+        gof = DichotomousPgofResult.from_c(structs.gof)
+        parameters = DichotomousParameters.from_model(model)
+        plotting = DichotomousPlotting.from_model(model, parameters.values)
+        return cls(
+            bmdl=structs.summary.bmdl,
+            bmd=structs.summary.bmd,
+            bmdu=structs.summary.bmdu,
+            aic=structs.summary.aic,
+            roi=residual_of_interest(structs.summary.bmd, model.dataset.doses, gof.residual),
+            fit=fit,
+            gof=gof,
+            parameters=parameters,
+            plotting=plotting,
+        )
+

@@ -197,7 +197,7 @@ class Recommender:
         parsimonious model is defined as the model with the fewest number of
         parameters.
         """
-        params = [len(model.results.fit.params) for model in models]
+        params = [len(model.results.parameters.values) for model in models]
         idx = params.index(min(params))
         return models[idx]
 

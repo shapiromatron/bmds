@@ -116,7 +116,12 @@ class BmdModel:
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
         ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
-        ax.plot(self.results.dr_x, self.results.dr_y, label=self.name(), **plotting.LINE_FORMAT)
+        ax.plot(
+            self.results.plotting.dr_x,
+            self.results.plotting.dr_y,
+            label=self.name(),
+            **plotting.LINE_FORMAT,
+        )
         self._add_bmr_lines(ax)
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
@@ -130,9 +135,11 @@ class BmdModel:
         xrng = xdomain[1] - xdomain[0]
 
         if res.bmd > 0:
-            ax.plot([0, res.bmd], [res.bmd_y, res.bmd_y], **plotting.BMD_LINE_FORMAT)
             ax.plot(
-                [res.bmd, res.bmd], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT,
+                [0, res.bmd], [res.plotting.bmd_y, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT
+            )
+            ax.plot(
+                [res.bmd, res.bmd], [0, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT,
             )
             ax.text(
                 res.bmd + xrng * 0.01,
@@ -145,7 +152,7 @@ class BmdModel:
             )
 
         if res.bmdl > 0:
-            ax.plot([res.bmdl, res.bmdl], [0, res.bmd_y], **plotting.BMD_LINE_FORMAT)
+            ax.plot([res.bmdl, res.bmdl], [0, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT)
             ax.text(
                 res.bmdl - xrng * 0.01,
                 0,
