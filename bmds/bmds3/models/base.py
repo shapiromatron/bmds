@@ -121,6 +121,9 @@ class BmdModel:
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
+    def get_param_names(self) -> List[str]:
+        raise NotImplementedError(...)
+
     def _add_bmr_lines(self, ax):
         res = self.results
         xdomain = ax.xaxis.get_view_interval()

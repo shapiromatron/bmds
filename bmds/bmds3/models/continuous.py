@@ -1,6 +1,6 @@
 import ctypes
 import math
-from typing import Optional
+from typing import Optional, List
 
 import numpy as np
 
@@ -191,6 +191,17 @@ class BmdModelContinuous(BmdModel):
             results=self.results,
         )
 
+    def get_param_names(self) -> List[str]:
+        names = list(self.bmd_model_class.params)
+        names.extend(self.get_variance_param_names())
+        return names
+
+    def get_variance_param_names(self):
+        if self.settings.disttype == DistType.normal_ncv:
+            return list(self.bmd_model_class.variance_params)
+        else:
+            return [self.bmd_model_class.variance_params[0]]
+
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str
@@ -250,6 +261,11 @@ class Polynomial(BmdModelContinuous):
         for i in range(1, self.settings.degree + 1):
             val += params[i] * doses ** i
         return val
+
+    def get_param_names(self) -> List[str]:
+        names = [f"b{i}" for i in range(self.settings.degree + 1)]
+        names.extend(self.get_variance_param_names())
+        return names
 
 
 class Linear(Polynomial):

@@ -54,6 +54,31 @@ class TestPriorOverrides:
         ...
 
 
+class TestBmdModelContinuous:
+    def test_get_param_names(self, contds):
+        # test normal model case
+        for m in [
+            continuous.Power(dataset=contds),
+            continuous.Power(dataset=contds, settings=dict(disttype=DistType.normal)),
+            continuous.Power(dataset=contds, settings=dict(disttype=DistType.log_normal)),
+        ]:
+            assert m.get_param_names() == ["g", "v", "n", "rho"]
+        m = continuous.Power(dataset=contds, settings=dict(disttype=DistType.normal_ncv))
+        assert m.get_param_names() == ["g", "v", "n", "rho", "alpha"]
+
+        # test polynomial
+        model = continuous.Linear(dataset=contds)
+        assert model.get_param_names() == ["b0", "b1", "rho"]
+        model = continuous.Polynomial(dataset=contds)
+        assert model.get_param_names() == ["b0", "b1", "b2", "rho"]
+        model = continuous.Polynomial(dataset=contds, settings=dict(degree=3))
+        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho"]
+        model = continuous.Polynomial(
+            dataset=contds, settings=dict(degree=3, disttype=DistType.normal_ncv)
+        )
+        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho", "alpha"]
+
+
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_increasing(contds):
     """

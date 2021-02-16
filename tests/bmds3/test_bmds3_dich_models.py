@@ -19,6 +19,19 @@ def dichds():
     )
 
 
+class TestBmdModelDichotomous:
+    def test_get_param_names(self, dichds):
+        # test normal model case
+        model = dichotomous.Gamma(dataset=dichds)
+        assert model.get_param_names() == ["g", "a", "b"]
+
+        # test multistage
+        model = dichotomous.Multistage(dataset=dichds)
+        assert model.get_param_names() == ["b0", "b1", "b2"]
+        model = dichotomous.Multistage(dataset=dichds, settings=dict(degree=3))
+        assert model.get_param_names() == ["b0", "b1", "b2", "b3"]
+
+
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_models(dichds):
     # compare bmd, bmdl, bmdu, aic values

@@ -1,5 +1,5 @@
 import ctypes
-from typing import Optional
+from typing import Optional, List
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -109,6 +109,10 @@ class BmdModelDichotomous(BmdModel):
 
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
+
+    def get_param_names(self) -> List[str]:
+        names = list(self.bmd_model_class.params)
+        return names
 
     def serialize(self) -> "BmdModelDichotomousSchema":
         return BmdModelDichotomousSchema(
@@ -288,6 +292,9 @@ class Multistage(BmdModelDichotomous):
 
     def get_default_priors(self) -> ModelPriors:
         return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
+    def get_param_names(self) -> List[str]:
+        return [f"b{i}" for i in range(self.settings.degree + 1)]
 
 
 bmd_model_map = {
