@@ -90,7 +90,7 @@ class AicExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return model.results.aic
+        return model.results.fit.aic
 
 
 class BmdExists(ExistenceCheck):
@@ -106,7 +106,7 @@ class RoiExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return model.results.roi
+        return model.results.gof.roi
 
 
 class BmdlExists(ExistenceCheck):
@@ -187,7 +187,7 @@ class LargeRoi(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return abs(model.results.roi)
+        return abs(model.results.gof.roi)
 
 
 class BmdBmdlRatio(ShouldBeLessThan):

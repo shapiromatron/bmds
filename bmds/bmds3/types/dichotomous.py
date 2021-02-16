@@ -7,9 +7,10 @@ from pydantic import BaseModel, confloat, conint
 
 from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
+from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .structs import (
     DichotomousAnalysisStruct,
     DichotomousAodStruct,
@@ -100,20 +101,28 @@ class DichotomousAnalysis(BaseModel):
 
 
 class DichotomousModelResult(BaseModel):
-    max: float  # likelihood
+    loglikelihood: float
+    aic: float
+    chisq: float
     model_df: float
     total_df: float
     bmd_dist: NumpyFloatArray
 
     @classmethod
-    def from_c(cls, struct: DichotomousModelResultStruct) -> "DichotomousModelResult":
+    def from_model(cls, model) -> "DichotomousModelResult":
+        result = model.structs.result
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = struct.np_bmd_dist.reshape(2, struct.dist_numE)
+        arr = result.np_bmd_dist.reshape(2, result.dist_numE)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
         return DichotomousModelResult(
-            max=struct.max, model_df=struct.model_df, total_df=struct.total_df, bmd_dist=arr,
+            loglikelihood=result.max,
+            aic=model.structs.summary.aic,
+            chisq=model.structs.summary.chisq,
+            model_df=result.model_df,
+            total_df=result.total_df,
+            bmd_dist=arr,
         )
 
     def dict(self, **kw) -> Dict:
@@ -128,17 +137,37 @@ class DichotomousPgofResult(BaseModel):
     residual: List[float]
     test_statistic: float
     p_value: float
+    roi: float
     df: float
 
     @classmethod
-    def from_c(cls, struct: DichotomousPgofResultStruct):
+    def from_model(cls, model):
+        gof = model.structs.gof
+        roi = residual_of_interest(model.structs.summary.bmd, model.dataset.doses, gof.residual)
         return cls(
-            expected=struct.expected[: struct.n],
-            residual=struct.residual[: struct.n],
-            test_statistic=struct.test_statistic,
-            p_value=struct.p_value,
-            df=struct.df,
+            expected=gof.expected[: gof.n],
+            residual=gof.residual[: gof.n],
+            test_statistic=gof.test_statistic,
+            p_value=gof.p_value,
+            roi=roi,
+            df=gof.df,
         )
+
+    def tbl(self, dataset: DichotomousDataset) -> str:
+        headers = "Dose|EstProb|Expected|Observed|Size|ScaledRes".split("|")
+        data = []
+        for dg in range(dataset.num_dose_groups):
+            data.append(
+                [
+                    dataset.doses[dg],
+                    self.expected[dg] / dataset.ns[dg],
+                    self.expected[dg],
+                    dataset.incidences[dg],
+                    dataset.ns[dg],
+                    self.residual[dg],
+                ]
+            )
+        return pretty_table(data, headers)
 
 
 class DichotomousParameters(BaseModel):
@@ -162,6 +191,51 @@ class DichotomousParameters(BaseModel):
         d = super().dict(**kw)
         d["cov"] = self.cov.tolist()
         return d
+
+    def tbl(self) -> str:
+        headers = "parm|estimate|bounded".split("|")
+        data = []
+        for name, value, bounded in zip(self.names, self.values, self.bounded):
+            data.append([name, value, BOOL_ICON[bounded]])
+        return pretty_table(data, headers)
+
+
+class DichotomousAnalysisOfDeviance(BaseModel):
+    names: List[str]
+    ll: List[float]
+    params: List[int]
+    deviance: List[float]
+    df: List[int]
+    p_value: List[float]
+
+    @classmethod
+    def from_model(cls, model) -> "DichotomousAnalysisOfDeviance":
+        aod = model.structs.aod
+        return cls(
+            names=["Full model", "Fitted model", "Reduced model"],
+            ll=[aod.fullLL, aod.fittedLL, aod.redLL],
+            params=[aod.nFull, aod.nFit, aod.nRed],
+            deviance=[constants.BMDS_BLANK_VALUE, aod.devFit, aod.devRed],
+            df=[constants.BMDS_BLANK_VALUE, aod.dfFit, aod.dfRed],
+            p_value=[constants.BMDS_BLANK_VALUE, aod.pvFit, aod.pvRed],
+        )
+
+    def tbl(self) -> str:
+        headers = "Model|LL|#parms|deviance|test DF|pval".split("|")
+        data = []
+        for i in range(len(self.names)):
+            # manually format columns b/c tabulate won't format if first row text is str
+            data.append(
+                [
+                    self.names[i],
+                    self.ll[i],
+                    self.params[i],
+                    f"{self.deviance[i]:g}" if i > 0 else "-",
+                    f"{self.df[i]:g}" if i > 0 else "-",
+                    f"{self.p_value[i]:g}" if i > 0 else "N/A",
+                ]
+            )
+        return pretty_table(data, headers)
 
 
 class DichotomousPlotting(BaseModel):
@@ -198,29 +272,40 @@ class DichotomousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
-    aic: float
-    roi: float
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
     parameters: DichotomousParameters
+    deviance: DichotomousAnalysisOfDeviance
     plotting: DichotomousPlotting
 
     @classmethod
     def from_model(cls, model) -> "DichotomousResult":
-        structs = model.structs
-        fit = DichotomousModelResult.from_c(structs.result)
-        gof = DichotomousPgofResult.from_c(structs.gof)
+        fit = DichotomousModelResult.from_model(model)
+        gof = DichotomousPgofResult.from_model(model)
         parameters = DichotomousParameters.from_model(model)
+        deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
-            bmdl=structs.summary.bmdl,
-            bmd=structs.summary.bmd,
-            bmdu=structs.summary.bmdu,
-            aic=structs.summary.aic,
-            roi=residual_of_interest(structs.summary.bmd, model.dataset.doses, gof.residual),
+            bmdl=model.structs.summary.bmdl,
+            bmd=model.structs.summary.bmd,
+            bmdu=model.structs.summary.bmdu,
             fit=fit,
             gof=gof,
             parameters=parameters,
+            deviance=deviance,
             plotting=plotting,
         )
 
+    def tbl(self) -> str:
+        data = [
+            ["BMDL", self.bmdl],
+            ["BMD", self.bmd],
+            ["BMDU", self.bmdu],
+            ["AIC", self.fit.aic],
+            ["LL", self.fit.loglikelihood],
+            ["model_df", self.fit.model_df],
+            ["p-value", self.gof.p_value],
+            ["DOF", self.gof.df],
+            ["Chi²", self.fit.chisq],
+        ]
+        return pretty_table(data, "")

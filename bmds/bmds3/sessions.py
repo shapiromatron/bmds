@@ -182,7 +182,7 @@ class BmdsSession:
                     model.results.bmd,
                     model.results.bmdl,
                     model.results.bmdu,
-                    model.results.aic,
+                    model.results.fit.aic,
                     list_to_str(model.results.parameters.values),
                 ]
             )

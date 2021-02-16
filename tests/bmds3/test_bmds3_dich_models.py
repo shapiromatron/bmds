@@ -31,6 +31,17 @@ class TestBmdModelDichotomous:
         model = dichotomous.Multistage(dataset=dichds, settings=dict(degree=3))
         assert model.get_param_names() == ["b0", "b1", "b2", "b3"]
 
+    def test_report(self, dichds):
+        model = dichotomous.Gamma(dataset=dichds)
+        text = model.report()
+        assert "Gamma" in text
+        assert "Execution was not completed." in text
+
+        model.execute()
+        text = model.report()
+        assert "Gamma" in text
+        assert "Analysis of Deviance" in text
+
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_dichotomous_models(dichds):
@@ -50,10 +61,10 @@ def test_bmds3_dichotomous_models(dichds):
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
         # print(
-        #     f"(dichotomous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})"
+        #     f"(dichotomous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
         # )
         assert pytest.approx(bmd_values, abs=0.1) == actual
-        assert pytest.approx(aic, abs=3.0) == result.aic
+        assert pytest.approx(aic, abs=3.0) == result.fit.aic
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
@@ -74,9 +85,9 @@ def test_bmds3_dichotomous_multistage(dichds):
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for modifying values
-        # print(f"({degree}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})")
+        # print(f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})")
         assert pytest.approx(bmd_values, abs=0.1) == actual
-        assert pytest.approx(aic, abs=3.0) == result.aic
+        assert pytest.approx(aic, abs=3.0) == result.fit.aic
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)

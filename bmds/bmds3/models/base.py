@@ -104,6 +104,9 @@ class BmdModel:
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
+    def report(self) -> str:
+        raise NotImplementedError("Requires abstract implementation")
+
     def plot(self):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
@@ -163,7 +166,7 @@ class BmdModel:
             )
 
     def to_dict(self) -> Dict:
-        return self.serialize.dict()
+        return self.serialize().dict()
 
 
 class BmdModelSchema(BaseModel):

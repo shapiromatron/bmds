@@ -100,7 +100,7 @@ def write_summary_table(report: Report, session, header_level: int):
         idx = i + 2
         write_cell(tbl.cell(idx, 0), model.name(), body)
         write_cell(tbl.cell(idx, 1), "-999", body)
-        write_cell(tbl.cell(idx, 2), model.results.aic, body)
+        write_cell(tbl.cell(idx, 2), model.results.fit.aic, body)
         write_cell(tbl.cell(idx, 3), model.results.bmd, body)
         write_cell(tbl.cell(idx, 4), model.results.bmdl, body)
 
