@@ -84,9 +84,17 @@ class BmdsSession:
         if self.model_average is not None:
             self.model_average.execute_job()
 
+    @property
+    def recommendation_enabled(self):
+        if self.recommender is None:
+            self.recommender = Recommender(settings=self.recommendation_settings)
+        return self.recommender.settings.enabled
+
     def recommend(self):
-        self.recommender = Recommender(settings=self.recommendation_settings)
-        self.recommender.recommend(self.dataset, self.models)
+        if self.recommendation_enabled:
+            self.recommender.recommend(self.dataset, self.models)
+        else:
+            raise ValueError("Recommendation not enabled.")
 
     def execute_and_recommend(self, drop_doses=False):
         self.execute()
@@ -174,8 +182,8 @@ class BmdsSession:
                     model.results.bmd,
                     model.results.bmdl,
                     model.results.bmdu,
-                    model.results.aic,
-                    list_to_str(model.results.fit.params),
+                    model.results.fit.aic,
+                    list_to_str(model.results.parameters.values),
                 ]
             )
         df = pd.DataFrame(data=model_rows, columns=model_row_names)
@@ -237,24 +245,20 @@ class Bmds330(BmdsSession):
             # constants.M_MultistageCancer: d3.Multistage
         },
         constants.CONTINUOUS: {
-            # constants.M_Linear: c3.Linear, = Polynomial degree=1
-            # constants.M_Polynomial: c3.Polynomial,
+            constants.M_Linear: c3.Linear,
+            constants.M_Polynomial: c3.Polynomial,
             constants.M_Power: c3.Power,
             constants.M_Hill: c3.Hill,
-            constants.M_ExponentialM2: c3.ExponentialM2,
             constants.M_ExponentialM3: c3.ExponentialM3,
-            constants.M_ExponentialM4: c3.ExponentialM4,
             constants.M_ExponentialM5: c3.ExponentialM5,
         },
         constants.CONTINUOUS_INDIVIDUAL: {
-            # constants.M_Linear: c3.Linear,
-            # constants.M_Polynomial: c3.Polynomial,
-            # constants.M_Power: c3.Power,
-            # constants.M_Hill: c3.Hill,
-            # constants.M_ExponentialM2: c3.ExponentialM2,
-            # constants.M_ExponentialM3: c3.ExponentialM3,
-            # constants.M_ExponentialM4: c3.ExponentialM4,
-            # constants.M_ExponentialM5: c3.ExponentialM5,
+            constants.M_Linear: c3.Linear,
+            constants.M_Polynomial: c3.Polynomial,
+            constants.M_Power: c3.Power,
+            constants.M_Hill: c3.Hill,
+            constants.M_ExponentialM3: c3.ExponentialM3,
+            constants.M_ExponentialM5: c3.ExponentialM5,
         },
     }
 

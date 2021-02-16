@@ -1,6 +1,7 @@
 from typing import Any, List
 
 import numpy as np
+import tabulate
 
 from ..constants import BMDS_BLANK_VALUE
 
@@ -13,6 +14,10 @@ NUM_TESTS_OF_INTEREST = 4
 
 def list_t_c(list: List[Any], ctype):
     return (ctype * len(list))(*list)
+
+
+def pretty_table(data, headers):
+    return tabulate.tabulate(data, headers=headers, tablefmt="fancy_grid")
 
 
 def residual_of_interest(bmd: float, doses: List[float], residuals: List[float]) -> float:

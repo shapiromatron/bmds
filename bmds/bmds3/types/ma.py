@@ -1,72 +1,11 @@
-import ctypes
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 from pydantic import BaseModel
 
 from ..models.dichotomous import BmdModelDichotomous
-from .common import list_t_c
-from .dichotomous import DichotomousAnalysisStruct, DichotomousModelResultStruct
-
-
-class DichotomousMAAnalysisStruct(ctypes.Structure):
-    _fields_ = [
-        ("nmodels", ctypes.c_int),
-        ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),),
-        ("nparms", ctypes.POINTER(ctypes.c_int)),
-        ("actual_parms", ctypes.POINTER(ctypes.c_int)),
-        ("prior_cols", ctypes.POINTER(ctypes.c_int),),
-        ("models", ctypes.POINTER(ctypes.c_int)),
-        ("modelPriors", ctypes.POINTER(ctypes.c_double)),
-    ]
-
-    @classmethod
-    def from_python(cls, models: List[DichotomousAnalysisStruct]):
-
-        # list of floats
-        priors = [
-            list_t_c(model.prior[: model.parms * model.prior_cols], ctypes.c_double,)
-            for model in models
-        ]
-
-        # pointer of pointers
-        priors2 = list_t_c(
-            [ctypes.cast(el, ctypes.POINTER(ctypes.c_double)) for el in priors],
-            ctypes.POINTER(ctypes.c_double),
-        )
-
-        return cls(
-            nmodels=ctypes.c_int(len(models)),
-            priors=priors2,
-            nparms=list_t_c([model.parms for model in models], ctypes.c_int),
-            actual_parms=list_t_c([model.parms for model in models], ctypes.c_int),
-            prior_cols=list_t_c([model.prior_cols for model in models], ctypes.c_int),
-            models=list_t_c([model.model for model in models], ctypes.c_int),
-            modelPriors=list_t_c([1 / len(models)] * len(models), ctypes.c_double),
-        )
-
-
-class DichotomousMAResultStruct(ctypes.Structure):
-    _fields_ = [
-        ("nmodels", ctypes.c_int),
-        ("models", ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct))),
-        ("dist_numE", ctypes.c_int),
-        ("post_probs", ctypes.POINTER(ctypes.c_double)),
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
-    ]
-
-    @classmethod
-    def from_python(cls, models: List[DichotomousModelResultStruct]):
-        _results = [ctypes.pointer(model) for model in models]
-        nmodels = len(models)
-        dist_numE = 200
-        return DichotomousMAResultStruct(
-            nmodels=nmodels,
-            models=list_t_c(_results, ctypes.POINTER(DichotomousModelResultStruct)),
-            dist_numE=ctypes.c_int(dist_numE),
-            post_probs=(ctypes.c_double * nmodels)(),
-            bmd_dist=(ctypes.c_double * (dist_numE * 2))(),
-        )
+from .continuous import NumpyFloatArray
+from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
 
 
 class ModelAverageResult(BaseModel):
@@ -85,8 +24,8 @@ class DichotomousModelAverageResult(ModelAverageResult):
     bmd_value: List[float]
     priors: List[float]
     posteriors: List[float]
-    dr_x: List[float]
-    dr_y: List[float]
+    dr_x: NumpyFloatArray
+    dr_y: NumpyFloatArray
 
     @classmethod
     def from_execution(
@@ -101,9 +40,9 @@ class DichotomousModelAverageResult(ModelAverageResult):
 
         priors = inputs.modelPriors[: inputs.nmodels]
         posteriors = np.array(outputs.post_probs[: outputs.nmodels])
-        dr_x = models[0].results.dr_x
+        dr_x = models[0].results.plotting.dr_x
 
-        values = np.array([m.results.dr_y for m in models])
+        values = np.array([m.results.plotting.dr_y for m in models])
         dr_y = values.T.dot(posteriors)
 
         values = np.array([[m.results.bmdl, m.results.bmd, m.results.bmdu] for m in models])
@@ -120,3 +59,10 @@ class DichotomousModelAverageResult(ModelAverageResult):
             dr_x=dr_x,
             dr_y=dr_y.tolist(),
         )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"dr_x", "dr_y"})
+        d = super().dict(**kw)
+        d["dr_x"] = self.dr_x.tolist()
+        d["dr_y"] = self.dr_y.tolist()
+        return d

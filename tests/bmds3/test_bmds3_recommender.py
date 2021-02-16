@@ -58,7 +58,7 @@ class TestSessionRecommender:
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index == 1
         assert session.recommender.results.recommended_model_variable == "aic"
-        assert session.models[1].results.aic < session.models[0].results.aic
+        assert session.models[1].results.fit.aic < session.models[0].results.fit.aic
 
     def test_apply_logic_cont(self, cdataset):
         session = bmds.session.Bmds330(dataset=cdataset)
@@ -67,7 +67,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.model_bin == [2, 2]
+        assert session.recommender.results.model_bin == [2, 1]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index is None
@@ -83,14 +83,14 @@ class TestChecks:
 
         # good values
         for value in [-1, 0, 1]:
-            model.results.aic = value
+            model.results.fit.aic = value
             resp = AicExists.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [None, BMDS_BLANK_VALUE]:
-            model.results.aic = value
+            model.results.fit.aic = value
             resp = AicExists.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "AIC does not exist"
@@ -123,14 +123,14 @@ class TestChecks:
 
         # good values
         for value in [-2, 0, 2]:
-            model.results.roi = value
+            model.results.gof.roi = value
             resp = LargeRoi.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [-2.1, 2.1]:
-            model.results.roi = value
+            model.results.gof.roi = value
             resp = LargeRoi.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Abs(Residual of interest) is greater than threshold (2.1 > 2.0)"

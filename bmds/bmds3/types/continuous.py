@@ -6,11 +6,20 @@ import numpy as np
 from pydantic import BaseModel
 
 from bmds.bmds3.constants import ContinuousModelChoices
-from bmds.datasets.continuous import ContinuousDataset
+from bmds.datasets.continuous import ContinuousDatasets
 
+from ...constants import BOOL_ICON, Dtype
 from .. import constants
-from .common import NumpyFloatArray, list_t_c
-from .priors import PriorClass
+from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .priors import ModelPriors
+from .structs import (
+    ContinuousAnalysisStruct,
+    ContinuousAodStruct,
+    ContinuousBmdsResultsStruct,
+    ContinuousGofStruct,
+    ContinuousModelResultStruct,
+    ContinuousStructs,
+)
 
 
 class ContinuousRiskType(IntEnum):
@@ -23,69 +32,28 @@ class ContinuousRiskType(IntEnum):
     eHybrid_Added = 7
 
 
-class DistType(IntEnum):
-    normal = 1
-    normal_ncv = 2
-    log_normal = 3
-
-
 class ContinuousModelSettings(BaseModel):
-    suff_stat: bool = True
     bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
-    isIncreasing: bool = False
+    is_increasing: Optional[bool]  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
-    disttype: DistType = DistType.normal
+    disttype: constants.DistType = constants.DistType.normal
     alpha: float = 0.05
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    prior: PriorClass = PriorClass.frequentist_unrestricted
-
-
-class ContinuousAnalysisStruct(ctypes.Structure):
-    _fields_ = [
-        ("model", ctypes.c_int),
-        ("n", ctypes.c_int),
-        ("suff_stat", ctypes.c_bool),  # true if the data are in sufficient statistics format
-        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
-        ("doses", ctypes.POINTER(ctypes.c_double)),
-        (
-            "sd",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # SD of the group if suff_stat = true, null otherwise
-        (
-            "n_group",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # N for each group if suff_stat = true, null otherwise
-        (
-            "prior",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # a column order matrix px5 where p is the number of parameters
-        ("BMD_type", ctypes.c_int),  # type of BMD
-        ("isIncreasing", ctypes.c_bool),  # if the BMD is defined increasing or decreasing
-        ("BMR", ctypes.c_double),  # benchmark response related to the BMD type
-        ("tail_prob", ctypes.c_double),  # tail probability
-        ("disttype", ctypes.c_int),  # distribution type defined in the enum distribution
-        ("alpha", ctypes.c_double),  # specified alpha
-        ("samples", ctypes.c_int),  # number of MCMC samples
-        ("degree", ctypes.c_int),
-        ("burnin", ctypes.c_int),
-        ("parms", ctypes.c_int),  # number of parameters
-        ("prior_cols", ctypes.c_int),
-    ]
+    priors: Optional[ModelPriors]  # if None; default used
 
 
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
-    dataset: ContinuousDataset
-    priors: List[constants.Prior]
-    suff_stat: bool
-    BMD_type: int
-    isIncreasing: bool
+    dataset: ContinuousDatasets
+    priors: ModelPriors
+    BMD_type: ContinuousRiskType
+    is_increasing: bool
     BMR: float
     tail_prob: float
-    disttype: int
+    disttype: constants.DistType
     alpha: float
     samples: int
     burnin: int
@@ -96,141 +64,302 @@ class ContinuousAnalysis(BaseModel):
 
     @property
     def num_params(self) -> int:
-        return (
-            self.degree + 2
-            if self.model == ContinuousModelChoices.c_polynomial.value
-            else self.model.num_params
-        )
-
-    def _priors_to_list(self) -> List[float]:
-        """
-        allocate memory for all parameters and convert to columnwise matrix
-        """
-        if len(self.priors) >= self.num_params:
-            # most cases
-            priors = self.priors[: self.num_params]
-            arr = np.array([list(prior.dict().values()) for prior in priors])
+        if self.model == ContinuousModelChoices.c_polynomial.value:
+            params = self.degree + 1
         else:
-            # special case for polynomial; apply all priors; copy last one
-            data: List[List[float]] = []
-            for prior in self.priors[:-1]:
-                data.append(list(prior.dict().values()))
-            for _ in range(len(self.priors) - 1, self.num_params):
-                data.append(list(self.priors[-1].dict().values()))
-            arr = np.array(data)
-        return arr.T.flatten().tolist()
+            params = len(self.model.params)
 
-    def to_c(self) -> ContinuousAnalysisStruct:
-        priors = self._priors_to_list()
-        return ContinuousAnalysisStruct(
+        if self.disttype is constants.DistType.normal_ncv:
+            params += 2
+        else:
+            params += 1
+
+        return params
+
+    def _priors_array(self) -> np.ndarray:
+        if self.model.id == constants.ContinuousModelIds.c_polynomial:
+            return self.priors.to_c(degree=self.degree, dist_type=self.disttype)
+        else:
+            return self.priors.to_c(dist_type=self.disttype)
+
+    def to_c(self) -> ContinuousStructs:
+        priors = self._priors_array()
+        priors_pointer = np.ctypeslib.as_ctypes(priors)
+        nparms = self.num_params
+
+        struct = ContinuousAnalysisStruct(
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
-            Y=list_t_c(self.dataset.means, ctypes.c_double),
             alpha=ctypes.c_double(self.alpha),
             burnin=ctypes.c_int(self.burnin),
             degree=ctypes.c_int(self.degree),
             disttype=ctypes.c_int(self.disttype),
-            doses=list_t_c(self.dataset.doses, ctypes.c_double),
-            isIncreasing=ctypes.c_bool(self.isIncreasing),
+            isIncreasing=ctypes.c_bool(self.is_increasing),
             model=ctypes.c_int(self.model.id),
-            n=ctypes.c_int(self.dataset.num_dose_groups),
-            n_group=list_t_c(self.dataset.ns, ctypes.c_double),
-            parms=ctypes.c_int(self.num_params),
-            prior=list_t_c(priors, ctypes.c_double),
+            parms=ctypes.c_int(nparms),
+            prior=priors_pointer,
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
-            sd=list_t_c(self.dataset.stdevs, ctypes.c_double),
-            suff_stat=ctypes.c_bool(self.suff_stat),
             tail_prob=ctypes.c_double(self.tail_prob),
         )
 
+        if self.dataset.dtype == Dtype.CONTINUOUS:
+            struct.suff_stat = ctypes.c_bool(True)
+            struct.Y = list_t_c(self.dataset.means, ctypes.c_double)
+            struct.doses = list_t_c(self.dataset.doses, ctypes.c_double)
+            struct.n = ctypes.c_int(self.dataset.num_dose_groups)
+            struct.n_group = list_t_c(self.dataset.ns, ctypes.c_double)
+            struct.sd = list_t_c(self.dataset.stdevs, ctypes.c_double)
+        elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
+            struct.suff_stat = ctypes.c_bool(False)
+            struct.Y = list_t_c(self.dataset.responses, ctypes.c_double)
+            struct.doses = list_t_c(self.dataset.individual_doses, ctypes.c_double)
+            struct.n = ctypes.c_int(len(self.dataset.individual_doses))
+            struct.n_group = list_t_c([], ctypes.c_double)
+            struct.sd = list_t_c([], ctypes.c_double)
+        else:
+            raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
 
-class ContinuousModelResultStruct(ctypes.Structure):
-    _fields_ = [
-        ("model", ctypes.c_int),  # continuous model specification
-        ("dist", ctypes.c_int),  # distribution type
-        ("nparms", ctypes.c_int),  # number of parameters in the model
-        ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
-        ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
-        ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
-        ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-        ("model_df", ctypes.c_double),
-        ("total_df", ctypes.c_double),
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
-    ]
+        return ContinuousStructs(
+            analysis=struct,
+            result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
+            summary=ContinuousBmdsResultsStruct(nparms=nparms),
+            aod=ContinuousAodStruct(),
+            gof=ContinuousGofStruct(n=struct.n),
+        )
 
 
 class ContinuousModelResult(BaseModel):
+    dist: int
+    loglikelihood: float
+    aic: float
+    chisq: float
+    model_df: float
+    total_df: float
+    bmd_dist: NumpyFloatArray
 
-    model: constants.ContinuousModel
-    dist: Optional[int]
-    num_params: int
-    params: Optional[List[float]]
-    cov: Optional[NumpyFloatArray]
-    max: Optional[float]
-    dist_numE: int
-    bmd_dist: Optional[NumpyFloatArray]
+    @classmethod
+    def from_model(cls, model) -> "ContinuousModelResult":
+        summary = model.structs.summary
+        result = model.structs.result
+        arr = result.np_bmd_dist.reshape(2, result.dist_numE)
+        arr = arr[:, np.isfinite(arr[0, :])]
+        arr = arr[:, arr[0, :] > 0]
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    def to_c(self):
-        parms = np.zeros(self.num_params, dtype=np.float64)
-        self.cov = np.zeros(self.num_params ** 2, dtype=np.float64)
-        self.bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
-        return ContinuousModelResultStruct(
-            model=ctypes.c_int(self.model.id),
-            parms=parms.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            cov=self.cov.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            dist_numE=ctypes.c_int(self.dist_numE),
-            bmd_dist=self.bmd_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        return ContinuousModelResult(
+            dist=result.dist,
+            loglikelihood=result.max,
+            aic=summary.aic,
+            chisq=summary.chisq,
+            model_df=result.model_df,
+            total_df=result.total_df,
+            bmd_dist=arr,
         )
 
-    def from_c(self, struct: ContinuousModelResultStruct):
-        self.params = struct.parms[: self.num_params]
-        self.cov = self.cov.reshape(self.num_params, self.num_params)
-        self.max = struct.max
-
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"cov", "bmd_dist"})
+        kw.update(exclude={"bmd_dist"})
         d = super().dict(**kw)
-        d["cov"] = self.cov.tolist()
-        d["bmd_dist"] = self.bmd_dist.T.tolist()
-        # TODO - remove this line one distribution is working as expected
-        d["bmd_dist"] = [np.linspace(0, 1, 100).tolist(), np.linspace(1, 100, 100).tolist()]
+        d["bmd_dist"] = self.bmd_dist.tolist()
         return d
 
 
-class ContinuousBmdsResultsStruct(ctypes.Structure):
-    _fields_ = [
-        ("bmd", ctypes.c_double),
-        ("bmdl", ctypes.c_double),
-        ("bmdu", ctypes.c_double),
-        ("aic", ctypes.c_double),
-        ("bounded", ctypes.POINTER(ctypes.c_bool)),
-    ]
+class ContinuousParameters(BaseModel):
+    names: List[str]
+    values: List[float]
+    bounded: List[bool]
+    cov: NumpyFloatArray
 
     @classmethod
-    def from_results(cls, results: ContinuousModelResult) -> "ContinuousBmdsResultsStruct":
+    def from_model(cls, model) -> "ContinuousParameters":
+        result = model.structs.result
         return cls(
-            bmd=constants.BMDS_BLANK_VALUE,
-            bmdl=constants.BMDS_BLANK_VALUE,
-            bmdu=constants.BMDS_BLANK_VALUE,
-            aic=constants.BMDS_BLANK_VALUE,
-            bounded=list_t_c([False for _ in range(results.num_params)], ctypes.c_bool),
+            names=model.get_param_names(),
+            values=result.np_parms.tolist(),
+            bounded=model.structs.summary.np_bounded.tolist(),
+            cov=result.np_cov.reshape(result.initial_n, result.initial_n),
         )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"cov"})
+        d = super().dict(**kw)
+        d["cov"] = self.cov.tolist()
+        return d
+
+    def tbl(self) -> str:
+        headers = "parm|estimate|bounded".split("|")
+        data = []
+        for name, value, bounded in zip(self.names, self.values, self.bounded):
+            data.append([name, value, BOOL_ICON[bounded]])
+        return pretty_table(data, headers)
+
+
+class ContinuousGof(BaseModel):
+    dose: List[float]
+    size: List[int]
+    est_mean: List[float]
+    calc_mean: List[float]
+    obs_mean: List[float]
+    est_sd: List[float]
+    calc_sd: List[float]
+    obs_sd: List[float]
+    residual: List[float]
+    roi: float
+
+    @classmethod
+    def from_model(cls, model) -> "ContinuousGof":
+        gof = model.structs.gof
+        return ContinuousGof(
+            dose=gof.np_dose.tolist(),
+            size=gof.np_size.tolist(),
+            est_mean=gof.np_estMean.tolist(),
+            calc_mean=gof.np_calcMean.tolist(),
+            obs_mean=gof.np_obsMean.tolist(),
+            est_sd=gof.np_estSD.tolist(),
+            calc_sd=gof.np_calcSD.tolist(),
+            obs_sd=gof.np_obsSD.tolist(),
+            residual=gof.np_res.tolist(),
+            roi=residual_of_interest(
+                model.structs.summary.bmd, model.dataset.doses, gof.np_res.tolist()
+            ),
+        )
+
+    def tbl(self) -> str:
+        headers = "Dose|EstProb|Expected|Observed|Size|ScaledRes".split("|")
+        data = []
+        for idx in range(len(self.dose)):
+            data.append(
+                [
+                    self.dose[idx],
+                    self.est_mean[idx],
+                    self.calc_mean[idx],
+                    self.obs_mean[idx],
+                    self.est_sd[idx],
+                    self.calc_sd[idx],
+                    self.obs_sd[idx],
+                    self.residual[idx],
+                ]
+            )
+        return pretty_table(data, headers)
+
+
+class ContinuousDeviance(BaseModel):
+    names: List[str]
+    loglikelihoods: List[float]
+    num_params: List[int]
+    aics: List[float]
+
+    @classmethod
+    def from_model(cls, model) -> "ContinuousDeviance":
+        aod = model.structs.aod
+        return cls(
+            names=["A1", "A2", "A3", "fitted", "reduced"],
+            loglikelihoods=aod.np_LL.tolist(),
+            num_params=aod.np_nParms.tolist(),
+            aics=aod.np_AIC.tolist(),
+        )
+
+    def tbl(self) -> str:
+        headers = "Name|Loglikelihood|num params|AIC".split("|")
+        data = []
+        for (name, loglikelihood, num_param, aic) in zip(
+            self.names, self.loglikelihoods, self.num_params, self.aics
+        ):
+            data.append([name, loglikelihood, num_param, aic])
+        return pretty_table(data, headers)
+
+
+class ContinuousTests(BaseModel):
+    names: List[str]
+    ll_ratios: List[float]
+    dfs: List[float]
+    p_values: List[float]
+
+    @classmethod
+    def from_model(cls, model) -> "ContinuousTests":
+        tests = model.structs.aod.toi_struct
+        return cls(
+            names=["p_test1", "p_test2", "p_test3", "p_test4"],
+            ll_ratios=tests.np_llRatio.tolist(),
+            dfs=tests.np_DF.tolist(),
+            p_values=tests.np_pVal.tolist(),
+        )
+
+    def tbl(self) -> str:
+        headers = "Name|Loglikelihood Ratio|DF|p_value".split("|")
+        data = []
+        for (name, ll_ratio, df, p_value) in zip(
+            self.names, self.ll_ratios, self.dfs, self.p_values
+        ):
+            data.append([name, ll_ratio, df, p_value])
+        return pretty_table(data, headers)
+
+
+class ContinuousPlotting(BaseModel):
+    dr_x: NumpyFloatArray
+    dr_y: NumpyFloatArray
+    bmdl_y: float
+    bmd_y: float
+    bmdu_y: float
+
+    @classmethod
+    def from_model(cls, model, params) -> "ContinuousPlotting":
+        dr_x = model.dataset.dose_linspace
+        critical_xs = np.array(
+            [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
+        )
+        dr_y = model.dr_curve(dr_x, params)
+        critical_ys = model.dr_curve(critical_xs, params)
+        return cls(
+            dr_x=dr_x.tolist(),
+            dr_y=dr_y.tolist(),
+            bmdl_y=critical_ys[0] if model.structs.summary.bmdl > 0 else constants.BMDS_BLANK_VALUE,
+            bmd_y=critical_ys[1] if model.structs.summary.bmd > 0 else constants.BMDS_BLANK_VALUE,
+            bmdu_y=critical_ys[2] if model.structs.summary.bmdu > 0 else constants.BMDS_BLANK_VALUE,
+        )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"dr_x", "dr_y"})
+        d = super().dict(**kw)
+        d["dr_x"] = self.dr_x.tolist()
+        d["dr_y"] = self.dr_y.tolist()
+        return d
 
 
 class ContinuousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
-    aic: float
-    roi: float
-    bounded: List[bool]
     fit: ContinuousModelResult
-    dr_x: List[float]
-    dr_y: List[float]
-    bmdl_y: float
-    bmd_y: float
-    bmdu_y: float
+    gof: ContinuousGof
+    parameters: ContinuousParameters
+    deviance: ContinuousDeviance
+    tests: ContinuousTests
+    plotting: ContinuousPlotting
+
+    def tbl(self) -> str:
+        data = [
+            ["BMDL", self.bmdl],
+            ["BMD", self.bmd],
+            ["BMDU", self.bmdu],
+            ["AIC", self.fit.aic],
+            ["LL", self.fit.loglikelihood],
+            ["model_df", self.fit.model_df],
+            ["Chi²", self.fit.chisq],
+        ]
+        return pretty_table(data, "")
+
+    @classmethod
+    def from_model(cls, model) -> "ContinuousResult":
+        summary = model.structs.summary
+        params = ContinuousParameters.from_model(model)
+        return cls(
+            bmdl=summary.bmdl,
+            bmd=summary.bmd,
+            bmdu=summary.bmdu,
+            fit=ContinuousModelResult.from_model(model),
+            gof=ContinuousGof.from_model(model),
+            parameters=params,
+            deviance=ContinuousDeviance.from_model(model),
+            tests=ContinuousTests.from_model(model),
+            plotting=ContinuousPlotting.from_model(model, params.values),
+        )

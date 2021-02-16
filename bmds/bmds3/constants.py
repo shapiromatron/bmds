@@ -1,28 +1,16 @@
 from enum import Enum, IntEnum
-from typing import Tuple
+from typing import List, Optional, Tuple
 
+import numpy as np
 from pydantic import BaseModel
 
 BMDS_BLANK_VALUE = -9999
 CDF_TABLE_SIZE = 99
 MY_MAX_PARMS = 16
+N_BMD_DIST = 200
 NUM_LIKELIHOODS_OF_INTEREST = 5
 NUM_PRIOR_COLS = 5
 NUM_TESTS_OF_INTEREST = 4
-
-
-class VarType_t(Enum):
-    eVarTypeNone = 0, 0, "No variance model"
-    eConstant = 1, 1, "Constant variance"
-    eModeled = 2, 2, "Modeled variance"
-
-    def __new__(cls, id: int, num_params: int, verbose: str):
-        # https://stackoverflow.com/a/12680149/906385
-        entry = object.__new__(cls)
-        entry.id = entry._value_ = id  # set the value, and the extra attribute
-        entry.num_params = num_params
-        entry.verbose = verbose
-        return entry
 
 
 class BmdModelSchema(BaseModel):
@@ -110,16 +98,11 @@ class DichotomousModelChoices(Enum):
 
 class ContinuousModel(BmdModelSchema):
     params: Tuple[str, ...]
-
-    @property
-    def num_params(self):
-        return len(self.params)
+    variance_params: Tuple[str, ...]
 
 
 class ContinuousModelIds(IntEnum):
-    c_exp_m2 = 2
     c_exp_m3 = 3
-    c_exp_m4 = 4
     c_exp_m5 = 5
     c_hill = 6
     c_power = 8
@@ -130,45 +113,44 @@ class ContinuousModelChoices(Enum):
     c_power = ContinuousModel(
         id=ContinuousModelIds.c_power.value,
         verbose="Power",
-        params=("g", "v", "n", "alpha"),
+        params=("g", "v", "n"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n",
     )
     c_hill = ContinuousModel(
         id=ContinuousModelIds.c_hill.value,
         verbose="Hill",
-        params=("g", "v", "k", "n", "alpha"),
+        params=("g", "v", "k", "n"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + v * dose ^ n / (k ^ n + dose ^ n)",
     )
     c_polynomial = ContinuousModel(
         id=ContinuousModelIds.c_polynomial.value,
         verbose="Polynomial",
         params=("g", "b1", "b2"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + b1*dose + b2*dose^2 + b3*dose^3...",
-    )
-    c_exp_m2 = ContinuousModel(
-        id=ContinuousModelIds.c_exp_m2.value,
-        verbose="ExponentialM2",
-        params=("a", "b", "c", "d", "alpha"),
-        model_form_str="P[dose] = a * exp(±1 * b * dose)",
     )
     c_exp_m3 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m3.value,
         verbose="ExponentialM3",
-        params=("a", "b", "c", "d", "alpha"),
+        params=("a", "b", "c", "d"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
-    )
-    c_exp_m4 = ContinuousModel(
-        id=ContinuousModelIds.c_exp_m4.value,
-        verbose="ExponentialM4",
-        params=("a", "b", "c", "d", "alpha"),
-        model_form_str="P[dose] = a * (c - (c - 1) * exp(-b * dose)",
     )
     c_exp_m5 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m5.value,
         verbose="ExponentialM5",
-        params=("a", "b", "c", "d", "alpha"),
+        params=("a", "b", "c", "d"),
+        variance_params=("rho", "alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-(b * dose) ^ d)",
     )
+
+
+class DistType(IntEnum):
+    normal = 1
+    normal_ncv = 2
+    log_normal = 3
 
 
 class PriorType(IntEnum):
@@ -177,19 +159,68 @@ class PriorType(IntEnum):
     eLognormal = 2
 
 
-class PriorClass(IntEnum):
-    frequentist_unrestricted = 0
-    frequentist_restricted = 1
-    bayesian = 2
-
-
 class Prior(BaseModel):
+    name: str
     type: PriorType
     initial_value: float
     stdev: float
     min_value: float
     max_value: float
 
-    @classmethod
-    def parse_args(cls, *args) -> "Prior":
-        return cls(**{key: arg for key, arg in zip(cls.__fields__.keys(), args)})
+    def numeric_list(self) -> List[float]:
+        return list(self.dict(exclude={"name"}).values())
+
+
+class PriorClass(IntEnum):
+    frequentist_unrestricted = 0
+    frequentist_restricted = 1
+    bayesian = 2
+    custom = 3
+
+    @property
+    def name(self):
+        return _pc_name_mapping[self]
+
+
+_pc_name_mapping = {
+    PriorClass.frequentist_unrestricted: "Frequentist unrestricted",
+    PriorClass.frequentist_restricted: "Frequentist restricted",
+    PriorClass.bayesian: "Bayesian",
+}
+
+
+class ModelPriors(BaseModel):
+    prior_class: PriorClass  # if this is a predefined model class
+    priors: List[Prior]  # priors for main model
+    variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
+
+    def to_table(self):
+        raise NotImplementedError()
+
+    def to_c(
+        self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
+    ) -> np.ndarray:
+
+        priors = []
+        for prior in self.priors:
+            priors.append(prior.numeric_list())
+
+        # remove degreeN; 1st order multistage/polynomial
+        if degree and degree == 1:
+            priors.pop(2)
+
+        # copy degreeN; > 2rd order poly
+        if degree and degree > 2:
+            for i in range(2, degree):
+                priors.append(priors[2])
+
+        # add constant variance parameter
+        if dist_type and dist_type in {DistType.normal, DistType.log_normal}:
+            priors.append(self.variance_priors[0].numeric_list())
+
+        # add non-constant variance parameter
+        if dist_type and dist_type is DistType.normal_ncv:
+            for prior in self.variance_priors:
+                priors.append(prior.numeric_list())
+
+        return np.array(priors, dtype=np.float64).flatten("F")

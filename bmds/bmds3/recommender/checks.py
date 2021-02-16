@@ -4,8 +4,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
-from ..constants import BMDS_BLANK_VALUE
-from ..types.continuous import DistType
+from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
 Number = Union[float, int]
@@ -91,7 +90,7 @@ class AicExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return model.results.aic
+        return model.results.fit.aic
 
 
 class BmdExists(ExistenceCheck):
@@ -107,7 +106,7 @@ class RoiExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return model.results.roi
+        return model.results.gof.roi
 
 
 class BmdlExists(ExistenceCheck):
@@ -188,7 +187,7 @@ class LargeRoi(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return abs(model.results.roi)
+        return abs(model.results.gof.roi)
 
 
 class BmdBmdlRatio(ShouldBeLessThan):
