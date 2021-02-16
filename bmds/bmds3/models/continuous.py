@@ -1,12 +1,10 @@
 import ctypes
-import math
 from typing import List, Optional
 
 import numpy as np
 
 from ...datasets import ContinuousDatasets
 from ..constants import (
-    BMDS_BLANK_VALUE,
     ContinuousModel,
     ContinuousModelChoices,
     ContinuousModelIds,
@@ -14,13 +12,7 @@ from ..constants import (
     ModelPriors,
     PriorClass,
 )
-from ..types.common import residual_of_interest
-from ..types.continuous import (
-    ContinuousAnalysis,
-    ContinuousModelResult,
-    ContinuousModelSettings,
-    ContinuousResult,
-)
+from ..types.continuous import ContinuousAnalysis, ContinuousModelSettings, ContinuousResult
 from ..types.priors import get_continuous_prior
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
@@ -136,6 +128,7 @@ class BmdModelContinuous(BmdModel):
             degree=self.settings.degree,
         )
         structs = inputs.to_c()
+        self.structs = structs
 
         # run the analysis
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
@@ -147,35 +140,8 @@ class BmdModelContinuous(BmdModel):
             ctypes.pointer(structs.gof),
             ctypes.c_bool(False),
         )
-
-        fit_results = ContinuousModelResult.from_c(structs.result)
-        dr_x = self.dataset.dose_linspace
-        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
-        dr_y = self.dr_curve(dr_x, fit_results.params)
-        critical_ys = self.dr_curve(critical_xs, fit_results.params)
-        residuals = [d + 1 for d in self.dataset.doses]  # TODO - use real version
-        aic = (
-            structs.summary.aic if math.isfinite(structs.summary.aic) else BMDS_BLANK_VALUE
-        )  # TODO - after models fixed; remove this check?
-        result = ContinuousResult(
-            bmdl=structs.summary.bmdl,
-            bmd=structs.summary.bmd,
-            bmdu=structs.summary.bmdu,
-            aic=aic,
-            roi=residual_of_interest(structs.summary.bmd, self.dataset.doses, residuals),
-            bounded=[structs.summary.bounded[i] for i in range(inputs.num_params)],
-            fit=fit_results,
-            dr_x=dr_x.tolist(),
-            dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else BMDS_BLANK_VALUE,
-        )
-
-        self.structs = structs
-        self.results = result
-
-        return result
+        self.results = ContinuousResult.from_model(self)
+        return self.results
 
     def get_default_model_degree(self, dataset) -> int:
         return 0
@@ -201,6 +167,22 @@ class BmdModelContinuous(BmdModel):
             return list(self.bmd_model_class.variance_params)
         else:
             return [self.bmd_model_class.variance_params[0]]
+
+    def report(self) -> str:
+        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
+        if not self.has_results:
+            return "\n\n".join([name, "Execution was not completed."])
+
+        return "\n\n".join(
+            [
+                name,
+                f"Summary:\n{self.results.tbl()}",
+                f"Model Parameters:\n{self.results.parameters.tbl()}",
+                f"Goodness of Fit:\n{self.results.gof.tbl()}",
+                f"Analysis of Deviance:\n{self.results.deviance.tbl()}",
+                f"Tests of Interest:\n{self.results.tests.tbl()}",
+            ]
+        )
 
 
 class BmdModelContinuousSchema(BmdModelSchema):

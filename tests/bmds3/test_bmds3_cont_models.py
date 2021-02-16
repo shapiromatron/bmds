@@ -78,6 +78,18 @@ class TestBmdModelContinuous:
         )
         assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho", "alpha"]
 
+    @pytest.mark.skipif(not should_run, reason=skip_reason)
+    def test_report(self, contds):
+        model = continuous.Hill(dataset=contds)
+        text = model.report()
+        assert "Hill" in text
+        assert "Execution was not completed." in text
+
+        model.execute()
+        text = model.report()
+        assert "Hill" in text
+        assert "Analysis of Deviance" in text
+
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_increasing(contds):
@@ -96,10 +108,10 @@ def test_bmds3_increasing(contds):
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
         # print(res)
         assert pytest.approx(bmd_values, abs=1.0) == actual, Model.__name__
-        assert pytest.approx(aic, abs=5.0) == result.aic, Model.__name__
+        assert pytest.approx(aic, abs=5.0) == result.fit.aic, Model.__name__
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
@@ -116,10 +128,10 @@ def test_bmds3_decreasing(negative_contds):
         result = Model(negative_contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
         # print(res)
         assert pytest.approx(bmd_values, abs=1.0) == actual, Model.__name__
-        assert pytest.approx(aic, abs=5.0) == result.aic, Model.__name__
+        assert pytest.approx(aic, abs=5.0) == result.fit.aic, Model.__name__
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
@@ -128,12 +140,12 @@ def test_bmds3_variance(contds):
     result = model.execute()
     assert model.settings.disttype is DistType.normal
     assert pytest.approx(result.bmd, abs=0.1) == 26.007
-    assert len(result.fit.params) == 4
+    assert len(result.parameters.values) == 4
 
     model = continuous.Power(contds, dict(disttype=DistType.normal_ncv))
     result = model.execute()
     assert model.settings.disttype is DistType.normal_ncv
-    assert len(result.fit.params) == 5
+    assert len(result.parameters.values) == 5
     assert pytest.approx(result.bmd, abs=1.0) == 13.676
 
     # TODO -fix - currently segfault
@@ -141,7 +153,7 @@ def test_bmds3_variance(contds):
     # result = model.execute()
     # assert model.settings.disttype is DistType.log_normal
     # assert pytest.approx(result.bmd, abs=0.1) == 123
-    # assert len(result.fit.params) == 4
+    # assert len(result.parameters.values) == 4
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
@@ -161,10 +173,10 @@ def test_bmds3_continuous_polynomial(contds):
         result = continuous.Polynomial(contds, settings).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"({degree}, {np.round(actual, 3).tolist()}, {round(result.aic, 1)})"
+        # res = f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
         # print(res)
         assert pytest.approx(actual, abs=1.0) == bmd_values, degree
-        assert pytest.approx(aic, abs=5.0) == result.aic, degree
+        assert pytest.approx(aic, abs=5.0) == result.fit.aic, degree
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)

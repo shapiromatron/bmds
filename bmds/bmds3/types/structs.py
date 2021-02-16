@@ -494,7 +494,8 @@ class ContinuousAodStruct(ctypes.Structure):
         self.nParms = np.ctypeslib.as_ctypes(self.np_nParms)
         self.np_AIC = np.zeros(5, dtype=np.float64)
         self.AIC = np.ctypeslib.as_ctypes(self.np_AIC)
-        self.TOI = ctypes.pointer(ContinuousToiStruct())
+        self.toi_struct = ContinuousToiStruct()
+        self.TOI = ctypes.pointer(self.toi_struct)
 
 
 class ContinuousBmdsResultsStruct(ctypes.Structure):

@@ -31,6 +31,7 @@ class TestBmdModelDichotomous:
         model = dichotomous.Multistage(dataset=dichds, settings=dict(degree=3))
         assert model.get_param_names() == ["b0", "b1", "b2", "b3"]
 
+    @pytest.mark.skipif(not should_run, reason=skip_reason)
     def test_report(self, dichds):
         model = dichotomous.Gamma(dataset=dichds)
         text = model.report()
