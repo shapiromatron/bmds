@@ -182,8 +182,8 @@ class BmdsSession:
                     model.results.bmd,
                     model.results.bmdl,
                     model.results.bmdu,
-                    model.results.aic,
-                    list_to_str(model.results.fit.params),
+                    model.results.fit.aic,
+                    list_to_str(model.results.parameters.values),
                 ]
             )
         df = pd.DataFrame(data=model_rows, columns=model_row_names)

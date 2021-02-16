@@ -1,26 +1,18 @@
 import ctypes
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
 from ..constants import (
-    BMDS_BLANK_VALUE,
     DichotomousModel,
     DichotomousModelChoices,
     DichotomousModelIds,
     ModelPriors,
     PriorClass,
 )
-from ..types.common import residual_of_interest
-from ..types.dichotomous import (
-    DichotomousAnalysis,
-    DichotomousModelResult,
-    DichotomousModelSettings,
-    DichotomousPgofResult,
-    DichotomousResult,
-)
+from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
 from ..types.priors import get_dichotomous_prior
 from ..types.structs import DichotomousModelResultStruct
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
@@ -61,6 +53,7 @@ class BmdModelDichotomous(BmdModel):
             burnin=self.settings.burnin,
         )
         structs = inputs.to_c()
+        self.structs = structs
 
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
         dll.runBMDSDichoAnalysis(
@@ -70,33 +63,8 @@ class BmdModelDichotomous(BmdModel):
             ctypes.pointer(structs.summary),
             ctypes.pointer(structs.aod),
         )
-
-        fit_results = DichotomousModelResult.from_c(structs.result, self)
-        gof_results = DichotomousPgofResult.from_c(structs.gof)
-        dr_x = self.dataset.dose_linspace
-        critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
-        dr_y = self.dr_curve(dr_x, fit_results.params)
-        critical_ys = self.dr_curve(critical_xs, fit_results.params)
-        result = DichotomousResult(
-            bmdl=structs.summary.bmdl,
-            bmd=structs.summary.bmd,
-            bmdu=structs.summary.bmdu,
-            aic=structs.summary.aic,
-            roi=residual_of_interest(structs.summary.bmd, self.dataset.doses, gof_results.residual),
-            bounded=[structs.summary.bounded[i] for i in range(inputs.num_params)],
-            fit=fit_results,
-            gof=gof_results,
-            dr_x=dr_x.tolist(),
-            dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else BMDS_BLANK_VALUE,
-        )
-
-        self.structs = structs
-        self.results = result
-
-        return result
+        self.results = DichotomousResult.from_model(self)
+        return self.results
 
     def get_default_model_degree(self, dataset) -> int:
         return self.bmd_model_class.num_params - 1
@@ -110,12 +78,31 @@ class BmdModelDichotomous(BmdModel):
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
 
+    def get_param_names(self) -> List[str]:
+        names = list(self.bmd_model_class.params)
+        return names
+
     def serialize(self) -> "BmdModelDichotomousSchema":
         return BmdModelDichotomousSchema(
             name=self.name(),
             model_class=self.bmd_model_class,
             settings=self.settings,
             results=self.results,
+        )
+
+    def report(self) -> str:
+        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
+        if not self.has_results:
+            return "\n\n".join([name, "Execution was not completed."])
+
+        return "\n\n".join(
+            [
+                name,
+                f"Summary:\n{self.results.tbl()}",
+                f"Model Parameters:\n{self.results.parameters.tbl()}",
+                f"Goodness of Fit:\n{self.results.gof.tbl(self.dataset)}",
+                f"Analysis of Deviance:\n{self.results.deviance.tbl()}",
+            ]
         )
 
 
@@ -288,6 +275,9 @@ class Multistage(BmdModelDichotomous):
 
     def get_default_priors(self) -> ModelPriors:
         return get_dichotomous_prior(self.bmd_model_class, PriorClass.frequentist_restricted)
+
+    def get_param_names(self) -> List[str]:
+        return [f"b{i}" for i in range(self.settings.degree + 1)]
 
 
 bmd_model_map = {

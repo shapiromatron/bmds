@@ -92,6 +92,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
 
 
 class DichotomousPgofResultStruct(ctypes.Structure):
+
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("expected", ctypes.POINTER(ctypes.c_double)),
@@ -122,6 +123,7 @@ class DichotomousPgofResultStruct(ctypes.Structure):
 
 
 class DichotomousAodStruct(ctypes.Structure):
+    # Dichotomous Analysis of Deviance Struct
 
     _fields_ = [
         ("fullLL", ctypes.c_double),
@@ -134,8 +136,8 @@ class DichotomousAodStruct(ctypes.Structure):
         ("devRed", ctypes.c_double),
         ("dfFit", ctypes.c_int),
         ("dfRed", ctypes.c_int),
-        ("pvFit", ctypes.c_int),
-        ("pvRed", ctypes.c_int),
+        ("pvFit", ctypes.c_double),
+        ("pvRed", ctypes.c_double),
     ]
 
     def __str__(self) -> str:
@@ -174,6 +176,7 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
+            chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
             """
         )
@@ -185,6 +188,7 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
+        self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
 
@@ -193,8 +197,8 @@ class DichotomousStructs(NamedTuple):
     analysis: DichotomousAnalysisStruct
     result: DichotomousModelResultStruct
     gof: DichotomousPgofResultStruct
-    summary: DichotomousBmdsResultsStruct
     aod: DichotomousAodStruct
+    summary: DichotomousBmdsResultsStruct
 
     def __str__(self):
         return dedent(
@@ -449,15 +453,6 @@ class ContinuousToiStruct(ctypes.Structure):
         ("pVal", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            llRatio: {self.llRatio[:4]}
-            DF: {self.DF[:4]}
-            pVal: {self.pVal[:4]}
-            """
-        )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.np_llRatio = np.zeros(4, dtype=np.float64)
@@ -478,16 +473,17 @@ class ContinuousAodStruct(ctypes.Structure):
     ]
 
     def __str__(self) -> str:
-        return (
-            dedent(
-                f"""
-                LL: {self.LL[:5]}
-                nParms: {self.nParms[:5]}
-                AIC: {self.AIC[:5]}
-                addConst: {self.addConst}
-                """
-            )
-            + str(self.TOI[0])
+        toi = self.TOI[0]
+        return dedent(
+            f"""
+            LL: {self.LL[:5]}
+            nParms: {self.nParms[:5]}
+            AIC: {self.AIC[:5]}
+            addConst: {self.addConst}
+            llRatio: {toi.llRatio[:4]}
+            DF: {toi.DF[:4]}
+            pVal: {toi.pVal[:4]}
+            """
         )
 
     def __init__(self, *args, **kwargs):
@@ -498,7 +494,8 @@ class ContinuousAodStruct(ctypes.Structure):
         self.nParms = np.ctypeslib.as_ctypes(self.np_nParms)
         self.np_AIC = np.zeros(5, dtype=np.float64)
         self.AIC = np.ctypeslib.as_ctypes(self.np_AIC)
-        self.TOI = ctypes.pointer(ContinuousToiStruct())
+        self.toi_struct = ContinuousToiStruct()
+        self.TOI = ctypes.pointer(self.toi_struct)
 
 
 class ContinuousBmdsResultsStruct(ctypes.Structure):
@@ -518,6 +515,7 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
+        self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
 
@@ -528,6 +526,7 @@ class ContinuousBmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
+            chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
             """
         )

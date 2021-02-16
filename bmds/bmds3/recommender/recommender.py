@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import numpy as np
 import pandas as pd
 from pydantic import BaseModel, validator
 
@@ -188,8 +189,15 @@ class Recommender:
         Returns a list of models which have the minimum target field value
         for a given field name (AIC or BMDL).
         """
-        target_value = min([getattr(model.results, field) for model in models])
-        return [model for model in models if getattr(model.results, field) == target_value]
+        if field == "aic":
+            values = np.array([getattr(model.results.fit, field) for model in models])
+        elif field == "bmdl":
+            values = np.array([getattr(model.results, field) for model in models])
+        else:
+            raise ValueError(f"Unknown target field: {field}")
+
+        matches = np.where(values == values.min())[0].tolist()
+        return [models[i] for i in matches]
 
     def _get_parsimonious_model(self, models: List[BmdModel]) -> BmdModel:
         """
@@ -197,7 +205,7 @@ class Recommender:
         parsimonious model is defined as the model with the fewest number of
         parameters.
         """
-        params = [len(model.results.fit.params) for model in models]
+        params = [len(model.results.parameters.values) for model in models]
         idx = params.index(min(params))
         return models[idx]
 

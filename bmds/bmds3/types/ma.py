@@ -1,9 +1,10 @@
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 from pydantic import BaseModel
 
 from ..models.dichotomous import BmdModelDichotomous
+from .continuous import NumpyFloatArray
 from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
 
 
@@ -23,8 +24,8 @@ class DichotomousModelAverageResult(ModelAverageResult):
     bmd_value: List[float]
     priors: List[float]
     posteriors: List[float]
-    dr_x: List[float]
-    dr_y: List[float]
+    dr_x: NumpyFloatArray
+    dr_y: NumpyFloatArray
 
     @classmethod
     def from_execution(
@@ -39,9 +40,9 @@ class DichotomousModelAverageResult(ModelAverageResult):
 
         priors = inputs.modelPriors[: inputs.nmodels]
         posteriors = np.array(outputs.post_probs[: outputs.nmodels])
-        dr_x = models[0].results.dr_x
+        dr_x = models[0].results.plotting.dr_x
 
-        values = np.array([m.results.dr_y for m in models])
+        values = np.array([m.results.plotting.dr_y for m in models])
         dr_y = values.T.dot(posteriors)
 
         values = np.array([[m.results.bmdl, m.results.bmd, m.results.bmdu] for m in models])
@@ -58,3 +59,10 @@ class DichotomousModelAverageResult(ModelAverageResult):
             dr_x=dr_x,
             dr_y=dr_y.tolist(),
         )
+
+    def dict(self, **kw) -> Dict:
+        kw.update(exclude={"dr_x", "dr_y"})
+        d = super().dict(**kw)
+        d["dr_x"] = self.dr_x.tolist()
+        d["dr_y"] = self.dr_y.tolist()
+        return d
