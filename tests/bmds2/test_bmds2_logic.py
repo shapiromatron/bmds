@@ -354,13 +354,13 @@ def test_error_messages(cdataset):
         ),
         (
             rules.LowBmd,
-            {"BMD": min_dose - 1},
-            "BMD/minimum dose ratio is greater than threshold (1.11 > 1)",
+            {"BMD": min_dose / 5},
+            "minimum dose/BMD ratio is greater than threshold (5.0 > 1)",
         ),
         (
             rules.LowBmdl,
-            {"BMDL": min_dose - 1},
-            "BMDL/minimum dose ratio is greater than threshold (1.11 > 1)",
+            {"BMDL": min_dose / 5},
+            "minimum dose/BMDL ratio is greater than threshold (5.0 > 1)",
         ),
         (
             rules.ControlResidual,
