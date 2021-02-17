@@ -20,6 +20,12 @@ from .types import sessions as schema
 logger = logging.getLogger(__name__)
 
 
+def _list_to_str(data, default=None):
+    if data is None:
+        return default
+    return "|".join([str(d) for d in data])
+
+
 class BmdsSession:
     """A BmdsSession is bmd modeling session for a single dataset.
 
@@ -142,58 +148,81 @@ class BmdsSession:
         Returns:
             pd.DataFrame: A pandas dataframe
         """
-
-        def list_to_str(data, default=None):
-            if data is None:
-                return default
-            return "|".join([str(d) for d in data])
-
         # build dataset
         dataset_dict = dict(
             dataset_id=self.dataset.metadata.id,
             dataset_name=self.dataset.metadata.name,
-            doses=list_to_str(getattr(self.dataset, "doses", None)),
+            doses=_list_to_str(getattr(self.dataset, "doses", None)),
             dose_name=self.dataset.metadata.dose_name,
             dose_units=self.dataset.metadata.dose_units,
-            ns=list_to_str(getattr(self.dataset, "doses", None)),
-            means=list_to_str(getattr(self.dataset, "means", None)),
-            stdevs=list_to_str(getattr(self.dataset, "stdevs", None)),
-            incidences=list_to_str(getattr(self.dataset, "incidences", None)),
+            ns=_list_to_str(getattr(self.dataset, "doses", None)),
+            means=_list_to_str(getattr(self.dataset, "means", None)),
+            stdevs=_list_to_str(getattr(self.dataset, "stdevs", None)),
+            incidences=_list_to_str(getattr(self.dataset, "incidences", None)),
             response_name=self.dataset.metadata.response_name,
             response_units=self.dataset.metadata.response_units,
         )
 
         # build model rows
         model_rows = []
-        model_row_names = [
+        model_cols = [
             "model_index",
             "model_name",
-            "bmd",
             "bmdl",
+            "bmd",
             "bmdu",
             "aic",
             "params",
         ]
-        for idx, model in enumerate(self.models):
-            model_rows.append(
-                [
+        if self.dataset.dtype in constants.DICHOTOMOUS_DTYPES:
+            model_cols.extend(["p_value"])
+            for idx, model in enumerate(self.models):
+                row = [
                     idx,
                     model.name(),
-                    model.results.bmd,
                     model.results.bmdl,
+                    model.results.bmd,
                     model.results.bmdu,
                     model.results.fit.aic,
-                    list_to_str(model.results.parameters.values),
+                    _list_to_str(model.results.parameters.values),
+                    model.results.gof.p_value,
+                ]
+                model_rows.append(row)
+        elif self.dataset.dtype in constants.CONTINUOUS_DTYPES:
+            raise NotImplementedError("...")
+
+        if self.recommendation_enabled:
+            model_cols.extend(
+                [
+                    "recommended",
+                    "recommended_bin",
+                    "recommended_notes-caution",
+                    "recommended_notes-warning",
+                    "recommended_notes-failure",
                 ]
             )
-        df = pd.DataFrame(data=model_rows, columns=model_row_names)
+            results = self.recommender.results
+            for i in range(len(results.model_bin)):
+                model_rows[i].extend(
+                    [
+                        f"yes-{results.recommended_model_variable}"
+                        if i == results.recommended_model_index
+                        else "no",
+                        results.model_bin[i].name,
+                        "\n".join(results.model_notes[i][0]),
+                        "\n".join(results.model_notes[i][1]),
+                        "\n".join(results.model_notes[i][2]),
+                    ]
+                )
+
+        df = pd.DataFrame(data=model_rows, columns=model_cols)
 
         # add dataset rows
         for key, value in dataset_dict.items():
             df[key] = value
 
         # reorder
-        column_order = list(dataset_dict.keys()) + model_row_names
+        column_order = list(dataset_dict.keys()) + model_cols
         df = df.reindex(column_order, axis=1)
 
         # drop empty columns
