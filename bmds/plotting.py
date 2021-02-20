@@ -6,6 +6,7 @@ mpl.use("Agg")  # prevent matplotlib framework issues
 __all__ = []
 
 PLOT_FIGSIZE = (8, 5)
+DPI = 100
 PLOT_MARGINS = 0.05
 DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k")
 DATASET_INDIVIDUAL_FORMAT = dict(s=35, alpha=0.60, c="k")
@@ -25,7 +26,7 @@ FAILURE_MESSAGE_FORMAT = dict(
 def create_empty_figure():
     plt.style.use("seaborn-darkgrid")
     mpl.rcParams.update({"font.size": 10})
-    fig, ax = plt.subplots(figsize=PLOT_FIGSIZE, dpi=300)
+    fig, ax = plt.subplots(figsize=PLOT_FIGSIZE, dpi=DPI)
     return fig
 
 

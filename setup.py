@@ -16,7 +16,6 @@ def get_readme():
 
 
 requirements = [
-    "six",
     "pydantic",
     "requests",
     "numpy",
@@ -27,6 +26,7 @@ requirements = [
     "scipy",
     "simple-settings",
     "tabulate",
+    "tqdm",
 ]
 
 setup(
