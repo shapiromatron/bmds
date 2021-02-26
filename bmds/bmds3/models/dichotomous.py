@@ -14,7 +14,6 @@ from ..constants import (
 )
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
 from ..types.priors import get_dichotomous_prior
-from ..types.structs import DichotomousModelResultStruct
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 

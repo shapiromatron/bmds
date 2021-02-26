@@ -123,7 +123,7 @@ class ContinuousAnalysis(BaseModel):
         return ContinuousStructs(
             analysis=struct,
             result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
-            summary=BmdsResultsStruct(nparms=nparms),
+            summary=BmdsResultsStruct(num_params=nparms),
             aod=ContinuousAodStruct(),
             gof=ContinuousGofStruct(n=struct.n),
         )
@@ -157,33 +157,36 @@ class ContinuousModelResult(BaseModel):
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"bmd_dist"})
         d = super().dict(**kw)
-        d["bmd_dist"] = self.bmd_dist.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
 
 class ContinuousParameters(BaseModel):
     names: List[str]
-    values: List[float]
-    bounded: List[bool]
+    values: NumpyFloatArray
+    se: NumpyFloatArray
+    lower_ci: NumpyFloatArray
+    upper_ci: NumpyFloatArray
+    bounded: NumpyFloatArray
     cov: NumpyFloatArray
 
     @classmethod
     def from_model(cls, model) -> "ContinuousParameters":
         result = model.structs.result
+        summary = model.structs.summary
         return cls(
             names=model.get_param_names(),
-            values=result.np_parms.tolist(),
-            bounded=model.structs.summary.np_bounded.tolist(),
+            values=result.np_parms,
+            bounded=summary.np_bounded,
+            se=summary.np_stdErr,
+            lower_ci=summary.np_lowerConf,
+            upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.initial_n, result.initial_n),
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"cov"})
         d = super().dict(**kw)
-        d["cov"] = self.cov.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "parm|estimate|bounded".split("|")
@@ -318,11 +321,8 @@ class ContinuousPlotting(BaseModel):
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"dr_x", "dr_y"})
         d = super().dict(**kw)
-        d["dr_x"] = self.dr_x.tolist()
-        d["dr_y"] = self.dr_y.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
 
 class ContinuousResult(BaseModel):

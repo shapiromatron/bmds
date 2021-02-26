@@ -56,9 +56,9 @@ class TestSessionRecommender:
         assert session.recommender.results.model_bin == [0, 0]
 
         # model recommended and selection is accurate
-        assert session.recommender.results.recommended_model_index == 1
+        assert session.recommender.results.recommended_model_index == 0
         assert session.recommender.results.recommended_model_variable == "aic"
-        assert session.models[1].results.fit.aic < session.models[0].results.fit.aic
+        assert session.models[0].results.fit.aic < session.models[1].results.fit.aic
 
     def test_apply_logic_cont(self, cdataset):
         session = bmds.session.Bmds330(dataset=cdataset)
@@ -67,7 +67,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.model_bin == [2, 1]
+        assert session.recommender.results.model_bin == [1, 1]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index is None
