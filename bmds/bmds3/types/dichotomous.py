@@ -14,7 +14,7 @@ from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interes
 from .structs import (
     DichotomousAnalysisStruct,
     DichotomousAodStruct,
-    DichotomousBmdsResultsStruct,
+    BmdsResultsStruct,
     DichotomousModelResultStruct,
     DichotomousPgofResultStruct,
     DichotomousStructs,
@@ -95,7 +95,7 @@ class DichotomousAnalysis(BaseModel):
                 model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
             ),
             gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
-            summary=DichotomousBmdsResultsStruct(num_params=self.num_params),
+            summary=BmdsResultsStruct(num_params=self.num_params),
             aod=DichotomousAodStruct(),
         )
 

@@ -159,7 +159,8 @@ class DichotomousAodStruct(ctypes.Structure):
         )
 
 
-class DichotomousBmdsResultsStruct(ctypes.Structure):
+class BmdsResultsStruct(ctypes.Structure):
+    # used for both continuous and dichotomous data
     _fields_ = [
         ("bmd", ctypes.c_double),
         ("bmdl", ctypes.c_double),
@@ -167,6 +168,9 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         ("aic", ctypes.c_double),
         ("chisq", ctypes.c_double),
         ("bounded", ctypes.POINTER(ctypes.c_bool)),
+        ("stdErr", ctypes.POINTER(ctypes.c_double)),
+        ("lowerConf", ctypes.POINTER(ctypes.c_double)),
+        ("upperConf", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __str__(self) -> str:
@@ -178,6 +182,9 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
             aic: {self.aic}
             chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
+            stdErr: {self.stdErr[:self.n]}
+            lowerConf: {self.lowerConf[:self.n]}
+            upperConf: {self.upperConf[:self.n]}
             """
         )
 
@@ -190,7 +197,13 @@ class DichotomousBmdsResultsStruct(ctypes.Structure):
         self.aic = constants.BMDS_BLANK_VALUE
         self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
+        self.np_stdErr = np.zeros(self.n, dtype=np.float64)
+        self.np_lowerConf = np.zeros(self.n, dtype=np.float64)
+        self.np_upperConf = np.zeros(self.n, dtype=np.float64)
         self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
+        self.stdErr = np.ctypeslib.as_ctypes(self.np_stdErr)
+        self.lowerConf = np.ctypeslib.as_ctypes(self.np_lowerConf)
+        self.upperConf = np.ctypeslib.as_ctypes(self.np_upperConf)
 
 
 class DichotomousStructs(NamedTuple):
@@ -198,7 +211,7 @@ class DichotomousStructs(NamedTuple):
     result: DichotomousModelResultStruct
     gof: DichotomousPgofResultStruct
     aod: DichotomousAodStruct
-    summary: DichotomousBmdsResultsStruct
+    summary: BmdsResultsStruct
 
     def __str__(self):
         return dedent(
@@ -498,44 +511,10 @@ class ContinuousAodStruct(ctypes.Structure):
         self.TOI = ctypes.pointer(self.toi_struct)
 
 
-class ContinuousBmdsResultsStruct(ctypes.Structure):
-    _fields_ = [
-        ("bmd", ctypes.c_double),
-        ("bmdl", ctypes.c_double),
-        ("bmdu", ctypes.c_double),
-        ("aic", ctypes.c_double),
-        ("chisq", ctypes.c_double),
-        ("bounded", ctypes.POINTER(ctypes.c_bool)),
-    ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.n = kwargs["nparms"]
-        self.bmd = constants.BMDS_BLANK_VALUE
-        self.bmdl = constants.BMDS_BLANK_VALUE
-        self.bmdu = constants.BMDS_BLANK_VALUE
-        self.aic = constants.BMDS_BLANK_VALUE
-        self.chisq = constants.BMDS_BLANK_VALUE
-        self.np_bounded = np.zeros(self.n, dtype=np.bool_)
-        self.bounded = np.ctypeslib.as_ctypes(self.np_bounded)
-
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            bmd: {self.bmd}
-            bmdl: {self.bmdl}
-            bmdu: {self.bmdu}
-            aic: {self.aic}
-            chisq: {self.chisq}
-            bounded: {self.bounded[:self.n]}
-            """
-        )
-
-
 class ContinuousStructs(NamedTuple):
     analysis: ContinuousAnalysisStruct
     result: ContinuousModelResultStruct
-    summary: ContinuousBmdsResultsStruct
+    summary: BmdsResultsStruct
     aod: ContinuousAodStruct
     gof: ContinuousGofStruct
 

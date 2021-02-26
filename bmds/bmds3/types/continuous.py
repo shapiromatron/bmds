@@ -15,7 +15,7 @@ from .priors import ModelPriors
 from .structs import (
     ContinuousAnalysisStruct,
     ContinuousAodStruct,
-    ContinuousBmdsResultsStruct,
+    BmdsResultsStruct,
     ContinuousGofStruct,
     ContinuousModelResultStruct,
     ContinuousStructs,
@@ -123,7 +123,7 @@ class ContinuousAnalysis(BaseModel):
         return ContinuousStructs(
             analysis=struct,
             result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
-            summary=ContinuousBmdsResultsStruct(nparms=nparms),
+            summary=BmdsResultsStruct(nparms=nparms),
             aod=ContinuousAodStruct(),
             gof=ContinuousGofStruct(n=struct.n),
         )
