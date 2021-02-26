@@ -172,8 +172,8 @@ class DichotomousPgofResult(BaseModel):
 
 class DichotomousParameters(BaseModel):
     names: List[str]
-    values: List[float]
-    bounded: List[bool]
+    values: NumpyFloatArray
+    bounded: NumpyFloatArray
     cov: NumpyFloatArray
 
     @classmethod
@@ -181,14 +181,16 @@ class DichotomousParameters(BaseModel):
         results = model.structs.result
         return cls(
             names=model.get_param_names(),
-            values=model.transform_params(results),
-            bounded=model.structs.summary.np_bounded.tolist(),
+            values=results.np_parms,
+            bounded=model.structs.summary.np_bounded,
             cov=results.np_cov.reshape(results.nparms, results.nparms),
         )
 
     def dict(self, **kw) -> Dict:
         kw.update(exclude={"cov"})
         d = super().dict(**kw)
+        d["values"] = self.values.tolist()
+        d["bounded"] = self.bounded.tolist()
         d["cov"] = self.cov.tolist()
         return d
 
