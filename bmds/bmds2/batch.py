@@ -2,7 +2,6 @@ import json
 import os
 
 import pandas as pd
-from six import string_types
 
 from . import exports
 from .reporter import Reporter
@@ -83,7 +82,7 @@ class SessionBatch(list):
         d = self.to_dicts()
         if hasattr(filename, "write"):
             json.dump(d, filename, indent=indent)
-        elif isinstance(filename, string_types):
+        elif isinstance(filename, str):
             with open(os.path.expanduser(filename), "w") as f:
                 json.dump(d, f, indent=indent)
         else:
@@ -162,7 +161,7 @@ class SessionBatch(list):
 
         """
         df = self.to_df(recommended_only, include_io)
-        if isinstance(filename, string_types):
+        if isinstance(filename, str):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 

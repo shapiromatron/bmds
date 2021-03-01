@@ -14,7 +14,6 @@ from ..constants import (
 )
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
 from ..types.priors import get_dichotomous_prior
-from ..types.structs import DichotomousModelResultStruct
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -68,9 +67,6 @@ class BmdModelDichotomous(BmdModel):
 
     def get_default_model_degree(self, dataset) -> int:
         return self.bmd_model_class.num_params - 1
-
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        return struct.parms[: struct.nparms]
 
     def get_default_priors(self) -> ModelPriors:
         raise NotImplementedError()
@@ -134,10 +130,6 @@ class Logistic(BmdModelDichotomous):
 class LogLogistic(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_loglogistic.value
 
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), params[1], params[2]]
-
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         a = params[1]
@@ -163,10 +155,6 @@ class Probit(BmdModelDichotomous):
 class LogProbit(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_logprobit.value
 
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), params[1], params[2]]
-
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         a = params[1]
@@ -179,10 +167,6 @@ class LogProbit(BmdModelDichotomous):
 
 class Gamma(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_gamma.value
-
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), params[1], params[2]]
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -197,10 +181,6 @@ class Gamma(BmdModelDichotomous):
 class QuantalLinear(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_qlinear.value
 
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), params[1]]
-
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         a = params[1]
@@ -212,10 +192,6 @@ class QuantalLinear(BmdModelDichotomous):
 
 class Weibull(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_weibull.value
-
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), params[1], params[2]]
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -229,10 +205,6 @@ class Weibull(BmdModelDichotomous):
 
 class DichotomousHill(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_hill.value
-
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = struct.parms
-        return [1 / (1 + np.exp(-params[0])), 1 / (1 + np.exp(-params[1])), params[2], params[3]]
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -260,11 +232,6 @@ class Multistage(BmdModelDichotomous):
 
     def name(self) -> str:
         return f"Multistage {self.settings.degree}°"
-
-    def transform_params(self, struct: DichotomousModelResultStruct):
-        params = super().transform_params(struct)
-        params[0] = 1 / (1 + np.exp(-params[0]))
-        return params
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]

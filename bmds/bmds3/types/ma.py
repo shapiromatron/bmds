@@ -61,8 +61,5 @@ class DichotomousModelAverageResult(ModelAverageResult):
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"dr_x", "dr_y"})
         d = super().dict(**kw)
-        d["dr_x"] = self.dr_x.tolist()
-        d["dr_y"] = self.dr_y.tolist()
-        return d
+        return NumpyFloatArray.listify(d)

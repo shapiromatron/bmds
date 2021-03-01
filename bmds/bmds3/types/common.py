@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, Dict, List
 
 import numpy as np
 import tabulate
@@ -42,3 +42,11 @@ class NumpyFloatArray(np.ndarray):
             return np.asarray(v, dtype="float")
         except TypeError:
             raise ValueError("invalid np.ndarray format")
+
+    @classmethod
+    def listify(cls, dict_: Dict):
+        # convert numpy arrays to lists which can be json serialized
+        for key, value in dict_.items():
+            if isinstance(value, np.ndarray):
+                dict_[key] = value.tolist()
+        return dict_

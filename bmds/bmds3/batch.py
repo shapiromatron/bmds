@@ -1,10 +1,19 @@
 import json
-from typing import List
+import os
+from concurrent.futures import ProcessPoolExecutor
+from typing import Callable, Dict, List, NamedTuple, Optional
 
 import pandas as pd
+from tqdm import tqdm
 
+from ..datasets import DatasetBase
 from ..reporting.styling import Report
 from .sessions import BmdsSession
+
+
+class ExecutionResponse(NamedTuple):
+    success: bool
+    content: Dict
 
 
 class BmdsSessionBatch:
@@ -12,6 +21,7 @@ class BmdsSessionBatch:
         if sessions is None:
             sessions = []
         self.sessions: List[BmdsSession] = sessions
+        self.errors = []
 
     def to_df(self) -> pd.DataFrame:
         dfs = [session.to_df(dropna=False) for session in self.sessions]
@@ -43,6 +53,46 @@ class BmdsSessionBatch:
             str: A JSON string
         """
         return json.dumps([session.to_dict() for session in self.sessions])
+
+    @classmethod
+    def multiprocess_execute(
+        cls, datasets: List[DatasetBase], runner: Callable, nprocs: Optional[int] = None
+    ) -> "BmdsSessionBatch":
+        """Execute sessions using multiple cores.
+
+        Args:
+            datasets (List[DatasetBase]): The datasets to execute
+            runner (Callable[dataset] -> ExecutionResponse): The method which executes a session
+            nprocs (Optional[int]): the number of processors to use; defaults to N-1
+
+        Returns:
+            A BmdsSessionBatch with sessions executed.
+        """
+        if nprocs is None:
+            nprocs = max(os.cpu_count() - 1, 1)
+
+        # adapted from https://gist.github.com/alexeygrigorev/79c97c1e9dd854562df9bbeea76fc5de
+        with ProcessPoolExecutor(max_workers=nprocs) as executor:
+            with tqdm(total=len(datasets), desc="Executing...") as progress:
+
+                futures = []
+                for dataset in datasets:
+                    future = executor.submit(runner, dataset)
+                    future.add_done_callback(lambda p: progress.update())
+                    futures.append(future)
+
+                results: List[ExecutionResponse] = []
+                for future in futures:
+                    results.append(future.result())
+
+        batch = cls()
+        for result in tqdm(results, desc="Building batch..."):
+            if result.success:
+                batch.sessions.append(BmdsSession.from_serialized(result.content))
+            else:
+                batch.errors.append(result.content)
+
+        return batch
 
     @classmethod
     def deserialize(cls, data: str) -> "BmdsSessionBatch":

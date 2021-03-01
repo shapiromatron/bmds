@@ -12,9 +12,9 @@ from ...datasets import DichotomousDataset
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .structs import (
+    BmdsResultsStruct,
     DichotomousAnalysisStruct,
     DichotomousAodStruct,
-    DichotomousBmdsResultsStruct,
     DichotomousModelResultStruct,
     DichotomousPgofResultStruct,
     DichotomousStructs,
@@ -95,7 +95,7 @@ class DichotomousAnalysis(BaseModel):
                 model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
             ),
             gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
-            summary=DichotomousBmdsResultsStruct(num_params=self.num_params),
+            summary=BmdsResultsStruct(num_params=self.num_params),
             aod=DichotomousAodStruct(),
         )
 
@@ -126,10 +126,8 @@ class DichotomousModelResult(BaseModel):
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"cov", "bmd_dist"})
         d = super().dict(**kw)
-        d["bmd_dist"] = self.bmd_dist.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
 
 class DichotomousPgofResult(BaseModel):
@@ -172,25 +170,30 @@ class DichotomousPgofResult(BaseModel):
 
 class DichotomousParameters(BaseModel):
     names: List[str]
-    values: List[float]
-    bounded: List[bool]
+    values: NumpyFloatArray
+    se: NumpyFloatArray
+    lower_ci: NumpyFloatArray
+    upper_ci: NumpyFloatArray
+    bounded: NumpyFloatArray
     cov: NumpyFloatArray
 
     @classmethod
     def from_model(cls, model) -> "DichotomousParameters":
-        results = model.structs.result
+        result = model.structs.result
+        summary = model.structs.summary
         return cls(
             names=model.get_param_names(),
-            values=model.transform_params(results),
-            bounded=model.structs.summary.np_bounded.tolist(),
-            cov=results.np_cov.reshape(results.nparms, results.nparms),
+            values=result.np_parms,
+            bounded=summary.np_bounded,
+            se=summary.np_stdErr,
+            lower_ci=summary.np_lowerConf,
+            upper_ci=summary.np_upperConf,
+            cov=result.np_cov.reshape(result.nparms, result.nparms),
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"cov"})
         d = super().dict(**kw)
-        d["cov"] = self.cov.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "parm|estimate|bounded".split("|")
@@ -261,11 +264,8 @@ class DichotomousPlotting(BaseModel):
         )
 
     def dict(self, **kw) -> Dict:
-        kw.update(exclude={"dr_x", "dr_y"})
         d = super().dict(**kw)
-        d["dr_x"] = self.dr_x.tolist()
-        d["dr_y"] = self.dr_y.tolist()
-        return d
+        return NumpyFloatArray.listify(d)
 
 
 class DichotomousResult(BaseModel):
