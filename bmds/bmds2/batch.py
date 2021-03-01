@@ -161,7 +161,7 @@ class SessionBatch(list):
 
         """
         df = self.to_df(recommended_only, include_io)
-        if isinstance(filename, string_types):
+        if isinstance(filename, str):
             filename = os.path.expanduser(filename)
         df.to_excel(filename, index=False)
 

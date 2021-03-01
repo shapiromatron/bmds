@@ -13,9 +13,9 @@ from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .priors import ModelPriors
 from .structs import (
+    BmdsResultsStruct,
     ContinuousAnalysisStruct,
     ContinuousAodStruct,
-    BmdsResultsStruct,
     ContinuousGofStruct,
     ContinuousModelResultStruct,
     ContinuousStructs,

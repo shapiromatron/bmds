@@ -12,9 +12,9 @@ from ...datasets import DichotomousDataset
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .structs import (
+    BmdsResultsStruct,
     DichotomousAnalysisStruct,
     DichotomousAodStruct,
-    BmdsResultsStruct,
     DichotomousModelResultStruct,
     DichotomousPgofResultStruct,
     DichotomousStructs,

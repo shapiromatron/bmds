@@ -1,14 +1,14 @@
 import json
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, Optional, Dict, List, NamedTuple
+from typing import Callable, Dict, List, NamedTuple, Optional
 
 import pandas as pd
 from tqdm import tqdm
 
+from ..datasets import DatasetBase
 from ..reporting.styling import Report
 from .sessions import BmdsSession
-from ..datasets import DatasetBase
 
 
 class ExecutionResponse(NamedTuple):
