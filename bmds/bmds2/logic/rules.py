@@ -182,7 +182,7 @@ class HighBmdl(ShouldBeLessThan):
 
 class LowBmd(ShouldBeLessThan):
     default_rule_name = "Low BMD"
-    field_name_verbose = "BMD/minimum dose ratio"
+    field_name_verbose = "minimum dose/BMD ratio"
 
     def get_value(self, dataset, output):
         min_dose = min([d for d in dataset.doses if d > 0])
@@ -193,7 +193,7 @@ class LowBmd(ShouldBeLessThan):
 
 class LowBmdl(ShouldBeLessThan):
     default_rule_name = "Low BMDL"
-    field_name_verbose = "BMDL/minimum dose ratio"
+    field_name_verbose = "minimum dose/BMDL ratio"
 
     def get_value(self, dataset, output):
         min_dose = min([d for d in dataset.doses if d > 0])
