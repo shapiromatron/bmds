@@ -446,23 +446,3 @@ def write_models(report: Report, session, header_level: int):
                 write_cell(tbl.cell(idx, 3), deviance, body)
                 write_cell(tbl.cell(idx, 4), df, body)
                 write_cell(tbl.cell(idx, 5), p_value, body)
-
-        # CDF Table
-        report.document.add_paragraph("CDF Table", styles.header_2)
-        hdr = styles.tbl_header
-        body = styles.tbl_body
-
-        tbl = report.document.add_table(
-            len(model.results.fit.bmd_dist[1]) + 1, 2, style=styles.table
-        )
-
-        write_cell(tbl.cell(0, 0), "Percentile", style=hdr)
-        write_cell(tbl.cell(0, 1), "BMD", style=hdr)
-
-        # write body
-        for i, (percentile, bmd) in enumerate(
-            zip(model.results.fit.bmd_dist[1], model.results.fit.bmd_dist[0])
-        ):
-            idx = i + 1
-            write_cell(tbl.cell(idx, 0), percentile, body)
-            write_cell(tbl.cell(idx, 1), bmd, body)
