@@ -100,6 +100,8 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         ("test_statistic", ctypes.c_double),
         ("p_value", ctypes.c_double),
         ("df", ctypes.c_double),
+        ("ebLower", ctypes.POINTER(ctypes.c_double)),
+        ("ebUpper", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __str__(self) -> str:
@@ -111,6 +113,8 @@ class DichotomousPgofResultStruct(ctypes.Structure):
             test_statistic: {self.test_statistic}
             p_value: {self.p_value}
             df: {self.df}
+            ebLower: {self.ebLower[:self.n]}
+            ebUpper: {self.ebUpper[:self.n]}
             """
         )
 
@@ -120,6 +124,10 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         self.expected = np.ctypeslib.as_ctypes(self.np_expected)
         self.np_residual = np.zeros(self.n, dtype=np.float64)
         self.residual = np.ctypeslib.as_ctypes(self.np_residual)
+        self.np_ebLower = np.zeros(self.n, dtype=np.float64)
+        self.ebLower = np.ctypeslib.as_ctypes(self.np_ebLower)
+        self.np_ebUpper = np.zeros(self.n, dtype=np.float64)
+        self.ebUpper = np.ctypeslib.as_ctypes(self.np_ebUpper)
 
 
 class DichotomousAodStruct(ctypes.Structure):
@@ -171,6 +179,7 @@ class BmdsResultsStruct(ctypes.Structure):
         ("stdErr", ctypes.POINTER(ctypes.c_double)),
         ("lowerConf", ctypes.POINTER(ctypes.c_double)),
         ("upperConf", ctypes.POINTER(ctypes.c_double)),
+        ("validResult", ctypes.c_bool),
     ]
 
     def __str__(self) -> str:
@@ -185,6 +194,7 @@ class BmdsResultsStruct(ctypes.Structure):
             stdErr: {self.stdErr[:self.n]}
             lowerConf: {self.lowerConf[:self.n]}
             upperConf: {self.upperConf[:self.n]}
+            validResult: {self.validResult}
             """
         )
 
@@ -204,6 +214,7 @@ class BmdsResultsStruct(ctypes.Structure):
         self.stdErr = np.ctypeslib.as_ctypes(self.np_stdErr)
         self.lowerConf = np.ctypeslib.as_ctypes(self.np_lowerConf)
         self.upperConf = np.ctypeslib.as_ctypes(self.np_upperConf)
+        self.validResult = ctypes.c_bool()
 
 
 class DichotomousStructs(NamedTuple):
@@ -419,6 +430,8 @@ class ContinuousGofStruct(ctypes.Structure):
         ("obsSD", ctypes.POINTER(ctypes.c_double)),
         ("res", ctypes.POINTER(ctypes.c_double)),
         ("n", ctypes.c_int),
+        ("ebLower", ctypes.POINTER(ctypes.c_double)),
+        ("ebUpper", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __str__(self) -> str:
@@ -434,6 +447,8 @@ class ContinuousGofStruct(ctypes.Structure):
             obsSD: {self.obsSD[:self.n]}
             res: {self.res[:self.n]}
             n: {self.n}
+            ebLower: {self.ebLower[:self.n]}
+            ebUpper: {self.ebUpper[:self.n]}
             """
         )
 
@@ -457,6 +472,10 @@ class ContinuousGofStruct(ctypes.Structure):
         self.obsSD = np.ctypeslib.as_ctypes(self.np_obsSD)
         self.np_res = np.zeros(self.n, dtype=np.float64)
         self.res = np.ctypeslib.as_ctypes(self.np_res)
+        self.np_ebLower = np.zeros(self.n, dtype=np.float64)
+        self.ebLower = np.ctypeslib.as_ctypes(self.np_ebLower)
+        self.np_ebUpper = np.zeros(self.n, dtype=np.float64)
+        self.ebUpper = np.ctypeslib.as_ctypes(self.np_ebUpper)
 
 
 class ContinuousToiStruct(ctypes.Structure):
@@ -479,7 +498,7 @@ class ContinuousToiStruct(ctypes.Structure):
 class ContinuousAodStruct(ctypes.Structure):
     _fields_ = [
         ("LL", ctypes.POINTER(ctypes.c_double)),
-        ("nParms", ctypes.POINTER(ctypes.c_double)),
+        ("nParms", ctypes.POINTER(ctypes.c_int)),
         ("AIC", ctypes.POINTER(ctypes.c_double)),
         ("addConst", ctypes.c_double),
         ("TOI", ctypes.POINTER(ContinuousToiStruct)),
@@ -503,7 +522,7 @@ class ContinuousAodStruct(ctypes.Structure):
         super().__init__(*args, **kwargs)
         self.np_LL = np.zeros(5, dtype=np.float64)
         self.LL = np.ctypeslib.as_ctypes(self.np_LL)
-        self.np_nParms = np.zeros(5, dtype=np.float64)
+        self.np_nParms = np.zeros(5, dtype=np.int32)
         self.nParms = np.ctypeslib.as_ctypes(self.np_nParms)
         self.np_AIC = np.zeros(5, dtype=np.float64)
         self.AIC = np.ctypeslib.as_ctypes(self.np_AIC)
