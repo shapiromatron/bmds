@@ -10,7 +10,7 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, inf_to_none, list_t_c, pretty_table, residual_of_interest
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -103,7 +103,7 @@ class DichotomousAnalysis(BaseModel):
 class DichotomousModelResult(BaseModel):
     loglikelihood: float
     aic: float
-    bic_equiv: float
+    bic_equiv: Optional[float]
     chisq: float
     model_df: float
     total_df: float
@@ -121,7 +121,7 @@ class DichotomousModelResult(BaseModel):
         return DichotomousModelResult(
             loglikelihood=result.max,
             aic=summary.aic,
-            bic_equiv=summary.BIC_equiv,
+            bic_equiv=inf_to_none(summary.BIC_equiv),
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
@@ -192,7 +192,7 @@ class DichotomousParameters(BaseModel):
             names=model.get_param_names(),
             values=result.np_parms,
             bounded=summary.np_bounded,
-            se=summary.np_stdErr,
+            se=np.nan_to_num(summary.np_stdErr),  # TODO - is this required?; se can be NaN
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.nparms, result.nparms),

@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+import math
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import tabulate
@@ -10,6 +11,10 @@ CDF_TABLE_SIZE = 99
 MY_MAX_PARMS = 16
 NUM_LIKELIHOODS_OF_INTEREST = 5
 NUM_TESTS_OF_INTEREST = 4
+
+
+def inf_to_none(value: float) -> Optional[float]:
+    return value if math.isfinite(value) else None
 
 
 def list_t_c(list: List[Any], ctype):
