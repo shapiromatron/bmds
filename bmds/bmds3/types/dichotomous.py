@@ -103,6 +103,7 @@ class DichotomousAnalysis(BaseModel):
 class DichotomousModelResult(BaseModel):
     loglikelihood: float
     aic: float
+    bic_equiv: float
     chisq: float
     model_df: float
     total_df: float
@@ -111,6 +112,7 @@ class DichotomousModelResult(BaseModel):
     @classmethod
     def from_model(cls, model) -> "DichotomousModelResult":
         result = model.structs.result
+        summary = model.structs.summary
         # reshape; get rid of 0 and inf; must be JSON serializable
         arr = result.np_bmd_dist.reshape(2, result.dist_numE)
         arr = arr[:, np.isfinite(arr[0, :])]
@@ -118,8 +120,9 @@ class DichotomousModelResult(BaseModel):
 
         return DichotomousModelResult(
             loglikelihood=result.max,
-            aic=model.structs.summary.aic,
-            chisq=model.structs.summary.chisq,
+            aic=summary.aic,
+            bic_equiv=summary.BIC_equiv,
+            chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
             bmd_dist=arr,
@@ -133,6 +136,8 @@ class DichotomousModelResult(BaseModel):
 class DichotomousPgofResult(BaseModel):
     expected: List[float]
     residual: List[float]
+    eb_lower: List[float]
+    eb_upper: List[float]
     test_statistic: float
     p_value: float
     roi: float
@@ -143,8 +148,10 @@ class DichotomousPgofResult(BaseModel):
         gof = model.structs.gof
         roi = residual_of_interest(model.structs.summary.bmd, model.dataset.doses, gof.residual)
         return cls(
-            expected=gof.expected[: gof.n],
-            residual=gof.residual[: gof.n],
+            expected=gof.np_expected.tolist(),
+            residual=gof.np_residual.tolist(),
+            eb_lower=gof.np_ebLower.tolist(),
+            eb_upper=gof.np_ebUpper.tolist(),
             test_statistic=gof.test_statistic,
             p_value=gof.p_value,
             roi=roi,
@@ -272,6 +279,7 @@ class DichotomousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
+    has_completed: bool
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
     parameters: DichotomousParameters
@@ -280,15 +288,17 @@ class DichotomousResult(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> "DichotomousResult":
+        summary = model.structs.summary
         fit = DichotomousModelResult.from_model(model)
         gof = DichotomousPgofResult.from_model(model)
         parameters = DichotomousParameters.from_model(model)
         deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
-            bmdl=model.structs.summary.bmdl,
-            bmd=model.structs.summary.bmd,
-            bmdu=model.structs.summary.bmdu,
+            bmdl=summary.bmdl,
+            bmd=summary.bmd,
+            bmdu=summary.bmdu,
+            has_completed=summary.validResult,
             fit=fit,
             gof=gof,
             parameters=parameters,
