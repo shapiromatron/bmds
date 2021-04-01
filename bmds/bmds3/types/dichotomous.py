@@ -103,6 +103,7 @@ class DichotomousAnalysis(BaseModel):
 class DichotomousModelResult(BaseModel):
     loglikelihood: float
     aic: float
+    bic_equiv: float
     chisq: float
     model_df: float
     total_df: float
@@ -119,6 +120,7 @@ class DichotomousModelResult(BaseModel):
         return DichotomousModelResult(
             loglikelihood=result.max,
             aic=model.structs.summary.aic,
+            bic_equiv=model.structs.summary.BIC_equiv,
             chisq=model.structs.summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
