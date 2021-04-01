@@ -208,6 +208,8 @@ class ContinuousGof(BaseModel):
     calc_sd: List[float]
     obs_sd: List[float]
     residual: List[float]
+    eb_lower: List[float]
+    eb_upper: List[float]
     roi: float
 
     @classmethod
@@ -223,6 +225,8 @@ class ContinuousGof(BaseModel):
             calc_sd=gof.np_calcSD.tolist(),
             obs_sd=gof.np_obsSD.tolist(),
             residual=gof.np_res.tolist(),
+            eb_lower=gof.np_ebLower.tolist(),
+            eb_upper=gof.np_ebUpper.tolist(),
             roi=residual_of_interest(
                 model.structs.summary.bmd, model.dataset.doses, gof.np_res.tolist()
             ),
@@ -331,6 +335,7 @@ class ContinuousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
+    has_completed: bool
     fit: ContinuousModelResult
     gof: ContinuousGof
     parameters: ContinuousParameters
@@ -358,6 +363,7 @@ class ContinuousResult(BaseModel):
             bmdl=summary.bmdl,
             bmd=summary.bmd,
             bmdu=summary.bmdu,
+            has_completed=summary.validResult,
             fit=ContinuousModelResult.from_model(model),
             gof=ContinuousGof.from_model(model),
             parameters=params,
