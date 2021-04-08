@@ -10,7 +10,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 
 from ...constants import BOOL_ICON, Dtype
 from .. import constants
-from .common import NumpyFloatArray, inf_to_none, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .priors import ModelPriors
 from .structs import (
     BmdsResultsStruct,
@@ -151,7 +151,7 @@ class ContinuousModelResult(BaseModel):
             dist=result.dist,
             loglikelihood=result.max,
             aic=summary.aic,
-            bic_equiv=inf_to_none(summary.BIC_equiv),
+            bic_equiv=np.nan_to_num(summary.BIC_equiv),  # TODO remove?
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
