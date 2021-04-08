@@ -103,7 +103,7 @@ class DichotomousAnalysis(BaseModel):
 class DichotomousModelResult(BaseModel):
     loglikelihood: float
     aic: float
-    bic_equiv: Optional[float]
+    bic_equiv: float
     chisq: float
     model_df: float
     total_df: float
