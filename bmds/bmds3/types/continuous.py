@@ -262,9 +262,9 @@ class ContinuousDeviance(BaseModel):
         aod = model.structs.aod
         return cls(
             names=["A1", "A2", "A3", "fitted", "reduced"],
-            loglikelihoods=aod.np_LL.tolist(),
+            loglikelihoods=np.nan_to_num(aod.np_LL).tolist(),  # TODO - remove np.nan_to_num
             num_params=aod.np_nParms.tolist(),
-            aics=aod.np_AIC.tolist(),
+            aics=np.nan_to_num(aod.np_AIC).tolist(),  # TODO - remove np.nan_to_num
         )
 
     def tbl(self) -> str:
@@ -288,9 +288,9 @@ class ContinuousTests(BaseModel):
         tests = model.structs.aod.toi_struct
         return cls(
             names=["p_test1", "p_test2", "p_test3", "p_test4"],
-            ll_ratios=tests.np_llRatio.tolist(),
-            dfs=tests.np_DF.tolist(),
-            p_values=tests.np_pVal.tolist(),
+            ll_ratios=np.nan_to_num(tests.np_llRatio).tolist(),  # TODO - remove np.nan_to_num
+            dfs=np.nan_to_num(tests.np_DF).tolist(),  # TODO - remove np.nan_to_num
+            p_values=np.nan_to_num(tests.np_pVal).tolist(),  # TODO - remove np.nan_to_num
         )
 
     def tbl(self) -> str:
