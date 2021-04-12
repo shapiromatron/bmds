@@ -28,7 +28,7 @@ class TestNumpyFloatArray:
         for data in [[1], [1, 2, 3], [[1, 2], [3, 4]]]:
             model = ExampleModel(d=data)
             assert np.allclose(model.d, data)
-            assert model.d.dtype == np.float
+            assert model.d.dtype == float
             assert isinstance(model.d, np.ndarray)
 
     def test_failures(self):
