@@ -121,7 +121,7 @@ def test_bmds3_decreasing(negative_contds):
         # (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], -9999.0),  # TODO -fix
         # (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], -9999.0),  # TODO -fix
         (continuous.Power, [56.5, 52.7, 58.9], 3077.5),
-        (continuous.Hill, [59.5, 53.1, 66.7], 3082.1),
+        (continuous.Hill, [55.5, 51.6, 68.7], 3082.1),
         # (continuous.Linear, [35.3, 33.1, 37.7], 3115.3),
         # (continuous.Polynomial, [52.7, 46.7, 57.7], -9999.0),  # TODO -fix AIC
     ]:
@@ -147,7 +147,7 @@ def test_bmds3_variance(contds):
     result = model.execute()
     assert model.settings.disttype is DistType.normal_ncv
     assert len(result.parameters.values) == 5
-    assert pytest.approx(result.bmd, abs=1.0) == -9999  # fix?
+    assert pytest.approx(result.bmd, abs=1.0) == 13.3
 
     # TODO -fix - currently segfault
     # model = continuous.Power(contds, dict(disttype=DistType.log_normal))

@@ -4,7 +4,7 @@ from typing import List
 from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
-from ..types.structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
+from ..types.structs import DichotomousMAAnalysisStruct, MAResultsStruct, DichotomousMAResultStruct
 from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -28,18 +28,21 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             models=[model.structs.analysis for model in self.models]
         )
         ma_inputs_struct = self.models[0].structs.analysis
-        ma_result_struct = DichotomousMAResultStruct.from_python(
+        dich_ma_result_struct = DichotomousMAResultStruct.from_python(
             models=[model.structs.result for model in self.models]
         )
+        ma_result_struct = MAResultsStruct(n_models=len(self.models))
 
-        dll.estimate_ma_laplace_dicho(
+        dll.runBMDSDichoMA(
             ctypes.pointer(ma_analysis_struct),
             ctypes.pointer(ma_inputs_struct),
+            ctypes.pointer(dich_ma_result_struct),
             ctypes.pointer(ma_result_struct),
         )
 
+        model_results = [model.results for model in self.models]
         return DichotomousModelAverageResult.from_execution(
-            ma_analysis_struct, ma_result_struct, self.models
+            ma_analysis_struct, dich_ma_result_struct, model_results, ma_result_struct
         )
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":

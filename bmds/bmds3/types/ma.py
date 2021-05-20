@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 from ..models.dichotomous import BmdModelDichotomous
 from .continuous import NumpyFloatArray
-from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
+from .dichotomous import DichotomousResult
+from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct, MAResultsStruct
 
 
 class ModelAverageResult(BaseModel):
@@ -20,10 +21,10 @@ class DichotomousModelAverageResult(ModelAverageResult):
     bmd: float
     bmdl: float
     bmdu: float
-    bmd_quantile: List[float]
-    bmd_value: List[float]
-    priors: List[float]
-    posteriors: List[float]
+    bmd_quantile: NumpyFloatArray
+    bmd_value: NumpyFloatArray
+    priors: NumpyFloatArray
+    posteriors: NumpyFloatArray
     dr_x: NumpyFloatArray
     dr_y: NumpyFloatArray
 
@@ -32,7 +33,8 @@ class DichotomousModelAverageResult(ModelAverageResult):
         cls,
         inputs: DichotomousMAAnalysisStruct,
         outputs: DichotomousMAResultStruct,
-        models: List[BmdModelDichotomous],
+        model_results: List[DichotomousResult],
+        ma_result_struct: MAResultsStruct,
     ):
         arr = np.array(outputs.bmd_dist[: outputs.dist_numE * 2]).reshape(2, outputs.dist_numE).T
         arr = arr[np.isfinite(arr[:, 0])]
@@ -40,24 +42,21 @@ class DichotomousModelAverageResult(ModelAverageResult):
 
         priors = inputs.modelPriors[: inputs.nmodels]
         posteriors = np.array(outputs.post_probs[: outputs.nmodels])
-        dr_x = models[0].results.plotting.dr_x
+        values = np.array([result.plotting.dr_y for result in model_results])
 
-        values = np.array([m.results.plotting.dr_y for m in models])
+        dr_x = model_results[0].plotting.dr_x
         dr_y = values.T.dot(posteriors)
 
-        values = np.array([[m.results.bmdl, m.results.bmd, m.results.bmdu] for m in models])
-        bmds = values.T.dot(posteriors)
-
         return cls(
-            bmdl=bmds[0],
-            bmd=bmds[1],
-            bmdu=bmds[2],
-            bmd_quantile=arr.T[0, :].tolist(),
-            bmd_value=arr.T[1, :].tolist(),
+            bmdl=ma_result_struct.bmdl_ma,
+            bmd=ma_result_struct.bmd_ma,
+            bmdu=ma_result_struct.bmdu_ma,
+            bmd_quantile=arr.T[0, :],
+            bmd_value=arr.T[1, :],
             priors=priors,
-            posteriors=posteriors.tolist(),
+            posteriors=posteriors,
             dr_x=dr_x,
-            dr_y=dr_y.tolist(),
+            dr_y=dr_y,
         )
 
     def dict(self, **kw) -> Dict:

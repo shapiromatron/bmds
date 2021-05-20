@@ -312,6 +312,38 @@ class DichotomousMAResultStruct(ctypes.Structure):
         )
 
 
+class MAResultsStruct(ctypes.Structure):
+    _fields_ = [
+        ("bmd_ma", ctypes.c_double),
+        ("bmdl_ma", ctypes.c_double),
+        ("bmdu_ma", ctypes.c_double),
+        ("bmd", ctypes.POINTER(ctypes.c_double)),
+        ("bmdl", ctypes.POINTER(ctypes.c_double)),
+        ("bmdu", ctypes.POINTER(ctypes.c_double)),
+    ]
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            bmd_ma: {self.bmd_ma}
+            bmdl_ma: {self.bmdl_ma}
+            bmdu_ma: {self.bmdu_ma}
+            bmd: {self.np_bmd.tolist()}
+            bmdl: {self.np_bmdl.tolist()}
+            bmdu: {self.np_bmdu.tolist()}
+            """
+        )
+
+    def __init__(self, n_models: int):
+        super().__init__()
+        self.np_bmd = np.zeros(n_models, dtype=np.float64)
+        self.np_bmdl = np.zeros(n_models, dtype=np.float64)
+        self.np_bmdu = np.zeros(n_models, dtype=np.float64)
+        self.bmd = np.ctypeslib.as_ctypes(self.np_bmd)
+        self.bmdl = np.ctypeslib.as_ctypes(self.np_bmdl)
+        self.bmdu = np.ctypeslib.as_ctypes(self.np_bmdu)
+
+
 # CONTINUOUS MODELS
 # -----------------
 
