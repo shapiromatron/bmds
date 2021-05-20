@@ -1,12 +1,10 @@
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
 from pydantic import BaseModel
 
-from ..models.dichotomous import BmdModelDichotomous
 from .continuous import NumpyFloatArray
-from .dichotomous import DichotomousResult
-from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct, MAResultsStruct
+from .structs import DichotomousMAStructs
 
 
 class ModelAverageResult(BaseModel):
@@ -29,28 +27,23 @@ class DichotomousModelAverageResult(ModelAverageResult):
     dr_y: NumpyFloatArray
 
     @classmethod
-    def from_execution(
-        cls,
-        inputs: DichotomousMAAnalysisStruct,
-        outputs: DichotomousMAResultStruct,
-        model_results: List[DichotomousResult],
-        ma_result_struct: MAResultsStruct,
-    ):
-        arr = np.array(outputs.bmd_dist[: outputs.dist_numE * 2]).reshape(2, outputs.dist_numE).T
+    def from_structs(cls, structs: DichotomousMAStructs, model_results):
+        # only keep positive finite values
+        arr = structs.dich_result.np_bmd_dist.reshape(2, structs.dich_result.dist_numE).T
         arr = arr[np.isfinite(arr[:, 0])]
         arr = arr[arr[:, 0] > 0]
 
-        priors = inputs.modelPriors[: inputs.nmodels]
-        posteriors = np.array(outputs.post_probs[: outputs.nmodels])
+        # calculate dr_y for model averaging
+        priors = structs.analysis.np_modelPriors
+        posteriors = structs.dich_result.np_post_probs
         values = np.array([result.plotting.dr_y for result in model_results])
-
         dr_x = model_results[0].plotting.dr_x
         dr_y = values.T.dot(posteriors)
 
         return cls(
-            bmdl=ma_result_struct.bmdl_ma,
-            bmd=ma_result_struct.bmd_ma,
-            bmdu=ma_result_struct.bmdu_ma,
+            bmdl=structs.result.bmdl_ma,
+            bmd=structs.result.bmd_ma,
+            bmdu=structs.result.bmdu_ma,
             bmd_quantile=arr.T[0, :],
             bmd_value=arr.T[1, :],
             priors=priors,

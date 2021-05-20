@@ -263,8 +263,8 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    @classmethod
-    def from_python(cls, models: List[DichotomousAnalysisStruct]):
+    def __init__(self, models: List[DichotomousAnalysisStruct]):
+        super().__init__()
 
         # list of floats
         priors = [
@@ -278,15 +278,20 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
             ctypes.POINTER(ctypes.c_double),
         )
 
-        return cls(
-            nmodels=ctypes.c_int(len(models)),
-            priors=priors2,
-            nparms=list_t_c([model.parms for model in models], ctypes.c_int),
-            actual_parms=list_t_c([model.parms for model in models], ctypes.c_int),
-            prior_cols=list_t_c([model.prior_cols for model in models], ctypes.c_int),
-            models=list_t_c([model.model for model in models], ctypes.c_int),
-            modelPriors=list_t_c([1 / len(models)] * len(models), ctypes.c_double),
-        )
+        self.nmodels = len(models)
+        self.priors = priors2
+
+        self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
+        self.np_actual_parms = self.np_nparms.copy()
+        self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
+        self.np_models = np.array([model.model for model in models], dtype=np.int32)
+        self.np_modelPriors = np.full(len(models), 1 / len(models), dtype=np.float64)
+
+        self.nparms = np.ctypeslib.as_ctypes(self.np_nparms)
+        self.actual_parms = np.ctypeslib.as_ctypes(self.np_actual_parms)
+        self.prior_cols = np.ctypeslib.as_ctypes(self.np_prior_cols)
+        self.models = np.ctypeslib.as_ctypes(self.np_models)
+        self.modelPriors = np.ctypeslib.as_ctypes(self.np_modelPriors)
 
 
 class DichotomousMAResultStruct(ctypes.Structure):
@@ -298,17 +303,27 @@ class DichotomousMAResultStruct(ctypes.Structure):
         ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    @classmethod
-    def from_python(cls, models: List[DichotomousModelResultStruct]):
-        _results = [ctypes.pointer(model) for model in models]
-        nmodels = len(models)
-        dist_numE = 200
-        return DichotomousMAResultStruct(
-            nmodels=nmodels,
-            models=list_t_c(_results, ctypes.POINTER(DichotomousModelResultStruct)),
-            dist_numE=ctypes.c_int(dist_numE),
-            post_probs=(ctypes.c_double * nmodels)(),
-            bmd_dist=(ctypes.c_double * (dist_numE * 2))(),
+    def __init__(self, models: List[DichotomousModelResultStruct]):
+        self.nmodels = len(models)
+        self.models = list_t_c(
+            [ctypes.pointer(model) for model in models],
+            ctypes.POINTER(DichotomousModelResultStruct),
+        )
+        self.dist_numE = 200
+        self.np_post_probs = np.zeros(self.nmodels, dtype=np.float64)
+        self.post_probs = np.ctypeslib.as_ctypes(self.np_post_probs)
+        self.np_bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
+        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            nmodels: {self.nmodels}
+            models: {self.models}
+            dist_numE: {self.dist_numE}
+            post_probs: {self.np_post_probs}
+            bmd_dist: {self.np_bmd_dist}
+            """
         )
 
 
@@ -328,9 +343,9 @@ class MAResultsStruct(ctypes.Structure):
             bmd_ma: {self.bmd_ma}
             bmdl_ma: {self.bmdl_ma}
             bmdu_ma: {self.bmdu_ma}
-            bmd: {self.np_bmd.tolist()}
-            bmdl: {self.np_bmdl.tolist()}
-            bmdu: {self.np_bmdu.tolist()}
+            bmd: {self.np_bmd}
+            bmdl: {self.np_bmdl}
+            bmdu: {self.np_bmdu}
             """
         )
 
@@ -342,6 +357,39 @@ class MAResultsStruct(ctypes.Structure):
         self.bmd = np.ctypeslib.as_ctypes(self.np_bmd)
         self.bmdl = np.ctypeslib.as_ctypes(self.np_bmdl)
         self.bmdu = np.ctypeslib.as_ctypes(self.np_bmdu)
+
+
+class DichotomousMAStructs(NamedTuple):
+    analysis: DichotomousMAAnalysisStruct
+    inputs: DichotomousAnalysisStruct
+    dich_result: DichotomousMAResultStruct
+    result: MAResultsStruct
+
+    @classmethod
+    def from_session(cls, models) -> "DichotomousMAStructs":
+        return cls(
+            analysis=DichotomousMAAnalysisStruct([model.structs.analysis for model in models]),
+            inputs=models[0].structs.analysis,
+            dich_result=DichotomousMAResultStruct([model.structs.result for model in models]),
+            result=MAResultsStruct(n_models=len(models)),
+        )
+
+    def __str__(self):
+        return dedent(
+            f"""
+            MA Analysis:
+            {self.analysis}
+
+            Analysis:
+            {self.inputs}
+
+            Dichotomous Result:
+            {self.dich_result}
+
+            Result:
+            {self.result}
+            """
+        )
 
 
 # CONTINUOUS MODELS
