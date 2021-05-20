@@ -19,8 +19,7 @@ class DichotomousModelAverageResult(ModelAverageResult):
     bmd: float
     bmdl: float
     bmdu: float
-    bmd_quantile: NumpyFloatArray
-    bmd_value: NumpyFloatArray
+    bmd_dist: NumpyFloatArray
     priors: NumpyFloatArray
     posteriors: NumpyFloatArray
     dr_x: NumpyFloatArray
@@ -44,8 +43,7 @@ class DichotomousModelAverageResult(ModelAverageResult):
             bmdl=structs.result.bmdl_ma,
             bmd=structs.result.bmd_ma,
             bmdu=structs.result.bmdu_ma,
-            bmd_quantile=arr.T[0, :],
-            bmd_value=arr.T[1, :],
+            bmd_dist=arr.T,
             priors=priors,
             posteriors=posteriors,
             dr_x=dr_x,
