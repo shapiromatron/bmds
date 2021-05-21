@@ -5,7 +5,7 @@ import os
 import pytest
 
 import bmds
-from bmds.bmds3.constants import DistType
+from bmds.bmds3.constants import ContinuousModelIds, DistType
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
@@ -205,3 +205,20 @@ def test_bmds3_continuous_individual_session(cidataset):
     d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))
+
+
+@pytest.mark.skip  # TODO - after update to dll this test should succeed
+def test_decreasing_lognormal(negative_contds):
+    """
+    When using the lognormal distribution type, only exponential models shoudl run;
+    all others should have the `has_completed` False
+    """
+    session = bmds.session.Bmds330(dataset=negative_contds)
+    session.add_default_models(global_settings=dict(disttype=DistType.log_normal))
+    session.execute()
+    for model in session.models:
+        should_complete = model.bmd_model_class.id in [
+            ContinuousModelIds.c_exp_m3,
+            ContinuousModelIds.c_exp_m5,
+        ]
+        assert model.results.has_completed is should_complete
