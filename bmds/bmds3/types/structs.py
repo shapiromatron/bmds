@@ -293,6 +293,19 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         self.models = np.ctypeslib.as_ctypes(self.np_models)
         self.modelPriors = np.ctypeslib.as_ctypes(self.np_modelPriors)
 
+    def __str__(self) -> str:
+        return dedent(
+            f"""
+            nmodels: {self.nmodels}
+            priors: {self.priors}
+            nparms: {self.np_nparms}
+            actual_parms: {self.np_actual_parms}
+            prior_cols: {self.np_prior_cols}
+            models: {self.np_models}
+            modelPriors: {self.np_modelPriors}
+            """
+        )
+
 
 class DichotomousMAResultStruct(ctypes.Structure):
     _fields_ = [
