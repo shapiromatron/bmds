@@ -167,6 +167,12 @@ class Prior(BaseModel):
     min_value: float
     max_value: float
 
+    def tbl_str_hdr(self) -> str:
+        return "| param | type       |    initial |      stdev |        min |        max |"
+
+    def tbl_str(self) -> str:
+        return f"| {self.name:5} | {self.type.name:10} | {self.initial_value:10.3g} | {self.stdev:10.3g} | {self.min_value:10.3g} | {self.max_value:10.3g} |"
+
     def numeric_list(self) -> List[float]:
         return list(self.dict(exclude={"name"}).values())
 
@@ -193,6 +199,24 @@ class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: List[Prior]  # priors for main model
     variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
+
+    def __str__(self):
+        ps = [self.priors[0].tbl_str_hdr()]
+        ps.extend([p.tbl_str() for p in self.priors])
+        ps = "\n".join(ps)
+
+        vps = ["<none>"]
+        if self.variance_priors:
+            vps = [self.variance_priors[0].tbl_str_hdr()]
+            vps.extend([p.tbl_str() for p in self.variance_priors])
+        vps = "\n".join(vps)
+
+        return f"""
+{self.prior_class.name} <{self.prior_class.value}>
+Priors:
+{ps}
+Variance priors:
+{vps}"""
 
     def to_table(self):
         raise NotImplementedError()

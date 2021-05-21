@@ -36,8 +36,11 @@ def get_default_priors(
 
     model_priors = get_continuous_prior(model_class, prior_class)
 
-    # exp5
-    if model_class == ContinuousModelChoices.c_exp_m5.value:
+    # exp3/exp5
+    if model_class in [
+        ContinuousModelChoices.c_exp_m3.value,
+        ContinuousModelChoices.c_exp_m5.value,
+    ]:
         if settings.is_increasing is True:
             model_priors.priors[2].min_value = 0
             model_priors.priors[2].max_value = 18

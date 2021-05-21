@@ -31,6 +31,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
     ]
 
     def __str__(self) -> str:
+        n_prior = self.parms * self.prior_cols
         return dedent(
             f"""
             model: {self.model}
@@ -38,7 +39,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             Y: {self.Y[:self.n]}
             doses: {self.doses[:self.n]}
             n_group: {self.n_group[:self.n]}
-            prior: {self.prior[:self.parms*self.prior_cols]}
+            prior<{n_prior}>: {self.prior[:n_prior]}
             BMD_type: {self.BMD_type}
             BMR: {self.BMR}
             alpha: {self.alpha}
@@ -444,6 +445,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
     def __str__(self) -> str:
         sd = self.sd[: self.n] if self.suff_stat else []
         n_group = self.n_group[: self.n] if self.suff_stat else []
+        n_prior = self.parms * self.prior_cols
         return dedent(
             f"""
             model: {self.model}
@@ -453,7 +455,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             doses: {self.doses[:self.n]}
             sd: {sd}
             n_group: {n_group}
-            prior: {self.prior[:self.parms*self.prior_cols]}
+            prior<{n_prior}>: {self.prior[:n_prior]}
             BMD_type: {self.BMD_type}
             isIncreasing: {self.isIncreasing}
             BMR: {self.BMR}

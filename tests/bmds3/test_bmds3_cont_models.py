@@ -1,6 +1,7 @@
 import json
 import os
 
+# import numpy as np
 import pytest
 
 import bmds
@@ -98,41 +99,41 @@ def test_bmds3_increasing(contds):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        # (continuous.ExponentialM3, [52.867, 50.457, 55.501], 3181.6),
-        # (continuous.ExponentialM5, [28.446, 27.025, 30.004], 3070.6),
-        (continuous.Power, [25.85, 24.462, 29.223], 3065.8),
-        (continuous.Hill, [29.639, 25.84, 33.288], 3072.8),
-        # (continuous.Linear, [70.738, 67.061, 74.722], 11896.4),
-        # (continuous.Polynomial, [65.872, 65.083, 69.618], -9999.0),  # TODO - fix AIC
+        (continuous.ExponentialM3, [157.492, 154.493, 169.93], 3842.8),
+        # (continuous.ExponentialM5, [nan, nan, nan], 3069.8),
+        (continuous.Power, [25.852, 24.4, 29.599], 3067.8),
+        (continuous.Hill, [29.25, 25.893, 33.209], 3071.3),
+        (continuous.Linear, [25.856, 24.388, 27.451], 3065.8),
+        (continuous.Polynomial, [25.55, 23.836, 27.57], 3068.0),
     ]:
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)}),"
         # print(res)
-        assert pytest.approx(bmd_values, abs=1.0) == actual, Model.__name__
-        assert pytest.approx(aic, abs=5.0) == result.fit.aic, Model.__name__
+        assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
+        assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_decreasing(negative_contds):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
-        # (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], -9999.0),  # TODO -fix
-        # (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], -9999.0),  # TODO -fix
-        (continuous.Power, [56.5, 52.7, 58.9], 3077.5),
-        (continuous.Hill, [55.5, 51.6, 68.7], 3082.1),
-        # (continuous.Linear, [35.3, 33.1, 37.7], 3115.3),
-        # (continuous.Polynomial, [52.7, 46.7, 57.7], -9999.0),  # TODO -fix AIC
+        # (continuous.ExponentialM3, [nan, nan, nan], 4296.0),
+        # (continuous.ExponentialM5, [nan, nan, nan], 4296.3),
+        (continuous.Power, [56.5, 54.3, 59.7], 3077.5),
+        # (continuous.Hill, [nan, nan, nan], 3925.8),
+        (continuous.Linear, [35.3, 33.1, 37.7], 3115.3),
+        (continuous.Polynomial, [51.5, 47.3, 56.5], 3074.7),
     ]:
-        result = Model(negative_contds).execute()
+        model = Model(negative_contds)
+        result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # import numpy as np
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 1).tolist()}, {round(result.fit.aic, 1)})"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 1).tolist()}, {round(result.fit.aic, 1)}),"
         # print(res)
-        assert pytest.approx(bmd_values, abs=1.0) == actual, Model.__name__
-        assert pytest.approx(aic, abs=5.0) == result.fit.aic, Model.__name__
+        assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
+        assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
@@ -161,23 +162,19 @@ def test_bmds3_variance(contds):
 def test_bmds3_continuous_polynomial(contds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        # (1, [25.746, 24.353, 27.508], 3065.9),  # TODO - totally different answer linux vs mac, why
-        # (2, [65.872, 65.083, 69.618], -9999.0),
-        # (3, [59.401, 57.257, 62.877], 11686.3),
+        (1, [25.856, 24.388, 27.451], 3065.8),
+        (2, [25.55, 23.836, 27.57], 3068.0),
+        (3, [25.681, 25.62, 26.083], 3070.1),
         # (4, [-9999.0, -9999.0, -9999.0], -9999.0),
-        # (5, [-9999.0, -9999.0, -9999.0], -9999.0),
-        # (6, [-9999.0, -9999.0, -9999.0], -9999.0),
-        # (7, [-9999.0, -9999.0, -9999.0], -9999.0),
-        # (8, [-9999.0, -9999.0, -9999.0], -9999.0),
     ]:
         settings = ContinuousModelSettings(degree=degree)
         result = continuous.Polynomial(contds, settings).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})"
+        # res = f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)}),"
         # print(res)
-        assert pytest.approx(actual, abs=1.0) == bmd_values, degree
-        assert pytest.approx(aic, abs=5.0) == result.fit.aic, degree
+        assert pytest.approx(actual, rel=0.05) == bmd_values, degree
+        assert pytest.approx(aic, rel=0.01) == result.fit.aic, degree
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
