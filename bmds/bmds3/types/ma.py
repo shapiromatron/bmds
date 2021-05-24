@@ -16,9 +16,12 @@ class DichotomousModelAverageResult(ModelAverageResult):
     Model average fit
     """
 
-    bmd: float
     bmdl: float
+    bmd: float
     bmdu: float
+    bmdl_y: float
+    bmd_y: float
+    bmdu_y: float
     bmd_dist: NumpyFloatArray
     priors: NumpyFloatArray
     posteriors: NumpyFloatArray
@@ -38,11 +41,15 @@ class DichotomousModelAverageResult(ModelAverageResult):
         values = np.array([result.plotting.dr_y for result in model_results])
         dr_x = model_results[0].plotting.dr_x
         dr_y = values.T.dot(posteriors)
-
+        bmds = [structs.result.bmdl_ma, structs.result.bmd_ma, structs.result.bmdu_ma]
+        bmds_ys = np.interp(bmds, dr_x, dr_y)
         return cls(
-            bmdl=structs.result.bmdl_ma,
-            bmd=structs.result.bmd_ma,
-            bmdu=structs.result.bmdu_ma,
+            bmdl=bmds[0],
+            bmd=bmds[1],
+            bmdu=bmds[2],
+            bmdl_y=bmds_ys[0],
+            bmd_y=bmds_ys[1],
+            bmdu_y=bmds_ys[2],
             bmd_dist=arr.T,
             priors=priors,
             posteriors=posteriors,
