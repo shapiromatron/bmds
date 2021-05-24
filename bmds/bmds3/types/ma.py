@@ -1,11 +1,10 @@
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
 from pydantic import BaseModel
 
-from ..models.dichotomous import BmdModelDichotomous
 from .continuous import NumpyFloatArray
-from .structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
+from .structs import DichotomousMAStructs
 
 
 class ModelAverageResult(BaseModel):
@@ -20,44 +19,35 @@ class DichotomousModelAverageResult(ModelAverageResult):
     bmd: float
     bmdl: float
     bmdu: float
-    bmd_quantile: List[float]
-    bmd_value: List[float]
-    priors: List[float]
-    posteriors: List[float]
+    bmd_dist: NumpyFloatArray
+    priors: NumpyFloatArray
+    posteriors: NumpyFloatArray
     dr_x: NumpyFloatArray
     dr_y: NumpyFloatArray
 
     @classmethod
-    def from_execution(
-        cls,
-        inputs: DichotomousMAAnalysisStruct,
-        outputs: DichotomousMAResultStruct,
-        models: List[BmdModelDichotomous],
-    ):
-        arr = np.array(outputs.bmd_dist[: outputs.dist_numE * 2]).reshape(2, outputs.dist_numE).T
+    def from_structs(cls, structs: DichotomousMAStructs, model_results):
+        # only keep positive finite values
+        arr = structs.dich_result.np_bmd_dist.reshape(2, structs.dich_result.dist_numE).T
         arr = arr[np.isfinite(arr[:, 0])]
         arr = arr[arr[:, 0] > 0]
 
-        priors = inputs.modelPriors[: inputs.nmodels]
-        posteriors = np.array(outputs.post_probs[: outputs.nmodels])
-        dr_x = models[0].results.plotting.dr_x
-
-        values = np.array([m.results.plotting.dr_y for m in models])
+        # calculate dr_y for model averaging
+        priors = structs.analysis.np_modelPriors
+        posteriors = structs.dich_result.np_post_probs
+        values = np.array([result.plotting.dr_y for result in model_results])
+        dr_x = model_results[0].plotting.dr_x
         dr_y = values.T.dot(posteriors)
 
-        values = np.array([[m.results.bmdl, m.results.bmd, m.results.bmdu] for m in models])
-        bmds = values.T.dot(posteriors)
-
         return cls(
-            bmdl=bmds[0],
-            bmd=bmds[1],
-            bmdu=bmds[2],
-            bmd_quantile=arr.T[0, :].tolist(),
-            bmd_value=arr.T[1, :].tolist(),
+            bmdl=structs.result.bmdl_ma,
+            bmd=structs.result.bmd_ma,
+            bmdu=structs.result.bmdu_ma,
+            bmd_dist=arr.T,
             priors=priors,
-            posteriors=posteriors.tolist(),
+            posteriors=posteriors,
             dr_x=dr_x,
-            dr_y=dr_y.tolist(),
+            dr_y=dr_y,
         )
 
     def dict(self, **kw) -> Dict:

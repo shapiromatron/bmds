@@ -90,7 +90,7 @@ class BmdModel:
 
     @property
     def has_results(self) -> bool:
-        return self.results is not None
+        return self.results is not None and self.results.has_completed is True
 
     def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
