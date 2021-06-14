@@ -221,6 +221,10 @@ class BmdsSession:
         reporting.write_dataset(report, self.dataset, header_level + 1)
         reporting.write_summary_table(report, self, header_level + 1)
         reporting.write_models(report, self, header_level + 1)
+        if self.model_average:
+            reporting.write_model_average_table(report, self, header_level + 1)
+            reporting.write_summary_table(report, self, header_level + 1)
+            reporting.plot_bma(report, self)
 
         return report.document
 
