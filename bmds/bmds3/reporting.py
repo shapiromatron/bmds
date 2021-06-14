@@ -1,10 +1,10 @@
 import numpy as np
 
 from ..constants import Dtype
-from .constants import _pc_name_mapping
 from ..datasets.base import DatasetBase
 from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
+from .constants import _pc_name_mapping
 
 
 def write_dataset(report: Report, dataset: DatasetBase, header_level: int):
