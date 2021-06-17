@@ -99,12 +99,12 @@ def test_bmds3_increasing(contds):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [157.492, 154.493, 169.93], 3842.8),
-        # (continuous.ExponentialM5, [nan, nan, nan], 3069.8),
-        (continuous.Power, [25.852, 24.4, 29.599], 3067.8),
-        (continuous.Hill, [29.25, 25.893, 33.209], 3071.3),
-        (continuous.Linear, [25.856, 24.388, 27.451], 3065.8),
-        (continuous.Polynomial, [25.55, 23.836, 27.57], 3068.0),
+        # (continuous.ExponentialM3, [nan, nan, nan], 3974.4),
+        (continuous.ExponentialM5, [27.574, 26.216, 29.397], 3072.2),
+        (continuous.Power, [25.852, 24.4, 29.599], 3069.8),
+        (continuous.Hill, [29.25, 25.893, 33.209], 3073.3),
+        (continuous.Linear, [25.856, 24.388, 27.451], 3067.8),
+        (continuous.Polynomial, [25.55, 23.836, 27.57], 3070.0),
     ]:
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
