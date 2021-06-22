@@ -63,6 +63,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
+        ("bmd", ctypes.c_double),  # the central estimate of the BMD
     ]
 
     def __init__(self, *args, **kwargs):
@@ -88,6 +89,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
             model_df: {self.model_df}
             total_df: {self.total_df}
             bmd_dist: {self.bmd_dist[:self.dist_numE*2]}
+            bmd: {self.bmd}
             """
         )
 
@@ -480,8 +482,9 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
         ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-        ("model_df", ctypes.c_double),
-        ("total_df", ctypes.c_double),
+        ("model_df", ctypes.c_double),  # Used model degrees of freedom
+        ("total_df", ctypes.c_double),  # Total degrees of freedom
+        ("bmd", ctypes.c_double),  # The bmd at the maximum
         ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
     ]
 
@@ -511,6 +514,7 @@ class ContinuousModelResultStruct(ctypes.Structure):
             dist_numE: {self.dist_numE}
             model_df: {self.model_df}
             total_df: {self.total_df}
+            bmd: {self.bmd}
             bmd_dist: {self.bmd_dist[:self.dist_numE*2]}
             """
         )
