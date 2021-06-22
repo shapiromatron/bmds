@@ -141,7 +141,7 @@ class BmdModelContinuous(BmdModel):
             ctypes.pointer(structs.summary),
             ctypes.pointer(structs.aod),
             ctypes.pointer(structs.gof),
-            ctypes.c_bool(False),
+            ctypes.pointer(ctypes.c_bool(False)),
         )
         self.results = ContinuousResult.from_model(self)
         return self.results
