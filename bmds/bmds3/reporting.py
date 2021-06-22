@@ -4,6 +4,7 @@ from ..constants import Dtype
 from ..datasets.base import DatasetBase
 from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
+from .constants import _pc_name_mapping
 
 
 def write_dataset(report: Report, dataset: DatasetBase, header_level: int):
@@ -67,48 +68,130 @@ def write_summary_table(report: Report, session, header_level: int):
     # TODO - dose units text
     # TODO - summary notes
     # TODO - add pvalue; for dichotomous it's `model.results.gof.p_value`, for continuous?
+    model_type = _pc_name_mapping[session.models[0].settings.priors.prior_class]
+    if "Frequentist" in model_type:
+        write_frequentist_table(report, session)
+    if "Bayesian" in model_type:
+        write_bayesian_table(report, session)
+
+
+def write_frequentist_table(report, session):
     styles = report.styles
-    report.document.add_paragraph("Summary table", styles.header_2)
+    report.document.add_paragraph("Frequentist Model Results", styles.header_2)
+    report.document.add_paragraph()
     hdr = report.styles.tbl_header
     body = report.styles.tbl_body
 
     footnotes = TableFootnote()
-    tbl = report.document.add_table(len(session.models) + 2, 6, style=styles.table)
+    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
 
     write_cell(tbl.cell(0, 0), "Model", style=hdr)
-    write_cell(tbl.cell(0, 1), "Goodness of fit", style=hdr)
-    write_cell(tbl.cell(1, 1), "", style=hdr)  # set style
-    write_cell(tbl.cell(1, 2), "AIC", style=hdr)
-    write_cell(tbl.cell(0, 3), "BMD", style=hdr)
-    write_cell(tbl.cell(0, 4), "BMDL", style=hdr)
-    write_cell(tbl.cell(0, 5), "Comments", style=hdr)
-
-    p = tbl.cell(1, 1).paragraphs[0]
-    p.add_run("p").italic = True
-    p.add_run("-value")
-
-    # merge header columns
-    tbl.cell(0, 0).merge(tbl.cell(1, 0))
-    tbl.cell(0, 1).merge(tbl.cell(0, 2))
-    tbl.cell(0, 3).merge(tbl.cell(1, 3))
-    tbl.cell(0, 4).merge(tbl.cell(1, 4))
-    tbl.cell(0, 5).merge(tbl.cell(1, 5))
+    write_cell(tbl.cell(0, 1), "BMDL", style=hdr)
+    write_cell(tbl.cell(0, 2), "BMD", style=hdr)
+    write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
+    write_cell(tbl.cell(0, 4), "P value", style=hdr)
+    write_cell(tbl.cell(0, 5), "AIC", style=hdr)
+    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
 
     # write body
-    for i, model in enumerate(session.models):
-        idx = i + 2
+    for idx, model in enumerate(session.models, start=1):
         write_cell(tbl.cell(idx, 0), model.name(), body)
-        write_cell(tbl.cell(idx, 1), "-999", body)
-        write_cell(tbl.cell(idx, 2), model.results.fit.aic, body)
-        write_cell(tbl.cell(idx, 3), model.results.bmd, body)
-        write_cell(tbl.cell(idx, 4), model.results.bmdl, body)
-
-    # write comments
-    write_cell(tbl.cell(2, 5), "Comments...", body)
-    tbl.cell(2, 5).merge(tbl.cell(len(session.models) + 1, 5))
+        write_cell(tbl.cell(idx, 1), model.results.bmdl, body)
+        write_cell(tbl.cell(idx, 2), model.results.bmd, body)
+        write_cell(tbl.cell(idx, 3), model.results.bmdu, body)
+        write_cell(tbl.cell(idx, 4), "-", body)
+        write_cell(tbl.cell(idx, 5), model.results.fit.aic, body)
+        write_cell(tbl.cell(idx, 6), model.results.gof.roi, body)
+        write_cell(tbl.cell(idx, 7), model.results.gof.residual[0], body)
+        write_cell(tbl.cell(idx, 8), "", body)
 
     # set column width
-    widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 1.75])
+    widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
+    widths = widths / (widths.sum() / report.styles.portrait_width)
+    for width, col in zip(widths, tbl.columns):
+        set_column_width(col, width)
+
+    # write footnote
+    if len(footnotes) > 0:
+        footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
+
+
+def write_model_average_table(report: Report, session, header_level: int):
+    styles = report.styles
+    report.document.add_paragraph("Model Average Summary", styles.header_2)
+    hdr = styles.tbl_header
+    body = styles.tbl_body
+    tbl = report.document.add_table(2, 3, style=styles.table)
+
+    write_cell(tbl.cell(0, 0), "BMDL", hdr)
+    write_cell(tbl.cell(0, 1), "BMD", hdr)
+    write_cell(tbl.cell(0, 2), "BMDU", hdr)
+
+    write_cell(tbl.cell(1, 0), session.model_average.results.bmdl, body)
+    write_cell(tbl.cell(1, 1), session.model_average.results.bmd, body)
+    write_cell(tbl.cell(1, 2), session.model_average.results.bmdu, body)
+
+
+def plot_bma(report, session):
+    # placeholder for bma plot
+    styles = report.styles
+    report.document.add_paragraph("Model Average Plot", styles.header_2)
+
+
+def write_bayesian_table(report, session):
+    styles = report.styles
+    report.document.add_paragraph("Bayesian Model Results", styles.header_2)
+    report.document.add_paragraph()
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    footnotes = TableFootnote()
+    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
+
+    write_cell(tbl.cell(0, 0), "Model", style=hdr)
+    write_cell(tbl.cell(0, 1), "Prior Weights", style=hdr)
+    write_cell(tbl.cell(0, 2), "Posterior Weights", style=hdr)
+    write_cell(tbl.cell(0, 3), "BMDL", style=hdr)
+    write_cell(tbl.cell(0, 4), "BMD", style=hdr)
+    write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
+    write_cell(tbl.cell(0, 6), "P Value", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
+
+    ma = session.model_average
+    # write body
+    for idx, model in enumerate(session.models, start=1):
+        write_cell(tbl.cell(idx, 0), model.name(), body)
+        if ma:
+            write_cell(tbl.cell(idx, 1), ma.results.priors[idx - 1], body)
+            write_cell(tbl.cell(idx, 2), ma.results.posteriors[idx - 1], body)
+        else:
+            write_cell(tbl.cell(idx, 1), "-", body)
+            write_cell(tbl.cell(idx, 2), "-", body)
+        write_cell(tbl.cell(idx, 3), model.results.bmdl, body)
+        write_cell(tbl.cell(idx, 4), model.results.bmd, body)
+        write_cell(tbl.cell(idx, 5), model.results.bmdu, body)
+        write_cell(tbl.cell(idx, 6), "-", body)
+        write_cell(tbl.cell(idx, 7), model.results.gof.roi, body)
+        write_cell(tbl.cell(idx, 8), model.results.gof.residual[0], body)
+
+    if ma:
+        idx = len(tbl.rows)
+        tbl.add_row()
+        write_cell(tbl.cell(idx, 0), "Model Average", body)
+        write_cell(tbl.cell(idx, 1), "-", body)
+        write_cell(tbl.cell(idx, 2), "-", body)
+        write_cell(tbl.cell(idx, 3), ma.results.bmdl, body)
+        write_cell(tbl.cell(idx, 4), ma.results.bmd, body)
+        write_cell(tbl.cell(idx, 5), ma.results.bmdu, body)
+        write_cell(tbl.cell(idx, 6), "-", body)
+        write_cell(tbl.cell(idx, 7), "-", body)
+        write_cell(tbl.cell(idx, 8), "-", body)
+
+    # set column width
+    widths = np.array([1.0, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 2.5])
     widths = widths / (widths.sum() / report.styles.portrait_width)
     for width, col in zip(widths, tbl.columns):
         set_column_width(col, width)
