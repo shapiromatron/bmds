@@ -160,7 +160,7 @@ def write_bayesian_table(report, session):
     body = report.styles.tbl_body
 
     footnotes = TableFootnote()
-    tbl = report.document.add_table(len(session.models) + 2, 9, style=styles.table)
+    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
 
     write_cell(tbl.cell(0, 0), "Model", style=hdr)
     write_cell(tbl.cell(0, 1), "Prior Weights", style=hdr)
@@ -169,28 +169,16 @@ def write_bayesian_table(report, session):
     write_cell(tbl.cell(0, 4), "BMD", style=hdr)
     write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
     write_cell(tbl.cell(0, 6), "P Value", style=hdr)
-    write_cell(tbl.cell(0, 8), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
-
-    # merge header columns
-    tbl.cell(0, 0).merge(tbl.cell(1, 0))
-    tbl.cell(0, 1).merge(tbl.cell(1, 1))
-    tbl.cell(0, 2).merge(tbl.cell(1, 2))
-    tbl.cell(0, 3).merge(tbl.cell(1, 3))
-    tbl.cell(0, 4).merge(tbl.cell(1, 4))
-    tbl.cell(0, 5).merge(tbl.cell(1, 5))
-    tbl.cell(0, 6).merge(tbl.cell(1, 6))
-    tbl.cell(0, 7).merge(tbl.cell(1, 7))
-    tbl.cell(0, 8).merge(tbl.cell(1, 8))
 
     ma = session.model_average
     # write body
-    for i, model in enumerate(session.models):
-        idx = i + 2
+    for idx, model in enumerate(session.models, start=1):
         write_cell(tbl.cell(idx, 0), model.name(), body)
         if ma:
-            write_cell(tbl.cell(idx, 1), ma.results.priors[i], body)
-            write_cell(tbl.cell(idx, 2), ma.results.posteriors[i], body)
+            write_cell(tbl.cell(idx, 1), ma.results.priors[idx - 1], body)
+            write_cell(tbl.cell(idx, 2), ma.results.posteriors[idx - 1], body)
         else:
             write_cell(tbl.cell(idx, 1), "-", body)
             write_cell(tbl.cell(idx, 2), "-", body)
@@ -202,8 +190,8 @@ def write_bayesian_table(report, session):
         write_cell(tbl.cell(idx, 8), model.results.gof.residual[0], body)
 
     if ma:
+        idx = len(tbl.rows)
         tbl.add_row()
-        idx = len(tbl.rows) - 1
         write_cell(tbl.cell(idx, 0), "Model Average", body)
         write_cell(tbl.cell(idx, 1), "-", body)
         write_cell(tbl.cell(idx, 2), "-", body)
