@@ -133,6 +133,7 @@ class ContinuousModelResult(BaseModel):
     dist: int
     loglikelihood: float
     aic: float
+    bic_equiv: float
     chisq: float
     model_df: float
     total_df: float
@@ -150,6 +151,7 @@ class ContinuousModelResult(BaseModel):
             dist=result.dist,
             loglikelihood=result.max,
             aic=summary.aic,
+            bic_equiv=np.nan_to_num(summary.BIC_equiv),  # TODO remove?
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
@@ -206,6 +208,8 @@ class ContinuousGof(BaseModel):
     calc_sd: List[float]
     obs_sd: List[float]
     residual: List[float]
+    eb_lower: List[float]
+    eb_upper: List[float]
     roi: float
 
     @classmethod
@@ -221,6 +225,8 @@ class ContinuousGof(BaseModel):
             calc_sd=gof.np_calcSD.tolist(),
             obs_sd=gof.np_obsSD.tolist(),
             residual=gof.np_res.tolist(),
+            eb_lower=gof.np_ebLower.tolist(),
+            eb_upper=gof.np_ebUpper.tolist(),
             roi=residual_of_interest(
                 model.structs.summary.bmd, model.dataset.doses, gof.np_res.tolist()
             ),
@@ -256,9 +262,9 @@ class ContinuousDeviance(BaseModel):
         aod = model.structs.aod
         return cls(
             names=["A1", "A2", "A3", "fitted", "reduced"],
-            loglikelihoods=aod.np_LL.tolist(),
+            loglikelihoods=np.nan_to_num(aod.np_LL).tolist(),  # TODO - remove np.nan_to_num
             num_params=aod.np_nParms.tolist(),
-            aics=aod.np_AIC.tolist(),
+            aics=np.nan_to_num(aod.np_AIC).tolist(),  # TODO - remove np.nan_to_num
         )
 
     def tbl(self) -> str:
@@ -282,9 +288,9 @@ class ContinuousTests(BaseModel):
         tests = model.structs.aod.toi_struct
         return cls(
             names=["p_test1", "p_test2", "p_test3", "p_test4"],
-            ll_ratios=tests.np_llRatio.tolist(),
-            dfs=tests.np_DF.tolist(),
-            p_values=tests.np_pVal.tolist(),
+            ll_ratios=np.nan_to_num(tests.np_llRatio).tolist(),  # TODO - remove np.nan_to_num
+            dfs=np.nan_to_num(tests.np_DF).tolist(),  # TODO - remove np.nan_to_num
+            p_values=np.nan_to_num(tests.np_pVal).tolist(),  # TODO - remove np.nan_to_num
         )
 
     def tbl(self) -> str:
@@ -329,6 +335,7 @@ class ContinuousResult(BaseModel):
     bmdl: float
     bmd: float
     bmdu: float
+    has_completed: bool
     fit: ContinuousModelResult
     gof: ContinuousGof
     parameters: ContinuousParameters
@@ -356,6 +363,7 @@ class ContinuousResult(BaseModel):
             bmdl=summary.bmdl,
             bmd=summary.bmd,
             bmdu=summary.bmdu,
+            has_completed=summary.validResult,
             fit=ContinuousModelResult.from_model(model),
             gof=ContinuousGof.from_model(model),
             parameters=params,

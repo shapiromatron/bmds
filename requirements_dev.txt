@@ -1,22 +1,22 @@
 # build
-wheel==0.35.1
+wheel==0.36.2
 
 # docs
-Sphinx==2.4.4
-watchdog==0.10.3
+Sphinx==3.5.4
+watchdog==2.0.2
 
 # tests
-pytest==6.1.1
+pytest==6.2.3
 pytest-mpl==0.12
 vcrpy==4.1.1
 pytest-vcr==1.0.2
 
 # lint and formatting tools
 black==19.10b0
-flake8==3.8.4
+flake8==3.9.0
 flake8-isort==4.0.0
-isort==5.6.4
-mypy==0.790
+isort==5.8.0
+mypy==0.812
 
 # install bmds in editable mode
 -e .

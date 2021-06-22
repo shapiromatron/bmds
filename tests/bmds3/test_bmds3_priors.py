@@ -6,51 +6,17 @@ from bmds.bmds3 import constants
 
 @pytest.fixture
 def mock_prior():
+    t = constants.PriorType.eNone
     return constants.ModelPriors(
         prior_class=constants.PriorClass.frequentist_restricted,
         priors=[
-            constants.Prior(
-                name="a",
-                type=constants.PriorType.eNone,
-                initial_value=1,
-                stdev=1,
-                min_value=1,
-                max_value=1,
-            ),
-            constants.Prior(
-                name="b",
-                type=constants.PriorType.eNone,
-                initial_value=2,
-                stdev=2,
-                min_value=2,
-                max_value=2,
-            ),
-            constants.Prior(
-                name="c",
-                type=constants.PriorType.eNone,
-                initial_value=3,
-                stdev=3,
-                min_value=3,
-                max_value=3,
-            ),
+            constants.Prior(name="a", type=t, initial_value=1, stdev=1, min_value=1, max_value=1),
+            constants.Prior(name="b", type=t, initial_value=2, stdev=2, min_value=2, max_value=2),
+            constants.Prior(name="c", type=t, initial_value=3, stdev=3, min_value=3, max_value=3),
         ],
         variance_priors=[
-            constants.Prior(
-                name="d",
-                type=constants.PriorType.eNone,
-                initial_value=4,
-                stdev=4,
-                min_value=4,
-                max_value=4,
-            ),
-            constants.Prior(
-                name="e",
-                type=constants.PriorType.eNone,
-                initial_value=5,
-                stdev=5,
-                min_value=5,
-                max_value=5,
-            ),
+            constants.Prior(name="d", type=t, initial_value=4, stdev=4, min_value=4, max_value=4),
+            constants.Prior(name="e", type=t, initial_value=5, stdev=5, min_value=5, max_value=5),
         ],
     )
 

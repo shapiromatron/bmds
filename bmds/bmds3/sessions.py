@@ -250,6 +250,10 @@ class BmdsSession:
         reporting.write_dataset(report, self.dataset, header_level + 1)
         reporting.write_summary_table(report, self, header_level + 1)
         reporting.write_models(report, self, header_level + 1)
+        if self.model_average:
+            reporting.write_model_average_table(report, self, header_level + 1)
+            reporting.write_summary_table(report, self, header_level + 1)
+            reporting.plot_bma(report, self)
 
         return report.document
 
@@ -320,3 +324,25 @@ class Bmds330Schema(schema.SessionSchemaBase):
             session.recommendation_settings = self.recommender.settings
             session.recommender = self.recommender.deserialize()
         return session
+
+
+_bmds_session_versions = {
+    constants.BMDS330: Bmds330,
+}
+
+
+def get_model(bmds_version: str, dataset_type: str, model_name: str) -> BmdModel:
+    """Get BmdModel class given metadata
+
+    Args:
+        bmds_version (str): version
+        dataset_type (str): dataset type
+        model_name (str): model name
+
+    Returns:
+        BmdModel: A BmdModel class
+    """
+    try:
+        return _bmds_session_versions[bmds_version].model_options[dataset_type][model_name]
+    except KeyError:
+        raise ValueError(f"Model not found: {bmds_version}-{dataset_type}-{model_name}")
