@@ -16,6 +16,7 @@ from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, B
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
 from .types import sessions as schema
+from .constants import _pc_name_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -171,23 +172,45 @@ class BmdsSession:
             "bmdl",
             "bmd",
             "bmdu",
-            "aic",
-            "params",
+            "p_value",
+            "Scaled Residual for Dose Group near BMD",
+            "Scaled Residueal for Control Dose Group",
         ]
         if self.dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-            model_cols.extend(["p_value"])
-            for idx, model in enumerate(self.models):
-                row = [
-                    idx,
-                    model.name(),
-                    model.results.bmdl,
-                    model.results.bmd,
-                    model.results.bmdu,
-                    model.results.fit.aic,
-                    _list_to_str(model.results.parameters.values),
-                    model.results.gof.p_value,
-                ]
-                model_rows.append(row)
+            bma = self.model_average
+            model_type = _pc_name_mapping[self.models[0].settings.priors.prior_class]
+            if "Frequentist" in model_type:
+                model_cols.extend(["AIC"])
+                for idx, model in enumerate(self.models):
+                    row = [
+                        idx,
+                        model.name(),
+                        model.results.bmdl,
+                        model.results.bmd,
+                        model.results.bmdu,
+                        "-",
+                        model.results.fit.aic,
+                        model.results.gof.roi,
+                        model.results.gof.residual[0],
+                    ]
+                    model_rows.append(row)
+            if "Bayesian" in model_type:
+                model_cols.extend(["Prior Weights"])
+                model_cols.extend(["Posterior Weights"])
+                for idx, model in enumerate(self.models):
+                    row = [
+                        idx,
+                        model.name(),
+                        model.results.bmdl,
+                        model.results.bmd,
+                        model.results.bmdu,
+                        model.results.gof.p_value,
+                        model.results.gof.roi,
+                        model.results.gof.residual[0],
+                        bma.results.priors[idx] if bma else "-",
+                        bma.results.posteriors[idx] if bma else "-",
+                    ]
+                    model_rows.append(row)
         elif self.dataset.dtype in constants.CONTINUOUS_DTYPES:
             raise NotImplementedError("...")
 
