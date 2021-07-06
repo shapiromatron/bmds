@@ -306,6 +306,21 @@ class DichotomousResult(BaseModel):
             plotting=plotting,
         )
 
+    def text(self) -> str:
+        return f"""
+        Summary of findings:
+        {self.tbl()}
+
+        Fit:
+        {self.fit.tbl()}
+
+        Goodness of fit:
+        {self.gof.tbl()}
+
+        ... continue here...
+
+        """
+
     def tbl(self) -> str:
         data = [
             ["BMDL", self.bmdl],
