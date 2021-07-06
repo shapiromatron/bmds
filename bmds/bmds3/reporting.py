@@ -213,6 +213,8 @@ def write_models(report: Report, session, header_level: int):
             )
             continue
 
+        report.document.add_paragraph(model.text())
+
         # Info Table
         report.document.add_paragraph("Model Info", styles.header_2)
         hdr = styles.tbl_header
