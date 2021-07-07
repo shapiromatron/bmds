@@ -1,7 +1,7 @@
 import json
 import os
 
-# import numpy as np
+import numpy as np
 import pytest
 
 import bmds
@@ -99,12 +99,12 @@ def test_bmds3_increasing(contds):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        # (continuous.ExponentialM3, [nan, nan, nan], 3974.4),
-        (continuous.ExponentialM5, [27.574, 26.216, 29.397], 3072.2),
-        (continuous.Power, [25.852, 24.4, 29.599], 3069.8),
-        (continuous.Hill, [29.25, 25.893, 33.209], 3073.3),
+        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 3915.5),
+        (continuous.ExponentialM5, [27.567, 26.197, 29.089], 3072.2),
+        (continuous.Power, [25.862, 24.403, 29.478], 3069.8),
+        (continuous.Hill, [30.285, 26.506, 34.203], 3074.3),
         (continuous.Linear, [25.856, 24.388, 27.451], 3067.8),
-        (continuous.Polynomial, [25.55, 23.836, 27.57], 3070.0),
+        (continuous.Polynomial, [26.311, 24.478, 28.428], 3070.2),
     ]:
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
@@ -119,12 +119,12 @@ def test_bmds3_increasing(contds):
 def test_bmds3_decreasing(negative_contds):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
-        # (continuous.ExponentialM3, [nan, nan, nan], 4296.0),
-        # (continuous.ExponentialM5, [nan, nan, nan], 4296.3),
-        (continuous.Power, [56.5, 54.3, 59.7], 3077.5),
-        # (continuous.Hill, [nan, nan, nan], 3925.8),
-        (continuous.Linear, [35.3, 33.1, 37.7], 3115.3),
-        (continuous.Polynomial, [51.5, 47.3, 56.5], 3074.7),
+        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4298.0),
+        (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4300.0),
+        (continuous.Power, [56.5, 54.3, 59.7], 3079.5),
+        (continuous.Hill, [-9999.0, -9999.0, -9999.0], 3927.8),
+        (continuous.Linear, [35.2, 33.1, 37.7], 3117.3),
+        (continuous.Polynomial, [49.1, 46.4, 60.3], 3077.9),
     ]:
         model = Model(negative_contds)
         result = model.execute()
@@ -148,23 +148,23 @@ def test_bmds3_variance(contds):
     result = model.execute()
     assert model.settings.disttype is DistType.normal_ncv
     assert len(result.parameters.values) == 5
-    assert pytest.approx(result.bmd, abs=1.0) == 13.3
+    assert pytest.approx(result.bmd, abs=1.0) == 14.5
 
-    # TODO -fix - currently segfault
-    # model = continuous.Power(contds, dict(disttype=DistType.log_normal))
-    # result = model.execute()
-    # assert model.settings.disttype is DistType.log_normal
-    # assert pytest.approx(result.bmd, abs=0.1) == 123
-    # assert len(result.parameters.values) == 4
+    # only Power and Exp can be used
+    model = continuous.Hill(contds, dict(disttype=DistType.log_normal))
+    result = model.execute()
+    assert model.settings.disttype is DistType.log_normal
+    assert pytest.approx(result.bmd, abs=0.1) == 57.7
+    assert len(result.parameters.values) == 5
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 def test_bmds3_continuous_polynomial(contds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        (1, [25.856, 24.388, 27.451], 3065.8),
-        (2, [25.55, 23.836, 27.57], 3068.0),
-        (3, [25.681, 25.62, 26.083], 3070.1),
+        (1, [25.856, 24.388, 27.451], 3067.8),
+        (2, [26.311, 24.478, 28.428], 3070.2),
+        (3, [27.497, 27.057, 27.879], 3074.8),
         # (4, [-9999.0, -9999.0, -9999.0], -9999.0),
     ]:
         settings = ContinuousModelSettings(degree=degree)
