@@ -174,7 +174,6 @@ class BmdsResultsStruct(ctypes.Structure):
         ("bmdl", ctypes.c_double),
         ("bmdu", ctypes.c_double),
         ("aic", ctypes.c_double),
-        ("BIC_equiv", ctypes.c_double),
         ("chisq", ctypes.c_double),
         ("bounded", ctypes.POINTER(ctypes.c_bool)),
         ("stdErr", ctypes.POINTER(ctypes.c_double)),
@@ -190,7 +189,6 @@ class BmdsResultsStruct(ctypes.Structure):
             bmdl: {self.bmdl}
             bmdu: {self.bmdu}
             aic: {self.aic}
-            BIC_equiv: {self.BIC_equiv}
             chisq: {self.chisq}
             bounded: {self.bounded[:self.n]}
             stdErr: {self.stdErr[:self.n]}
@@ -207,7 +205,6 @@ class BmdsResultsStruct(ctypes.Structure):
         self.bmdl = constants.BMDS_BLANK_VALUE
         self.bmdu = constants.BMDS_BLANK_VALUE
         self.aic = constants.BMDS_BLANK_VALUE
-        self.BIC_equiv = constants.BMDS_BLANK_VALUE
         self.chisq = constants.BMDS_BLANK_VALUE
         self.np_bounded = np.zeros(self.n, dtype=np.bool_)
         self.np_stdErr = np.zeros(self.n, dtype=np.float64)

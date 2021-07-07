@@ -131,8 +131,8 @@ class BmdModelContinuous(BmdModel):
         self.structs = structs
 
         # run the analysis
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-        dll.runBMDSContAnalysis(
+        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD-0")
+        dll.excelCont(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
             ctypes.pointer(structs.summary),
