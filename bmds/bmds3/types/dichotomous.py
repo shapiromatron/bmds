@@ -258,10 +258,11 @@ class DichotomousPlotting(BaseModel):
     @classmethod
     def from_model(cls, model, params) -> "DichotomousPlotting":
         structs = model.structs
-        dr_x = model.dataset.dose_linspace
         critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
-        dr_y = model.dr_curve(dr_x, params)
-        critical_ys = model.dr_curve(critical_xs, params)
+        dr_x = model.dataset.dose_linspace
+        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
+        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
+        critical_ys = critical_xs * 0 if bad_params else model.dr_curve(critical_xs, params)
         return cls(
             dr_x=dr_x,
             dr_y=dr_y,
