@@ -288,7 +288,7 @@ class ExponentialM5(BmdModelContinuous):
         b = params[1]
         c = params[2]
         d = params[3]
-        return a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** d))))
+        return a * (c - (c - 1.0) * np.exp(-1.0 * np.power(b * doses, d)))
 
 
 bmd_model_map = {
