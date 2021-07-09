@@ -218,6 +218,24 @@ Priors:
 Variance priors:
 {vps}"""
 
+    def get_prior(self, name: str) -> Prior:
+        """Search all priors and return the match by name.
+
+        Args:
+            name (str): prior name
+
+        Raises:
+            ValueError: if no value is found
+        """
+        for p in self.priors:
+            if p.name == name:
+                return p
+        if self.variance_priors:
+            for p in self.variance_priors:
+                if p.name == name:
+                    return p
+        raise ValueError(f"No parameter named {name}")
+
     def to_table(self):
         raise NotImplementedError()
 
