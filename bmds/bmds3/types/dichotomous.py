@@ -306,19 +306,19 @@ class DichotomousResult(BaseModel):
             plotting=plotting,
         )
 
-    def text(self) -> str:
+    def text(self, dataset: DichotomousDataset) -> str:
         return f"""
-        Summary of findings:
+        Summary:
         {self.tbl()}
-
-        Fit:
-        {self.fit.tbl()}
-
+       
         Goodness of fit:
-        {self.gof.tbl()}
+        {self.gof.tbl(dataset)}
 
-        ... continue here...
+        Parameters:
+        {self.parameters.tbl()}
 
+        Deviances:
+        {self.deviance.tbl()}
         """
 
     def tbl(self) -> str:
