@@ -236,6 +236,18 @@ class Polynomial(BmdModelContinuous):
         if model.degree < 1:
             raise ValueError(f"Polynomial must be ≥ 1; got {model.degree}")
 
+        if model.priors.prior_class is PriorClass.frequentist_restricted:
+            if model.is_increasing is True:
+                for p in model.priors.priors:
+                    p.min_value = max(p.min_value, 0)
+                for p in model.priors.variance_priors:
+                    p.min_value = max(p.min_value, 0)
+            if model.is_increasing is False:
+                for p in model.priors.priors:
+                    p.max_value = max(p.max_value, 0)
+                for p in model.priors.variance_priors:
+                    p.max_value = max(p.max_value, 0)
+
         return model
 
     def get_default_model_degree(self, dataset) -> int:
