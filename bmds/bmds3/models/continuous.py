@@ -111,7 +111,7 @@ class BmdModelContinuous(BmdModel):
             model_settings.is_increasing = dataset.is_increasing
 
         if model_settings.priors is None:
-            model_settings.priors = get_default_priors(self.bmd_model_class, model)
+            model_settings.priors = get_default_priors(self.bmd_model_class, model_settings)
 
         return model_settings
 
@@ -214,6 +214,35 @@ class Power(BmdModelContinuous):
 class Hill(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_hill.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class in [
+            PriorClass.frequentist_unrestricted,
+            PriorClass.frequentist_restricted,
+        ]:
+            v = model_settings.priors.get_prior("v")
+            if model_settings.disttype is DistType.log_normal:
+                model_settings.priors.get_prior("g").min_value = 1e-8
+                model_settings.priors.get_prior("k").max_value = 100
+                model_settings.priors.get_prior("n").max_value = 100
+                v.min_value = -1e8
+                v.max_value = 1e8
+            else:
+                model_settings.priors.get_prior("g").min_value = -1e8
+                model_settings.priors.get_prior("k").max_value = 30
+                model_settings.priors.get_prior("n").max_value = 18
+                if model_settings.disttype is DistType.normal:
+                    v.min_value = -1e8
+                    v.max_value = 1e8
+                elif model_settings.disttype is DistType.normal_ncv:
+                    v.min_value = -1000
+                    v.max_value = 1000
+
+        return model_settings
+
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         v = params[1]
@@ -234,7 +263,7 @@ class Polynomial(BmdModelContinuous):
         model_settings = super().get_model_settings(dataset, settings)
 
         if model_settings.degree < 1:
-            raise ValueError(f"Polynomial must be ≥ 1; got {model.degree}")
+            raise ValueError(f"Polynomial must be ≥ 1; got {model_settings.degree}")
 
         if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
             if model_settings.is_increasing is True:

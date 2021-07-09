@@ -162,10 +162,10 @@ def test_bmds3_variance(contds):
 def test_bmds3_continuous_polynomial(contds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        (1, [25.856, 24.388, 27.451], 3067.8),
-        (2, [26.311, 24.478, 28.428], 3070.2),
-        (3, [27.497, 27.057, 27.879], 3074.8),
-        # (4, [-9999.0, -9999.0, -9999.0], -9999.0),
+        (1, [25.953, 24.388, 27.491], 3067.9),
+        (2, [25.412, 24.306, 28.32], 3070.2),
+        (3, [-9999.0, -9999.0, -9999.0], 3405.7),
+        (4, [25.669, 24.279, 27.61], 3068.2),
     ]:
         settings = ContinuousModelSettings(degree=degree)
         result = continuous.Polynomial(contds, settings).execute()
