@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Union
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
@@ -11,6 +11,7 @@ from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .priors import PriorClass
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -33,7 +34,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
 
 class DichotomousAnalysis(BaseModel):
@@ -258,10 +259,11 @@ class DichotomousPlotting(BaseModel):
     @classmethod
     def from_model(cls, model, params) -> "DichotomousPlotting":
         structs = model.structs
-        dr_x = model.dataset.dose_linspace
         critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
-        dr_y = model.dr_curve(dr_x, params)
-        critical_ys = model.dr_curve(critical_xs, params)
+        dr_x = model.dataset.dose_linspace
+        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
+        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
+        critical_ys = critical_xs * 0 if bad_params else model.dr_curve(critical_xs, params)
         return cls(
             dr_x=dr_x,
             dr_y=dr_y,

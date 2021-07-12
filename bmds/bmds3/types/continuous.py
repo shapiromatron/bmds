@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 from ...constants import BOOL_ICON, Dtype
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
-from .priors import ModelPriors
+from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
     ContinuousAnalysisStruct,
@@ -42,7 +42,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
 
 class ContinuousAnalysis(BaseModel):
@@ -312,12 +312,13 @@ class ContinuousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> "ContinuousPlotting":
-        dr_x = model.dataset.dose_linspace
         critical_xs = np.array(
             [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
         )
-        dr_y = model.dr_curve(dr_x, params)
-        critical_ys = model.dr_curve(critical_xs, params)
+        dr_x = model.dataset.dose_linspace
+        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
+        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
+        critical_ys = critical_xs * 0 if bad_params else model.dr_curve(critical_xs, params)
         return cls(
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
