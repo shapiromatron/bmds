@@ -123,8 +123,8 @@ def test_bmds3_decreasing(negative_contds):
         (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4300.0),
         (continuous.Power, [56.5, 54.3, 59.7], 3079.5),
         (continuous.Hill, [-9999.0, -9999.0, -9999.0], 3927.8),
-        (continuous.Linear, [35.2, 33.1, 37.7], 3117.3),
-        (continuous.Polynomial, [49.1, 46.4, 60.3], 3077.9),
+        (continuous.Linear, [41.2, 38.9, 43.7], 3152.1),
+        (continuous.Polynomial, [55.5, 52.4, 63.1], 3079.3),
     ]:
         model = Model(negative_contds)
         result = model.execute()
@@ -162,10 +162,10 @@ def test_bmds3_variance(contds):
 def test_bmds3_continuous_polynomial(contds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        (1, [25.953, 24.388, 27.491], 3067.9),
-        (2, [25.412, 24.306, 28.32], 3070.2),
-        (3, [-9999.0, -9999.0, -9999.0], 3405.7),
-        (4, [25.669, 24.279, 27.61], 3068.2),
+        (1, [25.861, 24.39, 27.449], 3067.8),
+        (2, [25.679, 24.319, 27.778], 3068.0),
+        (3, [25.852, 24.387, 27.279], 3067.8),
+        (4, [25.389, 24.279, 27.607], 3070.3),
     ]:
         settings = ContinuousModelSettings(degree=degree)
         result = continuous.Polynomial(contds, settings).execute()
@@ -210,7 +210,7 @@ def test_bmds3_continuous_individual_session(cidataset):
 @pytest.mark.skip  # TODO - after update to dll this test should succeed
 def test_decreasing_lognormal(negative_contds):
     """
-    When using the lognormal distribution type, only exponential models shoudl run;
+    When using the lognormal distribution type, only exponential models should run;
     all others should have the `has_completed` False
     """
     session = bmds.session.Bmds330(dataset=negative_contds)

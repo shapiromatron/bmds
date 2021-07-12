@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Union
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
@@ -11,6 +11,7 @@ from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .priors import PriorClass
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -33,7 +34,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
 
 class DichotomousAnalysis(BaseModel):

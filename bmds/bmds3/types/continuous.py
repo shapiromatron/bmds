@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 from ...constants import BOOL_ICON, Dtype
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
-from .priors import ModelPriors
+from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
     ContinuousAnalysisStruct,
@@ -42,7 +42,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
 
 class ContinuousAnalysis(BaseModel):
