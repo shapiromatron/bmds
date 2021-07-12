@@ -202,11 +202,14 @@ class Polynomial(BmdModelContinuous):
 
         if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
             if model_settings.is_increasing is True:
-                for p in model_settings.priors.priors:
-                    p.min_value = max(p.min_value, 0)
+                model_settings.priors.get_prior("beta1").min_value = 0
+                model_settings.priors.get_prior("betaN").min_value = 0
+                model_settings.priors.get_prior("alpha").min_value = 0
+
             if model_settings.is_increasing is False:
-                for p in model_settings.priors.priors:
-                    p.max_value = min(p.max_value, 0)
+                model_settings.priors.get_prior("beta1").max_value = 0
+                model_settings.priors.get_prior("betaN").max_value = 0
+                model_settings.priors.get_prior("alpha").max_value = 0
 
         return model_settings
 
@@ -231,6 +234,9 @@ class Linear(Polynomial):
 
     def get_default_model_degree(self, dataset) -> int:
         return 1
+
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
 
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings

@@ -123,8 +123,8 @@ def test_bmds3_decreasing(negative_contds):
         (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4300.0),
         (continuous.Power, [56.5, 54.3, 59.7], 3079.5),
         (continuous.Hill, [-9999.0, -9999.0, -9999.0], 3927.8),
-        (continuous.Linear, [41.2, 38.9, 43.7], 3152.1),
-        (continuous.Polynomial, [55.5, 52.4, 63.1], 3079.3),
+        (continuous.Linear, [35.3, 33.1, 37.7], 3117.3),
+        (continuous.Polynomial, [50.1, 46.9, 57.3], 3077.1),
     ]:
         model = Model(negative_contds)
         result = model.execute()
@@ -162,10 +162,10 @@ def test_bmds3_variance(contds):
 def test_bmds3_continuous_polynomial(contds):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        (1, [25.861, 24.39, 27.449], 3067.8),
-        (2, [25.679, 24.319, 27.778], 3068.0),
-        (3, [25.852, 24.387, 27.279], 3067.8),
-        (4, [25.389, 24.279, 27.607], 3070.3),
+        (1, [25.856, 24.388, 27.451], 3067.8),
+        (2, [25.39, 24.338, 28.329], 3070.1),
+        (3, [25.851, 24.387, 27.453], 3067.8),
+        (4, [25.591, 24.292, 27.578], 3070.1),
     ]:
         settings = ContinuousModelSettings(degree=degree)
         result = continuous.Polynomial(contds, settings).execute()
