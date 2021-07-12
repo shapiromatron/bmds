@@ -59,8 +59,8 @@ class BmdModelDichotomous(BmdModel):
         structs = inputs.to_c()
         self.structs = structs
 
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD-0")
-        dll.excelDicho(
+        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll.runBMDSDichoAnalysis(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
             ctypes.pointer(structs.gof),
