@@ -4,7 +4,7 @@ from typing import List
 from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
-from ..types.structs import DichotomousMAAnalysisStruct, DichotomousMAResultStruct
+from ..types.structs import DichotomousMAStructs
 from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
 
 
@@ -22,25 +22,20 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         return model
 
     def execute(self) -> DichotomousModelAverageResult:
+        structs = DichotomousMAStructs.from_session(self.models)
+        self.structs = structs
+
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
-
-        ma_analysis_struct = DichotomousMAAnalysisStruct.from_python(
-            models=[model.structs.analysis for model in self.models]
+        dll.runBMDSDichoMA(
+            ctypes.pointer(structs.analysis),
+            ctypes.pointer(structs.inputs),
+            ctypes.pointer(structs.dich_result),
+            ctypes.pointer(structs.result),
         )
-        ma_inputs_struct = self.models[0].structs.analysis
-        ma_result_struct = DichotomousMAResultStruct.from_python(
-            models=[model.structs.result for model in self.models]
+        self.results = DichotomousModelAverageResult.from_structs(
+            structs, [model.results for model in self.models]
         )
-
-        dll.estimate_ma_laplace_dicho(
-            ctypes.pointer(ma_analysis_struct),
-            ctypes.pointer(ma_inputs_struct),
-            ctypes.pointer(ma_result_struct),
-        )
-
-        return DichotomousModelAverageResult.from_execution(
-            ma_analysis_struct, ma_result_struct, self.models
-        )
+        return self.results
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
         model_indexes = [session.models.index(model) for model in self.models]

@@ -167,6 +167,12 @@ class Prior(BaseModel):
     min_value: float
     max_value: float
 
+    def tbl_str_hdr(self) -> str:
+        return "| param | type       |    initial |      stdev |        min |        max |"
+
+    def tbl_str(self) -> str:
+        return f"| {self.name:5} | {self.type.name:10} | {self.initial_value:10.3g} | {self.stdev:10.3g} | {self.min_value:10.3g} | {self.max_value:10.3g} |"
+
     def numeric_list(self) -> List[float]:
         return list(self.dict(exclude={"name"}).values())
 
@@ -193,6 +199,35 @@ class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: List[Prior]  # priors for main model
     variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
+
+    def __str__(self):
+        ps = [self.priors[0].tbl_str_hdr()]
+        ps.extend([p.tbl_str() for p in self.priors])
+        ps = "\n".join(ps)
+        p = f"""{self.prior_class.name} <{self.prior_class.value}>\n{ps}"""
+        if self.variance_priors is not None:
+            vps = "\n".join([p.tbl_str() for p in self.variance_priors])
+            p += f"""\n{vps}"""
+        p += "\n"
+        return p
+
+    def get_prior(self, name: str) -> Prior:
+        """Search all priors and return the match by name.
+
+        Args:
+            name (str): prior name
+
+        Raises:
+            ValueError: if no value is found
+        """
+        for p in self.priors:
+            if p.name == name:
+                return p
+        if self.variance_priors:
+            for p in self.variance_priors:
+                if p.name == name:
+                    return p
+        raise ValueError(f"No parameter named {name}")
 
     def to_table(self):
         raise NotImplementedError()
