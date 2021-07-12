@@ -122,7 +122,7 @@ class DichotomousModelResult(BaseModel):
         return DichotomousModelResult(
             loglikelihood=result.max,
             aic=summary.aic,
-            bic_equiv=np.nan_to_num(summary.BIC_equiv),  # TODO remove?
+            bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
@@ -193,7 +193,7 @@ class DichotomousParameters(BaseModel):
             names=model.get_param_names(),
             values=result.np_parms,
             bounded=summary.np_bounded,
-            se=np.nan_to_num(summary.np_stdErr),  # TODO - is this required?; se can be NaN
+            se=summary.np_stdErr,
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.nparms, result.nparms),
