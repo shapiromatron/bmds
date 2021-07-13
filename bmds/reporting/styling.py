@@ -16,9 +16,10 @@ class ReporterStyleGuide(BaseModel):
     tbl_header: str = "bmdsTblHeader"
     tbl_body: str = "bmdsTblBody"
     tbl_footnote: str = "bmdsTblFootnote"
-    outfile: str = "bmdsOutputFile"
+    fixed_width: str = "bmdsOutputFile"
     header_1: str = "Heading 1"
     header_2: str = "Heading 2"
+    header_3: str = "Heading 3"
 
 
 class Report(BaseModel):

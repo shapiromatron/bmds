@@ -212,5 +212,5 @@ def write_models(report: Report, session, header_level: int):
                 "Model execution failed. No reports returned...", styles.tbl_body
             )
             continue
-        report.document.add_paragraph(model.results.text(model.dataset))
+        report.document.add_paragraph(model.results.text(model.dataset), styles.fixed_width)
         report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))

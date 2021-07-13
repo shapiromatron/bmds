@@ -9,6 +9,7 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
+from ...utils import multi_lstrip
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .priors import PriorClass
@@ -309,7 +310,8 @@ class DichotomousResult(BaseModel):
         )
 
     def text(self, dataset: DichotomousDataset) -> str:
-        return f"""
+        return multi_lstrip(
+            f"""
         Summary:
         {self.tbl()}
 
@@ -322,6 +324,7 @@ class DichotomousResult(BaseModel):
         Deviances:
         {self.deviance.tbl()}
         """
+        )
 
     def tbl(self) -> str:
         data = [

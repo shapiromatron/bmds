@@ -433,7 +433,7 @@ class Reporter:
             fig.clf()
 
             # print output file
-            self.doc.add_paragraph(model.outfile, style=self.styles.outfile)
+            self.doc.add_paragraph(model.outfile, style=self.styles.fixed_width)
         else:
             self.doc.add_paragraph("No .OUT file was created.")
 

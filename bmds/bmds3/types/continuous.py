@@ -9,6 +9,7 @@ from bmds.bmds3.constants import ContinuousModelChoices
 from bmds.datasets.continuous import ContinuousDatasets
 
 from ...constants import BOOL_ICON, Dtype
+from ...utils import multi_lstrip
 from .. import constants
 from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
 from .priors import ModelPriors, PriorClass
@@ -355,6 +356,26 @@ class ContinuousResult(BaseModel):
             ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")
+
+    def text(self, dataset: ContinuousDatasets) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+
+        Goodness of fit:
+        {self.gof.tbl()}
+
+        Parameters:
+        {self.parameters.tbl()}
+
+        Deviances:
+        {self.deviance.tbl()}
+
+        Tests:
+        {self.tests.tbl()}
+        """
+        )
 
     @classmethod
     def from_model(cls, model) -> "ContinuousResult":
