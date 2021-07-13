@@ -312,7 +312,7 @@ class DichotomousResult(BaseModel):
         return f"""
         Summary:
         {self.tbl()}
-       
+
         Goodness of fit:
         {self.gof.tbl(dataset)}
 
