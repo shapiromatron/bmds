@@ -204,19 +204,30 @@ class ModelPriors(BaseModel):
         ps = [self.priors[0].tbl_str_hdr()]
         ps.extend([p.tbl_str() for p in self.priors])
         ps = "\n".join(ps)
+        p = f"""{self.prior_class.name} <{self.prior_class.value}>\n{ps}"""
+        if self.variance_priors is not None:
+            vps = "\n".join([p.tbl_str() for p in self.variance_priors])
+            p += f"""\n{vps}"""
+        p += "\n"
+        return p
 
-        vps = ["<none>"]
+    def get_prior(self, name: str) -> Prior:
+        """Search all priors and return the match by name.
+
+        Args:
+            name (str): prior name
+
+        Raises:
+            ValueError: if no value is found
+        """
+        for p in self.priors:
+            if p.name == name:
+                return p
         if self.variance_priors:
-            vps = [self.variance_priors[0].tbl_str_hdr()]
-            vps.extend([p.tbl_str() for p in self.variance_priors])
-        vps = "\n".join(vps)
-
-        return f"""
-{self.prior_class.name} <{self.prior_class.value}>
-Priors:
-{ps}
-Variance priors:
-{vps}"""
+            for p in self.variance_priors:
+                if p.name == name:
+                    return p
+        raise ValueError(f"No parameter named {name}")
 
     def to_table(self):
         raise NotImplementedError()

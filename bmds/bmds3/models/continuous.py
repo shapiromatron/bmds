@@ -17,80 +17,6 @@ from ..types.priors import get_continuous_prior
 from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
 
 
-def get_default_priors(
-    model_class: ContinuousModel,
-    settings: ContinuousModelSettings,
-    prior_class: PriorClass = PriorClass.frequentist_restricted,
-) -> ModelPriors:
-    """Generate a default ModelPriors for an analysis; for some models, settings-dependent.
-
-    Args:
-        model_class (ContinuousModel): A model type
-        settings (ContinuousModelSettings): Existing settings dataset
-        prior_class (Optional[PriorClass], optional): Prior class; if known
-
-    Raises:
-        ValueError: If we cannot determine prior defaults from known information
-    """
-    # TODO -make this an easy api call for running new datasets; add FAQ?
-
-    model_priors = get_continuous_prior(model_class, prior_class)
-
-    # exp3/exp5
-    if model_class in [
-        ContinuousModelChoices.c_exp_m3.value,
-        ContinuousModelChoices.c_exp_m5.value,
-    ]:
-        if settings.is_increasing is True:
-            model_priors.priors[2].min_value = 0
-            model_priors.priors[2].max_value = 18
-        elif settings.is_increasing is False:
-            model_priors.priors[2].min_value = -18
-            model_priors.priors[2].max_value = 0
-        else:
-            raise ValueError("Can't set prior; direction unknown")
-
-    # hill
-    elif model_class == ContinuousModelChoices.c_hill.value:
-        if settings.disttype == DistType.normal:
-            model_priors.priors[0].min_value = -1e8
-            model_priors.priors[1].min_value = -1e8
-            model_priors.priors[1].max_value = 1e8
-            model_priors.priors[2].max_value = 30
-            model_priors.priors[3].max_value = 18
-        elif settings.disttype == DistType.normal_ncv:
-            model_priors.priors[0].min_value = -1e8
-            model_priors.priors[1].min_value = -1000
-            model_priors.priors[1].max_value = 1000
-            model_priors.priors[2].max_value = 30
-            model_priors.priors[3].max_value = 18
-        elif settings.disttype == DistType.log_normal:
-            model_priors.priors[0].min_value = 1e-8
-            model_priors.priors[1].min_value = -1e8
-            model_priors.priors[1].max_value = 1e8
-            model_priors.priors[2].max_value = 100
-            model_priors.priors[3].max_value = 100
-        else:
-            raise ValueError("Can't set prior; disttype unknown")
-
-    # linear/poly
-    elif model_class == ContinuousModelChoices.c_polynomial.value:
-        if settings.is_increasing is True:
-            model_priors.priors[1].min_value = 0
-            model_priors.priors[1].max_value = 1e8
-            model_priors.variance_priors[1].min_value = 0
-            model_priors.variance_priors[1].max_value = 1e8
-        elif settings.is_increasing is False:
-            model_priors.priors[1].min_value = -1e8
-            model_priors.priors[1].max_value = 0
-            model_priors.variance_priors[1].min_value = -1e8
-            model_priors.variance_priors[1].max_value = 0
-        else:
-            raise ValueError("Can't set prior; direction unknown")
-
-    return model_priors
-
-
 class BmdModelContinuous(BmdModel):
     bmd_model_class: ContinuousModel
 
@@ -98,22 +24,28 @@ class BmdModelContinuous(BmdModel):
         self, dataset: ContinuousDatasets, settings: InputModelSettings,
     ) -> ContinuousModelSettings:
         if settings is None:
-            model = ContinuousModelSettings()
+            model_settings = ContinuousModelSettings()
         elif isinstance(settings, ContinuousModelSettings):
-            model = settings
+            model_settings = settings
         else:
-            model = ContinuousModelSettings.parse_obj(settings)
+            model_settings = ContinuousModelSettings.parse_obj(settings)
 
-        if model.degree == 0:
-            model.degree = self.get_default_model_degree(dataset)
+        # only estimate direction if unspecified in settings
+        if model_settings.is_increasing is None:
+            model_settings.is_increasing = dataset.is_increasing
 
-        if model.is_increasing is None:
-            model.is_increasing = dataset.is_increasing
+        # get default values, may require further model customization
+        if not isinstance(model_settings.priors, ModelPriors):
+            prior_class = (
+                model_settings.priors
+                if isinstance(model_settings.priors, PriorClass)
+                else self.get_default_prior_class()
+            )
+            model_settings.priors = get_continuous_prior(
+                self.bmd_model_class, prior_class=prior_class
+            )
 
-        if model.priors is None:
-            model.priors = get_default_priors(self.bmd_model_class, model)
-
-        return model
+        return model_settings
 
     def execute(self):
         inputs = ContinuousAnalysis(
@@ -148,6 +80,9 @@ class BmdModelContinuous(BmdModel):
 
     def get_default_model_degree(self, dataset) -> int:
         return 0
+
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_restricted
 
     def dr_curve(self, doses, params) -> np.ndarray:
         raise NotImplementedError()
@@ -214,6 +149,35 @@ class Power(BmdModelContinuous):
 class Hill(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_hill.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class in [
+            PriorClass.frequentist_unrestricted,
+            PriorClass.frequentist_restricted,
+        ]:
+            v = model_settings.priors.get_prior("v")
+            if model_settings.disttype is DistType.log_normal:
+                model_settings.priors.get_prior("g").min_value = 1e-8
+                model_settings.priors.get_prior("k").max_value = 100
+                model_settings.priors.get_prior("n").max_value = 100
+                v.min_value = -1e8
+                v.max_value = 1e8
+            else:
+                model_settings.priors.get_prior("g").min_value = -1e8
+                model_settings.priors.get_prior("k").max_value = 30
+                model_settings.priors.get_prior("n").max_value = 18
+                if model_settings.disttype is DistType.normal:
+                    v.min_value = -1e8
+                    v.max_value = 1e8
+                elif model_settings.disttype is DistType.normal_ncv:
+                    v.min_value = -1000
+                    v.max_value = 1000
+
+        return model_settings
+
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         v = params[1]
@@ -231,12 +195,23 @@ class Polynomial(BmdModelContinuous):
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
-        model = super().get_model_settings(dataset, settings)
+        model_settings = super().get_model_settings(dataset, settings)
 
-        if model.degree < 1:
-            raise ValueError(f"Polynomial must be ≥ 1; got {model.degree}")
+        if model_settings.degree < 1:
+            model_settings.degree = self.get_default_model_degree(dataset)
 
-        return model
+        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+            if model_settings.is_increasing is True:
+                model_settings.priors.get_prior("beta1").min_value = 0
+                model_settings.priors.get_prior("betaN").min_value = 0
+                model_settings.priors.get_prior("alpha").min_value = 0
+
+            if model_settings.is_increasing is False:
+                model_settings.priors.get_prior("beta1").max_value = 0
+                model_settings.priors.get_prior("betaN").max_value = 0
+                model_settings.priors.get_prior("alpha").max_value = 0
+
+        return model_settings
 
     def get_default_model_degree(self, dataset) -> int:
         return 2
@@ -260,17 +235,31 @@ class Linear(Polynomial):
     def get_default_model_degree(self, dataset) -> int:
         return 1
 
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
+
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
-        model = super().get_model_settings(dataset, settings)
-        if model.degree != 1:
+        model_settings = super().get_model_settings(dataset, settings)
+        if model_settings.degree != 1:
             raise ValueError("Linear model must have degree of 1")
-        return model
+        return model_settings
 
 
 class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
+
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+            attr = "min_value" if model_settings.is_increasing else "max_value"
+            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
+
+        return model_settings
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -283,12 +272,23 @@ class ExponentialM3(BmdModelContinuous):
 class ExponentialM5(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m5.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+            attr = "min_value" if model_settings.is_increasing else "max_value"
+            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
+
+        return model_settings
+
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
         b = params[1]
         c = params[2]
         d = params[3]
-        return a * (np.exp(c) - (np.exp(c) - 1.0) * (np.exp(-((b * doses) ** d))))
+        return a * (c - (c - 1.0) * np.exp(-1.0 * np.power(b * doses, d)))
 
 
 bmd_model_map = {
