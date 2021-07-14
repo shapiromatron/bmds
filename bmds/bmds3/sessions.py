@@ -99,6 +99,24 @@ class BmdsSession:
         else:
             raise ValueError("Recommendation not enabled.")
 
+    def select(self, model: Optional[BmdModel], notes: str = ""):
+        self.selected.select(model, notes)
+
+    @property
+    def has_recommended_model(self) -> bool:
+        return (
+            self.recommendation_enabled
+            and self.recommender.results.recommended_model_index is not None
+        )
+
+    def accept_recommendation(self):
+        """Select the recommended model, if one exists."""
+        if self.has_recommended_model:
+            index = self.recommender.results.recommended_model_index
+            self.select(self.models[index], "Selected as best-fitting model")
+        else:
+            self.select(None, "No model was selected as a best-fitting model")
+
     def execute_and_recommend(self, drop_doses=False):
         self.execute()
         self.recommend()

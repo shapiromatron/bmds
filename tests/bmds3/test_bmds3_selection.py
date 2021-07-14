@@ -25,20 +25,28 @@ class TestBmdsSelector:
 
         # show default undefined state
         assert session.selected.model is None
+        assert session.selected.notes == ""
         assert session.selected.no_model_selected is False
+
+        # accept recommendation when model recommended
+        session.accept_recommendation()
+        assert session.selected.model is session.models[0]
+        assert session.selected.notes == "Selected as best-fitting model"
+
+        # accept recommendation when model recommended
+        session.recommender.results.recommended_model_index = None
+        session.accept_recommendation()
+        assert session.selected.model is None
+        assert session.selected.notes == "No model was selected as a best-fitting model"
 
         # show examples when a model is selected
-        session.selected.select(session.models[0], "best fitting")
+        session.select(session.models[0], "best fitting")
         assert session.selected.model is session.models[0]
         assert session.selected.no_model_selected is False
-        expected = dict(model_index=0, notes="best fitting")
-        assert session.selected.serialize().dict() == expected
+        assert session.selected.serialize().dict() == dict(model_index=0, notes="best fitting")
 
         # show examples when a model is not selected
-        session.selected.select(None, "no model selected")
+        session.select(None, "none")
         assert session.selected.model is None
         assert session.selected.no_model_selected is True
-        assert session.selected.serialize().dict() == {
-            "model_index": None,
-            "notes": "no model selected",
-        }
+        assert session.selected.serialize().dict() == dict(model_index=None, notes="none")

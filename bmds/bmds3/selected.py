@@ -19,14 +19,13 @@ class SelectedModel:
         self.model_index = model_index
         self.notes = notes
 
-    def select(self, model: Optional[BaseModel], notes: str):
+    def select(self, model: Optional[BmdModel], notes: str):
         self.model_index = self.session.models.index(model) if model is not None else None
         self.notes = notes
 
     @property
     def model(self) -> Optional[BmdModel]:
-        """Returns the selected model if one exists, else None
-        """
+        """Returns the selected model if one exists, else None"""
         if self.model_index is not None:
             return self.session.models[self.model_index]
         return None
