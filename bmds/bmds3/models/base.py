@@ -104,8 +104,16 @@ class BmdModel:
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def report(self) -> str:
-        raise NotImplementedError("Requires abstract implementation")
+    def text(self) -> str:
+        """Text representation of model inputs and outputs outputs."""
+        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
+        settings = self.settings.text()
+        if self.has_results:
+            results = self.results.text(self.dataset)
+        else:
+            results = "Model has not successfully executed; no results available."
+
+        return "\n\n".join([name, settings, results])
 
     def plot(self):
         """

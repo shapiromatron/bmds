@@ -82,14 +82,14 @@ class TestBmdModelContinuous:
     @pytest.mark.skipif(not should_run, reason=skip_reason)
     def test_report(self, contds):
         model = continuous.Hill(dataset=contds)
-        text = model.report()
+        text = model.text()
         assert "Hill" in text
-        assert "Execution was not completed." in text
+        assert "Model has not successfully executed; no results available." in text
 
         model.execute()
-        text = model.report()
+        text = model.text()
         assert "Hill" in text
-        assert "Analysis of Deviance" in text
+        assert "Goodness of fit:" in text
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)

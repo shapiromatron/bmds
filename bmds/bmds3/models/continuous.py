@@ -106,22 +106,6 @@ class BmdModelContinuous(BmdModel):
         else:
             return [self.bmd_model_class.variance_params[0]]
 
-    def report(self) -> str:
-        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
-        if not self.has_results:
-            return "\n\n".join([name, "Execution was not completed."])
-
-        return "\n\n".join(
-            [
-                name,
-                f"Summary:\n{self.results.tbl()}",
-                f"Model Parameters:\n{self.results.parameters.tbl()}",
-                f"Goodness of Fit:\n{self.results.gof.tbl()}",
-                f"Analysis of Deviance:\n{self.results.deviance.tbl()}",
-                f"Tests of Interest:\n{self.results.tests.tbl()}",
-            ]
-        )
-
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str

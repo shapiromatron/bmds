@@ -7,14 +7,14 @@ from .models.base import BmdModel
 
 class SelectedModelSchema(BaseModel):
     model_index: Optional[conint(ge=0)] = None
-    notes: Optional[str] = None
+    notes: str = ""
 
     def deserialize(self, session) -> "SelectedModel":
         return SelectedModel(session, model_index=self.model_index, notes=self.notes)
 
 
 class SelectedModel:
-    def __init__(self, session, model_index: Optional[int] = None, notes: Optional[str] = None):
+    def __init__(self, session, model_index: Optional[int] = None, notes: str = ""):
         self.session = session
         self.model_index = model_index
         self.notes = notes

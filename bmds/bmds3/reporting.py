@@ -194,10 +194,6 @@ def write_models(report: Report, session: BmdsSession, header_level: int):
     header_style = styles.get_header_style(header_level)
     for model in session.models:
         report.document.add_paragraph(model.name(), header_style)
-        if not model.has_results:
-            message = "Model execution failed. No reports returned."
-            report.document.add_paragraph(message, styles.tbl_body)
-            continue
-
-        report.document.add_paragraph(model.results.text(model.dataset), styles.fixed_width)
-        report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+        if model.has_results:
+            report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+        report.document.add_paragraph(model.text(), styles.fixed_width)

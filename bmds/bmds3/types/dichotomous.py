@@ -24,18 +24,32 @@ from .structs import (
 
 
 class DichotomousRiskType(IntEnum):
-    eExtraRisk = 1
-    eAddedRisk = 2
+    ExtraRisk = 1
+    AddedRisk = 2
 
 
 class DichotomousModelSettings(BaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
-    bmr_type: DichotomousRiskType = DichotomousRiskType.eExtraRisk
+    bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def text(self) -> str:
+        return multi_lstrip(
+            f"""\
+        BMR Type: {self.bmr_type.name}
+        BMR: {self.bmr}
+        Alpha: {self.alpha}
+        Degree: {self.degree}
+        Samples: {self.samples}
+        Burn-in: {self.burnin}
+
+        Priors:
+        {self.priors}"""
+        )
 
 
 class DichotomousAnalysis(BaseModel):

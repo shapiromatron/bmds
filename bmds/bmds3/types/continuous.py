@@ -24,17 +24,17 @@ from .structs import (
 
 
 class ContinuousRiskType(IntEnum):
-    eAbsoluteDev = 1
-    eStandardDev = 2
-    eRelativeDev = 3
-    ePointEstimate = 4
-    eExtra = 5  # Not used
-    eHybrid_Extra = 6
-    eHybrid_Added = 7
+    AbsoluteDeviation = 1
+    StandardDeviation = 2
+    RelativeDeviation = 3
+    PointEstimate = 4
+    Extra = 5  # Not used
+    HybridExtra = 6
+    HybridAdded = 7
 
 
 class ContinuousModelSettings(BaseModel):
-    bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
+    bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
     is_increasing: Optional[bool]  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
@@ -44,6 +44,23 @@ class ContinuousModelSettings(BaseModel):
     degree: int = 0  # polynomial only
     burnin: int = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def text(self) -> str:
+        return multi_lstrip(
+            f"""\
+        Is increasing: {self.is_increasing}
+        Distribution type: {self.disttype.name}
+        BMR Type: {self.bmr_type.name}
+        BMR: {self.bmr}
+        Tail Probability: {self.tail_prob}
+        Alpha: {self.alpha}
+        Degree: {self.degree}
+        Samples: {self.samples}
+        Burn-in: {self.burnin}
+
+        Priors:
+        {self.priors}"""
+        )
 
 
 class ContinuousAnalysis(BaseModel):
