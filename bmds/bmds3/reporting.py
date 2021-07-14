@@ -1,19 +1,24 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ..constants import Dtype
 from ..datasets.base import DatasetBase
 from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
-from .constants import _pc_name_mapping
+
+if TYPE_CHECKING:
+    from .sessions import BmdsSession
 
 
-def write_dataset(report: Report, dataset: DatasetBase, header_level: int):
+def write_dataset(report: Report, dataset: DatasetBase):
     # TODO - doses dropped
     # TODO - dataset name (@ session level); session name if exists, else datset name, else dataset id, else "BMDS Session"
     styles = report.styles
     footnotes = TableFootnote()
 
-    report.document.add_paragraph("Input dataset", styles.header_2)
     hdr = styles.tbl_header
 
     dose_units_text = dataset._get_dose_units_text()
@@ -63,22 +68,8 @@ def write_dataset(report: Report, dataset: DatasetBase, header_level: int):
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 
-def write_summary_table(report: Report, session, header_level: int):
-    # TODO - collapse models
-    # TODO - dose units text
-    # TODO - summary notes
-    # TODO - add pvalue; for dichotomous it's `model.results.gof.p_value`, for continuous?
-    model_type = _pc_name_mapping[session.models[0].settings.priors.prior_class]
-    if "Frequentist" in model_type:
-        write_frequentist_table(report, session)
-    if "Bayesian" in model_type:
-        write_bayesian_table(report, session)
-
-
-def write_frequentist_table(report, session):
+def write_frequentist_table(report: Report, session: BmdsSession):
     styles = report.styles
-    report.document.add_paragraph("Frequentist Model Results", styles.header_2)
-    report.document.add_paragraph()
     hdr = report.styles.tbl_header
     body = report.styles.tbl_body
 
@@ -118,9 +109,8 @@ def write_frequentist_table(report, session):
         footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
 
 
-def write_model_average_table(report: Report, session, header_level: int):
+def write_model_average_table(report: Report, session: BmdsSession):
     styles = report.styles
-    report.document.add_paragraph("Model Average Summary", styles.header_2)
     hdr = styles.tbl_header
     body = styles.tbl_body
     tbl = report.document.add_table(2, 3, style=styles.table)
@@ -134,15 +124,13 @@ def write_model_average_table(report: Report, session, header_level: int):
     write_cell(tbl.cell(1, 2), session.model_average.results.bmdu, body)
 
 
-def plot_bma(report, session):
-    # placeholder for bma plot
+def plot_bma(report: Report, session: BmdsSession):
     styles = report.styles
-    report.document.add_paragraph("Model Average Plot", styles.header_2)
+    report.document.add_paragraph("TODO - add", styles.tbl_body)
 
 
-def write_bayesian_table(report, session):
+def write_bayesian_table(report: Report, session: BmdsSession):
     styles = report.styles
-    report.document.add_paragraph("Bayesian Model Results", styles.header_2)
     report.document.add_paragraph()
     hdr = report.styles.tbl_header
     body = report.styles.tbl_body
@@ -201,16 +189,15 @@ def write_bayesian_table(report, session):
         footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
 
 
-def write_models(report: Report, session, header_level: int):
+def write_models(report: Report, session: BmdsSession, header_level: int):
     styles = report.styles
-    report.document.add_paragraph("Models", styles.header_2)
+    header_style = styles.get_header_style(header_level)
     for model in session.models:
-        report.document.add_paragraph(model.name(), styles.header_2)
-
+        report.document.add_paragraph(model.name(), header_style)
         if not model.has_results:
-            report.document.add_paragraph(
-                "Model execution failed. No reports returned...", styles.tbl_body
-            )
+            message = "Model execution failed. No reports returned."
+            report.document.add_paragraph(message, styles.tbl_body)
             continue
+
         report.document.add_paragraph(model.results.text(model.dataset), styles.fixed_width)
         report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
