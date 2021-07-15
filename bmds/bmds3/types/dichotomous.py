@@ -9,8 +9,9 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
+from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
 from .priors import PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -23,18 +24,41 @@ from .structs import (
 
 
 class DichotomousRiskType(IntEnum):
-    eExtraRisk = 1
-    eAddedRisk = 2
+    ExtraRisk = 1
+    AddedRisk = 2
+
+
+_bmr_text_map = {
+    DichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
+    DichotomousRiskType.AddedRisk: "{:.0%} added risk",
+}
 
 
 class DichotomousModelSettings(BaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
-    bmr_type: DichotomousRiskType = DichotomousRiskType.eExtraRisk
+    bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def bmr_text(self) -> str:
+        return _bmr_text_map[self.bmr_type].format(self.bmr)
+
+    def text(self) -> str:
+        return multi_lstrip(
+            f"""\
+        BMR Type: {self.bmr_type.name}
+        BMR: {self.bmr}
+        Alpha: {self.alpha}
+        Degree: {self.degree}
+        Samples: {self.samples}
+        Burn-in: {self.burnin}
+        Prior class: {self.priors.prior_class.name}
+        Priors:
+        {self.priors.tbl()}"""
+        )
 
 
 class DichotomousAnalysis(BaseModel):
@@ -306,6 +330,23 @@ class DichotomousResult(BaseModel):
             parameters=parameters,
             deviance=deviance,
             plotting=plotting,
+        )
+
+    def text(self, dataset: DichotomousDataset) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+
+        Goodness of fit:
+        {self.gof.tbl(dataset)}
+
+        Parameters:
+        {self.parameters.tbl()}
+
+        Deviances:
+        {self.deviance.tbl()}
+        """
         )
 
     def tbl(self) -> str:
