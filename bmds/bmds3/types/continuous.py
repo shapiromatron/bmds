@@ -33,6 +33,17 @@ class ContinuousRiskType(IntEnum):
     HybridAdded = 7
 
 
+_bmr_text_map = {
+    ContinuousRiskType.AbsoluteDeviation: "{} absolute deviation",
+    ContinuousRiskType.StandardDeviation: "{} standard deviation",
+    ContinuousRiskType.RelativeDeviation: "{:.0%} relative deviation",
+    ContinuousRiskType.PointEstimate: "{} point estimation",
+    ContinuousRiskType.Extra: "{} extra",
+    ContinuousRiskType.HybridExtra: "{} hybrid extra",
+    ContinuousRiskType.HybridAdded: "{} hybrid.added",
+}
+
+
 class ContinuousModelSettings(BaseModel):
     bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
     is_increasing: Optional[bool]  # if None; autodetect used
@@ -44,6 +55,9 @@ class ContinuousModelSettings(BaseModel):
     degree: int = 0  # polynomial only
     burnin: int = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def bmr_text(self) -> str:
+        return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     def text(self) -> str:
         return multi_lstrip(

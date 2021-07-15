@@ -28,6 +28,12 @@ class DichotomousRiskType(IntEnum):
     AddedRisk = 2
 
 
+_bmr_text_map = {
+    DichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
+    DichotomousRiskType.AddedRisk: "{:.0%} added risk",
+}
+
+
 class DichotomousModelSettings(BaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
@@ -36,6 +42,9 @@ class DichotomousModelSettings(BaseModel):
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def bmr_text(self) -> str:
+        return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     def text(self) -> str:
         return multi_lstrip(

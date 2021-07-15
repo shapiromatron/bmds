@@ -126,7 +126,8 @@ class BmdModel:
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
-        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
+        title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text()}"
+        ax.set_title(title)
         ax.plot(
             self.results.plotting.dr_x,
             self.results.plotting.dr_y,
