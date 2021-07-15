@@ -93,20 +93,31 @@ def write_frequentist_table(report: Report, session: BmdsSession):
         else None
     )
     selected_index = session.selected.model_index
-    for idx, model in enumerate(session.models, start=1):
-        write_cell(tbl.cell(idx, 0), model.name(), body)
+    recommendations = session.recommender.results if session.recommendation_enabled else None
+    for idx, model in enumerate(session.models):
+        row = idx + 1
+        write_cell(tbl.cell(row, 0), model.name(), body)
         if recommended_index == idx:
-            footnotes.add_footnote(tbl.cell(idx, 0).paragraphs[0], "Recommended best-fitting model")
+            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
         if selected_index == idx:
-            footnotes.add_footnote(tbl.cell(idx, 0).paragraphs[0], session.selected.notes)
-        write_cell(tbl.cell(idx, 1), model.results.bmdl, body)
-        write_cell(tbl.cell(idx, 2), model.results.bmd, body)
-        write_cell(tbl.cell(idx, 3), model.results.bmdu, body)
-        write_cell(tbl.cell(idx, 4), model.get_gof_pvalue(), body)
-        write_cell(tbl.cell(idx, 5), model.results.fit.aic, body)
-        write_cell(tbl.cell(idx, 6), model.results.gof.roi, body)
-        write_cell(tbl.cell(idx, 7), model.results.gof.residual[0], body)
-        write_cell(tbl.cell(idx, 8), "", body)
+            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], session.selected.notes)
+        write_cell(tbl.cell(row, 1), model.results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model.results.bmd, body)
+        write_cell(tbl.cell(row, 3), model.results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model.get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 5), model.results.fit.aic, body)
+        write_cell(tbl.cell(row, 6), model.results.gof.roi, body)
+        write_cell(tbl.cell(row, 7), model.results.gof.residual[0], body)
+
+        cell = tbl.cell(row, 8)
+        if recommendations:
+            p = cell.paragraphs[0]
+            p.style = body
+            run = p.add_run(recommendations.bin_text(idx) + "\n")
+            run.bold = True
+            p.add_run(recommendations.notes_text(idx))
+        else:
+            write_cell(tbl.cell(row, 8), "-", body)
 
     # set column width
     widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])

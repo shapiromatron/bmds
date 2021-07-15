@@ -7,7 +7,7 @@ from docx.shared import Inches
 from .. import constants, datasets
 from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report
-from ..reporting.styling import float_formatter as default_float_formatter
+from ..utils import ff as default_float_formatter
 
 
 class Reporter:

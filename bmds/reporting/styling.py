@@ -2,12 +2,12 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from docx import Document
 from docx.shared import Inches
 from pydantic import BaseModel
 
 from ..plotting import close_figure
+from ..utils import ff
 
 
 class ReporterStyleGuide(BaseModel):
@@ -39,20 +39,7 @@ class Report(BaseModel):
         return Report(document=doc, styles=ReporterStyleGuide())
 
 
-def float_formatter(value):
-    if isinstance(value, str):
-        return value
-    elif abs(value) > 1e6:
-        return "{:.1E}".format(value)
-    elif value > 0 and value < 0.001:
-        return "<0.001"
-    elif np.isclose(value, int(value)):
-        return str(int(value))
-    else:
-        return "{:.3f}".format(value).rstrip("0")
-
-
-def write_cell(cell, value, style, formatter=float_formatter):
+def write_cell(cell, value, style, formatter=ff):
     if isinstance(value, float):
         value = formatter(value)
     cell.paragraphs[0].text = str(value)
