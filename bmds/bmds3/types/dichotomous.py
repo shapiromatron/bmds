@@ -9,9 +9,9 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
-from ...utils import multi_lstrip
+from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
 from .priors import PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -46,9 +46,9 @@ class DichotomousModelSettings(BaseModel):
         Degree: {self.degree}
         Samples: {self.samples}
         Burn-in: {self.burnin}
-
+        Prior class: {self.priors.prior_class.name}
         Priors:
-        {self.priors}"""
+        {self.priors.tbl()}"""
         )
 
 

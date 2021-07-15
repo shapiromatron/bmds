@@ -6,7 +6,7 @@ from bmds.bmds3 import constants
 
 @pytest.fixture
 def mock_prior():
-    t = constants.PriorType.eNone
+    t = constants.PriorType.Uniform
     return constants.ModelPriors(
         prior_class=constants.PriorClass.frequentist_restricted,
         priors=[

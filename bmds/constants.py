@@ -149,7 +149,7 @@ BIN_TYPES = (BIN_NO_CHANGE, BIN_WARNING, BIN_FAILURE)
 BIN_TEXT = {BIN_NO_CHANGE: "valid", BIN_WARNING: "warning", BIN_FAILURE: "failure"}
 BIN_ICON = {BIN_NO_CHANGE: "✓", BIN_WARNING: "?", BIN_FAILURE: "✕"}
 
-BOOL_ICON = {True: "✓", False: "✕"}
+BOOL_ICON = {True: "yes", False: "no"}  # unicode issues with Consolas font
 
 
 class LogicBin(enum.IntEnum):

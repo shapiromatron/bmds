@@ -106,6 +106,9 @@ class BmdModelContinuous(BmdModel):
         else:
             return [self.bmd_model_class.variance_params[0]]
 
+    def get_gof_pvalue(self) -> float:
+        return self.results.tests.p_values[3]
+
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str

@@ -176,6 +176,9 @@ class BmdModel:
     def to_dict(self) -> Dict:
         return self.serialize().dict()
 
+    def get_gof_pvalue(self) -> float:
+        raise NotImplementedError("Requires subclass implementation")
+
 
 class BmdModelSchema(BaseModel):
     @classmethod

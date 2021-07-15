@@ -9,9 +9,9 @@ from bmds.bmds3.constants import ContinuousModelChoices
 from bmds.datasets.continuous import ContinuousDatasets
 
 from ...constants import BOOL_ICON, Dtype
-from ...utils import multi_lstrip
+from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -57,9 +57,9 @@ class ContinuousModelSettings(BaseModel):
         Degree: {self.degree}
         Samples: {self.samples}
         Burn-in: {self.burnin}
-
+        Prior class: {self.priors.prior_class.name}
         Priors:
-        {self.priors}"""
+        {self.priors.tbl()}"""
         )
 
 
@@ -251,7 +251,7 @@ class ContinuousGof(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Dose|EstProb|Expected|Observed|Size|ScaledRes".split("|")
+        headers = "Dose|EstMean|CalcMean|ObsMean|EstStdev|CalcStdev|ObsStdev|Residual".split("|")
         data = []
         for idx in range(len(self.dose)):
             data.append(

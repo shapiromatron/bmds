@@ -42,8 +42,10 @@ class Report(BaseModel):
 def float_formatter(value):
     if isinstance(value, str):
         return value
-    elif value != 0 and abs(value) < 0.001 or abs(value) > 1e6:
+    elif abs(value) > 1e6:
         return "{:.1E}".format(value)
+    elif value > 0 and value < 0.001:
+        return "<0.001"
     elif np.isclose(value, int(value)):
         return str(int(value))
     else:

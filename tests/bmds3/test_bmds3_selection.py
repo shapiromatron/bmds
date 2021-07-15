@@ -26,12 +26,13 @@ class TestBmdsSelector:
         # show default undefined state
         assert session.selected.model is None
         assert session.selected.notes == ""
-        assert session.selected.no_model_selected is False
+        assert session.selected.no_model_selected is True
 
         # accept recommendation when model recommended
         session.accept_recommendation()
         assert session.selected.model is session.models[0]
         assert session.selected.notes == "Selected as best-fitting model"
+        assert session.selected.no_model_selected is False
 
         # accept recommendation when model recommended
         session.recommender.results.recommended_model_index = None

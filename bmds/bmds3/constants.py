@@ -1,8 +1,11 @@
 from enum import Enum, IntEnum
+from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy as np
 from pydantic import BaseModel
+
+from ..utils import pretty_table
 
 BMDS_BLANK_VALUE = -9999
 CDF_TABLE_SIZE = 99
@@ -154,9 +157,9 @@ class DistType(IntEnum):
 
 
 class PriorType(IntEnum):
-    eNone = 0
-    eNormal = 1
-    eLognormal = 2
+    Uniform = 0
+    Normal = 1
+    Lognormal = 2
 
 
 class Prior(BaseModel):
@@ -210,6 +213,14 @@ class ModelPriors(BaseModel):
             p += f"""\n{vps}"""
         p += "\n"
         return p
+
+    def tbl(self) -> str:
+        headers = "name|type|initial_value|stdev|min_value|max_value".split("|")
+        rows = [
+            (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
+            for p in chain(self.priors, self.variance_priors or ())
+        ]
+        return pretty_table(rows, headers)
 
     def get_prior(self, name: str) -> Prior:
         """Search all priors and return the match by name.

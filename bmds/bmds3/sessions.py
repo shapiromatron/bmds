@@ -46,11 +46,21 @@ class BmdsSession:
         self.recommender: Optional[Recommender] = None
         self.selected: SelectedModel = SelectedModel(self)
 
+    def add_default_bayesian_models(self, global_settings: Dict = None, model_average: bool = True):
+        global_settings = deepcopy(global_settings) if global_settings else {}
+        global_settings["priors"] = PriorClass.bayesian
+        for name in self.model_options[self.dataset.dtype].keys():
+            model_settings = deepcopy(global_settings)
+            if name in constants.VARIABLE_POLYNOMIAL:
+                model_settings.update(degree=2)
+            self.add_model(name, settings=model_settings)
+
+        if model_average and self.dataset.dtype is constants.Dtype.DICHOTOMOUS:
+            self.add_model_averaging()
+
     def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dataset.dtype].keys():
             model_settings = deepcopy(global_settings) if global_settings is not None else None
-
-            # TODO - change this; use `degree` in settings
             if name in constants.VARIABLE_POLYNOMIAL:
                 min_poly_order = 1 if name == constants.M_MultistageCancer else 2
                 max_poly_order = min(
@@ -255,9 +265,9 @@ class BmdsSession:
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
-            reporting.write_bayesian_table(report, self)
             if self.model_average:
                 reporting.plot_bma(report, self)
+            reporting.write_bayesian_table(report, self)
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)

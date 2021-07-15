@@ -91,6 +91,9 @@ class BmdModelDichotomous(BmdModel):
             results=self.results,
         )
 
+    def get_gof_pvalue(self) -> float:
+        return self.results.gof.p_value
+
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str

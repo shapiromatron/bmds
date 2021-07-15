@@ -87,12 +87,22 @@ def write_frequentist_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
 
     # write body
+    recommended_index = (
+        session.recommender.results.recommended_model_index
+        if session.has_recommended_model
+        else None
+    )
+    selected_index = session.selected.model_index
     for idx, model in enumerate(session.models, start=1):
         write_cell(tbl.cell(idx, 0), model.name(), body)
+        if recommended_index == idx:
+            footnotes.add_footnote(tbl.cell(idx, 0).paragraphs[0], "Recommended best-fitting model")
+        if selected_index == idx:
+            footnotes.add_footnote(tbl.cell(idx, 0).paragraphs[0], session.selected.notes)
         write_cell(tbl.cell(idx, 1), model.results.bmdl, body)
         write_cell(tbl.cell(idx, 2), model.results.bmd, body)
         write_cell(tbl.cell(idx, 3), model.results.bmdu, body)
-        write_cell(tbl.cell(idx, 4), "-", body)
+        write_cell(tbl.cell(idx, 4), model.get_gof_pvalue(), body)
         write_cell(tbl.cell(idx, 5), model.results.fit.aic, body)
         write_cell(tbl.cell(idx, 6), model.results.gof.roi, body)
         write_cell(tbl.cell(idx, 7), model.results.gof.residual[0], body)
@@ -100,33 +110,17 @@ def write_frequentist_table(report: Report, session: BmdsSession):
 
     # set column width
     widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
-    widths = widths / (widths.sum() / report.styles.portrait_width)
+    widths = widths / (widths.sum() / styles.portrait_width)
     for width, col in zip(widths, tbl.columns):
         set_column_width(col, width)
 
     # write footnote
     if len(footnotes) > 0:
-        footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
-
-
-def write_model_average_table(report: Report, session: BmdsSession):
-    styles = report.styles
-    hdr = styles.tbl_header
-    body = styles.tbl_body
-    tbl = report.document.add_table(2, 3, style=styles.table)
-
-    write_cell(tbl.cell(0, 0), "BMDL", hdr)
-    write_cell(tbl.cell(0, 1), "BMD", hdr)
-    write_cell(tbl.cell(0, 2), "BMDU", hdr)
-
-    write_cell(tbl.cell(1, 0), session.model_average.results.bmdl, body)
-    write_cell(tbl.cell(1, 1), session.model_average.results.bmd, body)
-    write_cell(tbl.cell(1, 2), session.model_average.results.bmdu, body)
+        footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 
 def plot_bma(report: Report, session: BmdsSession):
-    styles = report.styles
-    report.document.add_paragraph("TODO - add", styles.tbl_body)
+    pass  # TODO - implement!
 
 
 def write_bayesian_table(report: Report, session: BmdsSession):
@@ -149,19 +143,14 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
     ma = session.model_average
-    # write body
     for idx, model in enumerate(session.models, start=1):
         write_cell(tbl.cell(idx, 0), model.name(), body)
-        if ma:
-            write_cell(tbl.cell(idx, 1), ma.results.priors[idx - 1], body)
-            write_cell(tbl.cell(idx, 2), ma.results.posteriors[idx - 1], body)
-        else:
-            write_cell(tbl.cell(idx, 1), "-", body)
-            write_cell(tbl.cell(idx, 2), "-", body)
+        write_cell(tbl.cell(idx, 1), ma.results.priors[idx - 1] if ma else "-", body)
+        write_cell(tbl.cell(idx, 2), ma.results.posteriors[idx - 1] if ma else "-", body)
         write_cell(tbl.cell(idx, 3), model.results.bmdl, body)
         write_cell(tbl.cell(idx, 4), model.results.bmd, body)
         write_cell(tbl.cell(idx, 5), model.results.bmdu, body)
-        write_cell(tbl.cell(idx, 6), "-", body)
+        write_cell(tbl.cell(idx, 6), model.get_gof_pvalue(), body)
         write_cell(tbl.cell(idx, 7), model.results.gof.roi, body)
         write_cell(tbl.cell(idx, 8), model.results.gof.residual[0], body)
 
@@ -179,7 +168,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         write_cell(tbl.cell(idx, 8), "-", body)
 
     # set column width
-    widths = np.array([1.0, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 2.5])
+    widths = np.array([1, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 1, 1])
     widths = widths / (widths.sum() / report.styles.portrait_width)
     for width, col in zip(widths, tbl.columns):
         set_column_width(col, width)
