@@ -127,11 +127,9 @@ class BmdsSession:
         else:
             self.select(None, "No model was selected as a best-fitting model")
 
-    def execute_and_recommend(self, drop_doses=False):
+    def execute_and_recommend(self):
         self.execute()
         self.recommend()
-        if drop_doses:
-            raise NotImplementedError("TODO")
 
     def is_bayesian(self) -> bool:
         """Determine if models are using a bayesian or frequentist approach.
