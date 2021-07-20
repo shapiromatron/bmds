@@ -44,7 +44,7 @@ class BmdsLibraryManager:
         filename = base_name
         os_ = platform.system()
         if os_ == "Windows":
-            filename += ".dll"
+            filename += "-0.dll"
         elif os_ == "Linux":
             filename += ".so"
         elif os_ == "Darwin":
@@ -104,8 +104,16 @@ class BmdModel:
     def serialize(self) -> BaseModel:
         raise NotImplementedError("Requires abstract implementation")
 
-    def report(self) -> str:
-        raise NotImplementedError("Requires abstract implementation")
+    def text(self) -> str:
+        """Text representation of model inputs and outputs outputs."""
+        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
+        settings = self.settings.text()
+        if self.has_results:
+            results = self.results.text(self.dataset)
+        else:
+            results = "Model has not successfully executed; no results available."
+
+        return "\n\n".join([name, settings, results])
 
     def plot(self):
         """
@@ -118,7 +126,8 @@ class BmdModel:
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
-        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
+        title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text()}"
+        ax.set_title(title)
         ax.plot(
             self.results.plotting.dr_x,
             self.results.plotting.dr_y,
@@ -167,6 +176,9 @@ class BmdModel:
 
     def to_dict(self) -> Dict:
         return self.serialize().dict()
+
+    def get_gof_pvalue(self) -> float:
+        raise NotImplementedError("Requires subclass implementation")
 
 
 class BmdModelSchema(BaseModel):

@@ -4,6 +4,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
+from ...utils import ff
 from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
@@ -142,7 +143,7 @@ class ShouldBeGreaterThan(Check):
             return CheckResponse.success()
         return CheckResponse(
             logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} is less than threshold ({float(value):.3} < {threshold})",
+            message=f"{cls.failure_message_name} less than threshold ({ff(value)} < {threshold})",
         )
 
 
@@ -178,7 +179,7 @@ class ShouldBeLessThan(Check):
             return CheckResponse.success()
         return CheckResponse(
             logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} is greater than threshold ({float(value):.3} > {threshold})",
+            message=f"{cls.failure_message_name} greater than threshold ({ff(value)} > {threshold})",
         )
 
 
@@ -281,7 +282,7 @@ class VarianceFit(Check):
         if is_valid_number(p_value2) and constant_variance and p_value2 < rule_settings.threshold:
             return CheckResponse(
                 logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 2 = {p_value2})",
+                message=f"Variance model poorly fits dataset (p-value 2 = {ff(p_value2)})",
             )
 
         if (
@@ -291,7 +292,7 @@ class VarianceFit(Check):
         ):
             return CheckResponse(
                 logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 3 = {p_value3})",
+                message=f"Variance model poorly fits dataset (p-value 3 = {ff(p_value3)})",
             )
 
         return CheckResponse.success()
@@ -309,15 +310,11 @@ class VarianceType(Check):
         if is_valid_number(p_value2):
             # constant variance
             if constant_variance and p_value2 < threshold:
-                message = (
-                    f"Incorrect variance model (p-value 2 = {p_value2}), constant variance selected"
-                )
+                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), constant variance selected"
             elif not constant_variance and p_value2 > threshold:
-                message = (
-                    f"Incorrect variance model (p-value 2 = {p_value2}), modeled variance selected"
-                )
+                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), modeled variance selected"
         else:
-            message = f"Correct variance model cannot be determined (p-value 2 = {p_value2})"
+            message = f"Correct variance model cannot be determined (p-value 2 = {ff(p_value2)})"
 
         if message:
             return CheckResponse(logic_bin=rule_settings.failure_bin, message=message)
