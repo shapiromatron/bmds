@@ -1,11 +1,12 @@
 import json
 import os
 
+import numpy as np
 import pytest
 
 import bmds
 from bmds.bmds3.models import dichotomous
-from bmds.bmds3.types.dichotomous import DichotomousModelSettings
+from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
@@ -42,6 +43,21 @@ class TestBmdModelDichotomous:
         text = model.text()
         assert "Gamma" in text
         assert "Goodness of fit:" in text
+
+    @pytest.mark.skipif(not should_run, reason=skip_reason)
+    def test_risk_type(self, dichds):
+        # extra (default)
+        model = dichotomous.Logistic(dataset=dichds)
+        resp1 = model.execute()
+        assert model.settings.bmr_type is DichotomousRiskType.ExtraRisk
+
+        # added
+        model = dichotomous.Logistic(dataset=dichds, settings=dict(bmr_type=0))
+        resp2 = model.execute()
+        assert model.settings.bmr_type is DichotomousRiskType.AddedRisk
+
+        assert not np.isclose(resp1.bmd, resp2.bmd)
+        assert resp1.bmd < resp2.bmd
 
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
