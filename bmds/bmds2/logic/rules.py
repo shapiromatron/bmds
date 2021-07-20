@@ -1,9 +1,10 @@
+import abc
 import math
 
 from ... import constants
 
 
-class Rule:
+class Rule(abc.ABC):
     def __init__(self, failure_bin, **kwargs):
         self.failure_bin = failure_bin
         self.enabled = kwargs.get("enabled", True)
@@ -36,12 +37,13 @@ class Rule:
     def return_pass(self):
         return constants.BIN_NO_CHANGE, None
 
+    @abc.abstractmethod
     def apply_rule(self, dataset, output):
-        # return tuple of (bin, notes) associated with rule or None
-        raise NotImplementedError("Abstract method.")
+        """return tuple of (bin, notes) associated with rule or None"""
+        ...
 
-    def get_failure_message(self, *args):
-        raise NotImplementedError("Abstract method.")
+    def get_failure_message(self, *args) -> str:
+        return "An error occurred"
 
     def _is_valid_number(self, val):
         # Ensure number is an int or float, not equal to special case -999.
@@ -118,12 +120,13 @@ class GlobalFit(ShouldBeGreaterThan):
     field_name_verbose = "Goodness of fit p-value"
 
 
-class ShouldBeLessThan(Rule):
+class ShouldBeLessThan(Rule, abc.ABC):
     # Test fails if value is greater-than threshold.
     msg = ""  # w/ arguments for value and threshold
 
+    @abc.abstractmethod
     def get_value(self, dataset, output):
-        raise NotImplementedError("Requires implementation")
+        ...
 
     def apply_rule(self, dataset, output):
         val = self.get_value(dataset, output)
