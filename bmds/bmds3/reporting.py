@@ -58,7 +58,7 @@ def write_dataset(report: Report, dataset: DatasetBase):
             set_column_width(col, w)
 
     elif dataset.dtype is Dtype.CONTINUOUS_INDIVIDUAL:
-        raise NotImplementedError("TODO")
+        report.document.add_paragraph("TODO - add")
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")

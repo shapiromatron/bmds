@@ -189,24 +189,6 @@ def test_bmds3_continuous_session(contds):
     print(json.dumps(d))
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_continuous_individual_session(cidataset):
-    session = bmds.session.Bmds330(dataset=cidataset)
-    session.add_model(bmds.constants.M_Power)
-    session.add_model(bmds.constants.M_Hill)
-    session.add_model(bmds.constants.M_ExponentialM3)
-    session.add_model(bmds.constants.M_ExponentialM5)
-    session.add_model(bmds.constants.M_Linear)
-    session.add_model(bmds.constants.M_Polynomial, {"degree": 2})
-    # session.add_model(bmds.constants.M_Polynomial, {"degree": 3})  # TODO - segfault
-    session.execute()
-    for model in session.models:
-        model.results = model.execute()
-    d = session.to_dict()
-    # ensure json-serializable
-    print(json.dumps(d))
-
-
 @pytest.mark.skip  # TODO - after update to dll this test should succeed
 def test_decreasing_lognormal(negative_contds):
     """
