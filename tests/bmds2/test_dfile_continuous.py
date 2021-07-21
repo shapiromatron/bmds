@@ -2,10 +2,10 @@ from bmds import bmds2
 
 
 def test_calculated_variance_value(anova_dataset, bad_anova_dataset):
-    model = bmds2.models.Continuous(anova_dataset)
+    model = bmds2.models.Linear_221(anova_dataset)
     assert model.set_constant_variance_value() == 1
 
-    model = bmds2.models.Continuous(bad_anova_dataset)
+    model = bmds2.models.Linear_221(bad_anova_dataset)
     assert model.set_constant_variance_value() == 0
 
 

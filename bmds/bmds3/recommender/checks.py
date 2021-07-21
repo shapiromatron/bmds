@@ -155,7 +155,9 @@ class GoodnessOfFit(ShouldBeGreaterThan):
         if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
             return number_or_none(model.results.gof.p_value)
         elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            return 0  # TODO - fix
+            return model.results.tests.p_values[3]
+        else:
+            raise ValueError(f"Unknown dtype {dataset.dtype}")
 
 
 class GoodnessOfFitCancer(GoodnessOfFit):
@@ -265,8 +267,9 @@ class ControlStdevFit(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        # TODO - use correct value
-        return 3
+        modeled = model.results.gof.est_sd[0]
+        actual = model.results.gof.calc_sd[0]
+        return modeled / max(actual, 1e-6)
 
 
 # assorted checks

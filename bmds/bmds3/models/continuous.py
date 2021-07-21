@@ -84,9 +84,6 @@ class BmdModelContinuous(BmdModel):
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_restricted
 
-    def dr_curve(self, doses, params) -> np.ndarray:
-        raise NotImplementedError()
-
     def serialize(self) -> "BmdModelContinuousSchema":
         return BmdModelContinuousSchema(
             name=self.name(),

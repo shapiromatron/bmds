@@ -24,8 +24,8 @@ from .structs import (
 
 
 class DichotomousRiskType(IntEnum):
+    AddedRisk = 0
     ExtraRisk = 1
-    AddedRisk = 2
 
 
 _bmr_text_map = {
