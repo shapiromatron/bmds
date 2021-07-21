@@ -1,7 +1,10 @@
+from __future__ import annotations
+
+import abc
 import ctypes
 import logging
 import platform
-from typing import Dict, List, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Union
 
 from pydantic import BaseModel
 
@@ -9,7 +12,11 @@ from ... import plotting
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
 from ...utils import package_root
-from ..constants import BmdModelSchema
+from ..constants import BmdModelSchema as BmdModelClass
+
+if TYPE_CHECKING:
+    from ..sessions import BmdsSession
+
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +51,7 @@ class BmdsLibraryManager:
         filename = base_name
         os_ = platform.system()
         if os_ == "Windows":
-            filename += ".dll"
+            filename += "-0.dll"
         elif os_ == "Linux":
             filename += ".so"
         elif os_ == "Darwin":
@@ -69,13 +76,13 @@ class BmdsLibraryManager:
 InputModelSettings = Optional[Union[Dict, BaseModel]]
 
 
-class BmdModel:
+class BmdModel(abc.ABC):
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    bmd_model_class: BmdModelSchema
+    bmd_model_class: BmdModelClass
     model_version: str
 
     def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
@@ -92,20 +99,31 @@ class BmdModel:
     def has_results(self) -> bool:
         return self.results is not None and self.results.has_completed is True
 
+    @abc.abstractmethod
     def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
+    @abc.abstractmethod
     def execute(self) -> BaseModel:
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
     def execute_job(self):
         self.execute()
 
+    @abc.abstractmethod
     def serialize(self) -> BaseModel:
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
-    def report(self) -> str:
-        raise NotImplementedError("Requires abstract implementation")
+    def text(self) -> str:
+        """Text representation of model inputs and outputs outputs."""
+        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
+        settings = self.settings.text()
+        if self.has_results:
+            results = self.results.text(self.dataset)
+        else:
+            results = "Model has not successfully executed; no results available."
+
+        return "\n\n".join([name, settings, results])
 
     def plot(self):
         """
@@ -118,7 +136,8 @@ class BmdModel:
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
-        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name()}, ADD BMR")
+        title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text()}"
+        ax.set_title(title)
         ax.plot(
             self.results.plotting.dr_x,
             self.results.plotting.dr_y,
@@ -129,8 +148,9 @@ class BmdModel:
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
+    @abc.abstractmethod
     def get_param_names(self) -> List[str]:
-        raise NotImplementedError(...)
+        ...
 
     def _add_bmr_lines(self, ax):
         res = self.results
@@ -168,6 +188,10 @@ class BmdModel:
     def to_dict(self) -> Dict:
         return self.serialize().dict()
 
+    @abc.abstractmethod
+    def get_gof_pvalue(self) -> float:
+        ...
+
 
 class BmdModelSchema(BaseModel):
     @classmethod
@@ -183,7 +207,7 @@ class BmdModelSchema(BaseModel):
             raise ValueError(f"Invalid dtype: {dtype}")
 
 
-class BmdModelAveraging:
+class BmdModelAveraging(abc.ABC):
     """
     Captures modeling configuration for model execution.
     Should save no results form model execution or any dataset-specific settings.
@@ -192,18 +216,20 @@ class BmdModelAveraging:
     model_version = "BMDS330"
 
     def __init__(
-        self, dataset: DatasetType, models: List[BmdModel], settings: InputModelSettings = None
+        self, session: BmdsSession, models: List[BmdModel], settings: InputModelSettings = None,
     ):
-        self.dataset = dataset
+        self.session = session
         self.models = models
-        self.settings = self.get_model_settings(dataset, settings)
+        self.settings = self.get_model_settings(session.dataset, settings)
         self.results: Optional[BaseModel] = None
 
+    @abc.abstractmethod
     def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
+    @abc.abstractmethod
     def execute(self) -> BaseModel:
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
     def execute_job(self):
         self.results = self.execute()
@@ -212,8 +238,9 @@ class BmdModelAveraging:
     def has_results(self) -> bool:
         return self.results is not None
 
+    @abc.abstractmethod
     def serialize(self, session) -> "BmdModelAveragingSchema":
-        raise NotImplementedError("Requires abstract implementation")
+        ...
 
     def to_dict(self) -> Dict:
         return self.serialize.dict()
@@ -226,7 +253,5 @@ class BmdModelAveragingSchema(BaseModel):
 
         if dtype in (Dtype.DICHOTOMOUS, Dtype.DICHOTOMOUS_CANCER):
             return BmdModelAveragingDichotomousSchema
-        elif dtype in (Dtype.CONTINUOUS, Dtype.CONTINUOUS_INDIVIDUAL):
-            raise NotImplementedError()
         else:
             raise ValueError(f"Invalid dtype: {dtype}")

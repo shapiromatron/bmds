@@ -1,8 +1,11 @@
 from enum import Enum, IntEnum
+from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy as np
 from pydantic import BaseModel
+
+from ..utils import pretty_table
 
 BMDS_BLANK_VALUE = -9999
 CDF_TABLE_SIZE = 99
@@ -154,9 +157,9 @@ class DistType(IntEnum):
 
 
 class PriorType(IntEnum):
-    eNone = 0
-    eNormal = 1
-    eLognormal = 2
+    Uniform = 0
+    Normal = 1
+    Lognormal = 2
 
 
 class Prior(BaseModel):
@@ -204,22 +207,38 @@ class ModelPriors(BaseModel):
         ps = [self.priors[0].tbl_str_hdr()]
         ps.extend([p.tbl_str() for p in self.priors])
         ps = "\n".join(ps)
+        p = f"""{self.prior_class.name} <{self.prior_class.value}>\n{ps}"""
+        if self.variance_priors is not None:
+            vps = "\n".join([p.tbl_str() for p in self.variance_priors])
+            p += f"""\n{vps}"""
+        p += "\n"
+        return p
 
-        vps = ["<none>"]
+    def tbl(self) -> str:
+        headers = "name|type|initial_value|stdev|min_value|max_value".split("|")
+        rows = [
+            (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
+            for p in chain(self.priors, self.variance_priors or ())
+        ]
+        return pretty_table(rows, headers)
+
+    def get_prior(self, name: str) -> Prior:
+        """Search all priors and return the match by name.
+
+        Args:
+            name (str): prior name
+
+        Raises:
+            ValueError: if no value is found
+        """
+        for p in self.priors:
+            if p.name == name:
+                return p
         if self.variance_priors:
-            vps = [self.variance_priors[0].tbl_str_hdr()]
-            vps.extend([p.tbl_str() for p in self.variance_priors])
-        vps = "\n".join(vps)
-
-        return f"""
-{self.prior_class.name} <{self.prior_class.value}>
-Priors:
-{ps}
-Variance priors:
-{vps}"""
-
-    def to_table(self):
-        raise NotImplementedError()
+            for p in self.variance_priors:
+                if p.name == name:
+                    return p
+        raise ValueError(f"No parameter named {name}")
 
     def to_c(
         self, degree: Optional[int] = None, dist_type: Optional[DistType] = None

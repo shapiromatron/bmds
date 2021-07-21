@@ -3,6 +3,7 @@ from textwrap import dedent
 from typing import List, NamedTuple
 
 import numpy as np
+import numpy.typing as npt
 
 from .. import constants
 from .common import list_t_c
@@ -266,7 +267,7 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __init__(self, models: List[DichotomousAnalysisStruct]):
+    def __init__(self, models: List[DichotomousAnalysisStruct], model_weights: npt.NDArray):
         super().__init__()
 
         # list of floats
@@ -288,7 +289,7 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         self.np_actual_parms = self.np_nparms.copy()
         self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
         self.np_models = np.array([model.model for model in models], dtype=np.int32)
-        self.np_modelPriors = np.full(len(models), 1 / len(models), dtype=np.float64)
+        self.np_modelPriors = model_weights
 
         self.nparms = np.ctypeslib.as_ctypes(self.np_nparms)
         self.actual_parms = np.ctypeslib.as_ctypes(self.np_actual_parms)
@@ -382,9 +383,12 @@ class DichotomousMAStructs(NamedTuple):
     result: MAResultsStruct
 
     @classmethod
-    def from_session(cls, models) -> "DichotomousMAStructs":
+    def from_session(cls, models, weights) -> "DichotomousMAStructs":
+
         return cls(
-            analysis=DichotomousMAAnalysisStruct([model.structs.analysis for model in models]),
+            analysis=DichotomousMAAnalysisStruct(
+                [model.structs.analysis for model in models], weights
+            ),
             inputs=models[0].structs.analysis,
             dich_result=DichotomousMAResultStruct([model.structs.result for model in models]),
             result=MAResultsStruct(n_models=len(models)),

@@ -113,7 +113,7 @@ class TestChecks:
             model.results.gof.p_value = value
             resp = GoodnessOfFit.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
-            assert resp.message == "Goodness of fit p-value is less than threshold (0.09 < 0.1)"
+            assert resp.message == "Goodness of fit p-value less than threshold (0.09 < 0.1)"
 
     def test_less_than_rules(self, ddataset):
         dataset = mock.MagicMock()
@@ -133,7 +133,7 @@ class TestChecks:
             model.results.gof.roi = value
             resp = LargeRoi.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
-            assert resp.message == "Abs(Residual of interest) is greater than threshold (2.1 > 2.0)"
+            assert resp.message == "Abs(Residual of interest) greater than threshold (2.1 > 2.0)"
 
     def test_zero_df(self, ddataset):
         dataset = mock.MagicMock()

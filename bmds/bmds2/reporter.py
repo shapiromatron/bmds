@@ -7,7 +7,7 @@ from docx.shared import Inches
 from .. import constants, datasets
 from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report
-from ..reporting.styling import float_formatter as default_float_formatter
+from ..utils import ff as default_float_formatter
 
 
 class Reporter:
@@ -433,7 +433,7 @@ class Reporter:
             fig.clf()
 
             # print output file
-            self.doc.add_paragraph(model.outfile, style=self.styles.outfile)
+            self.doc.add_paragraph(model.outfile, style=self.styles.fixed_width)
         else:
             self.doc.add_paragraph("No .OUT file was created.")
 

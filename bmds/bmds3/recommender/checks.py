@@ -4,6 +4,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
+from ...utils import ff
 from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
@@ -142,7 +143,7 @@ class ShouldBeGreaterThan(Check):
             return CheckResponse.success()
         return CheckResponse(
             logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} is less than threshold ({float(value):.3} < {threshold})",
+            message=f"{cls.failure_message_name} less than threshold ({ff(value)} < {threshold})",
         )
 
 
@@ -154,7 +155,9 @@ class GoodnessOfFit(ShouldBeGreaterThan):
         if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
             return number_or_none(model.results.gof.p_value)
         elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            return 0  # TODO - fix
+            return model.results.tests.p_values[3]
+        else:
+            raise ValueError(f"Unknown dtype {dataset.dtype}")
 
 
 class GoodnessOfFitCancer(GoodnessOfFit):
@@ -178,7 +181,7 @@ class ShouldBeLessThan(Check):
             return CheckResponse.success()
         return CheckResponse(
             logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} is greater than threshold ({float(value):.3} > {threshold})",
+            message=f"{cls.failure_message_name} greater than threshold ({ff(value)} > {threshold})",
         )
 
 
@@ -264,8 +267,9 @@ class ControlStdevFit(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        # TODO - use correct value
-        return 3
+        modeled = model.results.gof.est_sd[0]
+        actual = model.results.gof.calc_sd[0]
+        return modeled / max(actual, 1e-6)
 
 
 # assorted checks
@@ -281,7 +285,7 @@ class VarianceFit(Check):
         if is_valid_number(p_value2) and constant_variance and p_value2 < rule_settings.threshold:
             return CheckResponse(
                 logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 2 = {p_value2})",
+                message=f"Variance model poorly fits dataset (p-value 2 = {ff(p_value2)})",
             )
 
         if (
@@ -291,7 +295,7 @@ class VarianceFit(Check):
         ):
             return CheckResponse(
                 logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 3 = {p_value3})",
+                message=f"Variance model poorly fits dataset (p-value 3 = {ff(p_value3)})",
             )
 
         return CheckResponse.success()
@@ -309,15 +313,11 @@ class VarianceType(Check):
         if is_valid_number(p_value2):
             # constant variance
             if constant_variance and p_value2 < threshold:
-                message = (
-                    f"Incorrect variance model (p-value 2 = {p_value2}), constant variance selected"
-                )
+                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), constant variance selected"
             elif not constant_variance and p_value2 > threshold:
-                message = (
-                    f"Incorrect variance model (p-value 2 = {p_value2}), modeled variance selected"
-                )
+                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), modeled variance selected"
         else:
-            message = f"Correct variance model cannot be determined (p-value 2 = {p_value2})"
+            message = f"Correct variance model cannot be determined (p-value 2 = {ff(p_value2)})"
 
         if message:
             return CheckResponse(logic_bin=rule_settings.failure_bin, message=message)

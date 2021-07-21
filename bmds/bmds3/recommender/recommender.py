@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -5,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, validator
 
-from ...constants import BIN_ICON, BIN_TEXT, LogicBin
+from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, LogicBin
 from ...datasets import DatasetBase
 from ..models.base import BmdModel
 from .checks import RULE_MAP, CheckResponse
@@ -82,6 +83,18 @@ class RecommenderResults(BaseModel):
     recommended_model_variable: Optional[str]
     model_bin: List[LogicBin] = []
     model_notes: List[Dict[int, List[str]]] = []
+
+    def bin_text(self, index: int) -> str:
+        model_bin = self.model_bin[index]
+        text = BIN_TEXT_BMDS3[model_bin]
+        if model_bin is LogicBin.NO_CHANGE:
+            rec = "Recommended" if self.recommended_model_index == index else "Alternate"
+            text = f"{text} - {rec}"
+        return text
+
+    def notes_text(self, index: int) -> str:
+        notes = self.model_notes[index].values()
+        return "\n".join(sorted([text for text in itertools.chain(*notes)], reverse=True))
 
 
 class RecommenderSchema(BaseModel):

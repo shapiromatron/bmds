@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -9,9 +9,10 @@ from bmds.bmds3.constants import ContinuousModelChoices
 from bmds.datasets.continuous import ContinuousDatasets
 
 from ...constants import BOOL_ICON, Dtype
+from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
-from .priors import ModelPriors
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
+from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
     ContinuousAnalysisStruct,
@@ -23,17 +24,28 @@ from .structs import (
 
 
 class ContinuousRiskType(IntEnum):
-    eAbsoluteDev = 1
-    eStandardDev = 2
-    eRelativeDev = 3
-    ePointEstimate = 4
-    eExtra = 5  # Not used
-    eHybrid_Extra = 6
-    eHybrid_Added = 7
+    AbsoluteDeviation = 1
+    StandardDeviation = 2
+    RelativeDeviation = 3
+    PointEstimate = 4
+    Extra = 5  # Not used
+    HybridExtra = 6
+    HybridAdded = 7
+
+
+_bmr_text_map = {
+    ContinuousRiskType.AbsoluteDeviation: "{} absolute deviation",
+    ContinuousRiskType.StandardDeviation: "{} standard deviation",
+    ContinuousRiskType.RelativeDeviation: "{:.0%} relative deviation",
+    ContinuousRiskType.PointEstimate: "{} point estimation",
+    ContinuousRiskType.Extra: "{} extra",
+    ContinuousRiskType.HybridExtra: "{} hybrid extra",
+    ContinuousRiskType.HybridAdded: "{} hybrid.added",
+}
 
 
 class ContinuousModelSettings(BaseModel):
-    bmr_type: ContinuousRiskType = ContinuousRiskType.eStandardDev
+    bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
     is_increasing: Optional[bool]  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
@@ -42,7 +54,27 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def bmr_text(self) -> str:
+        return _bmr_text_map[self.bmr_type].format(self.bmr)
+
+    def text(self) -> str:
+        return multi_lstrip(
+            f"""\
+        Is increasing: {self.is_increasing}
+        Distribution type: {self.disttype.name}
+        BMR Type: {self.bmr_type.name}
+        BMR: {self.bmr}
+        Tail Probability: {self.tail_prob}
+        Alpha: {self.alpha}
+        Degree: {self.degree}
+        Samples: {self.samples}
+        Burn-in: {self.burnin}
+        Prior class: {self.priors.prior_class.name}
+        Priors:
+        {self.priors.tbl()}"""
+        )
 
 
 class ContinuousAnalysis(BaseModel):
@@ -151,7 +183,7 @@ class ContinuousModelResult(BaseModel):
             dist=result.dist,
             loglikelihood=result.max,
             aic=summary.aic,
-            bic_equiv=np.nan_to_num(summary.BIC_equiv),  # TODO remove?
+            bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
@@ -233,7 +265,7 @@ class ContinuousGof(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Dose|EstProb|Expected|Observed|Size|ScaledRes".split("|")
+        headers = "Dose|EstMean|CalcMean|ObsMean|EstStdev|CalcStdev|ObsStdev|Residual".split("|")
         data = []
         for idx in range(len(self.dose)):
             data.append(
@@ -262,9 +294,9 @@ class ContinuousDeviance(BaseModel):
         aod = model.structs.aod
         return cls(
             names=["A1", "A2", "A3", "fitted", "reduced"],
-            loglikelihoods=np.nan_to_num(aod.np_LL).tolist(),  # TODO - remove np.nan_to_num
+            loglikelihoods=aod.np_LL.tolist(),
             num_params=aod.np_nParms.tolist(),
-            aics=np.nan_to_num(aod.np_AIC).tolist(),  # TODO - remove np.nan_to_num
+            aics=aod.np_AIC.tolist(),
         )
 
     def tbl(self) -> str:
@@ -288,9 +320,9 @@ class ContinuousTests(BaseModel):
         tests = model.structs.aod.toi_struct
         return cls(
             names=["p_test1", "p_test2", "p_test3", "p_test4"],
-            ll_ratios=np.nan_to_num(tests.np_llRatio).tolist(),  # TODO - remove np.nan_to_num
-            dfs=np.nan_to_num(tests.np_DF).tolist(),  # TODO - remove np.nan_to_num
-            p_values=np.nan_to_num(tests.np_pVal).tolist(),  # TODO - remove np.nan_to_num
+            ll_ratios=tests.np_llRatio.tolist(),
+            dfs=tests.np_DF.tolist(),
+            p_values=tests.np_pVal.tolist(),
         )
 
     def tbl(self) -> str:
@@ -312,12 +344,13 @@ class ContinuousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> "ContinuousPlotting":
-        dr_x = model.dataset.dose_linspace
         critical_xs = np.array(
             [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
         )
-        dr_y = model.dr_curve(dr_x, params)
-        critical_ys = model.dr_curve(critical_xs, params)
+        dr_x = model.dataset.dose_linspace
+        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
+        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
+        critical_ys = critical_xs * 0 if bad_params else model.dr_curve(critical_xs, params)
         return cls(
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
@@ -354,6 +387,26 @@ class ContinuousResult(BaseModel):
             ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")
+
+    def text(self, dataset: ContinuousDatasets) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+
+        Goodness of fit:
+        {self.gof.tbl()}
+
+        Parameters:
+        {self.parameters.tbl()}
+
+        Deviances:
+        {self.deviance.tbl()}
+
+        Tests:
+        {self.tests.tbl()}
+        """
+        )
 
     @classmethod
     def from_model(cls, model) -> "ContinuousResult":

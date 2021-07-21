@@ -2,12 +2,12 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from docx import Document
 from docx.shared import Inches
 from pydantic import BaseModel
 
 from ..plotting import close_figure
+from ..utils import ff
 
 
 class ReporterStyleGuide(BaseModel):
@@ -16,9 +16,14 @@ class ReporterStyleGuide(BaseModel):
     tbl_header: str = "bmdsTblHeader"
     tbl_body: str = "bmdsTblBody"
     tbl_footnote: str = "bmdsTblFootnote"
-    outfile: str = "bmdsOutputFile"
+    fixed_width: str = "bmdsOutputFile"
     header_1: str = "Heading 1"
     header_2: str = "Heading 2"
+    header_3: str = "Heading 3"
+    header_4: str = "Heading 4"
+
+    def get_header_style(self, level: int) -> str:
+        return getattr(self, f"header_{level}")
 
 
 class Report(BaseModel):
@@ -32,18 +37,7 @@ class Report(BaseModel):
         return Report(document=doc, styles=ReporterStyleGuide())
 
 
-def float_formatter(value):
-    if isinstance(value, str):
-        return value
-    elif value != 0 and abs(value) < 0.001 or abs(value) > 1e6:
-        return "{:.1E}".format(value)
-    elif np.isclose(value, int(value)):
-        return str(int(value))
-    else:
-        return "{:.3f}".format(value).rstrip("0")
-
-
-def write_cell(cell, value, style, formatter=float_formatter):
+def write_cell(cell, value, style, formatter=ff):
     if isinstance(value, float):
         value = formatter(value)
     cell.paragraphs[0].text = str(value)

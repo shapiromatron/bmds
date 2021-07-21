@@ -1,3 +1,4 @@
+import abc
 from typing import Dict, List, Optional, TypeVar
 
 import numpy as np
@@ -25,7 +26,7 @@ class DatasetMetadata(BaseModel):
         return "BMDS output results"
 
 
-class DatasetBase:
+class DatasetBase(abc.ABC):
     # Abstract parent-class for dataset-types.
 
     dtype: Dtype
@@ -34,17 +35,21 @@ class DatasetBase:
     DEFAULT_XLABEL = "Dose"
     DEFAULT_YLABEL = "Response"
 
+    @abc.abstractmethod
     def _validate(self):
-        raise NotImplementedError("Abstract method; requires implementation")
+        ...
 
+    @abc.abstractmethod
     def as_dfile(self):
-        raise NotImplementedError("Abstract method; requires implementation")
+        ...
 
+    @abc.abstractmethod
     def plot(self):
-        raise NotImplementedError("Abstract method; requires implementation")
+        ...
 
+    @abc.abstractmethod
     def drop_dose(self):
-        raise NotImplementedError("Abstract method; requires implementation")
+        ...
 
     @property
     def num_dose_groups(self):
@@ -89,14 +94,15 @@ class DatasetBase:
             label += f" ({self.metadata.response_units})"
         return label
 
+    @abc.abstractmethod
     def serialize(self) -> "DatasetSchemaBase":
-        raise NotImplementedError("Abstract method; requires implementation")
+        ...
 
 
 DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 
 
-class DatasetSchemaBase(BaseModel):
+class DatasetSchemaBase(BaseModel, abc.ABC):
     @classmethod
     def get_subclass(cls, dtype: Dtype) -> BaseModel:
         from .continuous import ContinuousDatasetSchema, ContinuousIndividualDatasetSchema
@@ -113,8 +119,9 @@ class DatasetSchemaBase(BaseModel):
         except KeyError:
             raise ValueError(f"Unknown dtype: {dtype}")
 
+    @abc.abstractmethod
     def deserialize(self) -> DatasetBase:
-        raise NotImplementedError("")
+        ...
 
 
 class DatasetPlottingSchema(BaseModel):

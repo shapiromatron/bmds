@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import logging
 from copy import copy, deepcopy
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
@@ -9,6 +13,7 @@ from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from . import reporting
+from .constants import PriorClass
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -45,16 +50,27 @@ class BmdsSession:
     ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
+        self.ma_weights: Optional[npt.NDArray] = None
         self.model_average: Optional[BmdModelAveraging] = None
         self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
         self.recommender: Optional[Recommender] = None
         self.selected: SelectedModel = SelectedModel(self)
 
+    def add_default_bayesian_models(self, global_settings: Dict = None, model_average: bool = True):
+        global_settings = deepcopy(global_settings) if global_settings else {}
+        global_settings["priors"] = PriorClass.bayesian
+        for name in self.model_options[self.dataset.dtype].keys():
+            model_settings = deepcopy(global_settings)
+            if name in constants.VARIABLE_POLYNOMIAL:
+                model_settings.update(degree=2)
+            self.add_model(name, settings=model_settings)
+
+        if model_average and self.dataset.dtype is constants.Dtype.DICHOTOMOUS:
+            self.add_model_averaging()
+
     def add_default_models(self, global_settings=None):
         for name in self.model_options[self.dataset.dtype].keys():
             model_settings = deepcopy(global_settings) if global_settings is not None else None
-
-            # TODO - change this; use `degree` in settings
             if name in constants.VARIABLE_POLYNOMIAL:
                 min_poly_order = 1 if name == constants.M_MultistageCancer else 2
                 max_poly_order = min(
@@ -74,12 +90,22 @@ class BmdsSession:
         instance = Model(dataset=self.dataset, settings=settings)
         self.models.append(instance)
 
-    def add_model_averaging(self):
+    def set_ma_weights(self, weights: Optional[npt.ArrayLike] = None):
+        if weights is None:
+            weights = np.full(len(self.models), 1 / len(self.models), dtype=np.float64)
+        if len(self.models) != len(weights):
+            raise ValueError(f"# model weights ({weights}) != num models {len(self.models)}")
+        weights = np.array(weights)
+        self.ma_weights = weights / weights.sum()
+
+    def add_model_averaging(self, weights: Optional[List[float]] = None):
         """
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
         """
-        instance = ma.BmdModelAveragingDichotomous(dataset=self.dataset, models=copy((self.models)))
+        if weights or self.ma_weights is None:
+            self.set_ma_weights(weights)
+        instance = ma.BmdModelAveragingDichotomous(session=self, models=copy((self.models)))
         self.model_average = instance
 
     def execute(self):
@@ -103,11 +129,36 @@ class BmdsSession:
         else:
             raise ValueError("Recommendation not enabled.")
 
-    def execute_and_recommend(self, drop_doses=False):
+    def select(self, model: Optional[BmdModel], notes: str = ""):
+        self.selected.select(model, notes)
+
+    @property
+    def has_recommended_model(self) -> bool:
+        return (
+            self.recommendation_enabled
+            and self.recommender.results.recommended_model_index is not None
+        )
+
+    def accept_recommendation(self):
+        """Select the recommended model, if one exists."""
+        if self.has_recommended_model:
+            index = self.recommender.results.recommended_model_index
+            self.select(self.models[index], "Selected as best-fitting model")
+        else:
+            self.select(None, "No model was selected as a best-fitting model")
+
+    def execute_and_recommend(self):
         self.execute()
         self.recommend()
-        if drop_doses:
-            raise NotImplementedError("TODO")
+
+    def is_bayesian(self) -> bool:
+        """Determine if models are using a bayesian or frequentist approach.
+
+        Looks at the first model's prior to determine if it's bayesian, else assume frequentist.
+        """
+        # TODO - fix; will not handle PriorClass.custom
+        first_class = self.models[0].settings.priors.prior_class
+        return first_class is PriorClass.bayesian
 
     # serializing
     # -----------
@@ -115,7 +166,7 @@ class BmdsSession:
         ...
 
     @classmethod
-    def from_serialized(cls, data: Dict) -> "BmdsSession":
+    def from_serialized(cls, data: Dict) -> BmdsSession:
         try:
             version = data["version"]["numeric"]
             dtype = data["dataset"]["dtype"]
@@ -269,14 +320,23 @@ class BmdsSession:
         if report is None:
             report = Report.build_default()
 
-        report.document.add_paragraph("Session results", report.styles.header_1)
-        reporting.write_dataset(report, self.dataset, header_level + 1)
-        reporting.write_summary_table(report, self, header_level + 1)
-        reporting.write_models(report, self, header_level + 1)
-        if self.model_average:
-            reporting.write_model_average_table(report, self, header_level + 1)
-            reporting.write_summary_table(report, self, header_level + 1)
-            reporting.plot_bma(report, self)
+        h1 = report.styles.get_header_style(header_level)
+        h2 = report.styles.get_header_style(header_level + 1)
+        report.document.add_paragraph("Session results", h1)
+        report.document.add_paragraph("Input dataset", h2)
+        reporting.write_dataset(report, self.dataset)
+
+        if self.is_bayesian():
+            report.document.add_paragraph("Bayesian Summary", h2)
+            if self.model_average:
+                reporting.plot_bma(report, self)
+            reporting.write_bayesian_table(report, self)
+        else:
+            report.document.add_paragraph("Frequentist Summary", h2)
+            reporting.write_frequentist_table(report, self)
+
+        report.document.add_paragraph("Individual model results", h2)
+        reporting.write_models(report, self, header_level + 2)
 
         return report.document
 

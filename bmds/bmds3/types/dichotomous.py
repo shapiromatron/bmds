@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Union
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
@@ -9,8 +9,10 @@ from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
+from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, list_t_c, pretty_table, residual_of_interest
+from .common import NumpyFloatArray, list_t_c, residual_of_interest
+from .priors import PriorClass
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -22,18 +24,41 @@ from .structs import (
 
 
 class DichotomousRiskType(IntEnum):
-    eExtraRisk = 1
-    eAddedRisk = 2
+    AddedRisk = 0
+    ExtraRisk = 1
+
+
+_bmr_text_map = {
+    DichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
+    DichotomousRiskType.AddedRisk: "{:.0%} added risk",
+}
 
 
 class DichotomousModelSettings(BaseModel):
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
-    bmr_type: DichotomousRiskType = DichotomousRiskType.eExtraRisk
+    bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: Optional[ModelPriors]  # if None; default used
+    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+
+    def bmr_text(self) -> str:
+        return _bmr_text_map[self.bmr_type].format(self.bmr)
+
+    def text(self) -> str:
+        return multi_lstrip(
+            f"""\
+        BMR Type: {self.bmr_type.name}
+        BMR: {self.bmr}
+        Alpha: {self.alpha}
+        Degree: {self.degree}
+        Samples: {self.samples}
+        Burn-in: {self.burnin}
+        Prior class: {self.priors.prior_class.name}
+        Priors:
+        {self.priors.tbl()}"""
+        )
 
 
 class DichotomousAnalysis(BaseModel):
@@ -121,7 +146,7 @@ class DichotomousModelResult(BaseModel):
         return DichotomousModelResult(
             loglikelihood=result.max,
             aic=summary.aic,
-            bic_equiv=np.nan_to_num(summary.BIC_equiv),  # TODO remove?
+            bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
             total_df=result.total_df,
@@ -192,7 +217,7 @@ class DichotomousParameters(BaseModel):
             names=model.get_param_names(),
             values=result.np_parms,
             bounded=summary.np_bounded,
-            se=np.nan_to_num(summary.np_stdErr),  # TODO - is this required?; se can be NaN
+            se=summary.np_stdErr,
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.nparms, result.nparms),
@@ -258,10 +283,11 @@ class DichotomousPlotting(BaseModel):
     @classmethod
     def from_model(cls, model, params) -> "DichotomousPlotting":
         structs = model.structs
-        dr_x = model.dataset.dose_linspace
         critical_xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
-        dr_y = model.dr_curve(dr_x, params)
-        critical_ys = model.dr_curve(critical_xs, params)
+        dr_x = model.dataset.dose_linspace
+        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
+        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
+        critical_ys = critical_xs * 0 if bad_params else model.dr_curve(critical_xs, params)
         return cls(
             dr_x=dr_x,
             dr_y=dr_y,
@@ -304,6 +330,23 @@ class DichotomousResult(BaseModel):
             parameters=parameters,
             deviance=deviance,
             plotting=plotting,
+        )
+
+    def text(self, dataset: DichotomousDataset) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+
+        Goodness of fit:
+        {self.gof.tbl(dataset)}
+
+        Parameters:
+        {self.parameters.tbl()}
+
+        Deviances:
+        {self.deviance.tbl()}
+        """
         )
 
     def tbl(self) -> str:

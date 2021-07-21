@@ -22,7 +22,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         return model
 
     def execute(self) -> DichotomousModelAverageResult:
-        structs = DichotomousMAStructs.from_session(self.models)
+        structs = DichotomousMAStructs.from_session(self.models, self.session.ma_weights)
         self.structs = structs
 
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
@@ -51,8 +51,6 @@ class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
 
     def deserialize(self, session) -> BmdModelAveragingDichotomous:
         models = [session.models[idx] for idx in self.model_indexes]
-        ma = BmdModelAveragingDichotomous(
-            dataset=session.dataset, models=models, settings=self.settings
-        )
+        ma = BmdModelAveragingDichotomous(session=session, models=models, settings=self.settings)
         ma.results = self.results
         return ma
