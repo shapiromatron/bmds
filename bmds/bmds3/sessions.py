@@ -4,6 +4,8 @@ import logging
 from copy import copy, deepcopy
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
@@ -41,6 +43,7 @@ class BmdsSession:
     ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
+        self.ma_weights: Optional[npt.NDArray] = None
         self.model_average: Optional[BmdModelAveraging] = None
         self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
         self.recommender: Optional[Recommender] = None
@@ -80,12 +83,22 @@ class BmdsSession:
         instance = Model(dataset=self.dataset, settings=settings)
         self.models.append(instance)
 
-    def add_model_averaging(self):
+    def set_ma_weights(self, weights: Optional[npt.ArrayLike] = None):
+        if weights is None:
+            weights = np.full(len(self.models), 1 / len(self.models), dtype=np.float64)
+        if len(self.models) != len(weights):
+            raise ValueError(f"# model weights ({weights}) != num models {len(self.models)}")
+        weights = np.array(weights)
+        self.ma_weights = weights / weights.sum()
+
+    def add_model_averaging(self, weights: Optional[List[float]] = None):
         """
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
         """
-        instance = ma.BmdModelAveragingDichotomous(dataset=self.dataset, models=copy((self.models)))
+        if weights or self.ma_weights is None:
+            self.set_ma_weights(weights)
+        instance = ma.BmdModelAveragingDichotomous(session=self, models=copy((self.models)))
         self.model_average = instance
 
     def execute(self):

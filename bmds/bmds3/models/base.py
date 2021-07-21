@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import abc
 import ctypes
 import logging
 import platform
-from typing import Dict, List, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Union
 
 from pydantic import BaseModel
 
@@ -10,7 +12,11 @@ from ... import plotting
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
 from ...utils import package_root
-from ..constants import BmdModelSchema
+from ..constants import BmdModelSchema as BmdModelClass
+
+if TYPE_CHECKING:
+    from ..sessions import BmdsSession
+
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +82,7 @@ class BmdModel(abc.ABC):
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    bmd_model_class: BmdModelSchema
+    bmd_model_class: BmdModelClass
     model_version: str
 
     def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
@@ -210,11 +216,11 @@ class BmdModelAveraging(abc.ABC):
     model_version = "BMDS330"
 
     def __init__(
-        self, dataset: DatasetType, models: List[BmdModel], settings: InputModelSettings = None
+        self, session: BmdsSession, models: List[BmdModel], settings: InputModelSettings = None,
     ):
-        self.dataset = dataset
+        self.session = session
         self.models = models
-        self.settings = self.get_model_settings(dataset, settings)
+        self.settings = self.get_model_settings(session.dataset, settings)
         self.results: Optional[BaseModel] = None
 
     @abc.abstractmethod
