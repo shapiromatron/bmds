@@ -76,9 +76,6 @@ class BmdModelDichotomous(BmdModel):
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_restricted
 
-    def dr_curve(self, doses, params) -> np.ndarray:
-        raise NotImplementedError()
-
     def get_param_names(self) -> List[str]:
         names = list(self.bmd_model_class.params)
         return names

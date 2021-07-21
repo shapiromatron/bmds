@@ -240,9 +240,6 @@ class ModelPriors(BaseModel):
                     return p
         raise ValueError(f"No parameter named {name}")
 
-    def to_table(self):
-        raise NotImplementedError()
-
     def to_c(
         self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
     ) -> np.ndarray:

@@ -1,3 +1,4 @@
+import abc
 import logging
 import os
 import subprocess
@@ -22,7 +23,7 @@ class RunStatus(IntEnum):
     DID_NOT_RUN = 3
 
 
-class BMDModel:
+class BMDModel(abc.ABC):
     """
     Parent class for individual BMDS models.
 
@@ -197,11 +198,12 @@ class BMDModel:
             raise err
         return parser.output
 
+    @abc.abstractmethod
     def as_dfile(self):
         """
         Represent this model in the BMDS (d) file input representation.
         """
-        raise NotImplementedError("Abstract method requires implementation")
+        ...
 
     def plot(self):
         """
@@ -241,11 +243,13 @@ class BMDModel:
 
         return fig
 
+    @abc.abstractmethod
     def get_ys(self, xs):
-        raise NotImplementedError("Abstract base method; requires implementation.")
+        ...
 
+    @abc.abstractmethod
     def get_bmr_text(self):
-        raise NotImplementedError()
+        ...
 
     def _add_bmr_lines(self, ax):
         # add BMD and BMDL lines to plot.
