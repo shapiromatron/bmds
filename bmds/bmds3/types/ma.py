@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 from pydantic import BaseModel
 
@@ -57,6 +55,18 @@ class DichotomousModelAverageResult(ModelAverageResult):
             dr_y=dr_y,
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmdl=self.bmdl, bmd=self.bmd, bmdu=self.bmdu,
+        )
+
+    def update_record_weights(self, d: dict, index: int) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            model_prior=self.priors[index], model_posterior=self.posteriors[index],
+        )

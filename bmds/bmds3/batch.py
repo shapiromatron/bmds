@@ -24,7 +24,7 @@ class BmdsSessionBatch:
         self.errors = []
 
     def to_df(self) -> pd.DataFrame:
-        dfs = [session.to_df(dropna=False) for session in self.sessions]
+        dfs = [session.to_df() for session in self.sessions]
         return pd.concat(dfs).dropna(axis=1, how="all").fillna("")
 
     def to_docx(self, report: Report = None, header_level: int = 1):

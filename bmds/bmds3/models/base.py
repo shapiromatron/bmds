@@ -220,11 +220,13 @@ class BmdModelAveraging(abc.ABC):
     ):
         self.session = session
         self.models = models
-        self.settings = self.get_model_settings(session.dataset, settings)
+        # if not settings are not specified copy settings from first model
+        initial_settings = settings if settings is not None else models[0].settings
+        self.settings = self.get_model_settings(initial_settings)
         self.results: Optional[BaseModel] = None
 
     @abc.abstractmethod
-    def get_model_settings(self, dataset: DatasetType, settings: InputModelSettings) -> BaseModel:
+    def get_model_settings(self, settings: InputModelSettings) -> BaseModel:
         ...
 
     @abc.abstractmethod

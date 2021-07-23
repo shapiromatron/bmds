@@ -41,3 +41,10 @@ class SelectedModel:
 
     def serialize(self) -> SelectedModelSchema:
         return SelectedModelSchema(model_index=self.model_index, notes=self.notes)
+
+    def update_record(self, d: dict, index: int) -> None:
+        """Update data record for a tabular-friendly export"""
+        is_selected = self.model_index == index
+        d.update(
+            selected=is_selected, selected_notes=self.notes if is_selected else None,
+        )

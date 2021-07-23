@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -183,73 +183,48 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self, dropna: bool = True) -> pd.DataFrame:
+    def to_df(self) -> pd.DataFrame:
         """
         Export an executed session to a pandas dataframe
-
-        Args:
-            dropna (bool, optional): Drop columns with missing data. Defaults to True.
 
         Returns:
             pd.DataFrame: A pandas dataframe
         """
 
-        def list_to_str(data, default=None):
-            if data is None:
-                return default
-            return "|".join([str(d) for d in data])
+        dataset_dict = {}
+        self.dataset.update_record(dataset_dict)
 
-        # build dataset
-        dataset_dict = dict(
-            dataset_id=self.dataset.metadata.id,
-            dataset_name=self.dataset.metadata.name,
-            doses=list_to_str(getattr(self.dataset, "doses", None)),
-            dose_name=self.dataset.metadata.dose_name,
-            dose_units=self.dataset.metadata.dose_units,
-            ns=list_to_str(getattr(self.dataset, "doses", None)),
-            means=list_to_str(getattr(self.dataset, "means", None)),
-            stdevs=list_to_str(getattr(self.dataset, "stdevs", None)),
-            incidences=list_to_str(getattr(self.dataset, "incidences", None)),
-            response_name=self.dataset.metadata.response_name,
-            response_units=self.dataset.metadata.response_units,
-        )
-
-        # build model rows
-        model_rows = []
-        model_row_names = [
-            "model_index",
-            "model_name",
-            "bmd",
-            "bmdl",
-            "bmdu",
-            "aic",
-            "params",
-        ]
-        for idx, model in enumerate(self.models):
-            model_rows.append(
-                [
-                    idx,
-                    model.name(),
-                    model.results.bmd,
-                    model.results.bmdl,
-                    model.results.bmdu,
-                    model.results.fit.aic,
-                    list_to_str(model.results.parameters.values),
-                ]
+        # add a row for each model
+        models = []
+        for model_index, model in enumerate(self.models):
+            d: dict[str, Any] = dict(
+                model_index=model_index, model_name=model.name(),
             )
-        df = pd.DataFrame(data=model_rows, columns=model_row_names)
+            model.settings.update_record(d)
+            model.results.update_record(d)
 
-        # add dataset rows
-        for key, value in dataset_dict.items():
-            df[key] = value
+            if self.recommendation_enabled and self.recommender.results is not None:
+                self.recommender.results.update_record(d, model_index)
+                self.selected.update_record(d, model_index)
 
-        # reorder
-        column_order = list(dataset_dict.keys()) + model_row_names
-        df = df.reindex(column_order, axis=1)
+            if self.model_average:
+                self.model_average.results.update_record_weights(d, model_index)
 
-        # drop empty columns
-        if dropna:
-            df = df.dropna(axis=1, how="all")
+            models.append(d)
+
+        # add model average row
+        if self.model_average:
+            d = dict(model_index=100, model_name="Model average",)
+            self.model_average.settings.update_record(d)
+            self.model_average.results.update_record(d)
+            models.append(d)
+
+        # merge dataset with other items in dataframe; reorder rows
+        df = pd.DataFrame(models)
+        columns = list(dataset_dict.keys())
+        columns.extend(df.columns.tolist())
+        df = df.assign(**dataset_dict)
+        df = df[columns]
 
         return df
 

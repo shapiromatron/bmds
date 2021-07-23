@@ -7,6 +7,7 @@ from simple_settings import settings
 
 from .. import constants, plotting
 from ..stats.anova import AnovaTests
+from ..utils import str_list
 from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
@@ -191,6 +192,16 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             metadata=self.metadata,
         )
 
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        super().update_record(d)
+        d.update(
+            dataset_doses=str_list(self.doses),
+            dataset_ns=str_list(self.ns),
+            dataset_stdevs=str_list(self.stdevs),
+            dataset_means=str_list(self.means),
+        )
+
 
 class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
@@ -362,6 +373,18 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
             responses=self.responses,
             anova=anova,
             metadata=self.metadata,
+        )
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        super().update_record(d)
+        d.update(
+            dataset_individual_doses=str_list(self.individual_doses),
+            dataset_responses=str_list(self.responses),
+            dataset_doses=str_list(self.doses),
+            dataset_ns=str_list(self.ns),
+            dataset_stdevs=str_list(self.stdevs),
+            dataset_means=str_list(self.means),
         )
 
 

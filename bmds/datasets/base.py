@@ -98,6 +98,16 @@ class DatasetBase(abc.ABC):
     def serialize(self) -> "DatasetSchemaBase":
         ...
 
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            dataset_name=self.metadata.name,
+            dataset_dose_name=self.metadata.dose_name,
+            dataset_dose_units=self.metadata.dose_units,
+            dataset_response_name=self.metadata.response_name,
+            dataset_response_units=self.metadata.response_units,
+        )
+
 
 DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 
