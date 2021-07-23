@@ -76,6 +76,19 @@ class ContinuousModelSettings(BaseModel):
         {self.priors.tbl()}"""
         )
 
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            is_increasing=self.is_increasing,
+            bmr=self.bmr,
+            bmr_type=self.bmr_type.name,
+            alpha=self.alpha,
+            tail_prop=self.tail_prob,
+            degree=self.degree,
+            dist_type=self.disttype.name,
+            prior_class=self.priors.prior_class.name,
+        )
+
 
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
@@ -423,4 +436,21 @@ class ContinuousResult(BaseModel):
             deviance=ContinuousDeviance.from_model(model),
             tests=ContinuousTests.from_model(model),
             plotting=ContinuousPlotting.from_model(model, params.values),
+        )
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmdl=self.bmdl,
+            bmd=self.bmd,
+            bmdu=self.bmdu,
+            aic=self.fit.aic,
+            loglikelihood=self.fit.loglikelihood,
+            p_value1=self.tests.p_values[0],
+            p_value2=self.tests.p_values[1],
+            p_value3=self.tests.p_values[2],
+            p_value4=self.tests.p_values[3],
+            model_df=self.fit.model_df,
+            total_df=self.fit.total_df,
+            chi_squared=self.fit.chisq,
         )

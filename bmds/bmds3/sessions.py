@@ -13,7 +13,7 @@ from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from . import reporting
-from .constants import PriorClass
+from .constants import PriorClass, _pc_name_mapping
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -21,7 +21,6 @@ from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, B
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
 from .types import sessions as schema
-from .constants import _pc_name_mapping
 
 logger = logging.getLogger(__name__)
 

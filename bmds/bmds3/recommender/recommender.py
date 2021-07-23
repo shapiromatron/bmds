@@ -96,6 +96,15 @@ class RecommenderResults(BaseModel):
         notes = self.model_notes[index].values()
         return "\n".join(sorted([text for text in itertools.chain(*notes)], reverse=True))
 
+    def update_record(self, d: dict, index: int) -> None:
+        """Update data record for a tabular-friendly export"""
+        notes = self.model_notes[index]
+        d.update(
+            recommended=(index == self.recommended_model_index),
+            recommendation_bin=self.bin_text(index),
+            recommendation_notes="\n".join(itertools.chain(notes[0], notes[1], notes[2])),
+        )
+
 
 class RecommenderSchema(BaseModel):
     settings: RecommenderSettings
