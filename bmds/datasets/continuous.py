@@ -196,11 +196,10 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         """Update data record for a tabular-friendly export"""
         super().update_record(d)
         d.update(
-            dataset_name=self.metadata.name,
-            dataset_dose_name=self.metadata.dose_name,
-            dataset_dose_units=self.metadata.dose_units,
-            dataset_response_name=self.metadata.response_name,
-            dataset_response_units=self.metadata.response_units,
+            dataset_doses=str_list(self.doses),
+            dataset_ns=str_list(self.ns),
+            dataset_stdevs=str_list(self.stdevs),
+            dataset_means=str_list(self.means),
         )
 
 
