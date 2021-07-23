@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -13,7 +13,7 @@ from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from . import reporting
-from .constants import PriorClass, _pc_name_mapping
+from .constants import PriorClass
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -23,12 +23,6 @@ from .selected import SelectedModel
 from .types import sessions as schema
 
 logger = logging.getLogger(__name__)
-
-
-def _list_to_str(data, default=None):
-    if data is None:
-        return default
-    return "|".join([str(d) for d in data])
 
 
 class BmdsSession:
@@ -189,118 +183,48 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self, dropna: bool = True) -> pd.DataFrame:
+    def to_df(self) -> pd.DataFrame:
         """
         Export an executed session to a pandas dataframe
-
-        Args:
-            dropna (bool, optional): Drop columns with missing data. Defaults to True.
 
         Returns:
             pd.DataFrame: A pandas dataframe
         """
-        # build dataset
-        dataset_dict = dict(
-            dataset_id=self.dataset.metadata.id,
-            dataset_name=self.dataset.metadata.name,
-            doses=_list_to_str(getattr(self.dataset, "doses", None)),
-            dose_name=self.dataset.metadata.dose_name,
-            dose_units=self.dataset.metadata.dose_units,
-            ns=_list_to_str(getattr(self.dataset, "doses", None)),
-            means=_list_to_str(getattr(self.dataset, "means", None)),
-            stdevs=_list_to_str(getattr(self.dataset, "stdevs", None)),
-            incidences=_list_to_str(getattr(self.dataset, "incidences", None)),
-            response_name=self.dataset.metadata.response_name,
-            response_units=self.dataset.metadata.response_units,
-        )
 
-        # build model rows
-        model_rows = []
-        model_cols = [
-            "model_index",
-            "model_name",
-            "bmdl",
-            "bmd",
-            "bmdu",
-            "p_value",
-            "Scaled Residual for Dose Group near BMD",
-            "Scaled Residueal for Control Dose Group",
-        ]
-        if self.dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-            bma = self.model_average
-            model_type = _pc_name_mapping[self.models[0].settings.priors.prior_class]
-            if "Frequentist" in model_type:
-                model_cols.extend(["AIC"])
-                for idx, model in enumerate(self.models):
-                    row = [
-                        idx,
-                        model.name(),
-                        model.results.bmdl,
-                        model.results.bmd,
-                        model.results.bmdu,
-                        "-",
-                        model.results.fit.aic,
-                        model.results.gof.roi,
-                        model.results.gof.residual[0],
-                    ]
-                    model_rows.append(row)
-            if "Bayesian" in model_type:
-                model_cols.extend(["Prior Weights"])
-                model_cols.extend(["Posterior Weights"])
-                for idx, model in enumerate(self.models):
-                    row = [
-                        idx,
-                        model.name(),
-                        model.results.bmdl,
-                        model.results.bmd,
-                        model.results.bmdu,
-                        model.results.gof.p_value,
-                        model.results.gof.roi,
-                        model.results.gof.residual[0],
-                        bma.results.priors[idx] if bma else "-",
-                        bma.results.posteriors[idx] if bma else "-",
-                    ]
-                    model_rows.append(row)
-        elif self.dataset.dtype in constants.CONTINUOUS_DTYPES:
-            raise NotImplementedError("...")
+        dataset_dict = {}
+        self.dataset.update_record(dataset_dict)
 
-        if self.recommendation_enabled:
-            model_cols.extend(
-                [
-                    "recommended",
-                    "recommended_bin",
-                    "recommended_notes-caution",
-                    "recommended_notes-warning",
-                    "recommended_notes-failure",
-                ]
+        # add a row for each model
+        models = []
+        for model_index, model in enumerate(self.models):
+            d: dict[str, Any] = dict(
+                model_index=model_index, model_name=model.name(),
             )
-            results = self.recommender.results
-            for i in range(len(results.model_bin)):
-                model_rows[i].extend(
-                    [
-                        f"yes-{results.recommended_model_variable}"
-                        if i == results.recommended_model_index
-                        else "no",
-                        results.model_bin[i].name,
-                        "\n".join(results.model_notes[i][0]),
-                        "\n".join(results.model_notes[i][1]),
-                        "\n".join(results.model_notes[i][2]),
-                    ]
-                )
+            model.settings.update_record(d)
+            model.results.update_record(d)
 
-        df = pd.DataFrame(data=model_rows, columns=model_cols)
+            if self.recommendation_enabled and self.recommender.results is not None:
+                self.recommender.results.update_record(d, model_index)
+                self.selected.update_record(d, model_index)
 
-        # add dataset rows
-        for key, value in dataset_dict.items():
-            df[key] = value
+            if self.model_average:
+                self.model_average.results.update_record_weights(d, model_index)
 
-        # reorder
-        column_order = list(dataset_dict.keys()) + model_cols
-        df = df.reindex(column_order, axis=1)
+            models.append(d)
 
-        # drop empty columns
-        if dropna:
-            df = df.dropna(axis=1, how="all")
+        # add model average row
+        if self.model_average:
+            d = dict(model_index=100, model_name="Model average",)
+            self.model_average.settings.update_record(d)
+            self.model_average.results.update_record(d)
+            models.append(d)
+
+        # merge dataset with other items in dataframe; reorder rows
+        df = pd.DataFrame(models)
+        columns = list(dataset_dict.keys())
+        columns.extend(df.columns.tolist())
+        df = df.assign(**dataset_dict)
+        df = df[columns]
 
         return df
 

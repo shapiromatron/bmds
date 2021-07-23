@@ -385,4 +385,6 @@ class DichotomousResult(BaseModel):
             model_df=self.fit.model_df,
             total_df=self.fit.total_df,
             chi_squared=self.fit.chisq,
+            residual_of_interest=self.gof.roi,
+            residual_at_lowest_dose=self.gof.residual[0],
         )
