@@ -5,6 +5,7 @@ from scipy import stats
 from simple_settings import settings
 
 from .. import constants, plotting
+from ..utils import str_list
 from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
@@ -168,6 +169,15 @@ class DichotomousDataset(DatasetBase):
             incidences=self.incidences,
             plotting=self.plot_data(),
             metadata=self.metadata,
+        )
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        super().update_record(d)
+        d.update(
+            dataset_doses=str_list(self.doses),
+            dataset_ns=str_list(self.ns),
+            dataset_incidences=str_list(self.incidences),
         )
 
 

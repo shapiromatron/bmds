@@ -1,7 +1,6 @@
 import ctypes
 from typing import List
 
-from ...datasets import DichotomousDataset
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
 from ..types.structs import DichotomousMAStructs
@@ -9,17 +8,13 @@ from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager
 
 
 class BmdModelAveragingDichotomous(BmdModelAveraging):
-    def get_model_settings(
-        self, dataset: DichotomousDataset, settings: InputModelSettings
-    ) -> DichotomousModelSettings:
+    def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
         if settings is None:
-            model = DichotomousModelSettings()
+            return DichotomousModelSettings()
         elif isinstance(settings, DichotomousModelSettings):
-            model = settings
+            return settings
         else:
-            model = DichotomousModelSettings.parse_obj(settings)
-
-        return model
+            return DichotomousModelSettings.parse_obj(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
         structs = DichotomousMAStructs.from_session(self.models, self.session.ma_weights)

@@ -60,6 +60,16 @@ class DichotomousModelSettings(BaseModel):
         {self.priors.tbl()}"""
         )
 
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmr=self.bmr,
+            bmr_type=self.bmr_type.name,
+            alpha=self.alpha,
+            degree=self.degree,
+            prior_class=self.priors.prior_class.name,
+        )
+
 
 class DichotomousAnalysis(BaseModel):
     """
@@ -362,3 +372,19 @@ class DichotomousResult(BaseModel):
             ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmdl=self.bmdl,
+            bmd=self.bmd,
+            bmdu=self.bmdu,
+            aic=self.fit.aic,
+            loglikelihood=self.fit.loglikelihood,
+            p_value=self.gof.p_value,
+            model_df=self.fit.model_df,
+            total_df=self.fit.total_df,
+            chi_squared=self.fit.chisq,
+            residual_of_interest=self.gof.roi,
+            residual_at_lowest_dose=self.gof.residual[0],
+        )

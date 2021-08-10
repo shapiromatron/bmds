@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 import tabulate
@@ -65,3 +66,7 @@ def ff(value) -> str:
         return str(int(value))
     else:
         return "{:.3f}".format(value).rstrip("0")
+
+
+def str_list(items: Iterable) -> str:
+    return ",".join([str(item) for item in items])
