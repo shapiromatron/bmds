@@ -17,7 +17,9 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             return DichotomousModelSettings.parse_obj(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
-        structs = DichotomousMAStructs.from_session(self.models, self.session.ma_weights)
+        structs = DichotomousMAStructs.from_session(
+            self.session.dataset, self.models, self.session.ma_weights
+        )
         self.structs = structs
 
         dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
