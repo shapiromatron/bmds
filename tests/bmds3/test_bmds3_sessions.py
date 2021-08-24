@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 import bmds
-from bmds.bmds3 import BmdsSession, BmdsSessionBatch
 from bmds import constants
+from bmds.bmds3 import BmdsSession, BmdsSessionBatch
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
