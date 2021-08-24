@@ -59,28 +59,27 @@ def write_dataset(report: Report, dataset: DatasetBase):
             set_column_width(col, w)
 
     elif dataset.dtype is Dtype.CONTINUOUS_INDIVIDUAL:
-        continuous_obj = {"doses": dataset.individual_doses, "responses": dataset.responses}
-        df = pd.DataFrame(
-            pd.DataFrame(continuous_obj).groupby("doses")["responses"].agg(list).reset_index()
+        # aggregate responses by unique doses
+        data = {"dose": dataset.individual_doses, "response": dataset.responses}
+        df = (
+            pd.DataFrame(data, dtype=str)
+            .groupby("dose")["response"]
+            .agg(list)
+            .str.join(", ")
+            .reset_index()
         )
 
         # create a table
-        tbl = report.document.add_table(df.shape[0] + 1, df.shape[1], style=styles.table)
+        tbl = report.document.add_table(df.shape[0] + 1, 2, style=styles.table)
 
         # add headers
-        for i in range(df.shape[-1]):
-            write_cell(tbl.cell(0, i), df.columns[i], hdr)
+        write_cell(tbl.cell(0, 0), "Dose", hdr)
+        write_cell(tbl.cell(0, 1), "Response", hdr)
 
         # write data
-        for j in range(df.shape[0]):
-            for i in range(df.shape[-1]):
-                write_cell(
-                    tbl.cell(j + 1, i),
-                    str(df.values[j, i])[1:-1]
-                    if isinstance(df.values[j, i], list)
-                    else df.values[j, i],
-                    styles.tbl_body,
-                )
+        for i, row in df.iterrows():
+            write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
+            write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")
