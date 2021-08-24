@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pandas as pd
 
 from ..constants import Dtype
 from ..datasets.base import DatasetBase
@@ -58,7 +59,22 @@ def write_dataset(report: Report, dataset: DatasetBase):
             set_column_width(col, w)
 
     elif dataset.dtype is Dtype.CONTINUOUS_INDIVIDUAL:
-        report.document.add_paragraph("TODO - add")
+        continuous_obj = {'doses': dataset.individual_doses, 'responses': dataset.responses}
+        df = pd.DataFrame(pd.DataFrame(continuous_obj).groupby('doses')[
+            'responses'].agg(list).reset_index())
+
+        # create a table
+        tbl = report.document.add_table(df.shape[0] + 1, df.shape[1], style=styles.table)
+
+        # add headers
+        for i in range(df.shape[-1]):
+            write_cell(tbl.cell(0, i), df.columns[i], hdr)
+
+        # write data
+        for j in range(df.shape[0]):
+            for i in range(df.shape[-1]):
+                write_cell(tbl.cell(j + 1, i), str(df.values[j, i])
+                           [1:-1] if isinstance(df.values[j, i], list) else df.values[j, i], styles.tbl_body)
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")

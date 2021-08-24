@@ -1,3 +1,4 @@
+from bmds import constants
 import json
 import os
 from pathlib import Path
@@ -117,6 +118,7 @@ class TestBmds330:
 class TestBmdsSessionBatch:
     def test_exports(self, dichds, contds, rewrite_data_files):
         # datasets = [dichds, contds]
+
         datasets = [dichds]
         batch = BmdsSessionBatch()
         for dataset in datasets:
@@ -137,3 +139,51 @@ class TestBmdsSessionBatch:
         if rewrite_data_files:
             df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
             docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
+
+    def test_exports_ci(self, cidataset, rewrite_data_files):
+        # datasets = [dichds, contds]
+
+        datasets = [cidataset]
+        batch = BmdsSessionBatch()
+        for dataset in datasets:
+            session = bmds.session.Bmds330(dataset=dataset)
+            # session.add_default_models()
+            session.add_model(constants.M_Power)
+            session.execute_and_recommend()
+            batch.sessions.append(session)
+
+        # check serialization/deserialization
+        data = batch.serialize()
+        batch2 = batch.deserialize(data)
+        assert len(batch2.sessions) == len(batch.sessions)
+
+        # check exports
+        df = batch.to_df()
+        docx = batch.to_docx()
+
+        df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
+        docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
+
+    def test_exports_cs(self, contds, rewrite_data_files):
+        # datasets = [dichds, contds]
+
+        datasets = [contds]
+        batch = BmdsSessionBatch()
+        for dataset in datasets:
+            session = bmds.session.Bmds330(dataset=dataset)
+            # session.add_default_models()
+            session.add_model(constants.M_Power)
+            session.execute_and_recommend()
+            batch.sessions.append(session)
+
+        # check serialization/deserialization
+        data = batch.serialize()
+        batch2 = batch.deserialize(data)
+        assert len(batch2.sessions) == len(batch.sessions)
+
+        # check exports
+        df = batch.to_df()
+        docx = batch.to_docx()
+
+        df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
+        docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
