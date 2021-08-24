@@ -116,9 +116,7 @@ class TestBmds330:
 
 @pytest.mark.skipif(not should_run, reason=skip_reason)
 class TestBmdsSessionBatch:
-    def test_exports(self, dichds, contds, rewrite_data_files):
-        # datasets = [dichds, contds]
-
+    def test_exports_dichotomous(self, dichds, rewrite_data_files):
         datasets = [dichds]
         batch = BmdsSessionBatch()
         for dataset in datasets:
@@ -137,17 +135,14 @@ class TestBmdsSessionBatch:
         docx = batch.to_docx()
 
         if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
-            docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
+            df.to_excel(Path("~/Desktop/bmds3-d-batch.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-d-batch.docx").expanduser())
 
-    def test_exports_ci(self, cidataset, rewrite_data_files):
-        # datasets = [dichds, contds]
-
-        datasets = [cidataset]
+    def test_exports_continuous(self, contds, cidataset, rewrite_data_files):
+        datasets = [contds, cidataset]
         batch = BmdsSessionBatch()
         for dataset in datasets:
             session = bmds.session.Bmds330(dataset=dataset)
-            # session.add_default_models()
             session.add_model(constants.M_Power)
             session.execute_and_recommend()
             batch.sessions.append(session)
@@ -161,29 +156,6 @@ class TestBmdsSessionBatch:
         df = batch.to_df()
         docx = batch.to_docx()
 
-        df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
-        docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
-
-    def test_exports_cs(self, contds, rewrite_data_files):
-        # datasets = [dichds, contds]
-
-        datasets = [contds]
-        batch = BmdsSessionBatch()
-        for dataset in datasets:
-            session = bmds.session.Bmds330(dataset=dataset)
-            # session.add_default_models()
-            session.add_model(constants.M_Power)
-            session.execute_and_recommend()
-            batch.sessions.append(session)
-
-        # check serialization/deserialization
-        data = batch.serialize()
-        batch2 = batch.deserialize(data)
-        assert len(batch2.sessions) == len(batch.sessions)
-
-        # check exports
-        df = batch.to_df()
-        docx = batch.to_docx()
-
-        df.to_excel(Path("~/Desktop/bmds3-batch.xlsx").expanduser(), index=False)
-        docx.save(Path("~/Desktop/bmds3-batch.docx").expanduser())
+        if rewrite_data_files:
+            df.to_excel(Path("~/Desktop/bmds3-c-batch.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-c-batch.docx").expanduser())
