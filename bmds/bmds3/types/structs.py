@@ -352,6 +352,8 @@ class MAResultsStruct(ctypes.Structure):
         ("bmd", ctypes.POINTER(ctypes.c_double)),
         ("bmdl", ctypes.POINTER(ctypes.c_double)),
         ("bmdu", ctypes.POINTER(ctypes.c_double)),
+        ("ebLower", ctypes.POINTER(ctypes.c_double)),
+        ("ebUpper", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __str__(self) -> str:
@@ -363,17 +365,23 @@ class MAResultsStruct(ctypes.Structure):
             bmd: {self.np_bmd}
             bmdl: {self.np_bmdl}
             bmdu: {self.np_bmdu}
+            ebLower: {self.np_ebLower}
+            ebUpper: {self.np_ebUpper}
             """
         )
 
-    def __init__(self, n_models: int):
+    def __init__(self, n_dose_groups: int, n_models: int):
         super().__init__()
         self.np_bmd = np.zeros(n_models, dtype=np.float64)
         self.np_bmdl = np.zeros(n_models, dtype=np.float64)
         self.np_bmdu = np.zeros(n_models, dtype=np.float64)
+        self.np_ebLower = np.zeros(n_dose_groups, dtype=np.float64)
+        self.np_ebUpper = np.zeros(n_dose_groups, dtype=np.float64)
         self.bmd = np.ctypeslib.as_ctypes(self.np_bmd)
         self.bmdl = np.ctypeslib.as_ctypes(self.np_bmdl)
         self.bmdu = np.ctypeslib.as_ctypes(self.np_bmdu)
+        self.ebLower = np.ctypeslib.as_ctypes(self.np_ebLower)
+        self.ebUpper = np.ctypeslib.as_ctypes(self.np_ebUpper)
 
 
 class DichotomousMAStructs(NamedTuple):
@@ -383,7 +391,7 @@ class DichotomousMAStructs(NamedTuple):
     result: MAResultsStruct
 
     @classmethod
-    def from_session(cls, models, weights) -> "DichotomousMAStructs":
+    def from_session(cls, dataset, models, weights) -> "DichotomousMAStructs":
 
         return cls(
             analysis=DichotomousMAAnalysisStruct(
@@ -391,7 +399,7 @@ class DichotomousMAStructs(NamedTuple):
             ),
             inputs=models[0].structs.analysis,
             dich_result=DichotomousMAResultStruct([model.structs.result for model in models]),
-            result=MAResultsStruct(n_models=len(models)),
+            result=MAResultsStruct(n_dose_groups=dataset.num_dose_groups, n_models=len(models)),
         )
 
     def __str__(self):

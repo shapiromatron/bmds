@@ -99,12 +99,12 @@ def test_bmds3_increasing(contds):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 3915.5),
-        (continuous.ExponentialM5, [27.567, 26.197, 29.089], 3072.2),
-        (continuous.Power, [25.862, 24.403, 29.478], 3069.8),
-        (continuous.Hill, [30.285, 26.506, 34.203], 3074.3),
-        (continuous.Linear, [25.856, 24.388, 27.451], 3067.8),
-        (continuous.Polynomial, [26.311, 24.478, 28.428], 3070.2),
+        (continuous.ExponentialM3, [52.866, 50.493, 55.422], 3187.6),
+        (continuous.ExponentialM5, [25.955, 24.578, 27.501], 3071.8),
+        (continuous.Power, [27.07, 24.034, 27.625], 3070.7),
+        (continuous.Hill, [26.513, 23.462, 30.448], 3071.9),
+        (continuous.Linear, [25.851, 24.355, 27.528], 3067.8),
+        (continuous.Polynomial, [25.866, 24.351, 28.653], 3067.8),
     ]:
         result = Model(contds).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
@@ -119,12 +119,12 @@ def test_bmds3_increasing(contds):
 def test_bmds3_decreasing(negative_contds):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4298.0),
-        (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4300.0),
-        (continuous.Power, [56.5, 54.3, 59.7], 3079.5),
-        (continuous.Hill, [-9999.0, -9999.0, -9999.0], 3927.8),
-        (continuous.Linear, [35.3, 33.1, 37.7], 3117.3),
-        (continuous.Polynomial, [50.1, 46.9, 57.3], 3077.1),
+        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4296.3),
+        (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4298.3),
+        (continuous.Power, [56.5, 49.8, 63.6], 3079.5),
+        (continuous.Hill, [101.5, 98.6, 104.8], 3170.9),
+        (continuous.Linear, [35.3, 33.1, 37.8], 3117.3),
+        (continuous.Polynomial, [52.5, 46.2, 59.9], 3076.6),
     ]:
         model = Model(negative_contds)
         result = model.execute()
@@ -140,21 +140,27 @@ def test_bmds3_decreasing(negative_contds):
 def test_bmds3_variance(contds):
     model = continuous.Power(contds, dict(disttype=DistType.normal))
     result = model.execute()
+    actual = [result.bmd, result.bmdl, result.bmdu]
+    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.normal
-    assert pytest.approx(result.bmd, abs=1.0) == 25.85
+    assert pytest.approx(actual, rel=0.05) == [27.07, 24.03, 27.63]
     assert len(result.parameters.values) == 4
 
     model = continuous.Power(contds, dict(disttype=DistType.normal_ncv))
     result = model.execute()
+    actual = [result.bmd, result.bmdl, result.bmdu]
+    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.normal_ncv
     assert len(result.parameters.values) == 5
-    assert pytest.approx(result.bmd, abs=1.0) == 14.5
+    assert pytest.approx(actual, rel=0.05) == [14.68, 13.06, 17.32]
 
     # only Power and Exp can be used
     model = continuous.Hill(contds, dict(disttype=DistType.log_normal))
     result = model.execute()
+    actual = [result.bmd, result.bmdl, result.bmdu]
+    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.log_normal
-    assert pytest.approx(result.bmd, abs=0.1) == 57.7
+    assert pytest.approx(actual, rel=0.05) == [59.04, 47.37, 77.65]
     assert len(result.parameters.values) == 5
 
 
