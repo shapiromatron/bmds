@@ -1,4 +1,3 @@
-from bmds import constants
 import json
 import os
 from pathlib import Path
@@ -7,6 +6,7 @@ import pytest
 
 import bmds
 from bmds.bmds3 import BmdsSession, BmdsSessionBatch
+from bmds import constants
 
 # TODO remove this restriction
 should_run = os.getenv("CI") is None
