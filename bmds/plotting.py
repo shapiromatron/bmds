@@ -10,7 +10,7 @@ __all__ = []
 PLOT_FIGSIZE = (8, 5)
 DPI = 100
 PLOT_MARGINS = 0.05
-DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k")
+DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k", capsize=3, lw=1)
 DATASET_INDIVIDUAL_FORMAT = dict(s=35, alpha=0.60, c="k")
 LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
 LINE_FORMAT = dict(c="#6470C0", lw=3)
