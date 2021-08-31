@@ -1,87 +1,64 @@
 import json
-import os
 
 # import numpy as np
 import pytest
+from run3 import RunBmds3
 
 import bmds
-from bmds.bmds3.constants import ContinuousModelIds, DistType
+from bmds import constants
+from bmds.bmds3.constants import DistType
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
-# TODO remove this restriction
-should_run = os.getenv("CI") is None
-skip_reason = "DLLs not present on CI"
-
-
-@pytest.fixture
-def contds():
-    return bmds.ContinuousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        means=[10, 20, 30, 40, 50],
-        stdevs=[3, 4, 5, 6, 7],
-    )
-
-
-@pytest.fixture
-def negative_contds():
-    return bmds.ContinuousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        means=[1, -5, -10, -20, -30],
-        stdevs=[3, 4, 5, 6, 7],
-    )
-
 
 class TestPriorOverrides:
-    def test_exp5(self, contds, negative_contds):
-        model = continuous.ExponentialM5(contds)
+    def test_exp5(self, cdataset2, negative_cdataset):
+        model = continuous.ExponentialM5(cdataset2)
         model.settings.priors.priors[2].name == "c"
         assert model.settings.priors.priors[2].min_value == 0
         assert model.settings.priors.priors[2].max_value == 18
 
-        model = continuous.ExponentialM5(negative_contds)
+        model = continuous.ExponentialM5(negative_cdataset)
         model.settings.priors.priors[2].name == "c"
         assert model.settings.priors.priors[2].min_value == -18
         assert model.settings.priors.priors[2].max_value == 0
 
-    def test_hill(self, contds, negative_contds):
+    def test_hill(self, cdataset2, negative_cdataset):
         # TODO - add ...
         ...
 
-    def test_poly(self, contds, negative_contds):
+    def test_poly(self, cdataset2, negative_cdataset):
         # TODO - add ...
         ...
 
 
 class TestBmdModelContinuous:
-    def test_get_param_names(self, contds):
+    def test_get_param_names(self, cdataset2):
         # test normal model case
         for m in [
-            continuous.Power(dataset=contds),
-            continuous.Power(dataset=contds, settings=dict(disttype=DistType.normal)),
-            continuous.Power(dataset=contds, settings=dict(disttype=DistType.log_normal)),
+            continuous.Power(dataset=cdataset2),
+            continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal)),
+            continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.log_normal)),
         ]:
             assert m.get_param_names() == ["g", "v", "n", "rho"]
-        m = continuous.Power(dataset=contds, settings=dict(disttype=DistType.normal_ncv))
+        m = continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal_ncv))
         assert m.get_param_names() == ["g", "v", "n", "rho", "alpha"]
 
         # test polynomial
-        model = continuous.Linear(dataset=contds)
+        model = continuous.Linear(dataset=cdataset2)
         assert model.get_param_names() == ["b0", "b1", "rho"]
-        model = continuous.Polynomial(dataset=contds)
+        model = continuous.Polynomial(dataset=cdataset2)
         assert model.get_param_names() == ["b0", "b1", "b2", "rho"]
-        model = continuous.Polynomial(dataset=contds, settings=dict(degree=3))
+        model = continuous.Polynomial(dataset=cdataset2, settings=dict(degree=3))
         assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho"]
         model = continuous.Polynomial(
-            dataset=contds, settings=dict(degree=3, disttype=DistType.normal_ncv)
+            dataset=cdataset2, settings=dict(degree=3, disttype=DistType.normal_ncv)
         )
         assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho", "alpha"]
 
-    @pytest.mark.skipif(not should_run, reason=skip_reason)
-    def test_report(self, contds):
-        model = continuous.Hill(dataset=contds)
+    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+    def test_report(self, cdataset2):
+        model = continuous.Hill(dataset=cdataset2)
         text = model.text()
         assert "Hill" in text
         assert "Model has not successfully executed; no results available." in text
@@ -92,8 +69,8 @@ class TestBmdModelContinuous:
         assert "Goodness of fit:" in text
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_increasing(contds):
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_increasing(cdataset2):
     """
     Basic tests to ensure AIC and BMD values are successfully created and stable for all model classes
     """
@@ -106,7 +83,7 @@ def test_bmds3_increasing(contds):
         (continuous.Linear, [25.851, 24.355, 27.528], 3067.8),
         (continuous.Polynomial, [25.866, 24.351, 28.653], 3067.8),
     ]:
-        result = Model(contds).execute()
+        result = Model(cdataset2).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
         # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)}),"
@@ -115,8 +92,8 @@ def test_bmds3_increasing(contds):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_decreasing(negative_contds):
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_decreasing(negative_cdataset):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
         (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4296.3),
@@ -126,7 +103,7 @@ def test_bmds3_decreasing(negative_contds):
         (continuous.Linear, [35.3, 33.1, 37.8], 3117.3),
         (continuous.Polynomial, [52.5, 46.2, 59.9], 3076.6),
     ]:
-        model = Model(negative_contds)
+        model = Model(negative_cdataset)
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
@@ -136,9 +113,9 @@ def test_bmds3_decreasing(negative_contds):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_variance(contds):
-    model = continuous.Power(contds, dict(disttype=DistType.normal))
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_variance(cdataset2):
+    model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
@@ -146,7 +123,7 @@ def test_bmds3_variance(contds):
     assert pytest.approx(actual, rel=0.05) == [27.07, 24.03, 27.63]
     assert len(result.parameters.values) == 4
 
-    model = continuous.Power(contds, dict(disttype=DistType.normal_ncv))
+    model = continuous.Power(cdataset2, dict(disttype=DistType.normal_ncv))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
@@ -155,7 +132,7 @@ def test_bmds3_variance(contds):
     assert pytest.approx(actual, rel=0.05) == [14.68, 13.06, 17.32]
 
     # only Power and Exp can be used
-    model = continuous.Hill(contds, dict(disttype=DistType.log_normal))
+    model = continuous.Hill(cdataset2, dict(disttype=DistType.log_normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
@@ -164,8 +141,8 @@ def test_bmds3_variance(contds):
     assert len(result.parameters.values) == 5
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_continuous_polynomial(contds):
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_continuous_polynomial(cdataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
         (1, [25.856, 24.388, 27.451], 3067.8),
@@ -174,7 +151,7 @@ def test_bmds3_continuous_polynomial(contds):
         (4, [25.591, 24.292, 27.578], 3070.1),
     ]:
         settings = ContinuousModelSettings(degree=degree)
-        result = continuous.Polynomial(contds, settings).execute()
+        result = continuous.Polynomial(cdataset2, settings).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
         # res = f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)}),"
@@ -183,9 +160,9 @@ def test_bmds3_continuous_polynomial(contds):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, degree
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
-def test_bmds3_continuous_session(contds):
-    session = bmds.session.Bmds330(dataset=contds)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_continuous_session(cdataset2):
+    session = bmds.session.Bmds330(dataset=cdataset2)
     session.add_default_models()
     session.execute()
     for model in session.models:
@@ -195,18 +172,12 @@ def test_bmds3_continuous_session(contds):
     print(json.dumps(d))
 
 
-@pytest.mark.skip  # TODO - after update to dll this test should succeed
-def test_decreasing_lognormal(negative_contds):
-    """
-    When using the lognormal distribution type, only exponential models should run;
-    all others should have the `has_completed` False
-    """
-    session = bmds.session.Bmds330(dataset=negative_contds)
-    session.add_default_models(global_settings=dict(disttype=DistType.log_normal))
+def test_decreasing_lognormal(negative_cdataset):
+    session = bmds.session.Bmds330(dataset=negative_cdataset)
+    settings = dict(disttype=DistType.log_normal, degree=2)
+    for model in (constants.M_ExponentialM3, constants.M_ExponentialM5, constants.M_Hill):
+        session.add_model(model, settings)
     session.execute()
     for model in session.models:
-        should_complete = model.bmd_model_class.id in [
-            ContinuousModelIds.c_exp_m3,
-            ContinuousModelIds.c_exp_m5,
-        ]
-        assert model.results.has_completed is should_complete
+        assert model.results.has_completed is True
+        assert model.results.bmd == -9999

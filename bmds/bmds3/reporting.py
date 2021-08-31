@@ -15,8 +15,6 @@ if TYPE_CHECKING:
 
 
 def write_dataset(report: Report, dataset: DatasetBase):
-    # TODO - doses dropped
-    # TODO - dataset name (@ session level); session name if exists, else datset name, else dataset id, else "BMDS Session"
     styles = report.styles
     footnotes = TableFootnote()
 
