@@ -122,7 +122,11 @@ class DichotomousDataset(DatasetBase):
             means, lls, uls = zip(
                 *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
             )
-            self._plot_data = DatasetPlottingSchema(mean=means, ll=lls, ul=uls)
+            self._plot_data = DatasetPlottingSchema(
+                mean=means,
+                ll=(np.array(means) - np.array(lls)).clip(0).tolist(),
+                ul=(np.array(uls) - np.array(means)).clip(0).tolist(),
+            )
         return self._plot_data
 
     def plot(self):
