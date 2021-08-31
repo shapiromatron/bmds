@@ -23,13 +23,30 @@ class TestPriorOverrides:
         assert model.settings.priors.priors[2].min_value == -18
         assert model.settings.priors.priors[2].max_value == 0
 
-    def test_hill(self, cdataset2, negative_cdataset):
-        # TODO - add ...
-        ...
+    def test_hill(self, cdataset2):
+        cv = continuous.Hill(cdataset2, settings=dict(disttype=DistType.normal)).settings.priors
+        assert cv.get_prior("v").min_value == -1e8
+
+        ln = continuous.Hill(cdataset2, settings=dict(disttype=DistType.log_normal)).settings.priors
+        assert ln.get_prior("v").min_value == -1e8
+
+        ncv = continuous.Hill(
+            cdataset2, settings=dict(disttype=DistType.normal_ncv)
+        ).settings.priors
+        assert ncv.get_prior("v").min_value == -1000
 
     def test_poly(self, cdataset2, negative_cdataset):
-        # TODO - add ...
-        ...
+        model = continuous.Polynomial(cdataset2)
+        model.settings.priors.priors[1].min_value == 0
+        model.settings.priors.priors[1].max_value == 1e8
+        model.settings.priors.priors[2].min_value == 0
+        model.settings.priors.priors[2].max_value == 1e8
+
+        model = continuous.Polynomial(negative_cdataset)
+        model.settings.priors.priors[1].min_value = -1e8
+        model.settings.priors.priors[1].max_value == 0
+        model.settings.priors.priors[2].min_value == -1e8
+        model.settings.priors.priors[2].max_value == 0
 
 
 class TestBmdModelContinuous:

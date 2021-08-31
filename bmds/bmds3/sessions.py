@@ -149,7 +149,7 @@ class BmdsSession:
 
         Looks at the first model's prior to determine if it's bayesian, else assume frequentist.
         """
-        # TODO - fix; will not handle PriorClass.custom
+        # TODO - fix with handle PriorClass.custom
         first_class = self.models[0].settings.priors.prior_class
         return first_class is PriorClass.bayesian
 
