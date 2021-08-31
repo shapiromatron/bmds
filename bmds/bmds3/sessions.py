@@ -251,9 +251,9 @@ class BmdsSession:
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
+            reporting.write_bayesian_table(report, self)
             if self.model_average:
                 reporting.plot_bma(report, self)
-            reporting.write_bayesian_table(report, self)
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)

@@ -125,6 +125,11 @@ class TestBmdsSessionBatch:
             session.execute_and_recommend()
             batch.sessions.append(session)
 
+            session = bmds.session.Bmds330(dataset=dataset)
+            session.add_default_bayesian_models()
+            session.execute()
+            batch.sessions.append(session)
+
         # check serialization/deserialization
         data = batch.serialize()
         batch2 = batch.deserialize(data)

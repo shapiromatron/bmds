@@ -152,7 +152,9 @@ def write_frequentist_table(report: Report, session: BmdsSession):
 
 
 def plot_bma(report: Report, session: BmdsSession):
-    pass  # TODO - implement!
+    if session.model_average.has_results:
+        fig = session.model_average.plot()
+        report.document.add_paragraph(add_mpl_figure(report.document, fig, 6))
 
 
 def write_bayesian_table(report: Report, session: BmdsSession):
