@@ -189,6 +189,7 @@ def test_bmds3_continuous_session(cdataset2):
     print(json.dumps(d))
 
 
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_decreasing_lognormal(negative_cdataset):
     session = bmds.session.Bmds330(dataset=negative_cdataset)
     settings = dict(disttype=DistType.log_normal, degree=2)
