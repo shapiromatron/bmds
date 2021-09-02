@@ -48,6 +48,26 @@ def cdataset():
 
 
 @pytest.fixture
+def cdataset2():
+    return bmds.ContinuousDataset(
+        doses=[0, 50, 100, 150, 200],
+        ns=[100, 100, 100, 100, 100],
+        means=[10, 20, 30, 40, 50],
+        stdevs=[3, 4, 5, 6, 7],
+    )
+
+
+@pytest.fixture
+def negative_cdataset():
+    return bmds.ContinuousDataset(
+        doses=[0, 50, 100, 150, 200],
+        ns=[100, 100, 100, 100, 100],
+        means=[1, -5, -10, -20, -30],
+        stdevs=[3, 4, 5, 6, 7],
+    )
+
+
+@pytest.fixture
 def cidataset():
     # fmt: off
     return bmds.ContinuousIndividualDataset(
@@ -77,6 +97,13 @@ def cidataset():
 def ddataset():
     return bmds.DichotomousDataset(
         doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
+    )
+
+
+@pytest.fixture
+def ddataset2():
+    return bmds.DichotomousDataset(
+        doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
     )
 
 

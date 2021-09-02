@@ -140,7 +140,7 @@ class Recommender:
             return
 
         if hasattr(dataset, "_anova"):
-            # force recalculation - TODO - fix? this shouldn't be necessary - is serialization is causing?
+            # force recalculation - TODO - fix? shouldn't be necessary - is serialization causing?
             del dataset._anova
             dataset.anova()
 

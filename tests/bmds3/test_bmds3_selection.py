@@ -1,25 +1,13 @@
-import os
-
 import pytest
+from run3 import RunBmds3
 
 import bmds
 
-# TODO remove this restriction
-should_run = os.getenv("CI") is None
-skip_reason = "DLLs not present on CI"
 
-
-@pytest.fixture
-def dichds():
-    return bmds.DichotomousDataset(
-        doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
-    )
-
-
-@pytest.mark.skipif(not should_run, reason=skip_reason)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmdsSelector:
-    def test_selection(self, dichds):
-        session = bmds.session.Bmds330(dataset=dichds)
+    def test_selection(self, ddataset2):
+        session = bmds.session.Bmds330(dataset=ddataset2)
         session.add_model(bmds.constants.M_Logistic)
         session.execute_and_recommend()
 

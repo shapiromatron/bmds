@@ -144,46 +144,13 @@ class BmdModel(abc.ABC):
             label=self.name(),
             **plotting.LINE_FORMAT,
         )
-        self._add_bmr_lines(ax)
+        plotting.add_bmr_lines(ax, self.results.bmd, self.results.bmdl, self.results.plotting.bmd_y)
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
     @abc.abstractmethod
     def get_param_names(self) -> List[str]:
         ...
-
-    def _add_bmr_lines(self, ax):
-        res = self.results
-        xdomain = ax.xaxis.get_view_interval()
-        xrng = xdomain[1] - xdomain[0]
-
-        if res.bmd > 0:
-            ax.plot(
-                [0, res.bmd], [res.plotting.bmd_y, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT
-            )
-            ax.plot(
-                [res.bmd, res.bmd], [0, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT,
-            )
-            ax.text(
-                res.bmd + xrng * 0.01,
-                0,
-                "BMD",
-                label="BMR, BMD, BMDL",
-                horizontalalignment="left",
-                verticalalignment="center",
-                **plotting.BMD_LABEL_FORMAT,
-            )
-
-        if res.bmdl > 0:
-            ax.plot([res.bmdl, res.bmdl], [0, res.plotting.bmd_y], **plotting.BMD_LINE_FORMAT)
-            ax.text(
-                res.bmdl - xrng * 0.01,
-                0,
-                "BMDL",
-                horizontalalignment="right",
-                verticalalignment="center",
-                **plotting.BMD_LABEL_FORMAT,
-            )
 
     def to_dict(self) -> Dict:
         return self.serialize().dict()
@@ -242,6 +209,10 @@ class BmdModelAveraging(abc.ABC):
 
     @abc.abstractmethod
     def serialize(self, session) -> "BmdModelAveragingSchema":
+        ...
+
+    @abc.abstractmethod
+    def plot(self):
         ...
 
     def to_dict(self) -> Dict:

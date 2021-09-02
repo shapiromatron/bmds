@@ -1,16 +1,11 @@
-import os
-
 # import numpy as np
 import pytest
+from run3 import RunBmds3
 
 from bmds.bmds3.models import continuous
 
-# TODO remove this restriction
-should_run = os.getenv("CI") is None
-skip_reason = "DLLs not present on CI"
 
-
-@pytest.mark.skipif(not should_run, reason=skip_reason)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_increasing(cidataset):
     for Model, bmd_values, aic in [
         (continuous.ExponentialM3, [394.278, 257.847, 877.507], 116.4),
