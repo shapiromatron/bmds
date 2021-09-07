@@ -1,18 +1,21 @@
-from tqdm.auto import tqdm
-from concurrent.futures import ProcessPoolExecutor
 import os
-import pandas as pd
+from concurrent.futures import ProcessPoolExecutor
 from enum import Enum
 
-from bmds.bmds2.models.continuous import Power_219, Hill_218, Polynomial_221, Exponential_M3_111, Exponential_M5_111
+import pandas as pd
+from tqdm.auto import tqdm
 
+from bmds.bmds2.models.continuous import (
+    Exponential_M3_111,
+    Exponential_M5_111,
+    Hill_218,
+    Polynomial_221,
+    Power_219,
+)
+from bmds.bmds3.models.continuous import ExponentialM3, ExponentialM5, Hill, Polynomial, Power
 
-from bmds.bmds3.models.continuous import Power, Hill, Polynomial, ExponentialM3, ExponentialM5
-
-
-from . import db
-from . import schemas, models
-from .shared import session_scope, _execute_bmds2_model, _execute_bmds3_model
+from . import db, models, schemas
+from .shared import _execute_bmds2_model, _execute_bmds3_model, session_scope
 
 
 class ContinuousModel(Enum):
@@ -23,19 +26,29 @@ class ContinuousModel(Enum):
     ExponentialM5 = "ExponentialM5"
 
 
-bmds2_models = [(Power_219, ContinuousModel.Power.value), (Hill_218, ContinuousModel.Hill.value), (Polynomial_221, ContinuousModel.Polynomial.value),
-                (Exponential_M3_111, ContinuousModel.ExponentialM3.value), (Exponential_M5_111, ContinuousModel.ExponentialM5.value)]
+bmds2_models = [
+    (Power_219, ContinuousModel.Power.value),
+    (Hill_218, ContinuousModel.Hill.value),
+    (Polynomial_221, ContinuousModel.Polynomial.value),
+    (Exponential_M3_111, ContinuousModel.ExponentialM3.value),
+    (Exponential_M5_111, ContinuousModel.ExponentialM5.value),
+]
 
 
-bmds3_models = [(Power, ContinuousModel.Power.value), (Hill, ContinuousModel.Hill.value), (Polynomial, ContinuousModel.Polynomial.value),
-                (ExponentialM3, ContinuousModel.ExponentialM3.value), (ExponentialM5, ContinuousModel.ExponentialM5.value)]
+bmds3_models = [
+    (Power, ContinuousModel.Power.value),
+    (Hill, ContinuousModel.Hill.value),
+    (Polynomial, ContinuousModel.Polynomial.value),
+    (ExponentialM3, ContinuousModel.ExponentialM3.value),
+    (ExponentialM5, ContinuousModel.ExponentialM5.value),
+]
 
 
 def _clean_dataset(ds):
     return schemas.ContinuousDatasetSchema(**ds).dict()
 
 
-def bulk_save_datasets(datasets: 'list[dict]'):
+def bulk_save_datasets(datasets: "list[dict]"):
     cleaned_datasets = map(_clean_dataset, datasets)
     objects = map(lambda ds: models.ContinuousDataset(**ds), cleaned_datasets)
     with session_scope() as session:
@@ -57,8 +70,7 @@ def _run_models(_models, version, execute):
                 futures = []
                 for ds in datasets:
                     m = Model(ds)
-                    future = executor.submit(
-                        execute, m, model_name, ds, version)
+                    future = executor.submit(execute, m, model_name, ds, version)
                     future.add_done_callback(lambda p: progress.update())
                     futures.append(future)
                 for future in futures:
@@ -90,12 +102,13 @@ def compare_versions(ver1, ver2, threshold):
         and {ver1}.dataset_id = {ver2}.dataset_id;
     """
     df = pd.read_sql(raw_sql, db.session.bind)
-    df["bmd_diff"] = (
-        (df[f"{ver1}_bmd"]-df[f"{ver2}_bmd"])/df[f"{ver1}_bmd"]).abs()
-    df["bmdl_diff"] = (
-        (df[f"{ver1}_bmdl"]-df[f"{ver2}_bmdl"])/df[f"{ver1}_bmdl"]).abs()
-    df["bmdu_diff"] = (
-        (df[f"{ver1}_bmdu"]-df[f"{ver2}_bmdu"])/df[f"{ver1}_bmdu"]).abs()
-    df["aic_diff"] = (
-        (df[f"{ver1}_aic"]-df[f"{ver2}_aic"])/df[f"{ver1}_aic"]).abs()
-    return df[(df["bmd_diff"] > threshold) | (df["bmdl_diff"] > threshold) | (df["bmdu_diff"] > threshold) | (df["aic_diff"] > threshold)]
+    df["bmd_diff"] = ((df[f"{ver1}_bmd"] - df[f"{ver2}_bmd"]) / df[f"{ver1}_bmd"]).abs()
+    df["bmdl_diff"] = ((df[f"{ver1}_bmdl"] - df[f"{ver2}_bmdl"]) / df[f"{ver1}_bmdl"]).abs()
+    df["bmdu_diff"] = ((df[f"{ver1}_bmdu"] - df[f"{ver2}_bmdu"]) / df[f"{ver1}_bmdu"]).abs()
+    df["aic_diff"] = ((df[f"{ver1}_aic"] - df[f"{ver2}_aic"]) / df[f"{ver1}_aic"]).abs()
+    return df[
+        (df["bmd_diff"] > threshold)
+        | (df["bmdl_diff"] > threshold)
+        | (df["bmdu_diff"] > threshold)
+        | (df["aic_diff"] > threshold)
+    ]

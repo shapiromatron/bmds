@@ -1,7 +1,10 @@
-from . import db
-import bmds
-import numpy as np
 import json
+
+import numpy as np
+
+import bmds
+
+from . import db
 
 
 class JSONEncodedDict(db.TypeDecorator):
@@ -31,10 +34,9 @@ class DichotomousDataset(db.Model):
 
     def to_bmds(self):
         return bmds.DichotomousDataset(
-            doses=np.array(self.doses.split(','), dtype=np.float).tolist(),
-            ns=np.array(self.ns.split(','), dtype=np.float).tolist(),
-            incidences=np.array(self.incidences.split(','),
-                                dtype=np.float).tolist(),
+            doses=np.array(self.doses.split(","), dtype=np.float).tolist(),
+            ns=np.array(self.ns.split(","), dtype=np.float).tolist(),
+            incidences=np.array(self.incidences.split(","), dtype=np.float).tolist(),
             id=self.id,
         )
 
@@ -53,10 +55,10 @@ class ContinuousDataset(db.Model):
 
     def to_bmds(self):
         return bmds.ContinuousDataset(
-            doses=np.array(self.doses.split(','), dtype=np.float).tolist(),
-            ns=np.array(self.ns.split(','), dtype=np.float).tolist(),
-            means=np.array(self.means.split(','), dtype=np.float).tolist(),
-            stdevs=np.array(self.stdevs.split(','), dtype=np.float).tolist(),
+            doses=np.array(self.doses.split(","), dtype=np.float).tolist(),
+            ns=np.array(self.ns.split(","), dtype=np.float).tolist(),
+            means=np.array(self.means.split(","), dtype=np.float).tolist(),
+            stdevs=np.array(self.stdevs.split(","), dtype=np.float).tolist(),
             id=self.id,
         )
 
