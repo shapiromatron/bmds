@@ -1,25 +1,14 @@
-import os
 from unittest import mock
 
 import pytest
 from pydantic import ValidationError
+from run3 import RunBmds3
 
 import bmds
 from bmds.bmds3.constants import BMDS_BLANK_VALUE
 from bmds.bmds3.recommender.checks import AicExists, GoodnessOfFit, LargeRoi, NoDegreesOfFreedom
 from bmds.bmds3.recommender.recommender import Recommender, RecommenderSettings, Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
-
-# TODO remove this restriction
-should_run = os.getenv("CI") is None
-skip_reason = "DLLs not present on CI"
-
-
-@pytest.fixture
-def dichds():
-    return bmds.DichotomousDataset(
-        doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
-    )
 
 
 class TestRecommenderSettings:
@@ -44,10 +33,10 @@ class TestRecommender:
         assert df.shape == (22, 6)
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestSessionRecommender:
-    def test_apply_logic_dich(self, dichds):
-        session = bmds.session.Bmds330(dataset=dichds)
+    def test_apply_logic_dich(self, ddataset2):
+        session = bmds.session.Bmds330(dataset=ddataset2)
         session.add_model(bmds.constants.M_DichotomousHill)
         session.add_model(bmds.constants.M_Gamma)
         session.execute_and_recommend()

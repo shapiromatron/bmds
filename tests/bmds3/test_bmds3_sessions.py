@@ -1,40 +1,19 @@
 import json
-import os
 from pathlib import Path
 
 import pytest
+from run3 import RunBmds3
 
 import bmds
 from bmds import constants
 from bmds.bmds3 import BmdsSession, BmdsSessionBatch
 
-# TODO remove this restriction
-should_run = os.getenv("CI") is None
-skip_reason = "DLLs not present on CI"
 
-
-@pytest.fixture
-def dichds():
-    return bmds.DichotomousDataset(
-        doses=[0, 50, 100, 150, 200], ns=[100, 100, 100, 100, 100], incidences=[0, 5, 30, 65, 90]
-    )
-
-
-@pytest.fixture
-def contds():
-    return bmds.ContinuousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        means=[10, 20, 30, 40, 50],
-        stdevs=[3, 4, 5, 6, 7],
-    )
-
-
-@pytest.mark.skipif(not should_run, reason=skip_reason)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmds330:
-    def test_serialization(self, dichds):
+    def test_serialization(self, ddataset2):
         # make sure serialize looks correct
-        session1 = bmds.session.Bmds330(dataset=dichds)
+        session1 = bmds.session.Bmds330(dataset=ddataset2)
         session1.add_default_models()
         session1.execute_and_recommend()
         d = session1.to_dict()
@@ -66,9 +45,9 @@ class TestBmds330:
         d2 = session2.serialize().dict()
         assert d1 == d2
 
-    def test_serialization_ma(self, dichds, data_path, rewrite_data_files):
+    def test_serialization_ma(self, ddataset2, data_path, rewrite_data_files):
         # make sure serialize looks correct
-        session1 = bmds.session.Bmds330(dataset=dichds)
+        session1 = bmds.session.Bmds330(dataset=ddataset2)
         session1.add_default_models()
         session1.add_model_averaging()
         session1.execute_and_recommend()
@@ -97,9 +76,9 @@ class TestBmds330:
         d2 = session2.serialize().dict()
         assert d1 == d2
 
-    def test_exports(self, dichds, rewrite_data_files):
+    def test_exports(self, ddataset2, rewrite_data_files):
         # make sure serialize looks correct
-        session = bmds.session.Bmds330(dataset=dichds)
+        session = bmds.session.Bmds330(dataset=ddataset2)
         session.add_default_models()
         session.execute_and_recommend()
 
@@ -114,15 +93,20 @@ class TestBmds330:
             docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
 
 
-@pytest.mark.skipif(not should_run, reason=skip_reason)
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmdsSessionBatch:
-    def test_exports_dichotomous(self, dichds, rewrite_data_files):
-        datasets = [dichds]
+    def test_exports_dichotomous(self, ddataset2, rewrite_data_files):
+        datasets = [ddataset2]
         batch = BmdsSessionBatch()
         for dataset in datasets:
             session = bmds.session.Bmds330(dataset=dataset)
             session.add_default_models()
             session.execute_and_recommend()
+            batch.sessions.append(session)
+
+            session = bmds.session.Bmds330(dataset=dataset)
+            session.add_default_bayesian_models()
+            session.execute()
             batch.sessions.append(session)
 
         # check serialization/deserialization
@@ -138,8 +122,8 @@ class TestBmdsSessionBatch:
             df.to_excel(Path("~/Desktop/bmds3-d-batch.xlsx").expanduser(), index=False)
             docx.save(Path("~/Desktop/bmds3-d-batch.docx").expanduser())
 
-    def test_exports_continuous(self, contds, cidataset, rewrite_data_files):
-        datasets = [contds, cidataset]
+    def test_exports_continuous(self, cdataset2, cidataset, rewrite_data_files):
+        datasets = [cdataset2, cidataset]
         batch = BmdsSessionBatch()
         for dataset in datasets:
             session = bmds.session.Bmds330(dataset=dataset)

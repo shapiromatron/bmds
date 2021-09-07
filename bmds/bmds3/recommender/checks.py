@@ -331,11 +331,11 @@ class NoDegreesOfFreedom(Check):
         if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
             value = model.results.gof.df
         elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            value = 1  # TODO - fix
+            value = model.results.fit.total_df
         else:
             raise ValueError("Unknown dtype")
 
-        if value > 0:
+        if value > constants.ZEROISH:
             return CheckResponse.success()
         else:
             return CheckResponse(
@@ -347,7 +347,6 @@ class NoDegreesOfFreedom(Check):
 class Warnings(Check):
     @classmethod
     def apply_rule(cls, settings, dataset, output) -> CheckResponse:
-        # TODO - doesn't exist with bmds3?
         return CheckResponse.success()
 
 
