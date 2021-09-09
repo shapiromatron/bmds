@@ -25,24 +25,29 @@ class ContinuousModel(Enum):
     ExponentialM3 = "ExponentialM3"
     ExponentialM5 = "ExponentialM5"
 
-
-bmds2_models = [
+model_dict={
+    "bmds2":[
     (Power_219, ContinuousModel.Power.value),
     (Hill_218, ContinuousModel.Hill.value),
     (Polynomial_221, ContinuousModel.Polynomial.value),
     (Exponential_M3_111, ContinuousModel.ExponentialM3.value),
     (Exponential_M5_111, ContinuousModel.ExponentialM5.value),
-]
-
-
-bmds3_models = [
+],
+"bmds3":[
     (Power, ContinuousModel.Power.value),
     (Hill, ContinuousModel.Hill.value),
     (Polynomial, ContinuousModel.Polynomial.value),
     (ExponentialM3, ContinuousModel.ExponentialM3.value),
     (ExponentialM5, ContinuousModel.ExponentialM5.value),
 ]
+}
+execute_dict={
+    "bmds2":_execute_bmds2_model,
+    "bmds3":_execute_bmds3_model
+}
 
+def getModels(version):
+    return model_dict[version]
 
 def _clean_dataset(ds):
     return schemas.ContinuousDatasetSchema(**ds).dict()
@@ -58,19 +63,18 @@ def bulk_save_datasets(datasets: "list[dict]"):
 def get_datasets():
     return list(map(lambda obj: obj.to_bmds(), models.ContinuousDataset.query.all()))
 
-
-def _run_models(_models, version, execute):
-    # get 10
+#_models, version, execute
+def runContinuousModels(version):
     datasets = get_datasets()[:10]
     results = []
     nprocs = max(os.cpu_count() - 1, 1)
-    for Model, model_name in tqdm(_models):
+    for Model, model_name in tqdm(model_dict[version]):
         with ProcessPoolExecutor(max_workers=nprocs) as executor:
             with tqdm(datasets, leave=False) as progress:
                 futures = []
                 for ds in datasets:
                     m = Model(ds)
-                    future = executor.submit(execute, m, model_name, ds, version)
+                    future = executor.submit(execute_dict[version], m, model_name, ds, version)
                     future.add_done_callback(lambda p: progress.update())
                     futures.append(future)
                 for future in futures:
@@ -79,13 +83,6 @@ def _run_models(_models, version, execute):
     with session_scope() as session:
         session.bulk_save_objects(objects)
 
-
-def run_bmds2_models():
-    _run_models(bmds2_models, "bmds2", _execute_bmds2_model)
-
-
-def run_bmds3_models(version: str):
-    _run_models(bmds3_models, version, _execute_bmds3_model)
 
 
 def compare_versions(ver1, ver2, threshold):

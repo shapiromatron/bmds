@@ -37,8 +37,8 @@ class DichotomousModel(Enum):
     Probit = "Probit"
     Weibull = "Weibull"
 
-
-bmds2_models = [
+model_dict={
+    "bmds2": [
     (DichotomousHill_13, DichotomousModel.DichotomousHill.value),
     (Gamma_217, DichotomousModel.Gamma.value),
     (Logistic_215, DichotomousModel.Logistic.value),
@@ -46,10 +46,8 @@ bmds2_models = [
     (LogProbit_34, DichotomousModel.LogProbit.value),
     (Probit_34, DichotomousModel.Probit.value),
     (Weibull_217, DichotomousModel.Weibull.value),
-]
-
-
-bmds3_models = [
+],
+"bmds3":[
     (DichotomousHill, DichotomousModel.DichotomousHill.value),
     (Gamma, DichotomousModel.Gamma.value),
     (Logistic, DichotomousModel.Logistic.value),
@@ -58,8 +56,11 @@ bmds3_models = [
     (Probit, DichotomousModel.Probit.value),
     (Weibull, DichotomousModel.Weibull.value),
 ]
-
-
+}
+execute_dict={
+    "bmds2":_execute_bmds2_model,
+    "bmds3":_execute_bmds3_model
+}
 def _clean_dataset(ds):
     return schemas.DichotomousDatasetSchema(**ds).dict()
 
@@ -91,38 +92,15 @@ def _run_model(Model, model_name, datasets, version, execute):
     return results
 
 
-def _run_models(mods, version, execute):
+def runDichotomousModels(version):
     datasets = get_datasets()[:10]
     results = []
-    for Model, model_name in tqdm(mods):
-        results.extend(_run_model(Model, model_name, datasets, version, execute))
+    for Model, model_name in tqdm(model_dict[version]):
+        results.extend(_run_model(Model, model_name, datasets, version, execute_dict[version]))
     objects = map(lambda res: models.DichotomousResult(**res.dict()), results)
     with session_scope() as session:
         session.bulk_save_objects(objects)
 
-
-def run_bmds2_model(Model, model_name):
-    datasets = get_datasets()[:10]
-    results = _run_model(Model, model_name, datasets, "bmds2", _execute_bmds2_model)
-    objects = map(lambda res: models.DichotomousResult(**res.dict()), results)
-    with session_scope() as session:
-        session.bulk_save_objects(objects)
-
-
-def run_bmds3_model(Model, model_name, version: str):
-    datasets = get_datasets()[:10]
-    results = _run_model(Model, model_name, datasets, version, _execute_bmds3_model)
-    objects = map(lambda res: models.DichotomousResult(**res.dict()), results)
-    with session_scope() as session:
-        session.bulk_save_objects(objects)
-
-
-def run_bmds2_models():
-    _run_models(bmds2_models, "bmds2", _execute_bmds2_model)
-
-
-def run_bmds3_models(version: str):
-    _run_models(bmds3_models, version, _execute_bmds3_model)
 
 
 def compare_versions(ver1, ver2, threshold):
