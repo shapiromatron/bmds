@@ -37,30 +37,30 @@ class DichotomousModel(Enum):
     Probit = "Probit"
     Weibull = "Weibull"
 
-model_dict={
+
+model_dict = {
     "bmds2": [
-    (DichotomousHill_13, DichotomousModel.DichotomousHill.value),
-    (Gamma_217, DichotomousModel.Gamma.value),
-    (Logistic_215, DichotomousModel.Logistic.value),
-    (LogLogistic_215, DichotomousModel.LogLogistic.value),
-    (LogProbit_34, DichotomousModel.LogProbit.value),
-    (Probit_34, DichotomousModel.Probit.value),
-    (Weibull_217, DichotomousModel.Weibull.value),
-],
-"bmds3":[
-    (DichotomousHill, DichotomousModel.DichotomousHill.value),
-    (Gamma, DichotomousModel.Gamma.value),
-    (Logistic, DichotomousModel.Logistic.value),
-    (LogLogistic, DichotomousModel.LogLogistic.value),
-    (LogProbit, DichotomousModel.LogProbit.value),
-    (Probit, DichotomousModel.Probit.value),
-    (Weibull, DichotomousModel.Weibull.value),
-]
+        (DichotomousHill_13, DichotomousModel.DichotomousHill.value),
+        (Gamma_217, DichotomousModel.Gamma.value),
+        (Logistic_215, DichotomousModel.Logistic.value),
+        (LogLogistic_215, DichotomousModel.LogLogistic.value),
+        (LogProbit_34, DichotomousModel.LogProbit.value),
+        (Probit_34, DichotomousModel.Probit.value),
+        (Weibull_217, DichotomousModel.Weibull.value),
+    ],
+    "bmds3": [
+        (DichotomousHill, DichotomousModel.DichotomousHill.value),
+        (Gamma, DichotomousModel.Gamma.value),
+        (Logistic, DichotomousModel.Logistic.value),
+        (LogLogistic, DichotomousModel.LogLogistic.value),
+        (LogProbit, DichotomousModel.LogProbit.value),
+        (Probit, DichotomousModel.Probit.value),
+        (Weibull, DichotomousModel.Weibull.value),
+    ],
 }
-execute_dict={
-    "bmds2":_execute_bmds2_model,
-    "bmds3":_execute_bmds3_model
-}
+execute_dict = {"bmds2": _execute_bmds2_model, "bmds3": _execute_bmds3_model}
+
+
 def _clean_dataset(ds):
     return schemas.DichotomousDatasetSchema(**ds).dict()
 
@@ -100,7 +100,6 @@ def runDichotomousModels(version):
     objects = map(lambda res: models.DichotomousResult(**res.dict()), results)
     with session_scope() as session:
         session.bulk_save_objects(objects)
-
 
 
 def compare_versions(ver1, ver2, threshold):

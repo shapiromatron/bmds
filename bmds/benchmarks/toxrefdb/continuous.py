@@ -25,29 +25,29 @@ class ContinuousModel(Enum):
     ExponentialM3 = "ExponentialM3"
     ExponentialM5 = "ExponentialM5"
 
-model_dict={
-    "bmds2":[
-    (Power_219, ContinuousModel.Power.value),
-    (Hill_218, ContinuousModel.Hill.value),
-    (Polynomial_221, ContinuousModel.Polynomial.value),
-    (Exponential_M3_111, ContinuousModel.ExponentialM3.value),
-    (Exponential_M5_111, ContinuousModel.ExponentialM5.value),
-],
-"bmds3":[
-    (Power, ContinuousModel.Power.value),
-    (Hill, ContinuousModel.Hill.value),
-    (Polynomial, ContinuousModel.Polynomial.value),
-    (ExponentialM3, ContinuousModel.ExponentialM3.value),
-    (ExponentialM5, ContinuousModel.ExponentialM5.value),
-]
+
+model_dict = {
+    "bmds2": [
+        (Power_219, ContinuousModel.Power.value),
+        (Hill_218, ContinuousModel.Hill.value),
+        (Polynomial_221, ContinuousModel.Polynomial.value),
+        (Exponential_M3_111, ContinuousModel.ExponentialM3.value),
+        (Exponential_M5_111, ContinuousModel.ExponentialM5.value),
+    ],
+    "bmds3": [
+        (Power, ContinuousModel.Power.value),
+        (Hill, ContinuousModel.Hill.value),
+        (Polynomial, ContinuousModel.Polynomial.value),
+        (ExponentialM3, ContinuousModel.ExponentialM3.value),
+        (ExponentialM5, ContinuousModel.ExponentialM5.value),
+    ],
 }
-execute_dict={
-    "bmds2":_execute_bmds2_model,
-    "bmds3":_execute_bmds3_model
-}
+execute_dict = {"bmds2": _execute_bmds2_model, "bmds3": _execute_bmds3_model}
+
 
 def getModels(version):
     return model_dict[version]
+
 
 def _clean_dataset(ds):
     return schemas.ContinuousDatasetSchema(**ds).dict()
@@ -63,7 +63,8 @@ def bulk_save_datasets(datasets: "list[dict]"):
 def get_datasets():
     return list(map(lambda obj: obj.to_bmds(), models.ContinuousDataset.query.all()))
 
-#_models, version, execute
+
+# _models, version, execute
 def runContinuousModels(version):
     datasets = get_datasets()[:10]
     results = []
@@ -82,7 +83,6 @@ def runContinuousModels(version):
     objects = map(lambda res: models.ContinuousResult(**res.dict()), results)
     with session_scope() as session:
         session.bulk_save_objects(objects)
-
 
 
 def compare_versions(ver1, ver2, threshold):
