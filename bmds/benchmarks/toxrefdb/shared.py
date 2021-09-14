@@ -16,7 +16,7 @@ def session_scope():
         db.session.close()
 
 
-def _execute_bmds2_model(model, model_name, dataset, version):
+def _execute_bmds270_model(model, model_name, dataset, version):
     model.execute()
     if model.has_successfully_executed:
         return schemas.ResultSchema(
@@ -37,7 +37,7 @@ def _execute_bmds2_model(model, model_name, dataset, version):
         )
 
 
-def _execute_bmds3_model(model, model_name, dataset, version):
+def _execute_bmds330_model(model, model_name, dataset, version):
     model.execute()
     if model.has_results:
         return schemas.ResultSchema(

@@ -1,10 +1,10 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
-from enum import Enum
 
 import pandas as pd
 from tqdm.auto import tqdm
 
+from bmds import constants
 from bmds.bmds2.models.continuous import (
     Exponential_M3_111,
     Exponential_M5_111,
@@ -15,45 +15,32 @@ from bmds.bmds2.models.continuous import (
 from bmds.bmds3.models.continuous import ExponentialM3, ExponentialM5, Hill, Polynomial, Power
 
 from . import db, models, schemas
-from .shared import _execute_bmds2_model, _execute_bmds3_model, session_scope
-
-
-class ContinuousModel(Enum):
-    Power = "Power"
-    Hill = "Hill"
-    Polynomial = "Polynomial"
-    ExponentialM3 = "ExponentialM3"
-    ExponentialM5 = "ExponentialM5"
-
+from .shared import _execute_bmds270_model, _execute_bmds330_model, session_scope
 
 model_dict = {
-    "bmds2": [
-        (Power_219, ContinuousModel.Power.value),
-        (Hill_218, ContinuousModel.Hill.value),
-        (Polynomial_221, ContinuousModel.Polynomial.value),
-        (Exponential_M3_111, ContinuousModel.ExponentialM3.value),
-        (Exponential_M5_111, ContinuousModel.ExponentialM5.value),
+    "bmds270": [
+        (Power_219, constants.M_Power),
+        (Hill_218, constants.M_Hill),
+        (Polynomial_221, constants.M_Polynomial),
+        (Exponential_M3_111, constants.M_ExponentialM3),
+        (Exponential_M5_111, constants.M_ExponentialM5),
     ],
-    "bmds3": [
-        (Power, ContinuousModel.Power.value),
-        (Hill, ContinuousModel.Hill.value),
-        (Polynomial, ContinuousModel.Polynomial.value),
-        (ExponentialM3, ContinuousModel.ExponentialM3.value),
-        (ExponentialM5, ContinuousModel.ExponentialM5.value),
+    "bmds330": [
+        (Power, constants.M_Power),
+        (Hill, constants.M_Hill),
+        (Polynomial, constants.M_Polynomial),
+        (ExponentialM3, constants.M_ExponentialM3),
+        (ExponentialM5, constants.M_ExponentialM5),
     ],
 }
-execute_dict = {"bmds2": _execute_bmds2_model, "bmds3": _execute_bmds3_model}
-
-
-def getModels(version):
-    return model_dict[version]
+execute_dict = {"bmds270": _execute_bmds270_model, "bmds330": _execute_bmds330_model}
 
 
 def _clean_dataset(ds):
     return schemas.ContinuousDatasetSchema(**ds).dict()
 
 
-def bulk_save_datasets(datasets: "list[dict]"):
+def save_continuous_datasets(datasets: "list[dict]"):
     cleaned_datasets = map(_clean_dataset, datasets)
     objects = map(lambda ds: models.ContinuousDataset(**ds), cleaned_datasets)
     with session_scope() as session:

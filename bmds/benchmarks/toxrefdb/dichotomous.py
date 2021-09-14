@@ -1,10 +1,10 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
-from enum import Enum
 
 import pandas as pd
 from tqdm.auto import tqdm
 
+from bmds import constants
 from bmds.bmds2.models.dichotomous import (
     DichotomousHill_13,
     Gamma_217,
@@ -25,47 +25,36 @@ from bmds.bmds3.models.dichotomous import (
 )
 
 from . import db, models, schemas
-from .shared import _execute_bmds2_model, _execute_bmds3_model, session_scope
-
-
-class DichotomousModel(Enum):
-    DichotomousHill = "DichotomousHill"
-    Gamma = "Gamma"
-    Logistic = "Logistic"
-    LogLogistic = "LogLogistic"
-    LogProbit = "LogProbit"
-    Probit = "Probit"
-    Weibull = "Weibull"
-
+from .shared import _execute_bmds270_model, _execute_bmds330_model, session_scope
 
 model_dict = {
-    "bmds2": [
-        (DichotomousHill_13, DichotomousModel.DichotomousHill.value),
-        (Gamma_217, DichotomousModel.Gamma.value),
-        (Logistic_215, DichotomousModel.Logistic.value),
-        (LogLogistic_215, DichotomousModel.LogLogistic.value),
-        (LogProbit_34, DichotomousModel.LogProbit.value),
-        (Probit_34, DichotomousModel.Probit.value),
-        (Weibull_217, DichotomousModel.Weibull.value),
+    "bmds270": [
+        (DichotomousHill_13, constants.M_DichotomousHill),
+        (Gamma_217, constants.M_Gamma),
+        (Logistic_215, constants.M_Logistic),
+        (LogLogistic_215, constants.M_LogLogistic),
+        (LogProbit_34, constants.M_LogProbit),
+        (Probit_34, constants.M_Probit),
+        (Weibull_217, constants.M_Weibull),
     ],
-    "bmds3": [
-        (DichotomousHill, DichotomousModel.DichotomousHill.value),
-        (Gamma, DichotomousModel.Gamma.value),
-        (Logistic, DichotomousModel.Logistic.value),
-        (LogLogistic, DichotomousModel.LogLogistic.value),
-        (LogProbit, DichotomousModel.LogProbit.value),
-        (Probit, DichotomousModel.Probit.value),
-        (Weibull, DichotomousModel.Weibull.value),
+    "bmds330": [
+        (DichotomousHill, constants.M_DichotomousHill),
+        (Gamma, constants.M_Gamma),
+        (Logistic, constants.M_Logistic),
+        (LogLogistic, constants.M_LogLogistic),
+        (LogProbit, constants.M_LogProbit),
+        (Probit, constants.M_Probit),
+        (Weibull, constants.M_Probit),
     ],
 }
-execute_dict = {"bmds2": _execute_bmds2_model, "bmds3": _execute_bmds3_model}
+execute_dict = {"bmds270": _execute_bmds270_model, "bmds330": _execute_bmds330_model}
 
 
 def _clean_dataset(ds):
     return schemas.DichotomousDatasetSchema(**ds).dict()
 
 
-def bulk_save_datasets(datasets: "list[dict]"):
+def save_dichotomous_datasets(datasets: "list[dict]"):
     cleaned_datasets = map(_clean_dataset, datasets)
     objects = map(lambda ds: models.DichotomousDataset(**ds), cleaned_datasets)
     with session_scope() as session:

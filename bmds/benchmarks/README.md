@@ -1,23 +1,31 @@
-#bmds test suite
+9/14/2021
 
-The test files are located in toxrefdb/app
-jupyter-notebook file to launch bmds test cases are located in /scripts.
-The outputs of the test cases are saved into sqlite database.
+The `benchmarks/toxrefdb` folder creates a test application which executes models and store the results in the database app.db
+
+The current test application can be repeated on future versions of bmds.
+
+Then entrypoint for the testing application is in `benchmarks/main.py`. run_analysis methods executes the test application. below is the example command to execute the run_analysis method
+
+# example command from api.ipynb
+
+from bmds.benchmarks.main import Dataset, Versions, Benchmark
+Benchmark.run_analysis(Dataset.TOXREFDB_DICH, [Versions.BMDS270, Versions.BMDS330], True)
+
+if load dataset error message is seen, use example command to load dataset.
+Benchmark.load_dataset(Dataset.TOXREFDB_DICH, "dichotomous_tr.csv")
+
+# NO such Table error
+
+if running the analysis gives error message to create db, execute create_db() from main.py file as follows to create tables in the db.
+Benchmark.create_db()
+
+# below are the action items for next PR.
 
 # bmds data comparison
 
-2021-08-10
-
-The contents of this zip file contain an analysis where we run the same datasets using BMDS2.7 and a development version of BMDS3.3 The goal of the current work is to move this scratch and development code into the main bmds repository, so we're able to re-run this analysis using future versions of BMDS. Because the data are so large, we are saving model outputs into an sqlite database. The `test_db/app` folder creates a test application which executes the models and stores the results.
-
-Our main goal is to cleanup, refactor, and generalize the code where possible, so this analysis can be repeated on current and future versions of the software.
-
-See the bmds/test_db directory, and the main.ipynb as an example entrypoint into this application.
-
 Action items:
 
-1. Redo current analysis as is using the outputs of the zip file. (Windows required for BMDS2). You'll need to be in the bmds python virtual environment. It's fine to run a smaller set of the datsets (just running the first 10 of each data type instead of all 1500; if it works for them then it will work with a little tuning with the larger dataset)
-2. Save code in current bmds
+1. Save code in current bmds
 
    - Add to bmds package on github, perhaps in a `./bmds/benchmarks/toxrefdb` package?
    - Put data in a `./data/toxrefdb/` folder
@@ -31,12 +39,12 @@ Action items:
    - make sure the sqlite database is in the .gitignore; save toxrefdb datasets in .csv.zip compressed formats (pandas can natively open .csv.zip; see https://stackoverflow.com/a/32993553/906385)
    - add a new pull request
 
-3. Add additional items to output (requested from Matt Wheeler):
+2. Add additional items to output (requested from Matt Wheeler):
    - optimized likelihood, the model degrees of freedom, the BMD, BMDL and BMDU. We should also look at the test values too, but only in a secondary look
    - ask Cody how to get any missing values for bmds3
    - for bmds2 just use -999 for now
    - add a new pull request
-4. convert notebook to typer
-5. Refactor and simplify code.
+3. convert notebook to typer
+4. Refactor and simplify code.
    - Add option to pass in other datasets
    - add a new pull request

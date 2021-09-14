@@ -16,6 +16,7 @@ venv/
 *.log
 *.py[cod]
 .env
+*.db
 
 # created by bmds2.7
 log.txt
@@ -23,4 +24,3 @@ log.txt
 # until released
 bmds/bin/BMDS330
 
-bmds/benchmarks/toxrefdb/app/app.db
