@@ -42,7 +42,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             settings=self.settings, model_indexes=model_indexes, results=self.results
         )
 
-    def plot(self):
+    def plot(self, colorize: bool = True):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
         """
@@ -55,19 +55,35 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         ax.set_ylim(-0.05, 1.05)
         title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text()}"
         ax.set_title(title)
-        color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)
-        line_cycle = cycle(plotting.INDIVIDUAL_LINE_STYLES)
-        for model in self.session.models:
+        if colorize:
+            color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)
+            line_cycle = cycle(plotting.INDIVIDUAL_LINE_STYLES)
+        else:
+            color_cycle = cycle(["#ababab"])
+            line_cycle = cycle(["solid"])
+        for i, model in enumerate(self.session.models):
+            if colorize:
+                label = model.name()
+            elif i == 0:
+                label = "Individual models"
+            else:
+                label = None
             ax.plot(
                 model.results.plotting.dr_x,
                 model.results.plotting.dr_y,
-                label=model.name(),
+                label=label,
                 c=next(color_cycle),
                 linestyle=next(line_cycle),
+                zorder=40,
                 lw=2,
             )
         ax.plot(
-            self.results.dr_x, self.results.dr_y, label="Model average", c="#6470C0", lw=4,
+            self.results.dr_x,
+            self.results.dr_y,
+            label="Model average",
+            c="#6470C0",
+            lw=4,
+            zorder=50,
         )
         plotting.add_bmr_lines(ax, results.bmd, results.bmdl, results.bmd_y)
         ax.legend(**plotting.LEGEND_OPTS)

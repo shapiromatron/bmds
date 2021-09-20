@@ -10,13 +10,13 @@ __all__ = []
 PLOT_FIGSIZE = (8, 5)
 DPI = 100
 PLOT_MARGINS = 0.05
-DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k", capsize=3, lw=1)
+DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k", capsize=3, lw=1, zorder=100)
 DATASET_INDIVIDUAL_FORMAT = dict(s=35, alpha=0.60, c="k")
 LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
-LINE_FORMAT = dict(c="#6470C0", lw=3)
+LINE_FORMAT = dict(c="#6470C0", lw=3, zorder=50)
 INDIVIDUAL_MODEL_COLORS = ["#6e40aa", "#e7298a", "#1b9e77", "#cc7939", "#666666"]
 INDIVIDUAL_LINE_STYLES = ["solid", "dotted", "dashed", "dashdot"]
-BMD_LINE_FORMAT = dict(c="#BFC05D", lw=2)
+BMD_LINE_FORMAT = dict(c="#BFC05D", lw=2, zorder=60)
 BMD_LABEL_FORMAT = dict(size=9)
 FAILURE_MESSAGE_FORMAT = dict(
     style="italic",
