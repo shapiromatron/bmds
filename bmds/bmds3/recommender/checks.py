@@ -331,7 +331,7 @@ class NoDegreesOfFreedom(Check):
         if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
             value = model.results.gof.df
         elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            value = model.results.fit.total_df
+            value = model.results.tests.dfs[3]
         else:
             raise ValueError("Unknown dtype")
 
