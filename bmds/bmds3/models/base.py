@@ -149,9 +149,6 @@ class BmdModel(abc.ABC):
         return fig
 
     def cdfPlot(self):
-        """
-        After model execution, print the cdf plot. 
-        """
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
         fig = plotting.create_empty_figure()
