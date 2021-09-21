@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 def write_dataset(report: Report, dataset: DatasetBase):
+    long = True
     styles = report.styles
     footnotes = TableFootnote()
 
@@ -24,37 +25,63 @@ def write_dataset(report: Report, dataset: DatasetBase):
     response_units_text = dataset._get_response_units_text()
 
     if dataset.dtype is Dtype.CONTINUOUS:
-        tbl = report.document.add_table(3, dataset.num_dose_groups + 1, style=styles.table)
+        if long:
+            tbl = report.document.add_table(dataset.num_dose_groups + 1, 4, style=styles.table)
 
-        write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
-        write_cell(tbl.cell(1, 0), "N", hdr)
-        write_cell(tbl.cell(2, 0), "Mean ± SD" + response_units_text, hdr)
+            write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
+            write_cell(tbl.cell(0, 1), "N", hdr)
+            write_cell(tbl.cell(0, 2), "Mean" + response_units_text, hdr)
+            write_cell(tbl.cell(0, 3), "Std. Dev." + response_units_text, hdr)
 
-        for i, (dose, n, mean, stdev) in enumerate(
-            zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
-        ):
-            write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
-            write_cell(tbl.cell(1, i + 1), n, styles.tbl_body)
-            write_cell(tbl.cell(2, i + 1), f"{mean} ± {stdev}", styles.tbl_body)
+            for i, (dose, n, mean, stdev) in enumerate(
+                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
+            ):
+                write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 2), mean, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 3), stdev, styles.tbl_body)
+        else:
+            tbl = report.document.add_table(3, dataset.num_dose_groups + 1, style=styles.table)
 
-        for i, col in enumerate(tbl.columns):
-            w = 0.75 if i == 0 else (styles.portrait_width - 0.75) / dataset.num_dose_groups
-            set_column_width(col, w)
+            write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
+            write_cell(tbl.cell(1, 0), "N", hdr)
+            write_cell(tbl.cell(2, 0), "Mean ± SD" + response_units_text, hdr)
+
+            for i, (dose, n, mean, stdev) in enumerate(
+                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
+            ):
+                write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
+                write_cell(tbl.cell(1, i + 1), n, styles.tbl_body)
+                write_cell(tbl.cell(2, i + 1), f"{mean} ± {stdev}", styles.tbl_body)
+
+            for i, col in enumerate(tbl.columns):
+                w = 0.75 if i == 0 else (styles.portrait_width - 0.75) / dataset.num_dose_groups
+                set_column_width(col, w)
 
     elif dataset.dtype is Dtype.DICHOTOMOUS or dataset.dtype is Dtype.DICHOTOMOUS_CANCER:
-        tbl = report.document.add_table(2, dataset.num_dose_groups + 1, style=styles.table)
+        if long:
+            tbl = report.document.add_table(dataset.num_dose_groups + 1, 3, style=styles.table)
+            write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
+            write_cell(tbl.cell(0, 1), "N", hdr)
+            write_cell(tbl.cell(0, 2), "Incidence", hdr)
 
-        write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
-        write_cell(tbl.cell(1, 0), "Affected / Total (%)" + response_units_text, hdr)
+            for i, (dose, inc, n) in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
+                write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 2), inc, styles.tbl_body)
+        else:
+            tbl = report.document.add_table(2, dataset.num_dose_groups + 1, style=styles.table)
+            write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
+            write_cell(tbl.cell(1, 0), "Affected / Total (%)" + response_units_text, hdr)
 
-        for i, (dose, inc, n) in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
-            frac = inc / float(n)
-            write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
-            write_cell(tbl.cell(1, i + 1), f"{inc}/{n}\n({frac:.1%})", styles.tbl_body)
+            for i, (dose, inc, n) in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
+                frac = inc / float(n)
+                write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
+                write_cell(tbl.cell(1, i + 1), f"{inc}/{n}\n({frac:.1%})", styles.tbl_body)
 
-        for i, col in enumerate(tbl.columns):
-            w = 0.75 if i == 0 else (styles.portrait_width - 0.75) / dataset.num_dose_groups
-            set_column_width(col, w)
+            for i, col in enumerate(tbl.columns):
+                w = 0.75 if i == 0 else (styles.portrait_width - 0.75) / dataset.num_dose_groups
+                set_column_width(col, w)
 
     elif dataset.dtype is Dtype.CONTINUOUS_INDIVIDUAL:
         # aggregate responses by unique doses
@@ -67,17 +94,28 @@ def write_dataset(report: Report, dataset: DatasetBase):
             .reset_index()
         )
 
-        # create a table
-        tbl = report.document.add_table(df.shape[0] + 1, 2, style=styles.table)
+        if long:
+            tbl = report.document.add_table(
+                len(dataset.individual_doses) + 1, 2, style=styles.table
+            )
+            # add headers
+            write_cell(tbl.cell(0, 0), "Dose", hdr)
+            write_cell(tbl.cell(0, 1), "Response", hdr)
 
-        # add headers
-        write_cell(tbl.cell(0, 0), "Dose", hdr)
-        write_cell(tbl.cell(0, 1), "Response", hdr)
+            # write data
+            for i, (dose, response) in enumerate(zip(dataset.individual_doses, dataset.responses)):
+                write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 1), response, styles.tbl_body)
+        else:
+            tbl = report.document.add_table(df.shape[0] + 1, 2, style=styles.table)
+            # add headers
+            write_cell(tbl.cell(0, 0), "Dose", hdr)
+            write_cell(tbl.cell(0, 1), "Response", hdr)
 
-        # write data
-        for i, row in df.iterrows():
-            write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
-            write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
+            # write data
+            for i, row in df.iterrows():
+                write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
+                write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")
@@ -213,8 +251,10 @@ def write_bayesian_table(report: Report, session: BmdsSession):
 def write_models(report: Report, session: BmdsSession, header_level: int):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
+
     for model in session.models:
         report.document.add_paragraph(model.name(), header_style)
         if model.has_results:
             report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+            report.document.add_paragraph(add_mpl_figure(report.document, model.cdfPlot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)

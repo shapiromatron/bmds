@@ -148,6 +148,26 @@ class BmdModel(abc.ABC):
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
+    def cdfPlot(self):
+        """
+        After model execution, print the cdf plot. 
+        """
+        if not self.has_results:
+            raise ValueError("Cannot plot if results are unavailable")
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(**plotting.CDF_X_LABEL)
+        ax.set_ylabel(**plotting.CDF_Y_LABEL)
+        ax.scatter(
+            self.results.fit.bmd_dist[0],
+            self.results.fit.bmd_dist[1],
+            label="BMD",
+            **plotting.LINE_FORMAT,
+        )
+        ax.set_title(**plotting.CDF_TITLE)
+        ax.legend(**plotting.LEGEND_OPTS)
+        return fig
+
     @abc.abstractmethod
     def get_param_names(self) -> List[str]:
         ...
