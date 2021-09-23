@@ -4,7 +4,7 @@ import sys
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 import numpy as np
 import tabulate
@@ -75,7 +75,7 @@ def str_list(items: Iterable) -> str:
     return ",".join([str(item) for item in items])
 
 
-def citation(dll_version: str = "") -> dict:
+def citation(dll_version: Optional[str] = None) -> dict:
     """
     Return a citation for the software.
     """
@@ -83,6 +83,7 @@ def citation(dll_version: str = "") -> dict:
     bmds_version = __version__
     url = "https://pypi.org/project/bmds/"
     if not dll_version:
+        # assume we're using the latest version
         dll_version = get_latest_dll_version()
     return dict(
         paper=(
