@@ -159,6 +159,12 @@ class BmdsSession:
         ...
 
     @classmethod
+    def dll_version(cls) -> str:
+        model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
+        dll = model.get_dll()  # noqa: F841
+        return "<ADD>"  # TODO - change to `dll.version()` when available
+
+    @classmethod
     def from_serialized(cls, data: Dict) -> BmdsSession:
         try:
             version = data["version"]["numeric"]
