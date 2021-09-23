@@ -28,13 +28,13 @@ class BmdsSessionBatch:
         dfs = [session.to_df() for session in self.sessions]
         return pd.concat(dfs).dropna(axis=1, how="all").fillna("")
 
-    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = False):
+    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
         """Append each session to a single document
 
         Args:
             report (Report, optional): A Report object, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
-            citation (bool, default False): Include citation
+            citation (bool, default True): Include citation
 
         Returns:
             A python docx.Document object with content added.
@@ -43,7 +43,7 @@ class BmdsSessionBatch:
             report = Report.build_default()
 
         for session in self.sessions:
-            session.to_docx(report, header_level=header_level)
+            session.to_docx(report, header_level=header_level, citation=False)
 
         if citation and len(self.sessions) > 0:
             write_citation(report, self.sessions[0], header_level=header_level)

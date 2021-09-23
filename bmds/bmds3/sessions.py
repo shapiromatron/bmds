@@ -238,13 +238,13 @@ class BmdsSession:
 
         return df
 
-    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = False):
+    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
         """Return a Document object with the session executed
 
         Args:
             report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
-            citation (bool, default False): Include citation
+            citation (bool, default True): Include citation
 
         Returns:
             A python docx.Document object with content added.
