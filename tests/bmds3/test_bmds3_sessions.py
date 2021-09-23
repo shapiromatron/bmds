@@ -86,7 +86,7 @@ class TestBmds330:
         df = session.to_df()
 
         # docx
-        docx = session.to_docx(citation=True)
+        docx = session.to_docx()
 
         if rewrite_data_files:
             df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)
@@ -127,7 +127,7 @@ class TestBmdsSessionBatch:
 
         # check exports
         df = batch.to_df()
-        docx = batch.to_docx(citation=True)
+        docx = batch.to_docx()
 
         if rewrite_data_files:
             df.to_excel(Path("~/Desktop/bmds3-d-batch.xlsx").expanduser(), index=False)
@@ -149,7 +149,7 @@ class TestBmdsSessionBatch:
 
         # check exports
         df = batch.to_df()
-        docx = batch.to_docx(citation=True)
+        docx = batch.to_docx()
 
         if rewrite_data_files:
             df.to_excel(Path("~/Desktop/bmds3-c-batch.xlsx").expanduser(), index=False)
