@@ -3,7 +3,7 @@
 
 isort:skip_file
 """
-__version__ = "1.0.0"
+__version__ = "1.0.0.dev"
 
 import os
 
@@ -13,3 +13,4 @@ from . import bmds2, constants  # noqa
 from .datasets import *  # noqa
 from .plotting import *  # noqa
 from .session import *  # noqa
+from .utils import citation  # noqa
