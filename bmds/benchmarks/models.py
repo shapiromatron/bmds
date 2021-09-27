@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Boolean, Float, Integer, Text, TypeDecorator
 
-from ... import datasets
+from .. import datasets
 
 Base = declarative_base()
 
