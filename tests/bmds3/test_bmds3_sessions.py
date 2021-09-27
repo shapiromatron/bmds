@@ -92,6 +92,17 @@ class TestBmds330:
             df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)
             docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
 
+    def test_dll_version(self, ddataset2):
+        session = bmds.session.Bmds330(dataset=ddataset2)
+        version = session.dll_version()
+        assert version == "<ADD>"
+
+    def test_citation(self, ddataset2):
+        session = bmds.session.Bmds330(dataset=ddataset2)
+        citations = session.citation()
+        assert citations["paper"].startswith("Pham LL")
+        assert citations["software"].startswith("Python BMDS.")
+
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmdsSessionBatch:

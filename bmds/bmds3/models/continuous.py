@@ -14,11 +14,12 @@ from ..constants import (
 )
 from ..types.continuous import ContinuousAnalysis, ContinuousModelSettings, ContinuousResult
 from ..types.priors import get_continuous_prior
-from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
 class BmdModelContinuous(BmdModel):
     bmd_model_class: ContinuousModel
+    model_version: str = "BMDS330"
 
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings,
@@ -66,7 +67,7 @@ class BmdModelContinuous(BmdModel):
         self.structs = structs
 
         # run the analysis
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll = self.get_dll()
         dll.runBMDSContAnalysis(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),

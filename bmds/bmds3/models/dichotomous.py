@@ -14,11 +14,12 @@ from ..constants import (
 )
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
 from ..types.priors import get_dichotomous_prior
-from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
 class BmdModelDichotomous(BmdModel):
     bmd_model_class: DichotomousModel
+    model_version: str = "BMDS330"
 
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
@@ -59,7 +60,7 @@ class BmdModelDichotomous(BmdModel):
         structs = inputs.to_c()
         self.structs = structs
 
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll = self.get_dll()
         dll.runBMDSDichoAnalysis(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
