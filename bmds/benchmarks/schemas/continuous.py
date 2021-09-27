@@ -4,7 +4,6 @@ from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
 from tqdm.auto import tqdm
 
-from bmds import constants
 from bmds.bmds2.models.continuous import (
     Exponential_M3_111,
     Exponential_M5_111,
@@ -14,7 +13,8 @@ from bmds.bmds2.models.continuous import (
 )
 from bmds.bmds3.models.continuous import ExponentialM3, ExponentialM5, Hill, Polynomial, Power
 
-from . import db, models, schemas
+from ... import constants
+from ..db import get_session, models, schemas
 from .shared import _execute_bmds270_model, _execute_bmds330_model, session_scope
 
 model_dict = {

@@ -1,4 +1,3 @@
-from enum import Enum
 from zipfile import ZipFile
 
 import pandas as pd
@@ -12,23 +11,13 @@ from bmds.benchmarks.toxrefdb.models import (
     DichotomousResult,
 )
 
-from .toxrefdb import db
-
-filePath = "../data/toxrefdb/datasets.zip"
-
-
-class Dataset(str, Enum):
-    TOXREFDB_DICH = "TOXREFDB_DICH"
-    TOXREFDB_CONT = "TOXREFDB_CONT"
-
-
-class Versions(str, Enum):
-    BMDS270 = "bmds270"
-    BMDS330 = "bmds330"
+from .constants import BenchmarkDataset, BenchmarkVersion
 
 
 class Benchmark:
-    def run_analysis(dataset: Dataset, versions: list[Versions], clear_existing: bool):
+    def run_analysis(
+        dataset: BenchmarkDataset, versions: list[BenchmarkVersion], clear_existing: bool
+    ):
 
         if dataset.value is Dataset.TOXREFDB_DICH.value:
             try:
@@ -70,7 +59,3 @@ class Benchmark:
         if dataset.value is Dataset.TOXREFDB_CONT.value:
             save_continuous_datasets(df.to_dict("records"))
         return "Dataset Loaded"
-
-    def create_db():
-        db.create_all()
-        return "Database created."

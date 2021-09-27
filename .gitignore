@@ -1,5 +1,5 @@
-# paths
 *.egg-info/
+# paths
 .cache/
 .ipynb_checkpoints/
 .mypy_cache/
@@ -23,4 +23,3 @@ log.txt
 
 # until released
 bmds/bin/BMDS330
-
