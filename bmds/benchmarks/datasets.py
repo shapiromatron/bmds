@@ -4,7 +4,7 @@ from typing import NamedTuple
 import pandas as pd
 
 from .config import Config
-from .db import transaction, Session
+from .db import Session, transaction
 from .models import Dataset
 
 

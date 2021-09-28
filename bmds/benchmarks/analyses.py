@@ -4,10 +4,9 @@ from enum import Enum
 from ..constants import Dtype, Version
 from .datasets import BenchmarkDataset
 from .db import Session, transaction
-from .models import Dataset, ModelResult
-
 from .executors import model_fit
 from .executors.shared import bulk_save_models, multiprocess
+from .models import Dataset, ModelResult
 
 
 class Analysis(abc.ABC):

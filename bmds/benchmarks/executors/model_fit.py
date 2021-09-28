@@ -3,10 +3,10 @@ from typing import List
 from ... import constants
 from ...bmds2.models import continuous as continuous2
 from ...bmds2.models import dichotomous as dichotomous2
+from ...bmds3.constants import BMDS_BLANK_VALUE
 from ...bmds3.models import continuous as continuous3
 from ...bmds3.models import dichotomous as dichotomous3
 from ..models import ModelResult
-from ...bmds3.constants import BMDS_BLANK_VALUE
 from .shared import nan_to_default
 
 
