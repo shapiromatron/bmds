@@ -1,11 +1,11 @@
 from typing import List
 
 from ... import constants
-from ...bmds2.models import continuous as continuous2
-from ...bmds2.models import dichotomous as dichotomous2
+from ...bmds2.models import continuous as c2
+from ...bmds2.models import dichotomous as d2
 from ...bmds3.constants import BMDS_BLANK_VALUE
-from ...bmds3.models import continuous as continuous3
-from ...bmds3.models import dichotomous as dichotomous3
+from ...bmds3.models import continuous as c3
+from ...bmds3.models import dichotomous as d3
 from ..models import ModelResult
 from .shared import nan_to_default
 
@@ -13,13 +13,41 @@ from .shared import nan_to_default
 def build_jobs(datasets, version: constants.Version, dtype: constants.Dtype) -> List:
     check = (version, dtype)
     if check == (constants.Version.BMDS270, constants.Dtype.CONTINUOUS):
-        models = [continuous2.Power_219]
+        models = (
+            c2.Power_219,
+            c2.Hill_218,
+            c2.Polynomial_221,
+            c2.Exponential_M3_111,
+            c2.Exponential_M5_111,
+        )
     elif check == (constants.Version.BMDS270, constants.Dtype.DICHOTOMOUS):
-        models = [dichotomous2.Logistic_215]
+        models = (
+            d2.DichotomousHill_13,
+            d2.Gamma_217,
+            d2.Logistic_215,
+            d2.LogLogistic_215,
+            d2.LogProbit_34,
+            d2.Probit_34,
+            d2.Weibull_217,
+        )
     elif check == (constants.Version.BMDS330, constants.Dtype.CONTINUOUS):
-        models = [continuous3.Power]
+        models = (
+            c3.Power,
+            c3.Hill,
+            c3.Polynomial,
+            c3.ExponentialM3,
+            c3.ExponentialM5,
+        )
     elif check == (constants.Version.BMDS330, constants.Dtype.DICHOTOMOUS):
-        models = [dichotomous3.Logistic]
+        models = (
+            d3.DichotomousHill,
+            d3.Gamma,
+            d3.Logistic,
+            d3.LogLogistic,
+            d3.LogProbit,
+            d3.Probit,
+            d3.Weibull,
+        )
     else:
         raise ValueError(f"Unknown state: {check}")
 
