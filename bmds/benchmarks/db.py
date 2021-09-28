@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -18,3 +20,16 @@ def setup_db():
 def reset_db():
     """Drop all tables, indexes, etc."""
     Base.metadata.drop_all()
+
+
+@contextmanager
+def transaction():
+    """Provide a transactional scope around a series of operations."""
+    sess = Session()
+    try:
+        yield sess
+        sess.commit()
+    except Exception:
+        sess.rollback()
+    finally:
+        sess.close()

@@ -1,21 +1,27 @@
+from ..constants import Version
+from .analyses import BenchmarkAnalyses
 from .datasets import BenchmarkDataset
 
 
-def run_analysis(dataset: BenchmarkDataset, versions: list[BenchmarkVersion], clear_existing: bool):
+def run_analysis(
+    dataset: BenchmarkDataset,
+    analysis: BenchmarkAnalyses,
+    version: Version,
+    clear_existing: bool = False,
+):
+    """Run an analysis for a given combination of datataset, analysis, and BMDS version.
 
+    Args:
+        dataset (BenchmarkDataset): The benchmark dataset to use
+        analysis (BenchmarkAnalyses): The analysis to perform
+        version (Version): The version of BMDS to use
+        clear_existing (bool, default False): If True, delete prior results for this
+            (dataset, analysis, version) combination
+    """
     if not dataset.data_loaded():
         dataset.load_data()
 
-    for version in versions:
-        print(len(DichotomousResult.query.all()))
-        if clear_existing:
-            if dataset.value is Dataset.TOXREFDB_CONT.value:
-                ContinuousResult.query.filter(ContinuousResult.bmds_version == version).delete()
-            if dataset.value is Dataset.TOXREFDB_DICH.value:
-                DichotomousResult.query.filter(DichotomousResult.bmds_version == version).delete()
-                print(len(DichotomousResult.query.all()))
-        if dataset.value is Dataset.TOXREFDB_CONT.value:
-            runContinuousModels(version.value)
-        if dataset.value is Dataset.TOXREFDB_DICH.value:
-            runDichotomousModels(version.value)
-            print(len(DichotomousResult.query.all()))
+    if clear_existing:
+        analysis.executor.clear_results(dataset, version)
+
+    analysis.executor.execute(dataset, version)

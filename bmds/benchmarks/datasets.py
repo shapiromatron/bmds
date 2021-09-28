@@ -1,29 +1,24 @@
 from enum import Enum
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pandas as pd
 
 from .config import Config
-from .db import Session
-from .models import ContinuousDataset, DichotomousDataset
+from .db import transaction, Session
+from .models import Dataset
 
 
 class BenchmarkDatasetMetadata(NamedTuple):
     filename: str
-    db_model: Any
     dataset_key: str
 
 
 class BenchmarkDataset(Enum):
-    TOXREFDB_CONT = (
-        "TOXREFDB_CONT",
-        BenchmarkDatasetMetadata("toxrefdbv2_continuous.csv.zip", ContinuousDataset, "toxrefdbv2"),
-    )
-    TOXREFDB_DICH = (
-        "TOXREFDB_DICH",
-        BenchmarkDatasetMetadata(
-            "toxrefdbv2_dichotomous.csv.zip", DichotomousDataset, "toxrefdbv2"
-        ),
+    """A benchmark dataset that can be used in to run an analysis"""
+
+    TOXREFDB_V2 = (
+        "TOXREFDB_V2",
+        BenchmarkDatasetMetadata("toxrefdb_v2.csv.zip", "toxrefdb_v2"),
     )
 
     def __new__(cls, value: str, metadata: BenchmarkDatasetMetadata):
@@ -33,13 +28,22 @@ class BenchmarkDataset(Enum):
         return obj
 
     def load_data(self):
-        df = pd.read_csv(Config.DATA / self.metadata.filename).rename(
-            columns={"id": "dataset_id", "meta": "dataset_metadata"}
+        df = (
+            pd.read_csv(Config.DATA / self.metadata.filename)
+            .rename(columns={"id": "dataset_id", "meta": "dataset_metadata"})
+            .fillna("")
         )
-        datasets = [self.metadata.db_model(**record) for record in df.to_dict(orient="records")]
-        with Session() as sess:
+
+        datasets = []
+        key = self.metadata.dataset_key
+        for record in df.to_dict(orient="records"):
+            ds = Dataset(**record)
+            ds.dataset = key
+            datasets.append(ds)
+
+        with transaction() as sess:
             sess.bulk_save_objects(datasets)
 
     def data_loaded(self) -> bool:
-        Model = self.metadata.db_model
-        return Session().query(Model).filter(Model.dataset == self.metadata.dataset_key).count() > 0
+        key = self.metadata.dataset_key
+        return Session().query(Dataset).filter(Dataset.dataset == key).count() > 0
