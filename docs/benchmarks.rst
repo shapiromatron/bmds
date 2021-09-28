@@ -1,35 +1,57 @@
 Benchmarks
 ==========
 
-This p
-
-
-The `benchmarks/toxrefdb` folder creates a test application which executes models and store the results in the database app.db
-
-The current test application can be repeated on future versions of bmds.
-
-Then entrypoint for the testing application is in `benchmarks/main.py`. run_analysis methods executes the test application. below is the example command to execute the run_analysis method
+Benchmarking can be helpful to better understand the impact of code changes to bmds. The bmds package as a built-in benchmarks subpackage which can run routine analyses and datasets. Results from executing benchmarks are saved in a sqlite database for detailed analysis, and also to allow for future comparisons to be made to the existing analysis.
 
 To install the additional dependencies required to run benchmarks, assuming you've setup the developer environment as previously described:
 
 .. code-block:: bash
 
-   pip install -e .[benchmarks]
+    pip install -e .[benchmarks]
 
-
-An example analysis
-
+An example analysis:
 
 .. code-block:: python
 
-   from bmds import benchmarks
+    from bmds import benchmarks
 
-   # first time-only
-   Benchmark.create_db()
+    # first time-only
+    benchmarks.setup_db()
 
-   # load dataset and execute
-   Benchmark.load_dataset(Dataset.TOXREFDB_DICH, "dichotomous_tr.csv")
+    # run the toxrefdb_v2 dataset with four permutations:
+    #  {continuous, dichotomous} + {BMDS270, BMDS330}
 
-   # run multiple versions
-   Benchmark.run_analysis(Dataset.TOXREFDB_DICH, [Versions.BMDS270, Versions.BMDS330], True)
+    benchmarks.run_analysis(
+        dataset=benchmarks.BenchmarkDataset.TOXREFDB_V2,
+        analysis=benchmarks.BenchmarkAnalyses.FIT_DICHOTOMOUS,
+        version=benchmarks.Version.BMDS270,
+        clear_existing=True
+    )
 
+    benchmarks.run_analysis(
+        dataset=benchmarks.BenchmarkDataset.TOXREFDB_V2,
+        analysis=benchmarks.BenchmarkAnalyses.FIT_CONTINUOUS,
+        version=benchmarks.Version.BMDS270,
+        clear_existing=True
+    )
+
+    benchmarks.run_analysis(
+        dataset=benchmarks.BenchmarkDataset.TOXREFDB_V2,
+        analysis=benchmarks.BenchmarkAnalyses.FIT_DICHOTOMOUS,
+        version=benchmarks.Version.BMDS330,
+        clear_existing=True
+    )
+
+    benchmarks.run_analysis(
+        dataset=benchmarks.BenchmarkDataset.TOXREFDB_V2,
+        analysis=benchmarks.BenchmarkAnalyses.FIT_CONTINUOUS,
+        version=benchmarks.Version.BMDS330,
+        clear_existing=True
+    )
+
+    # to delete all results in database
+    benchmarks.reset_db()
+
+The sqlite database is a flat file, which is saved in the ``bmds.benchmarks`` subpackage. You can delete the sqlite database to start fresh, or use the commands describe below to programmatically clean. The sqlite database can be browsed without tools external to python, such as the `SQLite database browser`_.
+
+.. _`SQLite database browser`: https://sqlitebrowser.org/

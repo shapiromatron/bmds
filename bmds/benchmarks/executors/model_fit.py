@@ -41,7 +41,7 @@ def build_jobs(datasets, version: constants.Version, dtype: constants.Dtype) -> 
     elif check == (constants.Version.BMDS330, constants.Dtype.DICHOTOMOUS):
         models = (
             d3.DichotomousHill,
-            d3.Gamma,
+            # d3.Gamma,
             d3.Logistic,
             d3.LogLogistic,
             d3.LogProbit,
