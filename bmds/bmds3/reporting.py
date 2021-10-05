@@ -139,8 +139,7 @@ def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), response, styles.tbl_body)
 
-            width = styles.portrait_width / 2
-            for i, col in enumerate(tbl.columns):
+            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1]):
                 set_column_width(col, width)
 
         else:
@@ -157,8 +156,8 @@ def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
                 write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
 
-            set_column_width(tbl.columns, 1)
-            set_column_width(tbl.columns, styles.portrait_width - 1)
+            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1]):
+                set_column_width(col, width)
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")
