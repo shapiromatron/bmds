@@ -148,20 +148,17 @@ class BmdModel(abc.ABC):
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
-    def cdfPlot(self):
+    def cdf_plot(self):
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
         fig = plotting.create_empty_figure()
         ax = fig.gca()
-        ax.set_xlabel(plotting.CDF_X_LABEL)
-        ax.set_ylabel(plotting.CDF_Y_LABEL)
+        ax.set_xlabel(self.results.plotting.dr_x)
+        ax.set_ylabel("Percentile")
         ax.scatter(
-            self.results.fit.bmd_dist[0],
-            self.results.fit.bmd_dist[1],
-            label="BMD",
-            **plotting.LINE_FORMAT,
+            self.results.fit.bmd_dist[0], self.results.fit.bmd_dist[1], **plotting.LINE_FORMAT,
         )
-        ax.set_title(plotting.CDF_TITLE)
+        ax.set_title("BMD cumulative\ndistribution function")
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 

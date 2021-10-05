@@ -25,9 +25,6 @@ FAILURE_MESSAGE_FORMAT = dict(
     horizontalalignment="center",
     verticalalignment="center",
 )
-CDF_X_LABEL = "Dose"
-CDF_Y_LABEL = "Percentile"
-CDF_TITLE = "BMD Cumulative distribution function"
 
 
 def create_empty_figure():

@@ -14,8 +14,14 @@ if TYPE_CHECKING:
     from .sessions import BmdsSession
 
 
-def write_dataset(report: Report, dataset: DatasetBase):
-    long = True
+def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
+    """Write dataset table to word report
+
+    Args:
+        report (Report): A report instance
+        dataset (DatasetBase): A dataset
+        long (bool, optional): Write in long (default) or condensed form.
+    """
     styles = report.styles
     footnotes = TableFootnote()
 
@@ -40,6 +46,11 @@ def write_dataset(report: Report, dataset: DatasetBase):
                 write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 2), mean, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 3), stdev, styles.tbl_body)
+
+            width = styles.portrait_width / 4
+            for i, col in enumerate(tbl.columns):
+                set_column_width(col, width)
+
         else:
 
             tbl = report.document.add_table(3, dataset.num_dose_groups + 1, style=styles.table)
@@ -70,6 +81,11 @@ def write_dataset(report: Report, dataset: DatasetBase):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 2), inc, styles.tbl_body)
+
+            width = styles.portrait_width / 3
+            for i, col in enumerate(tbl.columns):
+                set_column_width(col, width)
+
         else:
 
             tbl = report.document.add_table(2, dataset.num_dose_groups + 1, style=styles.table)
@@ -109,6 +125,11 @@ def write_dataset(report: Report, dataset: DatasetBase):
             for i, (dose, response) in enumerate(zip(dataset.individual_doses, dataset.responses)):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), response, styles.tbl_body)
+
+            width = styles.portrait_width / 2
+            for i, col in enumerate(tbl.columns):
+                set_column_width(col, width)
+
         else:
 
             # create a table
@@ -122,6 +143,9 @@ def write_dataset(report: Report, dataset: DatasetBase):
             for i, row in df.iterrows():
                 write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
+
+            set_column_width(tbl.columns, 1)
+            set_column_width(tbl.columns, styles.portrait_width - 1)
 
     else:
         raise ValueError("Unknown dtype: {dataset.dtype}")
@@ -261,5 +285,5 @@ def write_models(report: Report, session: BmdsSession, header_level: int):
         report.document.add_paragraph(model.name(), header_style)
         if model.has_results:
             report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-            report.document.add_paragraph(add_mpl_figure(report.document, model.cdfPlot(), 6))
+            report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
