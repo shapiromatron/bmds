@@ -256,7 +256,7 @@ class BmdsSession:
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session results", h1)
         report.document.add_paragraph("Input dataset", h2)
-        reporting.write_dataset(report, self.dataset)
+        reporting.write_dataset_tbl(report, self.dataset)
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
