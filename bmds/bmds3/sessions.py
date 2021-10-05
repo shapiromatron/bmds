@@ -12,6 +12,7 @@ from simple_settings import settings
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
+from ..utils import citation
 from . import reporting
 from .constants import PriorClass
 from .models import continuous as c3
@@ -153,10 +154,19 @@ class BmdsSession:
         first_class = self.models[0].settings.priors.prior_class
         return first_class is PriorClass.bayesian
 
+    def citation(self) -> dict:
+        return citation(self.dll_version())
+
     # serializing
     # -----------
     def serialize(self) -> schema.SessionSchemaBase:
         ...
+
+    @classmethod
+    def dll_version(cls) -> str:
+        model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
+        dll = model.get_dll()  # noqa: F841
+        return "<ADD>"  # TODO - change to `dll.version()` when available
 
     @classmethod
     def from_serialized(cls, data: Dict) -> BmdsSession:
@@ -228,14 +238,13 @@ class BmdsSession:
 
         return df
 
-    def to_docx(
-        self, report: Report = None, header_level: int = 1,
-    ):
+    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
         """Return a Document object with the session executed
 
         Args:
             report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
+            citation (bool, default True): Include citation
 
         Returns:
             A python docx.Document object with content added.
@@ -260,6 +269,9 @@ class BmdsSession:
 
         report.document.add_paragraph("Individual model results", h2)
         reporting.write_models(report, self, header_level + 2)
+
+        if citation:
+            reporting.write_citation(report, self, header_level + 1)
 
         return report.document
 
