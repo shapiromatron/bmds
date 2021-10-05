@@ -2,8 +2,8 @@
 History
 =======
 
-v1.0.0 (NEXT)
---------------------
+v1.0.0.dev (YYYY-MM-DD)
+-----------------------
 * Added BMDS 3.3 support
 * Removed BMDS < 2.7 support
 * Added black and flake8 to enforce code style

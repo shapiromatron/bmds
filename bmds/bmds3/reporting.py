@@ -14,6 +14,19 @@ if TYPE_CHECKING:
     from .sessions import BmdsSession
 
 
+def write_citation(report: Report, session: BmdsSession, header_level: int):
+    styles = report.styles
+    header_style = styles.get_header_style(header_level)
+    report.document.add_paragraph("Recommended citation", header_style)
+    report.document.add_paragraph(
+        "Please adapt as appropriate; the citations below capture the package version and "
+        "timestamps for easier reproducibility of the analysis."
+    )
+    citations = session.citation()
+    text = f"""\nSoftware:\n{citations['software']}\n\nPaper:\n{citations['paper']}"""
+    report.document.add_paragraph(text, styles.fixed_width)
+
+
 def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
     """Write dataset table to word report
 

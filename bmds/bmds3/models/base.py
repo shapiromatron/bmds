@@ -95,6 +95,10 @@ class BmdModel(abc.ABC):
         # return name of model; may be setting-specific
         return self.bmd_model_class.verbose
 
+    @classmethod
+    def get_dll(cls) -> ctypes.CDLL:
+        return BmdsLibraryManager.get_dll(bmds_version=cls.model_version, base_name="libDRBMD")
+
     @property
     def has_results(self) -> bool:
         return self.results is not None and self.results.has_completed is True
@@ -194,7 +198,7 @@ class BmdModelAveraging(abc.ABC):
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model_version = "BMDS330"
+    model_version: str
 
     def __init__(
         self, session: BmdsSession, models: List[BmdModel], settings: InputModelSettings = None,
@@ -205,6 +209,9 @@ class BmdModelAveraging(abc.ABC):
         initial_settings = settings if settings is not None else models[0].settings
         self.settings = self.get_model_settings(initial_settings)
         self.results: Optional[BaseModel] = None
+
+    def get_dll(self) -> ctypes.CDLL:
+        return BmdsLibraryManager.get_dll(bmds_version=self.model_version, base_name="libDRBMD")
 
     @abc.abstractmethod
     def get_model_settings(self, settings: InputModelSettings) -> BaseModel:
