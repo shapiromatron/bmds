@@ -13,7 +13,7 @@ def test_bmds3_increasing(cidataset):
         (continuous.Power, [386.1, 247.22, 878.062], 114.3),
         (continuous.Hill, [178.395, 105.924, -9999.0], 111.5),
         (continuous.Linear, [386.097, 247.215, 878.086], 114.3),
-        (continuous.Polynomial, [376.489, 246.938, 384.282], 114.3),
+        (continuous.Polynomial, [376.489, 246.938, 878.047], 114.3),
     ]:
         result = Model(cidataset).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
