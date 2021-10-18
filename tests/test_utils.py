@@ -15,4 +15,4 @@ def test_citation():
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_get_latest_dll_version():
     version = get_latest_dll_version()
-    assert version == "<ADD>"
+    assert int(version.split(".")[0]) >= 2021
