@@ -23,6 +23,12 @@ BMDS330 = "BMDS330"
 BMDS_TWOS = {BMDS270}
 BMDS_THREES = {BMDS330}
 
+
+class Version(str, enum.Enum):
+    BMDS270 = "BMDS270"
+    BMDS330 = "BMDS330"
+
+
 # model names
 M_Weibull = "Weibull"
 M_LogProbit = "LogProbit"
