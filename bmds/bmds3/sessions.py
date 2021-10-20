@@ -22,6 +22,7 @@ from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, B
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
 from .types import sessions as schema
+from .types.structs import get_version
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class BmdsSession:
     def dll_version(cls) -> str:
         model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
         dll = model.get_dll()  # noqa: F841
-        return "<ADD>"  # TODO - change to `dll.version()` when available
+        return get_version(dll)
 
     @classmethod
     def from_serialized(cls, data: Dict) -> BmdsSession:

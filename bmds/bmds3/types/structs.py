@@ -8,6 +8,14 @@ import numpy.typing as npt
 from .. import constants
 from .common import list_t_c
 
+
+def get_version(dll: ctypes.CDLL) -> str:
+    """Get the version from the bmds shared object"""
+    buffer = ctypes.create_string_buffer(32)
+    dll.version(ctypes.pointer(buffer))
+    return buffer.value.decode("utf8")
+
+
 # DICHOTOMOUS MODELS
 # ------------------
 
