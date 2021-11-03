@@ -76,8 +76,9 @@ class NestedDichotomousDataset(DatasetBase):
         super().update_record(d)
         d.update(
             dataset_doses=str_list(self.doses),
-            dataset_ns=str_list(self.ns),
+            dataset_litter_ns=str_list(self.litter_ns),
             dataset_incidences=str_list(self.incidences),
+             dataset_litter_covariates=str_list(self.litter_covariates),
         )
 
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):
