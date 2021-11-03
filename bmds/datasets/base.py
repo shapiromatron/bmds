@@ -124,7 +124,7 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
             Dtype.CONTINUOUS_INDIVIDUAL: ContinuousIndividualDatasetSchema,
             Dtype.DICHOTOMOUS: DichotomousDatasetSchema,
             Dtype.DICHOTOMOUS_CANCER: DichotomousCancerDatasetSchema,
-            Dtype.NESTED_DICHOTOMOUS: NestedDichotomousDatasetSchema
+            Dtype.NESTED_DICHOTOMOUS: NestedDichotomousDatasetSchema,
         }
         try:
             return _dataset_schema_map[dtype]

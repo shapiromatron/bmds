@@ -13,7 +13,4 @@ from .dichotomous import (  # noqa
     DichotomousDataset,
     DichotomousDatasetSchema,
 )
-from .nested_dichotomous import (
-    NestedDichotomousDataset,
-    NestedDichotomousDatasetSchema
-)
+from .nested_dichotomous import NestedDichotomousDataset, NestedDichotomousDatasetSchema  # noqa

@@ -6,6 +6,7 @@ from .. import constants
 from ..utils import str_list
 from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
+
 class NestedDichotomousDataset(DatasetBase):
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
@@ -13,7 +14,14 @@ class NestedDichotomousDataset(DatasetBase):
 
     DEFAULT_YLABEL = "Fraction affected"
 
-    def __init__(self, doses: List[float], litter_ns: List[int], incidences: List[float], litter_covariates:List[int] ,**metadata):
+    def __init__(
+        self,
+        doses: List[float],
+        litter_ns: List[int],
+        incidences: List[float],
+        litter_covariates: List[int],
+        **metadata,
+    ):
         self.doses = doses
         self.litter_ns = litter_ns
         self.incidences = incidences
@@ -32,7 +40,10 @@ class NestedDichotomousDataset(DatasetBase):
 
     def _validate(self):
         length = len(self.doses)
-        if not all(len(lst) == length for lst in [self.doses, self.litter_ns, self.incidences, self.litter_covariates]):
+        if not all(
+            len(lst) == length
+            for lst in [self.doses, self.litter_ns, self.incidences, self.litter_covariates]
+        ):
             raise ValueError("All input lists must be same length")
 
         if length != len(set(self.doses)):
@@ -52,14 +63,12 @@ class NestedDichotomousDataset(DatasetBase):
             setattr(self, fld, arr)
         self._validate()
 
-
     @property
     def dataset_length(self):
         """
         Return the length of the vector of doses-used.
         """
         return self.num_dose_groups
-
 
     def serialize(self) -> "NestedDichotomousDatasetSchema":
         return NestedDichotomousDatasetSchema(
@@ -78,8 +87,9 @@ class NestedDichotomousDataset(DatasetBase):
             dataset_doses=str_list(self.doses),
             dataset_litter_ns=str_list(self.litter_ns),
             dataset_incidences=str_list(self.incidences),
-             dataset_litter_covariates=str_list(self.litter_covariates),
+            dataset_litter_covariates=str_list(self.litter_covariates),
         )
+
 
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
@@ -91,6 +101,10 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
 
     def deserialize(self) -> NestedDichotomousDataset:
         ds = NestedDichotomousDataset(
-            doses=self.doses, litter_ns=self.litter_ns, incidences=self.incidences, litter_covariates = self.litter_covariates, **self.metadata.dict()
+            doses=self.doses,
+            litter_ns=self.litter_ns,
+            incidences=self.incidences,
+            litter_covariates=self.litter_covariates,
+            **self.metadata.dict(),
         )
         return ds
