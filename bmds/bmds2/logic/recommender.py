@@ -13,7 +13,7 @@ class Recommender:
     def __init__(self, dtype):
 
         rule_args = dict()
-        if dtype == constants.DICHOTOMOUS:
+        if dtype == constants.DICHOTOMOUS or dtype == constants.NESTED_DICHOTOMOUS or dtype == constants.MULTI_TUMOR:
             pass
         elif dtype in constants.CONTINUOUS_DTYPES:
             rule_args["continuous"] = True
