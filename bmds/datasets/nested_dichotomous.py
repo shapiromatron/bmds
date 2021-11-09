@@ -1,8 +1,9 @@
 from typing import List
 
 import numpy as np
+from simple_settings import settings
 
-from .. import constants
+from .. import constants, plotting
 from ..utils import str_list
 from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
@@ -46,22 +47,13 @@ class NestedDichotomousDataset(DatasetBase):
         ):
             raise ValueError("All input lists must be same length")
 
-        if length != len(set(self.doses)):
-            raise ValueError("Doses are not unique")
-
         if self.num_dose_groups < self.MINIMUM_DOSE_GROUPS:
             raise ValueError(
                 f"Must have {self.MINIMUM_DOSE_GROUPS} or more dose groups after dropping doses"
             )
 
     def drop_dose(self):
-        """
-        Drop the maximum dose and related response values.
-        """
-        for fld in ("doses", "litter_ns", "incidences", "litter_covariates"):
-            arr = getattr(self, fld)[:-1]
-            setattr(self, fld, arr)
-        self._validate()
+        raise NotImplementedError("")
 
     @property
     def dataset_length(self):
@@ -75,7 +67,7 @@ class NestedDichotomousDataset(DatasetBase):
             dtype=self.dtype,
             doses=self.doses,
             litter_ns=self.litter_ns,
-            lincidences=self.incidences,
+            incidences=self.incidences,
             litter_covariates=self.litter_covariates,
             metadata=self.metadata,
         )
@@ -89,6 +81,38 @@ class NestedDichotomousDataset(DatasetBase):
             dataset_incidences=str_list(self.incidences),
             dataset_litter_covariates=str_list(self.litter_covariates),
         )
+
+    def as_dfile(self):
+        raise ValueError("N/A; requires BMDS3+ which doesn't use dfiles")
+
+    def plot(self):
+        """
+        Return a matplotlib figure of the dose-response dataset.
+
+        Examples
+        --------
+        >>> fig = dataset.plot()
+        >>> fig.show()
+        >>> fig.clear()
+
+        .. image:: ../tests/data/mpl/test_ddataset_plot.png
+           :align: center
+           :alt: Example generated BMD plot
+
+        Returns
+        -------
+        out : matplotlib.figure.Figure
+            A matplotlib figure representation of the dataset.
+        """
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(self.get_xlabel())
+        ax.set_ylabel(self.get_ylabel())
+        # TODO - add plot
+        ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+        ax.legend(**settings.LEGEND_OPTS)
+        return fig
 
 
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):
