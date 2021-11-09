@@ -67,8 +67,8 @@ M_ExponentialM3 = "Exponential-M3"
 M_ExponentialM4 = "Exponential-M4"
 M_ExponentialM5 = "Exponential-M5"
 M_Hill = "Hill"
-M_NESTED_LOGISTIC = "Nested Logistic"
-M_NCTR = "NCTR"
+M_NestedLogistic = "Nested Logistic"
+M_Nctr = "NCTR"
 
 VARIABLE_POLYNOMIAL = (M_Multistage, M_MultistageCancer, M_Polynomial)
 D_MODELS_RESTRICTABLE = [
@@ -120,7 +120,8 @@ C_MODELS_BMDS2 = [
     M_ExponentialM4,
     M_ExponentialM5,
 ]
-ND_MODELS = [M_NESTED_LOGISTIC, M_NCTR]
+ND_MODELS = [M_NestedLogistic, M_Nctr]
+MT_MODELS = [M_Multistage]
 
 # BMR types
 DICHOTOMOUS_BMRS = [
