@@ -11,12 +11,13 @@ class Recommender:
     """
 
     def __init__(self, dtype):
+
         rule_args = dict()
-        if dtype in (constants.DICHOTOMOUS, constants.NESTED_DICHOTOMOUS):
+        if dtype == constants.DICHOTOMOUS:
             pass
         elif dtype in constants.CONTINUOUS_DTYPES:
             rule_args["continuous"] = True
-        elif dtype in (constants.DICHOTOMOUS_CANCER, constants.MULTI_TUMOR):
+        elif dtype == constants.DICHOTOMOUS_CANCER:
             rule_args["cancer"] = True
         else:
             raise ValueError("Invalid data type")
