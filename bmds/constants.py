@@ -8,7 +8,16 @@ NESTED_DICHOTOMOUS = "ND"
 MULTI_TUMOR = "MT"
 
 
+class ModelClass(str, enum.Enum):
+    # Types of modeling sessions
+    DICHOTOMOUS = DICHOTOMOUS
+    CONTINUOUS = CONTINUOUS
+    NESTED_DICHOTOMOUS = NESTED_DICHOTOMOUS
+    MULTI_TUMOR = MULTI_TUMOR
+
+
 class Dtype(str, enum.Enum):
+    # Types of dose-response datasets
     DICHOTOMOUS = DICHOTOMOUS
     DICHOTOMOUS_CANCER = DICHOTOMOUS_CANCER
     CONTINUOUS = CONTINUOUS
