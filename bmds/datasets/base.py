@@ -117,12 +117,14 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
     def get_subclass(cls, dtype: Dtype) -> BaseModel:
         from .continuous import ContinuousDatasetSchema, ContinuousIndividualDatasetSchema
         from .dichotomous import DichotomousCancerDatasetSchema, DichotomousDatasetSchema
+        from .nested_dichotomous import NestedDichotomousDatasetSchema
 
         _dataset_schema_map: Dict = {
             Dtype.CONTINUOUS: ContinuousDatasetSchema,
             Dtype.CONTINUOUS_INDIVIDUAL: ContinuousIndividualDatasetSchema,
             Dtype.DICHOTOMOUS: DichotomousDatasetSchema,
             Dtype.DICHOTOMOUS_CANCER: DichotomousCancerDatasetSchema,
+            Dtype.NESTED_DICHOTOMOUS: NestedDichotomousDatasetSchema,
         }
         try:
             return _dataset_schema_map[dtype]
