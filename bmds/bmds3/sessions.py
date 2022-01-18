@@ -239,7 +239,15 @@ class BmdsSession:
 
         return df
 
-    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
+    def to_docx(
+        self,
+        report: Report = None,
+        header_level: int = 1,
+        citation: bool = True,
+        dataset_format_long: bool = True,
+        verbose_model_outputs: bool = False,
+        bmd_cdf_table: bool = False,
+    ):
         """Return a Document object with the session executed
 
         Args:
@@ -257,7 +265,7 @@ class BmdsSession:
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session results", h1)
         report.document.add_paragraph("Input dataset", h2)
-        reporting.write_dataset_tbl(report, self.dataset)
+        reporting.write_dataset_tbl(report, self.dataset, dataset_format_long)
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
@@ -267,9 +275,13 @@ class BmdsSession:
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)
-
-        report.document.add_paragraph("Individual model results", h2)
-        reporting.write_models(report, self, header_level + 2)
+        if verbose_model_outputs:
+            report.document.add_paragraph("Individual model results", h2)
+            reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+        else:
+            if self.selected.model:
+                report.document.add_paragraph("Selected model", h2)
+                report.document.add_paragraph(self.selected.model.text(), report.styles.fixed_width)
 
         if citation:
             reporting.write_citation(report, self, header_level + 1)

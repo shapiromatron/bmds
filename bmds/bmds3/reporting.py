@@ -290,7 +290,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
 
 
-def write_models(report: Report, session: BmdsSession, header_level: int):
+def write_models(report: Report, session: BmdsSession, bmd_cdf_table: bool, header_level: int):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
     for model in session.models:
@@ -299,3 +299,7 @@ def write_models(report: Report, session: BmdsSession, header_level: int):
             report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
             report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
+        if bmd_cdf_table:
+            report.document.add_paragraph()
+            report.document.add_paragraph("CDF:", styles.tbl_body)
+            report.document.add_paragraph(model.cdf_tbl(), styles.fixed_width)
