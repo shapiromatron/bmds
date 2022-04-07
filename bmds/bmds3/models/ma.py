@@ -6,10 +6,12 @@ from ... import plotting
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
 from ..types.structs import DichotomousMAStructs
-from .base import BmdModelAveraging, BmdModelAveragingSchema, BmdsLibraryManager, InputModelSettings
+from .base import BmdModelAveraging, BmdModelAveragingSchema, InputModelSettings
 
 
 class BmdModelAveragingDichotomous(BmdModelAveraging):
+    model_version: str = "BMDS330"
+
     def get_model_settings(self, settings: InputModelSettings) -> DichotomousModelSettings:
         if settings is None:
             return DichotomousModelSettings()
@@ -24,7 +26,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         )
         self.structs = structs
 
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll = self.get_dll()
         dll.runBMDSDichoMA(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.inputs),
@@ -67,7 +69,11 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
                 lw=2,
             )
         ax.plot(
-            self.results.dr_x, self.results.dr_y, label="Model average", c="#6470C0", lw=4,
+            self.results.dr_x,
+            self.results.dr_y,
+            label="Model average",
+            c="#6470C0",
+            lw=4,
         )
         plotting.add_bmr_lines(ax, results.bmd, results.bmdl, results.bmd_y)
         ax.legend(**plotting.LEGEND_OPTS)

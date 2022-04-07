@@ -14,14 +14,17 @@ from ..constants import (
 )
 from ..types.continuous import ContinuousAnalysis, ContinuousModelSettings, ContinuousResult
 from ..types.priors import get_continuous_prior
-from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
 class BmdModelContinuous(BmdModel):
     bmd_model_class: ContinuousModel
+    model_version: str = "BMDS330"
 
     def get_model_settings(
-        self, dataset: ContinuousDatasets, settings: InputModelSettings,
+        self,
+        dataset: ContinuousDatasets,
+        settings: InputModelSettings,
     ) -> ContinuousModelSettings:
         if settings is None:
             model_settings = ContinuousModelSettings()
@@ -66,13 +69,14 @@ class BmdModelContinuous(BmdModel):
         self.structs = structs
 
         # run the analysis
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll = self.get_dll()
         dll.runBMDSContAnalysis(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
             ctypes.pointer(structs.summary),
             ctypes.pointer(structs.aod),
             ctypes.pointer(structs.gof),
+            ctypes.pointer(ctypes.c_bool(False)),
             ctypes.pointer(ctypes.c_bool(False)),
         )
         self.results = ContinuousResult.from_model(self)
@@ -127,7 +131,7 @@ class Power(BmdModelContinuous):
         g = params[0]
         v = params[1]
         n = params[2]
-        return g + v * doses ** n
+        return g + v * doses**n
 
 
 class Hill(BmdModelContinuous):
@@ -167,7 +171,7 @@ class Hill(BmdModelContinuous):
         v = params[1]
         k = params[2]
         n = params[3]
-        return g + v * doses ** n / (k ** n + doses ** n)
+        return g + v * doses**n / (k**n + doses**n)
 
 
 class Polynomial(BmdModelContinuous):
@@ -203,7 +207,7 @@ class Polynomial(BmdModelContinuous):
     def dr_curve(self, doses, params) -> np.ndarray:
         val = doses * 0.0 + params[0]
         for i in range(1, self.settings.degree + 1):
-            val += params[i] * doses ** i
+            val += params[i] * doses**i
         return val
 
     def get_param_names(self) -> List[str]:

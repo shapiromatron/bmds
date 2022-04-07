@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from ... import constants
+from ...constants import Version
 from .base import BMDModel, DefaultParams
 
 
@@ -30,8 +31,8 @@ class Continuous(BMDModel):
 # POLYNOMIAL
 class Polynomial_221(Continuous):
     minimum_dose_groups = 2
-    model_name = "Polynomial"
-    bmds_version_dir = "BMDS270"
+    model_name = constants.M_Polynomial
+    bmds_version_dir = Version.BMDS270
     version = 2.21
     date = "03/14/2017"
     exe = "poly"
@@ -118,8 +119,8 @@ class Polynomial_221(Continuous):
 # LINEAR
 class Linear_221(Polynomial_221):
     minimum_dose_groups = 2
-    model_name = "Linear"
-    bmds_version_dir = "BMDS270"
+    model_name = constants.M_Linear
+    bmds_version_dir = Version.BMDS270
     exe = "poly"
     exe_plot = "00poly"
     version = 2.21
@@ -230,11 +231,11 @@ class Exponential(Continuous):
 
 
 class Exponential_M2_111(Exponential):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 1.11
     date = "03/14/2017"
     minimum_dose_groups = 2
-    model_name = "Exponential-M2"
+    model_name = constants.M_ExponentialM2
     exe = "exponential"
     exe_plot = "Expo_CPlot"
     exp_run_settings = "{} {} {} 1000 11 0 1"
@@ -271,7 +272,7 @@ class Exponential_M2_111(Exponential):
 # EXPONENTIAL M3
 class Exponential_M3_111(Exponential_M2_111):
     minimum_dose_groups = 3
-    model_name = "Exponential-M3"
+    model_name = constants.M_ExponentialM3
     exp_run_settings = "{} {} {} 0100 22 0 1"
     output_prefix = "M3"
 
@@ -287,7 +288,7 @@ class Exponential_M3_111(Exponential_M2_111):
 # EXPONENTIAL M4
 class Exponential_M4_111(Exponential_M2_111):
     minimum_dose_groups = 3
-    model_name = "Exponential-M4"
+    model_name = constants.M_ExponentialM4
     exp_run_settings = "{} {} {} 0010 33 0 1"
     output_prefix = "M4"
 
@@ -302,7 +303,7 @@ class Exponential_M4_111(Exponential_M2_111):
 # EXPONENTIAL M5
 class Exponential_M5_111(Exponential_M2_111):
     minimum_dose_groups = 4
-    model_name = "Exponential-M5"
+    model_name = constants.M_ExponentialM5
     exp_run_settings = "{} {} {} 0001 44 0 1"
     output_prefix = "M5"
 
@@ -317,11 +318,11 @@ class Exponential_M5_111(Exponential_M2_111):
 
 # POWER
 class Power_219(Continuous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.19
     date = "03/14/2017"
     minimum_dose_groups = 3
-    model_name = "Power"
+    model_name = constants.M_Power
     exe = "power"
     exe_plot = "00power"
     defaults = {
@@ -380,11 +381,11 @@ class Power_219(Continuous):
 
 # HILL
 class Hill_218(Continuous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.18
     date = "03/14/2017"
     minimum_dose_groups = 4
-    model_name = "Hill"
+    model_name = constants.M_Hill
     exe = "hill"
     exe_plot = "00Hill"
     defaults = {
