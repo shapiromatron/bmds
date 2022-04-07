@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import gamma, norm
 
 from ... import constants
+from ...constants import Version
 from .base import BMDModel, DefaultParams
 
 
@@ -25,11 +26,11 @@ class DichotomousCancer(Dichotomous):
 
 # MULTISTAGE
 class Multistage_34(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 3.4
     date = "05/02/2014"
     minimum_dose_groups = 2
-    model_name = "Multistage"
+    model_name = constants.M_Multistage
     exe = "multistage"
     exe_plot = "10multista"
     defaults = {
@@ -116,11 +117,11 @@ class QuantalLinear_34(Multistage_34):
 
 # MULTISTAGE CANCER
 class MultistageCancer_34(DichotomousCancer):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 3.4
     date = "05/02/2014"
     minimum_dose_groups = 2
-    model_name = "Multistage-Cancer"
+    model_name = constants.M_MultistageCancer
     exe = "cancer"
     exe_plot = "10cancer"
     defaults = {
@@ -197,11 +198,11 @@ class MultistageCancer_34(DichotomousCancer):
 
 # WEIBULL
 class Weibull_217(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.17
     date = "06/23/2017"
     minimum_dose_groups = 3
-    model_name = "Weibull"
+    model_name = constants.M_Weibull
     exe = "weibull"
     exe_plot = "10weibull"
     defaults = {
@@ -255,11 +256,11 @@ class Weibull_217(Dichotomous):
 
 # LOGPROBIT
 class LogProbit_34(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 3.4
     date = "05/21/2017"
     minimum_dose_groups = 3
-    model_name = "LogProbit"
+    model_name = constants.M_LogProbit
     exe = "probit"
     exe_plot = "10probit"
     defaults = {
@@ -314,11 +315,11 @@ class LogProbit_34(Dichotomous):
 
 # PROBIT
 class Probit_34(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 3.4
     date = "05/21/2017"
     minimum_dose_groups = 3
-    model_name = "Probit"
+    model_name = constants.M_Probit
     exe = "probit"
     exe_plot = "10probit"
     defaults = {
@@ -372,11 +373,11 @@ class Probit_34(Dichotomous):
 
 # GAMMA
 class Gamma_217(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.17
     date = "06/22/2017"
     minimum_dose_groups = 3
-    model_name = "Gamma"
+    model_name = constants.M_Gamma
     exe = "gamma"
     exe_plot = "10gammhit"
     defaults = {
@@ -429,11 +430,11 @@ class Gamma_217(Dichotomous):
 
 # LOGLOGISTIC
 class LogLogistic_215(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.15
     date = "03/20/2017"
     minimum_dose_groups = 3
-    model_name = "LogLogistic"
+    model_name = constants.M_LogLogistic
     exe = "logist"
     exe_plot = "10logist"
     defaults = {
@@ -490,11 +491,11 @@ class LogLogistic_215(Dichotomous):
 
 # LOGISTIC
 class Logistic_215(Dichotomous):
-    bmds_version_dir = "BMDS270"
+    bmds_version_dir = Version.BMDS270
     version = 2.15
     date = "03/20/2017"
     minimum_dose_groups = 3
-    model_name = "Logistic"
+    model_name = constants.M_Logistic
     exe = "logist"
     exe_plot = "10logist"
     defaults = {
@@ -549,8 +550,8 @@ class Logistic_215(Dichotomous):
 # DICHOTOMOUS HILL
 class DichotomousHill_13(Dichotomous):
     minimum_dose_groups = 4
-    model_name = "Dichotomous-Hill"
-    bmds_version_dir = "BMDS270"
+    model_name = constants.M_DichotomousHill
+    bmds_version_dir = Version.BMDS270
     exe = "DichoHill"
     exe_plot = "10DichoHill"
     version = 1.3

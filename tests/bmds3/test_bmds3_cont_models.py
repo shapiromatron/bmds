@@ -95,8 +95,8 @@ def test_bmds3_increasing(cdataset2):
     for Model, bmd_values, aic in [
         (continuous.ExponentialM3, [52.866, 50.493, 55.422], 3187.6),
         (continuous.ExponentialM5, [25.955, 24.578, 27.501], 3071.8),
-        (continuous.Power, [27.07, 24.034, 27.625], 3070.7),
-        (continuous.Hill, [26.513, 23.462, 30.448], 3071.9),
+        (continuous.Power, [25.843, 24.357, 29.769], 3067.8),
+        (continuous.Hill, [30.435, 24.451, 34.459], 3074.6),
         (continuous.Linear, [25.851, 24.355, 27.528], 3067.8),
         (continuous.Polynomial, [25.866, 24.351, 28.653], 3067.8),
     ]:
@@ -116,7 +116,7 @@ def test_bmds3_decreasing(negative_cdataset):
         (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4296.3),
         (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4298.3),
         (continuous.Power, [56.5, 49.8, 63.6], 3079.5),
-        (continuous.Hill, [101.5, 98.6, 104.8], 3170.9),
+        (continuous.Hill, [57.7, 51.0, 64.9], 3082.5),
         (continuous.Linear, [35.3, 33.1, 37.8], 3117.3),
         (continuous.Polynomial, [52.5, 46.2, 59.9], 3076.6),
     ]:
@@ -137,7 +137,7 @@ def test_bmds3_variance(cdataset2):
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.normal
-    assert pytest.approx(actual, rel=0.05) == [27.07, 24.03, 27.63]
+    assert pytest.approx(actual, rel=0.05) == [25.81, 24.32, 29.73]
     assert len(result.parameters.values) == 4
 
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal_ncv))
@@ -149,12 +149,12 @@ def test_bmds3_variance(cdataset2):
     assert pytest.approx(actual, rel=0.05) == [14.68, 13.06, 17.32]
 
     # only Power and Exp can be used
-    model = continuous.Hill(cdataset2, dict(disttype=DistType.log_normal))
+    model = continuous.ExponentialM3(cdataset2, dict(disttype=DistType.log_normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.log_normal
-    assert pytest.approx(actual, rel=0.05) == [59.04, 47.37, 77.65]
+    assert pytest.approx(actual, rel=0.05) == [104.59, 93.19, 118.99]
     assert len(result.parameters.values) == 5
 
 
@@ -162,10 +162,10 @@ def test_bmds3_variance(cdataset2):
 def test_bmds3_continuous_polynomial(cdataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
-        (1, [25.856, 24.388, 27.451], 3067.8),
-        (2, [25.39, 24.338, 28.329], 3070.1),
-        (3, [25.851, 24.387, 27.453], 3067.8),
-        (4, [25.591, 24.292, 27.578], 3070.1),
+        (1, [25.84, 24.358, 27.529], 3067.8),
+        (2, [25.984, 24.328, 28.642], 3069.8),
+        (3, [26.803, 24.259, 28.908], 3070.3),
+        (4, [26.137, 24.336, 28.713], 3069.9),
     ]:
         settings = ContinuousModelSettings(degree=degree)
         result = continuous.Polynomial(cdataset2, settings).execute()
@@ -190,12 +190,39 @@ def test_bmds3_continuous_session(cdataset2):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_decreasing_lognormal(negative_cdataset):
-    session = bmds.session.Bmds330(dataset=negative_cdataset)
-    settings = dict(disttype=DistType.log_normal, degree=2)
-    for model in (constants.M_ExponentialM3, constants.M_ExponentialM5, constants.M_Hill):
+def test_increasing_lognormal(cdataset2):
+    session = bmds.session.Bmds330(dataset=cdataset2)
+    settings = dict(disttype=DistType.log_normal)
+    for model in (constants.M_ExponentialM3, constants.M_ExponentialM5):
         session.add_model(model, settings)
     session.execute()
     for model in session.models:
         assert model.results.has_completed is True
-        assert model.results.bmd == -9999
+
+    session = bmds.session.Bmds330(dataset=cdataset2)
+    settings = dict(disttype=DistType.log_normal)
+    for model in (constants.M_Hill, constants.M_Power, constants.M_Polynomial):
+        session.add_model(model, settings)
+    session.execute()
+    for model in session.models:
+        assert model.results.has_completed is False
+
+
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_decreasing_lognormal(negative_cdataset):
+    session = bmds.session.Bmds330(dataset=negative_cdataset)
+    settings = dict(disttype=DistType.log_normal)
+    for model in (constants.M_ExponentialM3, constants.M_ExponentialM5):
+        session.add_model(model, settings)
+    session.execute()
+    for model in session.models:
+        assert model.results.has_completed is True
+        assert model.results.bmd == -9999  # TODO - should return valid value
+
+    session = bmds.session.Bmds330(dataset=negative_cdataset)
+    settings = dict(disttype=DistType.log_normal)
+    for model in (constants.M_Hill, constants.M_Power, constants.M_Polynomial):
+        session.add_model(model, settings)
+    session.execute()
+    for model in session.models:
+        assert model.results.has_completed is False

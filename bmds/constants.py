@@ -4,16 +4,34 @@ DICHOTOMOUS = "D"
 DICHOTOMOUS_CANCER = "DC"
 CONTINUOUS = "C"
 CONTINUOUS_INDIVIDUAL = "CI"
+NESTED_DICHOTOMOUS = "ND"
+MULTI_TUMOR = "MT"
+
+
+class ModelClass(str, enum.Enum):
+    # Types of modeling sessions
+    DICHOTOMOUS = DICHOTOMOUS
+    CONTINUOUS = CONTINUOUS
+    NESTED_DICHOTOMOUS = NESTED_DICHOTOMOUS
+    MULTI_TUMOR = MULTI_TUMOR
 
 
 class Dtype(str, enum.Enum):
+    # Types of dose-response datasets
     DICHOTOMOUS = DICHOTOMOUS
     DICHOTOMOUS_CANCER = DICHOTOMOUS_CANCER
     CONTINUOUS = CONTINUOUS
     CONTINUOUS_INDIVIDUAL = CONTINUOUS_INDIVIDUAL
+    NESTED_DICHOTOMOUS = NESTED_DICHOTOMOUS
 
 
-DTYPES = (DICHOTOMOUS, DICHOTOMOUS_CANCER, CONTINUOUS, CONTINUOUS_INDIVIDUAL)
+DTYPES = (
+    DICHOTOMOUS,
+    DICHOTOMOUS_CANCER,
+    CONTINUOUS,
+    CONTINUOUS_INDIVIDUAL,
+    NESTED_DICHOTOMOUS,
+)
 DICHOTOMOUS_DTYPES = (DICHOTOMOUS, DICHOTOMOUS_CANCER)
 CONTINUOUS_DTYPES = (CONTINUOUS, CONTINUOUS_INDIVIDUAL)
 
@@ -22,6 +40,12 @@ BMDS270 = "BMDS270"
 BMDS330 = "BMDS330"
 BMDS_TWOS = {BMDS270}
 BMDS_THREES = {BMDS330}
+
+
+class Version(str, enum.Enum):
+    BMDS270 = "BMDS270"
+    BMDS330 = "BMDS330"
+
 
 # model names
 M_Weibull = "Weibull"
@@ -43,6 +67,8 @@ M_ExponentialM3 = "Exponential-M3"
 M_ExponentialM4 = "Exponential-M4"
 M_ExponentialM5 = "Exponential-M5"
 M_Hill = "Hill"
+M_NestedLogistic = "Nested Logistic"
+M_Nctr = "NCTR"
 
 VARIABLE_POLYNOMIAL = (M_Multistage, M_MultistageCancer, M_Polynomial)
 D_MODELS_RESTRICTABLE = [
@@ -94,6 +120,8 @@ C_MODELS_BMDS2 = [
     M_ExponentialM4,
     M_ExponentialM5,
 ]
+ND_MODELS = [M_NestedLogistic, M_Nctr]
+MT_MODELS = [M_Multistage]
 
 # BMR types
 DICHOTOMOUS_BMRS = [

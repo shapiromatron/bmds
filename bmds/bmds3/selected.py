@@ -46,5 +46,6 @@ class SelectedModel:
         """Update data record for a tabular-friendly export"""
         is_selected = self.model_index == index
         d.update(
-            selected=is_selected, selected_notes=self.notes if is_selected else None,
+            selected=is_selected,
+            selected_notes=self.notes if is_selected else None,
         )

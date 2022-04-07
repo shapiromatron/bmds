@@ -14,11 +14,12 @@ from ..constants import (
 )
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
 from ..types.priors import get_dichotomous_prior
-from .base import BmdModel, BmdModelSchema, BmdsLibraryManager, InputModelSettings
+from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
 class BmdModelDichotomous(BmdModel):
     bmd_model_class: DichotomousModel
+    model_version: str = "BMDS330"
 
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
@@ -59,7 +60,7 @@ class BmdModelDichotomous(BmdModel):
         structs = inputs.to_c()
         self.structs = structs
 
-        dll = BmdsLibraryManager.get_dll(bmds_version="BMDS330", base_name="libDRBMD")
+        dll = self.get_dll()
         dll.runBMDSDichoAnalysis(
             ctypes.pointer(structs.analysis),
             ctypes.pointer(structs.result),
@@ -178,7 +179,7 @@ class Weibull(BmdModelDichotomous):
         g = params[0]
         a = params[1]
         b = params[2]
-        return g + (1 - g) * (1 - np.exp(-b * doses ** a))
+        return g + (1 - g) * (1 - np.exp(-b * doses**a))
 
 
 class DichotomousHill(BmdModelDichotomous):
@@ -212,7 +213,7 @@ class Multistage(BmdModelDichotomous):
         g = params[0]
         val = doses * 0
         for i in range(1, len(params)):
-            val += params[i] * doses ** i
+            val += params[i] * doses**i
         return g + (1 - g) * (1 - np.exp(-1.0 * val))
 
     def get_param_names(self) -> List[str]:

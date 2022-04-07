@@ -14,12 +14,14 @@ def test_init():
     # Check recommender system can be created for valid data-types.
 
     # valid dtypes; no errors should be raised
-    for dtype in bmds.constants.DTYPES:
-        Recommender(dtype)
+    Recommender(bmds.constants.DICHOTOMOUS)
+    Recommender(bmds.constants.DICHOTOMOUS_CANCER)
+    Recommender(bmds.constants.CONTINUOUS)
+    Recommender(bmds.constants.CONTINUOUS_INDIVIDUAL)
 
     # invalid dtype; error should be raised
     with pytest.raises(ValueError):
-        Recommender("💩")
+        Recommender(bmds.constants.NESTED_DICHOTOMOUS)
 
 
 def test_default_logic():

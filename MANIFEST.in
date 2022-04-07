@@ -4,4 +4,5 @@ recursive-exclude * *.py[co]
 recursive-include bmds *.csv
 recursive-include bmds *.docx
 recursive-include bmds *.json
+recursive-include bmds/benchmarks/datasets/data *.zip
 recursive-include bmds/bin *

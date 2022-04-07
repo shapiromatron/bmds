@@ -8,6 +8,14 @@ import numpy.typing as npt
 from .. import constants
 from .common import list_t_c
 
+
+def get_version(dll: ctypes.CDLL) -> str:
+    """Get the version from the bmds shared object"""
+    buffer = ctypes.create_string_buffer(32)
+    dll.version(ctypes.pointer(buffer))
+    return buffer.value.decode("utf8")
+
+
 # DICHOTOMOUS MODELS
 # ------------------
 
@@ -63,7 +71,10 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
+        (
+            "bmd_dist",
+            ctypes.POINTER(ctypes.c_double),
+        ),  # bmd distribution (dist_numE x 2) matrix
         ("bmd", ctypes.c_double),  # the central estimate of the BMD
     ]
 
@@ -259,10 +270,16 @@ class DichotomousStructs(NamedTuple):
 class DichotomousMAAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("nmodels", ctypes.c_int),
-        ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),),
+        (
+            "priors",
+            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+        ),
         ("nparms", ctypes.POINTER(ctypes.c_int)),
         ("actual_parms", ctypes.POINTER(ctypes.c_int)),
-        ("prior_cols", ctypes.POINTER(ctypes.c_int),),
+        (
+            "prior_cols",
+            ctypes.POINTER(ctypes.c_int),
+        ),
         ("models", ctypes.POINTER(ctypes.c_int)),
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
@@ -272,7 +289,10 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
 
         # list of floats
         priors = [
-            list_t_c(model.prior[: model.parms * model.prior_cols], ctypes.c_double,)
+            list_t_c(
+                model.prior[: model.parms * model.prior_cols],
+                ctypes.c_double,
+            )
             for model in models
         ]
 
@@ -497,7 +517,10 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd", ctypes.c_double),  # The bmd at the maximum
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double),),  # bmd distribution (dist_numE x 2) matrix
+        (
+            "bmd_dist",
+            ctypes.POINTER(ctypes.c_double),
+        ),  # bmd distribution (dist_numE x 2) matrix
     ]
 
     def __init__(self, *args, **kwargs):

@@ -95,6 +95,10 @@ class BmdModel(abc.ABC):
         # return name of model; may be setting-specific
         return self.bmd_model_class.verbose
 
+    @classmethod
+    def get_dll(cls) -> ctypes.CDLL:
+        return BmdsLibraryManager.get_dll(bmds_version=cls.model_version, base_name="libDRBMD")
+
     @property
     def has_results(self) -> bool:
         return self.results is not None and self.results.has_completed is True
@@ -148,6 +152,21 @@ class BmdModel(abc.ABC):
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
+    def cdf_plot(self):
+        if not self.has_results:
+            raise ValueError("Cannot plot if results are unavailable")
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(self.dataset.get_xlabel())
+        ax.set_ylabel("Percentile")
+        ax.plot(
+            self.results.fit.bmd_dist[0],
+            self.results.fit.bmd_dist[1],
+            **plotting.LINE_FORMAT,
+        )
+        ax.set_title("BMD cumulative distribution function")
+        return fig
+
     @abc.abstractmethod
     def get_param_names(self) -> List[str]:
         ...
@@ -180,10 +199,13 @@ class BmdModelAveraging(abc.ABC):
     Should save no results form model execution or any dataset-specific settings.
     """
 
-    model_version = "BMDS330"
+    model_version: str
 
     def __init__(
-        self, session: BmdsSession, models: List[BmdModel], settings: InputModelSettings = None,
+        self,
+        session: BmdsSession,
+        models: List[BmdModel],
+        settings: InputModelSettings = None,
     ):
         self.session = session
         self.models = models
@@ -191,6 +213,9 @@ class BmdModelAveraging(abc.ABC):
         initial_settings = settings if settings is not None else models[0].settings
         self.settings = self.get_model_settings(initial_settings)
         self.results: Optional[BaseModel] = None
+
+    def get_dll(self) -> ctypes.CDLL:
+        return BmdsLibraryManager.get_dll(bmds_version=self.model_version, base_name="libDRBMD")
 
     @abc.abstractmethod
     def get_model_settings(self, settings: InputModelSettings) -> BaseModel:

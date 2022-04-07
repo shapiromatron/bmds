@@ -12,6 +12,7 @@ from simple_settings import settings
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
+from ..utils import citation
 from . import reporting
 from .constants import PriorClass
 from .models import continuous as c3
@@ -21,6 +22,7 @@ from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, B
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
 from .types import sessions as schema
+from .types.structs import get_version
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,9 @@ class BmdsSession:
     model_options: Dict[str, Dict]
 
     def __init__(
-        self, dataset: DatasetType, recommendation_settings: Optional[RecommenderSettings] = None,
+        self,
+        dataset: DatasetType,
+        recommendation_settings: Optional[RecommenderSettings] = None,
     ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
@@ -153,10 +157,19 @@ class BmdsSession:
         first_class = self.models[0].settings.priors.prior_class
         return first_class is PriorClass.bayesian
 
+    def citation(self) -> dict:
+        return citation(self.dll_version())
+
     # serializing
     # -----------
     def serialize(self) -> schema.SessionSchemaBase:
         ...
+
+    @classmethod
+    def dll_version(cls) -> str:
+        model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
+        dll = model.get_dll()  # noqa: F841
+        return get_version(dll)
 
     @classmethod
     def from_serialized(cls, data: Dict) -> BmdsSession:
@@ -198,7 +211,8 @@ class BmdsSession:
         models = []
         for model_index, model in enumerate(self.models):
             d: dict[str, Any] = dict(
-                model_index=model_index, model_name=model.name(),
+                model_index=model_index,
+                model_name=model.name(),
             )
             model.settings.update_record(d)
             model.results.update_record(d)
@@ -214,7 +228,10 @@ class BmdsSession:
 
         # add model average row
         if self.model_average:
-            d = dict(model_index=100, model_name="Model average",)
+            d = dict(
+                model_index=100,
+                model_name="Model average",
+            )
             self.model_average.settings.update_record(d)
             self.model_average.results.update_record(d)
             models.append(d)
@@ -228,14 +245,13 @@ class BmdsSession:
 
         return df
 
-    def to_docx(
-        self, report: Report = None, header_level: int = 1,
-    ):
+    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
         """Return a Document object with the session executed
 
         Args:
             report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
+            citation (bool, default True): Include citation
 
         Returns:
             A python docx.Document object with content added.
@@ -247,7 +263,7 @@ class BmdsSession:
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session results", h1)
         report.document.add_paragraph("Input dataset", h2)
-        reporting.write_dataset(report, self.dataset)
+        reporting.write_dataset_tbl(report, self.dataset)
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
@@ -260,6 +276,9 @@ class BmdsSession:
 
         report.document.add_paragraph("Individual model results", h2)
         reporting.write_models(report, self, header_level + 2)
+
+        if citation:
+            reporting.write_citation(report, self, header_level + 1)
 
         return report.document
 
@@ -304,7 +323,9 @@ class Bmds330(BmdsSession):
     def serialize(self) -> "Bmds330Schema":
         schema = Bmds330Schema(
             version=dict(
-                string=self.version_str, pretty=self.version_pretty, numeric=self.version_tuple,
+                string=self.version_str,
+                pretty=self.version_pretty,
+                numeric=self.version_tuple,
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],
