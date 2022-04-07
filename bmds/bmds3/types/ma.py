@@ -62,11 +62,14 @@ class DichotomousModelAverageResult(ModelAverageResult):
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            bmdl=self.bmdl, bmd=self.bmd, bmdu=self.bmdu,
+            bmdl=self.bmdl,
+            bmd=self.bmd,
+            bmdu=self.bmdu,
         )
 
     def update_record_weights(self, d: dict, index: int) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            model_prior=self.priors[index], model_posterior=self.posteriors[index],
+            model_prior=self.priors[index],
+            model_posterior=self.posteriors[index],
         )

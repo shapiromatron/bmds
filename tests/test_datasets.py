@@ -45,7 +45,10 @@ class TestBaseDatasetFunctionality:
         assert ds._get_dataset_name() == "example dataset"
 
         ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14], id=123,
+            doses=[0, 1.96, 5.69, 29.75],
+            ns=[75, 49, 50, 49],
+            incidences=[5, 1, 3, 14],
+            id=123,
         )
         assert ds._get_dataset_name() == "Dataset #123"
 

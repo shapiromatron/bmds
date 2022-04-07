@@ -397,7 +397,9 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
 
     def deserialize(self) -> ContinuousIndividualDataset:
         ds = ContinuousIndividualDataset(
-            doses=self.doses, responses=self.responses, **self.metadata.dict(),
+            doses=self.doses,
+            responses=self.responses,
+            **self.metadata.dict(),
         )
         ds._anova = self.anova
         return ds

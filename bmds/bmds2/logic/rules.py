@@ -265,8 +265,10 @@ class CorrectVarianceModel(Rule):
         msg = None
         if self._is_valid_number(p_value2):
             if constant_variance == 1 and p_value2 < 0.1:
-                msg = "Incorrect variance model (p-value 2 = {}), constant variance selected".format(
-                    p_value2
+                msg = (
+                    "Incorrect variance model (p-value 2 = {}), constant variance selected".format(
+                        p_value2
+                    )
                 )
             elif constant_variance == 0 and p_value2 > 0.1:
                 msg = "Incorrect variance model (p-value 2 = {}), modeled variance selected".format(
