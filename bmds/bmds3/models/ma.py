@@ -69,7 +69,11 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
                 lw=2,
             )
         ax.plot(
-            self.results.dr_x, self.results.dr_y, label="Model average", c="#6470C0", lw=4,
+            self.results.dr_x,
+            self.results.dr_y,
+            label="Model average",
+            c="#6470C0",
+            lw=4,
         )
         plotting.add_bmr_lines(ax, results.bmd, results.bmdl, results.bmd_y)
         ax.legend(**plotting.LEGEND_OPTS)

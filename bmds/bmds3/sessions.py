@@ -41,7 +41,9 @@ class BmdsSession:
     model_options: Dict[str, Dict]
 
     def __init__(
-        self, dataset: DatasetType, recommendation_settings: Optional[RecommenderSettings] = None,
+        self,
+        dataset: DatasetType,
+        recommendation_settings: Optional[RecommenderSettings] = None,
     ):
         self.dataset = dataset
         self.models: List[BmdModel] = []
@@ -209,7 +211,8 @@ class BmdsSession:
         models = []
         for model_index, model in enumerate(self.models):
             d: dict[str, Any] = dict(
-                model_index=model_index, model_name=model.name(),
+                model_index=model_index,
+                model_name=model.name(),
             )
             model.settings.update_record(d)
             model.results.update_record(d)
@@ -225,7 +228,10 @@ class BmdsSession:
 
         # add model average row
         if self.model_average:
-            d = dict(model_index=100, model_name="Model average",)
+            d = dict(
+                model_index=100,
+                model_name="Model average",
+            )
             self.model_average.settings.update_record(d)
             self.model_average.results.update_record(d)
             models.append(d)
@@ -317,7 +323,9 @@ class Bmds330(BmdsSession):
     def serialize(self) -> "Bmds330Schema":
         schema = Bmds330Schema(
             version=dict(
-                string=self.version_str, pretty=self.version_pretty, numeric=self.version_tuple,
+                string=self.version_str,
+                pretty=self.version_pretty,
+                numeric=self.version_tuple,
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],
