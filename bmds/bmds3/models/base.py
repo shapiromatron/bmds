@@ -160,7 +160,9 @@ class BmdModel(abc.ABC):
         ax.set_xlabel(self.dataset.get_xlabel())
         ax.set_ylabel("Percentile")
         ax.plot(
-            self.results.fit.bmd_dist[0], self.results.fit.bmd_dist[1], **plotting.LINE_FORMAT,
+            self.results.fit.bmd_dist[0],
+            self.results.fit.bmd_dist[1],
+            **plotting.LINE_FORMAT,
         )
         ax.set_title("BMD cumulative distribution function")
         return fig
@@ -200,7 +202,10 @@ class BmdModelAveraging(abc.ABC):
     model_version: str
 
     def __init__(
-        self, session: BmdsSession, models: List[BmdModel], settings: InputModelSettings = None,
+        self,
+        session: BmdsSession,
+        models: List[BmdModel],
+        settings: InputModelSettings = None,
     ):
         self.session = session
         self.models = models

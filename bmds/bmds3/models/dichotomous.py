@@ -179,7 +179,7 @@ class Weibull(BmdModelDichotomous):
         g = params[0]
         a = params[1]
         b = params[2]
-        return g + (1 - g) * (1 - np.exp(-b * doses ** a))
+        return g + (1 - g) * (1 - np.exp(-b * doses**a))
 
 
 class DichotomousHill(BmdModelDichotomous):
@@ -213,7 +213,7 @@ class Multistage(BmdModelDichotomous):
         g = params[0]
         val = doses * 0
         for i in range(1, len(params)):
-            val += params[i] * doses ** i
+            val += params[i] * doses**i
         return g + (1 - g) * (1 - np.exp(-1.0 * val))
 
     def get_param_names(self) -> List[str]:
