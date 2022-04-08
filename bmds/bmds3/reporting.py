@@ -11,8 +11,8 @@ from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
 
 if TYPE_CHECKING:
-    from .sessions import BmdsSession
     from .models.base import BmdModel
+    from .sessions import BmdsSession
 
 
 def write_citation(report: Report, session: BmdsSession, header_level: int):
