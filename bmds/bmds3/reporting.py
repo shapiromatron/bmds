@@ -292,17 +292,21 @@ def write_bayesian_table(report: Report, session: BmdsSession):
 
 
 def write_models(report: Report, session: BmdsSession, bmd_cdf_table: bool, header_level: int):
+    for model in session.models:
+        write_model(report, model, bmd_cdf_table, header_level)
+
+
+def write_model(report: Report, model: BmdModel, bmd_cdf_table: bool, header_level: int):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
-    for model in session.models:
-        report.document.add_paragraph(model.name(), header_style)
-        if model.has_results:
-            report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-            report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
-        report.document.add_paragraph(model.text(), styles.fixed_width)
-        if bmd_cdf_table:
-            report.document.add_paragraph("CDF:", styles.tbl_body)
-            write_bmd_cdf_table(report, model)
+    report.document.add_paragraph(model.name(), header_style)
+    if model.has_results:
+        report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+        report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+    report.document.add_paragraph(model.text(), styles.fixed_width)
+    if bmd_cdf_table:
+        report.document.add_paragraph("CDF:", styles.tbl_body)
+        write_bmd_cdf_table(report, model)
 
 
 def write_bmd_cdf_table(report: Report, model: BmdModel):

@@ -281,16 +281,24 @@ class BmdsSession:
             reporting.write_bayesian_table(report, self)
             if self.model_average:
                 reporting.plot_bma(report, self)
+            if all_models:
+                report.document.add_paragraph("Individual model results", h2)
+                reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)
-        if all_models:
-            report.document.add_paragraph("Individual model results", h2)
-            reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
-        else:
-            if self.selected.model:
+            if all_models:
+                report.document.add_paragraph("Individual model results", h2)
+                reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+            else:
                 report.document.add_paragraph("Selected model", h2)
-                report.document.add_paragraph(self.selected.model.text(), report.styles.fixed_width)
+                if self.selected.model:
+                    reporting.write_model(
+                        report, self.selected.model, bmd_cdf_table, header_level + 2
+                    )
+                else:
+                    report.document.add_paragraph("No model was selected as a best-fitting model.")
 
         if citation:
             reporting.write_citation(report, self, header_level + 1)
