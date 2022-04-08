@@ -30,11 +30,11 @@ class BmdsSessionBatch:
 
     def to_docx(
         self,
-        report: Report = None,
+        report: Optional[Report] = None,
         header_level: int = 1,
         citation: bool = True,
         dataset_format_long: bool = True,
-        verbose_model_outputs: bool = False,
+        all_models: bool = False,
         bmd_cdf_table: bool = False,
     ):
         """Append each session to a single document
@@ -43,6 +43,9 @@ class BmdsSessionBatch:
             report (Report, optional): A Report object, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
             citation (bool, default True): Include citation
+            dataset_format_long (bool, default True): long or wide dataset table format
+            all_models (bool, default False):  Show all models, not just selected
+            bmd_cdf_table (bool, default False): Export BMD CDF table
 
         Returns:
             A python docx.Document object with content added.
@@ -56,7 +59,7 @@ class BmdsSessionBatch:
                 header_level=header_level,
                 citation=False,
                 dataset_format_long=dataset_format_long,
-                verbose_model_outputs=verbose_model_outputs,
+                all_models=all_models,
                 bmd_cdf_table=bmd_cdf_table,
             )
 

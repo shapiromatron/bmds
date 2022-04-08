@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from ... import plotting
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
-from ...utils import package_root, pretty_table
+from ...utils import package_root
 from ..constants import BmdModelSchema as BmdModelClass
 
 if TYPE_CHECKING:
@@ -151,13 +151,6 @@ class BmdModel(abc.ABC):
         plotting.add_bmr_lines(ax, self.results.bmd, self.results.bmdl, self.results.plotting.bmd_y)
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
-
-    def cdf_tbl(self) -> str:
-        headers = "BMD|Percentile".split("|")
-        data = []
-        for (bmd, percentile) in zip(self.results.fit.bmd_dist[0], self.results.fit.bmd_dist[1]):
-            data.append([bmd, percentile])
-        return pretty_table(data, headers)
 
     def cdf_plot(self):
         if not self.has_results:

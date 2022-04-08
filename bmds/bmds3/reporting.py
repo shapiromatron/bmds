@@ -12,6 +12,7 @@ from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_
 
 if TYPE_CHECKING:
     from .sessions import BmdsSession
+    from .models.base import BmdModel
 
 
 def write_citation(report: Report, session: BmdsSession, header_level: int):
@@ -300,6 +301,21 @@ def write_models(report: Report, session: BmdsSession, bmd_cdf_table: bool, head
             report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
         if bmd_cdf_table:
-            report.document.add_paragraph()
             report.document.add_paragraph("CDF:", styles.tbl_body)
-            report.document.add_paragraph(model.cdf_tbl(), styles.fixed_width)
+            write_bmd_cdf_table(report, model)
+
+
+def write_bmd_cdf_table(report: Report, model: BmdModel):
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    dist = model.results.fit.bmd_dist
+    n_dist = dist.shape[1]
+
+    tbl = report.document.add_table(n_dist + 1, 2, style=styles.table)
+    write_cell(tbl.cell(0, 0), "Percentile", style=hdr)
+    write_cell(tbl.cell(0, 1), "BMD", style=hdr)
+    for i in range(n_dist):
+        write_cell(tbl.cell(i + 1, 0), dist[1, i], style=body)
+        write_cell(tbl.cell(i + 1, 1), dist[0, i], style=body)

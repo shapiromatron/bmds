@@ -251,7 +251,7 @@ class BmdsSession:
         header_level: int = 1,
         citation: bool = True,
         dataset_format_long: bool = True,
-        verbose_model_outputs: bool = False,
+        all_models: bool = False,
         bmd_cdf_table: bool = False,
     ):
         """Return a Document object with the session executed
@@ -260,6 +260,9 @@ class BmdsSession:
             report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
             citation (bool, default True): Include citation
+            dataset_format_long (bool, default True): long or wide dataset table format
+            all_models (bool, default False):  Show all models, not just selected
+            bmd_cdf_table (bool, default False): Export BMD CDF table
 
         Returns:
             A python docx.Document object with content added.
@@ -281,7 +284,7 @@ class BmdsSession:
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)
-        if verbose_model_outputs:
+        if all_models:
             report.document.add_paragraph("Individual model results", h2)
             reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
         else:
