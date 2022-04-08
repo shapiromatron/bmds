@@ -11,6 +11,7 @@ from ..reporting.footnotes import TableFootnote
 from ..reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
 
 if TYPE_CHECKING:
+    from .models.base import BmdModel
     from .sessions import BmdsSession
 
 
@@ -290,12 +291,35 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         footnotes.add_footnote_text(report.document, report.styles.tbl_footnote)
 
 
-def write_models(report: Report, session: BmdsSession, header_level: int):
+def write_models(report: Report, session: BmdsSession, bmd_cdf_table: bool, header_level: int):
+    for model in session.models:
+        write_model(report, model, bmd_cdf_table, header_level)
+
+
+def write_model(report: Report, model: BmdModel, bmd_cdf_table: bool, header_level: int):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
-    for model in session.models:
-        report.document.add_paragraph(model.name(), header_style)
-        if model.has_results:
-            report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-            report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
-        report.document.add_paragraph(model.text(), styles.fixed_width)
+    report.document.add_paragraph(model.name(), header_style)
+    if model.has_results:
+        report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+        report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+    report.document.add_paragraph(model.text(), styles.fixed_width)
+    if bmd_cdf_table:
+        report.document.add_paragraph("CDF:", styles.tbl_body)
+        write_bmd_cdf_table(report, model)
+
+
+def write_bmd_cdf_table(report: Report, model: BmdModel):
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    dist = model.results.fit.bmd_dist
+    n_dist = dist.shape[1]
+
+    tbl = report.document.add_table(n_dist + 1, 2, style=styles.table)
+    write_cell(tbl.cell(0, 0), "Percentile", style=hdr)
+    write_cell(tbl.cell(0, 1), "BMD", style=hdr)
+    for i in range(n_dist):
+        write_cell(tbl.cell(i + 1, 0), dist[1, i], style=body)
+        write_cell(tbl.cell(i + 1, 1), dist[0, i], style=body)

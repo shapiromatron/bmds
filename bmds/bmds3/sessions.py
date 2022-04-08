@@ -245,13 +245,24 @@ class BmdsSession:
 
         return df
 
-    def to_docx(self, report: Report = None, header_level: int = 1, citation: bool = True):
+    def to_docx(
+        self,
+        report: Report = None,
+        header_level: int = 1,
+        citation: bool = True,
+        dataset_format_long: bool = True,
+        all_models: bool = False,
+        bmd_cdf_table: bool = False,
+    ):
         """Return a Document object with the session executed
 
         Args:
             report (Report, optional): A Report dataclass, or None to use default.
             header_level (int, optional): Starting header level. Defaults to 1.
             citation (bool, default True): Include citation
+            dataset_format_long (bool, default True): long or wide dataset table format
+            all_models (bool, default False):  Show all models, not just selected
+            bmd_cdf_table (bool, default False): Export BMD CDF table
 
         Returns:
             A python docx.Document object with content added.
@@ -263,19 +274,31 @@ class BmdsSession:
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session results", h1)
         report.document.add_paragraph("Input dataset", h2)
-        reporting.write_dataset_tbl(report, self.dataset)
+        reporting.write_dataset_tbl(report, self.dataset, dataset_format_long)
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
             reporting.write_bayesian_table(report, self)
             if self.model_average:
                 reporting.plot_bma(report, self)
+            if all_models:
+                report.document.add_paragraph("Individual model results", h2)
+                reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)
-
-        report.document.add_paragraph("Individual model results", h2)
-        reporting.write_models(report, self, header_level + 2)
+            if all_models:
+                report.document.add_paragraph("Individual model results", h2)
+                reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+            else:
+                report.document.add_paragraph("Selected model", h2)
+                if self.selected.model:
+                    reporting.write_model(
+                        report, self.selected.model, bmd_cdf_table, header_level + 2
+                    )
+                else:
+                    report.document.add_paragraph("No model was selected as a best-fitting model.")
 
         if citation:
             reporting.write_citation(report, self, header_level + 1)
