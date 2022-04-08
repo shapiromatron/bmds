@@ -44,7 +44,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             settings=self.settings, model_indexes=model_indexes, results=self.results
         )
 
-    def plot(self, colorize: bool = True):
+    def plot(self, colorize: bool = False):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
         """
