@@ -1,5 +1,5 @@
 import ctypes
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import numpy as np
 
@@ -118,7 +118,7 @@ class BmdModelContinuousSchema(BmdModelSchema):
     results: Optional[ContinuousResult]
 
     def deserialize(self, dataset: ContinuousDatasets) -> BmdModelContinuous:
-        Model = bmd_model_map[self.model_class.id]
+        Model = get_model_class(self)
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
         return model
@@ -279,10 +279,22 @@ class ExponentialM5(BmdModelContinuous):
         return a * (c - (c - 1.0) * np.exp(-1.0 * np.power(b * doses, d)))
 
 
-bmd_model_map = {
+_bmd_model_map = {
     ContinuousModelIds.c_power.value: Power,
     ContinuousModelIds.c_hill.value: Hill,
-    ContinuousModelIds.c_polynomial.value: Polynomial,
     ContinuousModelIds.c_exp_m3.value: ExponentialM3,
     ContinuousModelIds.c_exp_m5.value: ExponentialM5,
 }
+
+
+def get_model_class(data: BmdModelContinuousSchema) -> Type[BmdModelContinuous]:
+    """Get continuous model class given the schema
+
+    Generally this is a dictionary lookup; however there is a special case for
+    Linear/Polynomial because they have the same model class enum in C++, but different
+    python classes. Thus we specify by the degree as well.
+    """
+    if data.model_class.id == ContinuousModelIds.c_polynomial.value:
+        return Linear if data.settings.degree == 1 else Polynomial
+    else:
+        return _bmd_model_map[data.model_class.id]
