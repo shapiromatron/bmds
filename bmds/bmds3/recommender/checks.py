@@ -190,7 +190,10 @@ class LargeRoi(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        return abs(model.results.gof.roi)
+        roi = model.results.gof.roi
+        if is_valid_number(roi):
+            return abs(roi)
+        return None
 
 
 class BmdBmdlRatio(ShouldBeLessThan):
