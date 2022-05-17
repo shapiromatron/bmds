@@ -1,7 +1,8 @@
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from pydantic import confloat, conint, root_validator
 from scipy import stats
 from simple_settings import settings
 
@@ -206,12 +207,26 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: List[float]
-    ns: List[int]
+    doses: List[confloat(ge=0)]
+    ns: List[conint(ge=1)]
     means: List[float]
-    stdevs: List[float]
+    stdevs: List[confloat(ge=0)]
     anova: Optional[AnovaTests]
     plotting: Optional[DatasetPlottingSchema]
+
+    MIN_DG: ClassVar = 3
+
+    @root_validator(skip_on_failure=True)
+    def num_groups(cls, values):
+        n_doses = len(values["doses"])
+        n_ns = len(values["ns"])
+        n_means = len(values["means"])
+        n_stdevs = len(values["stdevs"])
+        if len(set([n_doses, n_ns, n_means, n_stdevs])) != 1:
+            raise ValueError("Length of dose, n, mean, stdevs are not the same")
+        if n_doses < cls.MIN_DG:
+            raise ValueError(f"At least {cls.MIN_DG} groups are required")
+        return values
 
     def deserialize(self) -> ContinuousDataset:
         ds = ContinuousDataset(
@@ -391,9 +406,15 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: List[float]
+    doses: List[confloat(ge=0)]
     responses: List[float]
     anova: Optional[AnovaTests]
+
+    @root_validator(skip_on_failure=True)
+    def num_groups(cls, values):
+        # may throw ValueErrors; caught in validator
+        ContinuousIndividualDataset(doses=values["doses"], responses=values["responses"])
+        return values
 
     def deserialize(self) -> ContinuousIndividualDataset:
         ds = ContinuousIndividualDataset(
