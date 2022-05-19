@@ -1,5 +1,8 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 import bmds
 
@@ -631,3 +634,71 @@ class TestNestedDichtomousDataset:
 
         # check serialization equality
         assert ds1.serialize().dict() == ds2.serialize().dict()
+
+
+class TestSchema:
+    def test_dichotomous(self, ddataset):
+        # check that cycling through serialization returns the same
+        v1 = ddataset.serialize().dict()
+        v2 = bmds.DichotomousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        assert v1 == v2
+
+        data = deepcopy(v1)
+        data["ns"] = [1, 2]
+        with pytest.raises(ValidationError, match="Length"):
+            bmds.DichotomousDatasetSchema.parse_obj(data)
+
+        data = {
+            "dtype": "D",
+            "doses": [0, 10],
+            "ns": [20, 20],
+            "incidences": [0, 0],
+            "metadata": {},
+        }
+        # two groups ok for a cancer dataset
+        bmds.DichotomousCancerDatasetSchema.parse_obj(data)
+        # but not ok for a standard dataset
+        with pytest.raises(ValidationError, match="At least 3 groups are required"):
+            bmds.DichotomousDatasetSchema.parse_obj(data)
+
+    def test_continuous(self, cdataset):
+        # check that cycling through serialization returns the same
+        v1 = cdataset.serialize().dict()
+        v2 = bmds.ContinuousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        assert v1 == v2
+
+        data = deepcopy(v1)
+        data["ns"] = [1, 2]
+        with pytest.raises(ValidationError, match="Length"):
+            bmds.ContinuousDatasetSchema.parse_obj(data)
+
+        data = {
+            "dtype": "C",
+            "doses": [0, 10],
+            "ns": [20, 20],
+            "means": [0, 0],
+            "stdevs": [1, 1],
+            "metadata": {},
+        }
+        with pytest.raises(ValidationError, match="At least 3 groups are required"):
+            bmds.ContinuousDatasetSchema.parse_obj(data)
+
+    def test_ci_continuous(self, cidataset):
+        # check that cycling through serialization returns the same
+        v1 = cidataset.serialize().dict()
+        v2 = bmds.ContinuousIndividualDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        assert v1 == v2
+
+        data = deepcopy(v1)
+        data["doses"] = [1, 2]
+        with pytest.raises(ValidationError, match="same length"):
+            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+
+        data = {
+            "dtype": "CI",
+            "doses": [0, 10],
+            "responses": [20, 20],
+            "metadata": {},
+        }
+        with pytest.raises(ValidationError, match="Must have 3 or more dose groups"):
+            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
