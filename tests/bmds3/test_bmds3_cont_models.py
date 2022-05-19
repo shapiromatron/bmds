@@ -6,7 +6,7 @@ from run3 import RunBmds3
 
 import bmds
 from bmds import constants
-from bmds.bmds3.constants import DistType
+from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
@@ -113,8 +113,8 @@ def test_bmds3_increasing(cdataset2):
 def test_bmds3_decreasing(negative_cdataset):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [-9999.0, -9999.0, -9999.0], 4296.3),
-        (continuous.ExponentialM5, [-9999.0, -9999.0, -9999.0], 4298.3),
+        (continuous.ExponentialM3, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4296.3),
+        (continuous.ExponentialM5, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4298.3),
         (continuous.Power, [56.5, 49.8, 63.6], 3079.5),
         (continuous.Hill, [57.7, 51.0, 64.9], 3082.5),
         (continuous.Linear, [35.3, 33.1, 37.8], 3117.3),
@@ -146,7 +146,7 @@ def test_bmds3_variance(cdataset2):
     # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
     assert model.settings.disttype is DistType.normal_ncv
     assert len(result.parameters.values) == 5
-    assert pytest.approx(actual, rel=0.05) == [14.68, 13.06, 17.32]
+    assert pytest.approx(actual, rel=0.05) == [14.43, 13.03, 14.73]
 
     # only Power and Exp can be used
     model = continuous.ExponentialM3(cdataset2, dict(disttype=DistType.log_normal))
@@ -198,6 +198,7 @@ def test_increasing_lognormal(cdataset2):
     session.execute()
     for model in session.models:
         assert model.results.has_completed is True
+        assert model.results.bmd != BMDS_BLANK_VALUE
 
     session = bmds.session.Bmds330(dataset=cdataset2)
     settings = dict(disttype=DistType.log_normal)
@@ -206,6 +207,7 @@ def test_increasing_lognormal(cdataset2):
     session.execute()
     for model in session.models:
         assert model.results.has_completed is False
+        assert model.results.bmd == BMDS_BLANK_VALUE
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
@@ -216,8 +218,8 @@ def test_decreasing_lognormal(negative_cdataset):
         session.add_model(model, settings)
     session.execute()
     for model in session.models:
-        assert model.results.has_completed is True
-        assert model.results.bmd == -9999  # TODO - should return valid value
+        assert model.results.has_completed is False  # TODO - should return valid value
+        assert model.results.bmd == BMDS_BLANK_VALUE
 
     session = bmds.session.Bmds330(dataset=negative_cdataset)
     settings = dict(disttype=DistType.log_normal)
@@ -226,3 +228,18 @@ def test_decreasing_lognormal(negative_cdataset):
     session.execute()
     for model in session.models:
         assert model.results.has_completed is False
+        assert model.results.bmd == BMDS_BLANK_VALUE
+
+
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_infinite_bmr_values():
+    # check that infinite BMR values are correctly set to BMDS_BLANK_VALUE
+    ds = bmds.ContinuousDataset(
+        doses=[0.0, 50, 100],
+        ns=[20, 20, 20],
+        means=[5.26, 5.76, 6.13],
+        stdevs=[2.53, 1.47, 2.47],
+    )
+    model = continuous.ExponentialM3(ds)
+    model.execute()
+    assert model.results.plotting.bmdu_y == BMDS_BLANK_VALUE

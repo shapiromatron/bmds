@@ -1,6 +1,7 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 import numpy as np
+from pydantic import confloat, conint, root_validator
 from scipy import stats
 from simple_settings import settings
 
@@ -188,10 +189,23 @@ class DichotomousDataset(DatasetBase):
 class DichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: List[float]
-    ns: List[int]
-    incidences: List[int]
+    doses: List[confloat(ge=0)]
+    ns: List[conint(ge=1)]
+    incidences: List[conint(ge=0)]
     plotting: Optional[DatasetPlottingSchema]
+
+    MIN_DG: ClassVar = 3
+
+    @root_validator(skip_on_failure=True)
+    def num_groups(cls, values):
+        n_doses = len(values["doses"])
+        n_ns = len(values["ns"])
+        n_incidences = len(values["incidences"])
+        if n_doses != n_ns or n_doses != n_incidences:
+            raise ValueError("Length of dose, n and incidences are not the same")
+        if n_doses < cls.MIN_DG:
+            raise ValueError(f"At least {cls.MIN_DG} groups are required")
+        return values
 
     def deserialize(self) -> DichotomousDataset:
         ds = DichotomousDataset(
@@ -246,6 +260,8 @@ class DichotomousCancerDataset(DichotomousDataset):
 
 
 class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
+    MIN_DG: ClassVar = 2
+
     def deserialize(self) -> DichotomousCancerDataset:
         ds = DichotomousCancerDataset(
             doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()

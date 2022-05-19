@@ -8,12 +8,12 @@ from bmds.bmds3.models import continuous
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_increasing(cidataset):
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [394.278, 257.847, 877.507], 116.4),
-        (continuous.ExponentialM5, [256.441, 106.008, -9999.0], 111.5),
-        (continuous.Power, [386.1, 247.22, 878.062], 114.3),
-        (continuous.Hill, [178.395, 105.924, -9999.0], 111.5),
-        (continuous.Linear, [386.097, 247.215, 878.086], 114.3),
-        (continuous.Polynomial, [376.489, 246.938, 878.047], 114.3),
+        (continuous.ExponentialM3, [394, 257, 877], 114),
+        (continuous.ExponentialM5, [257, 104, -9999], 111),
+        (continuous.Power, [407, 237, 415], 117),
+        (continuous.Hill, [177, 105, -9999.0], 111),
+        (continuous.Linear, [386, 247, 878], 114),
+        (continuous.Polynomial, [387, 246, 878], 114),
     ]:
         result = Model(cidataset).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
