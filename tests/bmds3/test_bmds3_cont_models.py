@@ -231,6 +231,7 @@ def test_decreasing_lognormal(negative_cdataset):
         assert model.results.bmd == BMDS_BLANK_VALUE
 
 
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_infinite_bmr_values():
     # check that infinite BMR values are correctly set to BMDS_BLANK_VALUE
     ds = bmds.ContinuousDataset(
