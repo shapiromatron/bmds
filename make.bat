@@ -6,6 +6,7 @@ if /I %1 == lint goto :lint
 if /I %1 == format goto :format
 if /I %1 == test goto :test
 if /I %1 == test-refresh goto :test-refresh
+if /I %1 == dist goto :dist
 goto :help
 
 :help
@@ -14,6 +15,7 @@ echo.  test         run python tests
 echo.  test-refresh removes mock requests and runs python tests
 echo.  lint         perform both lint-py and lint-js
 echo.  format       perform both format-py and lint-js
+echo.  dist         builds source and wheel package
 goto :eof
 
 :lint
@@ -31,4 +33,12 @@ goto :eof
 :test-refresh
 rmdir /s /q .\tests\cassettes
 py.test
+goto :eof
+
+:dist
+rmdir /s /q .\bmds.egg-info
+rmdir /s /q .\dist
+python setup.py clean --all
+python setup.py bdist_wheel
+dir .\dist
 goto :eof
