@@ -218,8 +218,8 @@ def test_decreasing_lognormal(negative_cdataset):
         session.add_model(model, settings)
     session.execute()
     for model in session.models:
-        assert model.results.has_completed is False  # TODO - should return valid value
-        assert model.results.bmd == BMDS_BLANK_VALUE
+        assert model.results.has_completed is True
+        assert model.results.bmd == pytest.approx(100, rel=0.05)
 
     session = bmds.session.Bmds330(dataset=negative_cdataset)
     settings = dict(disttype=DistType.log_normal)
