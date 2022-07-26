@@ -168,6 +168,14 @@ def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 
+def write_pvalue_header(cell, style):
+    # write _P_-Value cell; requires run for italics
+    p = cell.paragraphs[0]
+    p.style = style
+    p.add_run("P").italic = True
+    p.add_run("-Value")
+
+
 def write_frequentist_table(report: Report, session: BmdsSession):
     styles = report.styles
     hdr = report.styles.tbl_header
@@ -180,7 +188,7 @@ def write_frequentist_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 1), "BMDL", style=hdr)
     write_cell(tbl.cell(0, 2), "BMD", style=hdr)
     write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
-    write_cell(tbl.cell(0, 4), "P value", style=hdr)
+    write_pvalue_header(tbl.cell(0, 4), style=hdr)
     write_cell(tbl.cell(0, 5), "AIC", style=hdr)
     write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
@@ -251,7 +259,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 3), "BMDL", style=hdr)
     write_cell(tbl.cell(0, 4), "BMD", style=hdr)
     write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
-    write_cell(tbl.cell(0, 6), "P Value", style=hdr)
+    write_pvalue_header(tbl.cell(0, 6), style=hdr)
     write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
