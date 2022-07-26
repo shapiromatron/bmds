@@ -127,6 +127,24 @@ class BmdModelContinuousSchema(BmdModelSchema):
 class Power(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_power.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class in [
+            PriorClass.frequentist_unrestricted,
+            PriorClass.frequentist_restricted,
+        ]:
+            is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
+            g = model_settings.priors.get_prior("g")
+            v = model_settings.priors.get_prior("v")
+            g.stdev = 0.1 if is_cv else 1
+            v.min_value = -100 if is_cv else -10_000
+            v.max_value = 100 if is_cv else -10_000
+
+        return model_settings
+
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
         v = params[1]
@@ -147,22 +165,11 @@ class Hill(BmdModelContinuous):
             PriorClass.frequentist_restricted,
         ]:
             v = model_settings.priors.get_prior("v")
-            if model_settings.disttype is DistType.log_normal:
-                model_settings.priors.get_prior("g").min_value = 1e-8
-                model_settings.priors.get_prior("k").max_value = 100
-                model_settings.priors.get_prior("n").max_value = 100
-                v.min_value = -1e8
-                v.max_value = 1e8
-            else:
-                model_settings.priors.get_prior("g").min_value = -1e8
-                model_settings.priors.get_prior("k").max_value = 30
-                model_settings.priors.get_prior("n").max_value = 18
-                if model_settings.disttype is DistType.normal:
-                    v.min_value = -1e8
-                    v.max_value = 1e8
-                elif model_settings.disttype is DistType.normal_ncv:
-                    v.min_value = -1000
-                    v.max_value = 1000
+            n = model_settings.priors.get_prior("n")
+            is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
+            n.stdev = 1.2 if is_cv else 0.1823  # ln(1.2)
+            v.min_value = 0 if model_settings.is_increasing else -100
+            v.max_value = 100 if model_settings.is_increasing else 0
 
         return model_settings
 
@@ -188,16 +195,24 @@ class Polynomial(BmdModelContinuous):
         if model_settings.degree < 1:
             model_settings.degree = self.get_default_model_degree(dataset)
 
-        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
-            if model_settings.is_increasing is True:
-                model_settings.priors.get_prior("beta1").min_value = 0
-                model_settings.priors.get_prior("betaN").min_value = 0
-                model_settings.priors.get_prior("alpha").min_value = 0
-
-            if model_settings.is_increasing is False:
-                model_settings.priors.get_prior("beta1").max_value = 0
-                model_settings.priors.get_prior("betaN").max_value = 0
-                model_settings.priors.get_prior("alpha").max_value = 0
+        is_freq = model_settings.priors.prior_class in [
+            PriorClass.frequentist_restricted,
+            PriorClass.frequentist_unrestricted,
+        ]
+        if is_freq:
+            g = model_settings.priors.get_prior("g")
+            beta1 = model_settings.priors.get_prior("beta1")
+            betaN = model_settings.priors.get_prior("betaN")
+            is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
+            g.min_value = -1000 if is_cv else 0
+            beta1.min_value = -18 if is_cv else -10_000
+            betaN.min_value = -18 if is_cv else -10_000
+            beta1.max_value = 18 if is_cv else 10_000
+            betaN.max_value = 18 if is_cv else 10_000
+            if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+                attr = "min_value" if model_settings.is_increasing else "max_value"
+                setattr(beta1, attr, 0)
+                setattr(betaN, attr, 0)
 
         return model_settings
 
@@ -232,22 +247,12 @@ class Linear(Polynomial):
         model_settings = super().get_model_settings(dataset, settings)
         if model_settings.degree != 1:
             raise ValueError("Linear model must have degree of 1")
+
         return model_settings
 
 
 class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
-
-    def get_model_settings(
-        self, dataset: ContinuousDatasets, settings: InputModelSettings
-    ) -> ContinuousModelSettings:
-        model_settings = super().get_model_settings(dataset, settings)
-
-        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
-            attr = "min_value" if model_settings.is_increasing else "max_value"
-            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
-
-        return model_settings
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
@@ -259,17 +264,6 @@ class ExponentialM3(BmdModelContinuous):
 
 class ExponentialM5(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m5.value
-
-    def get_model_settings(
-        self, dataset: ContinuousDatasets, settings: InputModelSettings
-    ) -> ContinuousModelSettings:
-        model_settings = super().get_model_settings(dataset, settings)
-
-        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
-            attr = "min_value" if model_settings.is_increasing else "max_value"
-            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
-
-        return model_settings
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
