@@ -10,6 +10,7 @@ import pandas as pd
 from simple_settings import settings
 
 from .. import constants
+from .. import __version__
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from ..utils import citation
@@ -349,6 +350,8 @@ class Bmds330(BmdsSession):
                 string=self.version_str,
                 pretty=self.version_pretty,
                 numeric=self.version_tuple,
+                python=__version__,
+                dll=self.dll_version(),
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],

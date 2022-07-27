@@ -12,6 +12,8 @@ class VersionSchema(BaseModel):
     string: str
     pretty: str
     numeric: Tuple[int, ...]
+    python: str
+    dll: str
 
 
 class SessionSchemaBase(BaseModel):
