@@ -141,7 +141,7 @@ class Power(BmdModelContinuous):
             v = model_settings.priors.get_prior("v")
             g.stdev = 0.1 if is_cv else 1
             v.min_value = -100 if is_cv else -10_000
-            v.max_value = 100 if is_cv else -10_000
+            v.max_value = 100 if is_cv else 10_000
 
         return model_settings
 
