@@ -51,7 +51,7 @@ class BmdsLibraryManager:
         filename = base_name
         os_ = platform.system()
         if os_ == "Windows":
-            filename += "-0.dll"
+            filename += "-64.dll"
         elif os_ == "Linux":
             filename += ".so"
         elif os_ == "Darwin":
