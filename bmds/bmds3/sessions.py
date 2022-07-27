@@ -308,7 +308,7 @@ class BmdsSession:
 
 class Bmds330(BmdsSession):
     version_str = constants.BMDS330
-    version_pretty = "BMDS v3.3.0"
+    version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
     model_options = {
         constants.DICHOTOMOUS: {
