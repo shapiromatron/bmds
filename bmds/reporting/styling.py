@@ -6,6 +6,7 @@ from docx import Document
 from docx.shared import Inches
 from pydantic import BaseModel
 
+from ..constants import BMDS_BLANK_VALUE
 from ..plotting import close_figure
 from ..utils import ff
 
@@ -38,7 +39,9 @@ class Report(BaseModel):
 
 
 def write_cell(cell, value, style, formatter=ff):
-    if isinstance(value, float):
+    if value == BMDS_BLANK_VALUE:
+        value = "-"
+    elif isinstance(value, float):
         value = formatter(value)
     cell.paragraphs[0].text = str(value)
     cell.paragraphs[0].style = style
