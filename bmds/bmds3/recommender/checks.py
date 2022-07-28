@@ -205,8 +205,8 @@ class BmdBmdlRatio(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
         bmd = model.results.bmd
-        bmdl = model.results.bmd
         if is_valid_number(bmd) and is_valid_number(bmdl) and bmdl != 0:
+        bmdl = model.results.bmdl
             return bmd / bmdl
         return None
 
