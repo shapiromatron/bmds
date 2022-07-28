@@ -5,7 +5,13 @@ from pydantic import ValidationError
 
 import bmds
 from bmds.bmds3.constants import BMDS_BLANK_VALUE
-from bmds.bmds3.recommender.checks import AicExists, GoodnessOfFit, LargeRoi, NoDegreesOfFreedom
+from bmds.bmds3.recommender.checks import (
+    AicExists,
+    BmdlExists,
+    GoodnessOfFit,
+    LargeRoi,
+    NoDegreesOfFreedom,
+)
 from bmds.bmds3.recommender.recommender import Recommender, RecommenderSettings, Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
 
@@ -84,6 +90,12 @@ class TestChecks:
             resp = AicExists.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "AIC does not exist"
+
+        # special bad case for bmdl
+        model.results.bmdl = 0
+        resp = BmdlExists.check(dataset, model, settings)
+        assert resp.logic_bin == LogicBin.FAILURE
+        assert resp.message == "BMDL does not exist"
 
     def test_greater_than_rules(self, ddataset):
         dataset = mock.MagicMock()

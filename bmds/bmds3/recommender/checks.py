@@ -115,6 +115,9 @@ class BmdlExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
+        # bmdl must also be non-zero
+        if model.results.bmdl <= 0:
+            return BMDS_BLANK_VALUE
         return model.results.bmdl
 
 
