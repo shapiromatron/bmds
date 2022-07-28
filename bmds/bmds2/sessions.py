@@ -351,7 +351,7 @@ class BMDS:
 
 class BMDS_v270(BMDS):
     version_str = constants.BMDS270
-    version_pretty = "BMDS v2.7.0"
+    version_pretty = "2.7.0"
     version_tuple = (2, 7, 0)
     model_options = {
         constants.DICHOTOMOUS: {
