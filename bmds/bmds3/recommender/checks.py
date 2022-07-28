@@ -66,6 +66,15 @@ def pass_if_lte(value: Any, threshold: float) -> bool:
     return value <= threshold
 
 
+def get_dof(dataset, results) -> float:
+    if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
+        return results.gof.df
+    elif dataset.dtype in constants.CONTINUOUS_DTYPES:
+        return results.tests.dfs[3]
+    else:
+        raise ValueError("Unknown dtype")
+
+
 # existence checks
 # --------------------------------------------------------------------------------------------------
 class ExistenceCheck(Check):
@@ -205,8 +214,8 @@ class BmdBmdlRatio(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
         bmd = model.results.bmd
-        if is_valid_number(bmd) and is_valid_number(bmdl) and bmdl != 0:
         bmdl = model.results.bmdl
+        if is_valid_number(bmd) and is_valid_number(bmdl) and bmdl > 0:
             return bmd / bmdl
         return None
 
@@ -242,7 +251,7 @@ class HighBmd(ShouldBeLessThan):
     def get_value(cls, dataset, model) -> Optional[Number]:
         max_dose = max(dataset.doses)
         bmd = model.results.bmd
-        if is_valid_number(max_dose) and is_valid_number(bmd) and bmd != 0:
+        if is_valid_number(max_dose) and is_valid_number(bmd) and bmd > 0:
             return bmd / float(max_dose)
         return None
 
@@ -254,7 +263,7 @@ class HighBmdl(ShouldBeLessThan):
     def get_value(cls, dataset, model) -> Optional[Number]:
         max_dose = max(dataset.doses)
         bmdl = model.results.bmdl
-        if is_valid_number(max_dose) and is_valid_number(bmdl) and bmdl != 0:
+        if is_valid_number(max_dose) and is_valid_number(bmdl) and bmdl > 0:
             return bmdl / float(max_dose)
         return None
 
@@ -334,13 +343,7 @@ class VarianceType(Check):
 class NoDegreesOfFreedom(Check):
     @classmethod
     def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
-        if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-            value = model.results.gof.df
-        elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            value = model.results.tests.dfs[3]
-        else:
-            raise ValueError("Unknown dtype")
-
+        value = get_dof(dataset, model.results)
         if value > constants.ZEROISH:
             return CheckResponse.success()
         else:
