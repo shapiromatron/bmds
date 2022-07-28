@@ -2,13 +2,14 @@ from unittest import mock
 
 import pytest
 from pydantic import ValidationError
-from run3 import RunBmds3
 
 import bmds
 from bmds.bmds3.constants import BMDS_BLANK_VALUE
 from bmds.bmds3.recommender.checks import AicExists, GoodnessOfFit, LargeRoi, NoDegreesOfFreedom
 from bmds.bmds3.recommender.recommender import Recommender, RecommenderSettings, Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
+
+from .run3 import RunBmds3
 
 
 class TestRecommenderSettings:

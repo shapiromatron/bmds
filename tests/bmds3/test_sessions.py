@@ -2,11 +2,12 @@ import json
 from pathlib import Path
 
 import pytest
-from run3 import RunBmds3
 
 import bmds
 from bmds import constants
 from bmds.bmds3 import BmdsSession, BmdsSessionBatch
+
+from .run3 import RunBmds3
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
