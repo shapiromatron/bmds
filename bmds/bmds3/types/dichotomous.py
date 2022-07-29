@@ -5,14 +5,12 @@ from typing import Dict, List, Union
 import numpy as np
 from pydantic import BaseModel, confloat, conint
 
-from bmds.bmds3.constants import DichotomousModelChoices, ModelPriors
-
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from .common import NumpyFloatArray, clean_array, list_t_c, residual_of_interest
-from .priors import PriorClass
+from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -96,7 +94,7 @@ class DichotomousAnalysis(BaseModel):
     def num_params(self) -> int:
         return (
             self.degree + 1
-            if self.model == DichotomousModelChoices.d_multistage.value
+            if self.model == constants.DichotomousModelChoices.d_multistage.value
             else self.model.num_params
         )
 

@@ -9,11 +9,10 @@ from ..constants import (
     DichotomousModel,
     DichotomousModelChoices,
     DichotomousModelIds,
-    ModelPriors,
     PriorClass,
 )
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
-from ..types.priors import get_dichotomous_prior
+from ..types.priors import get_dichotomous_prior, ModelPriors
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 

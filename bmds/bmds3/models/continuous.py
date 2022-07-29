@@ -9,11 +9,10 @@ from ..constants import (
     ContinuousModelChoices,
     ContinuousModelIds,
     DistType,
-    ModelPriors,
     PriorClass,
 )
 from ..types.continuous import ContinuousAnalysis, ContinuousModelSettings, ContinuousResult
-from ..types.priors import get_continuous_prior
+from ..types.priors import get_continuous_prior, ModelPriors
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
