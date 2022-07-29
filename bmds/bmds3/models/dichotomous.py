@@ -168,8 +168,8 @@ class QuantalLinear(BmdModelDichotomous):
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        a = params[1]
-        return g + (1 - g) * 1 - np.exp(-a * doses)
+        b = params[1]
+        return g + (1 - g) * 1 - np.exp(-b * doses)
 
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_unrestricted
@@ -190,10 +190,10 @@ class DichotomousHill(BmdModelDichotomous):
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        n = params[1]
+        v = params[1]
         a = params[2]
         b = params[3]
-        return g + (1 - g) * n * (1 / (1 + np.exp(-a - b * np.log(doses))))
+        return g + (1 - g) * v * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
 class Multistage(BmdModelDichotomous):

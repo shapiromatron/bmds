@@ -46,7 +46,7 @@ class DichotomousModelChoices(Enum):
     d_hill = DichotomousModel(
         id=DichotomousModelIds.d_hill.value,
         verbose="Hill",
-        params=("g", "n", "a", "b"),
+        params=("g", "v", "a", "b"),
         model_form_str="P[dose] = g + (v - v * g) / (1 + exp(-a - b * Log(dose)))",
     )
     d_gamma = DichotomousModel(
@@ -88,7 +88,7 @@ class DichotomousModelChoices(Enum):
     d_qlinear = DichotomousModel(
         id=DichotomousModelIds.d_qlinear.value,
         verbose="Quantal Linear",
-        params=("g", "a"),
+        params=("g", "b"),
         model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b * dose)",
     )
     d_weibull = DichotomousModel(
