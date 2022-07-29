@@ -51,3 +51,12 @@ class NumpyFloatArray(np.ndarray):
             if isinstance(value, np.ndarray):
                 dict_[key] = value.tolist()
         return dict_
+
+
+class NumpyIntArray(NumpyFloatArray):
+    @classmethod
+    def validate(cls, v):
+        try:
+            return np.asarray(v, dtype="int")
+        except TypeError:
+            raise ValueError("invalid np.ndarray format")

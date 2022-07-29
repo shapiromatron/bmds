@@ -84,6 +84,7 @@ class BmdModel(abc.ABC):
 
     bmd_model_class: BmdModelClass
     model_version: str
+    degree_required: bool = False
 
     def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
         self.dataset = dataset

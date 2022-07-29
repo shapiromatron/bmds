@@ -12,7 +12,7 @@ from ..constants import (
     PriorClass,
 )
 from ..types.continuous import ContinuousAnalysis, ContinuousModelSettings, ContinuousResult
-from ..types.priors import get_continuous_prior, ModelPriors
+from ..types.priors import ModelPriors, get_continuous_prior
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
@@ -109,6 +109,10 @@ class BmdModelContinuous(BmdModel):
     def get_gof_pvalue(self) -> float:
         return self.results.tests.p_values[3]
 
+    def get_priors_list(self) -> list[list]:
+        degree = self.settings.degree if self.degree_required else None
+        return self.settings.priors.priors_list(degree=degree, dist_type=self.settings.disttype)
+
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str
@@ -182,6 +186,7 @@ class Hill(BmdModelContinuous):
 
 class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
+    degree_required: bool = True
 
     def name(self) -> str:
         return f"Polynomial {self.settings.degree}°"
@@ -231,6 +236,8 @@ class Polynomial(BmdModelContinuous):
 
 
 class Linear(Polynomial):
+    degree_required: bool = False
+
     def name(self) -> str:
         return "Linear"
 

@@ -11,7 +11,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 from ...constants import BOOL_ICON, Dtype
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, clean_array, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, NumpyIntArray, clean_array, list_t_c, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -54,6 +54,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
+    # TODO - change to a prevalidate?
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
     def bmr_text(self) -> str:
@@ -122,10 +123,8 @@ class ContinuousAnalysis(BaseModel):
         return params
 
     def _priors_array(self) -> np.ndarray:
-        if self.model.id == constants.ContinuousModelIds.c_polynomial:
-            return self.priors.to_c(degree=self.degree, dist_type=self.disttype)
-        else:
-            return self.priors.to_c(dist_type=self.disttype)
+        degree = self.degree if self.model.id == constants.ContinuousModelIds.c_polynomial else None
+        return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
     def to_c(self) -> ContinuousStructs:
         priors = self._priors_array()
@@ -216,19 +215,36 @@ class ContinuousParameters(BaseModel):
     upper_ci: NumpyFloatArray
     bounded: NumpyFloatArray
     cov: NumpyFloatArray
+    prior_type: NumpyIntArray
+    prior_initial_value: NumpyFloatArray
+    prior_stdev: NumpyFloatArray
+    prior_min_value: NumpyFloatArray
+    prior_max_value: NumpyFloatArray
+
+    @classmethod
+    def get_priors(cls, model) -> np.ndarray:
+        priors_list = model.get_priors_list()
+        return np.array(priors_list, dtype=np.float64).T
 
     @classmethod
     def from_model(cls, model) -> "ContinuousParameters":
         result = model.structs.result
         summary = model.structs.summary
+        param_names = model.get_param_names()
+        priors = cls.get_priors(model)
         return cls(
-            names=model.get_param_names(),
+            names=param_names,
             values=result.np_parms,
             bounded=summary.np_bounded,
             se=summary.np_stdErr,
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.initial_n, result.initial_n),
+            prior_type=priors[0],
+            prior_initial_value=priors[1],
+            prior_stdev=priors[2],
+            prior_min_value=priors[3],
+            prior_max_value=priors[4],
         )
 
     def dict(self, **kw) -> Dict:

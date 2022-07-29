@@ -1,16 +1,14 @@
-from pathlib import Path
-from typing import Dict
-
-import pandas as pd
 from itertools import chain
-from typing import List, Optional
+from pathlib import Path
+from typing import Dict, List, Optional
 
 import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from ...constants import Dtype
 from ...utils import pretty_table
-from ..constants import ContinuousModel, DichotomousModel, DistType, PriorType, PriorClass
+from ..constants import ContinuousModel, DichotomousModel, DistType, PriorClass, PriorType
 
 
 class Prior(BaseModel):
@@ -37,6 +35,7 @@ class ModelPriors(BaseModel):
     variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
 
     def __str__(self):
+        # todo - change?
         ps = [self.priors[0].tbl_str_hdr()]
         ps.extend([p.tbl_str() for p in self.priors])
         p = "\n".join(ps)
@@ -47,6 +46,7 @@ class ModelPriors(BaseModel):
         return p
 
     def tbl(self) -> str:
+        # todo - change?
         headers = "name|type|initial_value|stdev|min_value|max_value".split("|")
         rows = [
             (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
@@ -72,10 +72,9 @@ class ModelPriors(BaseModel):
                     return p
         raise ValueError(f"No parameter named {name}")
 
-    def to_c(
+    def priors_list(
         self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
-    ) -> np.ndarray:
-
+    ) -> list[list]:
         priors = []
         for prior in self.priors:
             priors.append(prior.numeric_list())
@@ -98,6 +97,12 @@ class ModelPriors(BaseModel):
             for prior in self.variance_priors:
                 priors.append(prior.numeric_list())
 
+        return priors
+
+    def to_c(
+        self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
+    ) -> np.ndarray:
+        priors = self.priors_list(degree, dist_type)
         return np.array(priors, dtype=np.float64).flatten("F")
 
 

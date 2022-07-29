@@ -5,14 +5,9 @@ import numpy as np
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
-from ..constants import (
-    DichotomousModel,
-    DichotomousModelChoices,
-    DichotomousModelIds,
-    PriorClass,
-)
+from ..constants import DichotomousModel, DichotomousModelChoices, DichotomousModelIds, PriorClass
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
-from ..types.priors import get_dichotomous_prior, ModelPriors
+from ..types.priors import ModelPriors, get_dichotomous_prior
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
@@ -90,6 +85,10 @@ class BmdModelDichotomous(BmdModel):
 
     def get_gof_pvalue(self) -> float:
         return self.results.gof.p_value
+
+    def get_priors_list(self) -> list[list]:
+        degree = self.settings.degree if self.degree_required else None
+        return self.settings.priors.priors_list(degree=degree)
 
 
 class BmdModelDichotomousSchema(BmdModelSchema):
@@ -197,6 +196,7 @@ class DichotomousHill(BmdModelDichotomous):
 
 class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
+    degree_required: bool = True
 
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings

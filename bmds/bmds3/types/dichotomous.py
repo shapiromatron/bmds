@@ -9,7 +9,7 @@ from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, clean_array, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, NumpyIntArray, clean_array, list_t_c, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -39,6 +39,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
+    # TODO - change to a prevalidate?
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
     def bmr_text(self) -> str:
@@ -99,10 +100,10 @@ class DichotomousAnalysis(BaseModel):
         )
 
     def _priors_array(self) -> np.ndarray:
-        if self.model.id == constants.DichotomousModelIds.d_multistage:
-            return self.priors.to_c(degree=self.degree)
-        else:
-            return self.priors.to_c()
+        degree = (
+            self.degree if self.model.id == constants.DichotomousModelIds.d_multistage else None
+        )
+        return self.priors.to_c(degree=degree)
 
     def to_c(self) -> DichotomousStructs:
         priors = self._priors_array()
@@ -216,19 +217,36 @@ class DichotomousParameters(BaseModel):
     upper_ci: NumpyFloatArray
     bounded: NumpyFloatArray
     cov: NumpyFloatArray
+    prior_type: NumpyIntArray
+    prior_initial_value: NumpyFloatArray
+    prior_stdev: NumpyFloatArray
+    prior_min_value: NumpyFloatArray
+    prior_max_value: NumpyFloatArray
+
+    @classmethod
+    def get_priors(cls, model) -> np.ndarray:
+        priors_list = model.get_priors_list()
+        return np.array(priors_list, dtype=np.float64).T
 
     @classmethod
     def from_model(cls, model) -> "DichotomousParameters":
         result = model.structs.result
         summary = model.structs.summary
+        param_names = model.get_param_names()
+        priors = cls.get_priors(model)
         return cls(
-            names=model.get_param_names(),
+            names=param_names,
             values=result.np_parms,
             bounded=summary.np_bounded,
             se=summary.np_stdErr,
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.nparms, result.nparms),
+            prior_type=priors[0],
+            prior_initial_value=priors[1],
+            prior_stdev=priors[2],
+            prior_min_value=priors[3],
+            prior_max_value=priors[4],
         )
 
     def dict(self, **kw) -> Dict:
