@@ -149,6 +149,9 @@ class LogProbit(BmdModelDichotomous):
         b = params[2]
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
+
 
 class Gamma(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_gamma.value
