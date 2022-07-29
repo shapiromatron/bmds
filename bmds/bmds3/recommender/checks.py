@@ -4,7 +4,6 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 
 from ... import constants
-from ...utils import ff
 from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
@@ -34,11 +33,17 @@ class Check:
         is_enabled = getattr(rule_settings, cls._enabled_attribute[dataset.dtype])
         if not is_enabled:
             return CheckResponse.success()
-        return cls.apply_rule(dataset, model, rule_settings)
+        if failure_msg := cls.run_check(dataset, model, rule_settings):
+            return CheckResponse(
+                logic_bin=rule_settings.failure_bin,
+                message=failure_msg,
+            )
+        return CheckResponse.success()
 
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
-        ...
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+        """Execute a check; return an error message if failure, else None"""
+        raise NotImplementedError("")
 
 
 def is_valid_number(value: Any) -> bool:
@@ -54,13 +59,13 @@ def number_or_none(value: Any) -> Optional[Number]:
     return value
 
 
-def pass_if_gte(value: Any, threshold: float) -> bool:
+def is_gte(value: Any, threshold: float) -> bool:
     if not is_valid_number(value):
         return True  # if value is invalid; other checks will report error
     return value >= threshold
 
 
-def pass_if_lte(value: Any, threshold: float) -> bool:
+def is_lte(value: Any, threshold: float) -> bool:
     if not is_valid_number(value):
         return True  # if value is invalid; other checks will report error
     return value <= threshold
@@ -75,6 +80,15 @@ def get_dof(dataset, results) -> float:
         raise ValueError("Unknown dtype")
 
 
+def get_gof_pvalue(dataset, results) -> float:
+    if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
+        return results.gof.p_value
+    elif dataset.dtype in constants.CONTINUOUS_DTYPES:
+        return results.tests.p_values[3]
+    else:
+        raise ValueError("Unknown dtype")
+
+
 # existence checks
 # --------------------------------------------------------------------------------------------------
 class ExistenceCheck(Check):
@@ -85,14 +99,10 @@ class ExistenceCheck(Check):
         ...
 
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = cls.get_value(dataset, model)
-        if is_valid_number(value):
-            return CheckResponse.success()
-        return CheckResponse(
-            logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} does not exist",
-        )
+        if not is_valid_number(value):
+            return f"{cls.failure_message_name} does not exist"
 
 
 class AicExists(ExistenceCheck):
@@ -125,7 +135,7 @@ class BmdlExists(ExistenceCheck):
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
         # bmdl must also be non-zero
-        if model.results.bmdl <= 0:
+        if model.results.bmdl == 0:
             return BMDS_BLANK_VALUE
         return model.results.bmdl
 
@@ -148,28 +158,24 @@ class ShouldBeGreaterThan(Check):
         ...
 
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = cls.get_value(dataset, model)
         threshold = rule_settings.threshold
-        if pass_if_gte(value, threshold):
-            return CheckResponse.success()
-        return CheckResponse(
-            logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} less than threshold ({ff(value)} < {threshold})",
-        )
+        if not is_gte(value, threshold):
+            return f"{cls.failure_message_name} less than {threshold}"
 
 
 class GoodnessOfFit(ShouldBeGreaterThan):
+    """
+    In BMDS3.3 Excel, this check is overloaded w/ the NoDegreesOfFreedom check below;
+    they are separated here.
+    """
+
     failure_message_name = "Goodness of fit p-value"
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
-        if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-            return number_or_none(model.results.gof.p_value)
-        elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-            return model.results.tests.p_values[3]
-        else:
-            raise ValueError(f"Unknown dtype {dataset.dtype}")
+        return get_gof_pvalue(dataset, model.results)
 
 
 class GoodnessOfFitCancer(GoodnessOfFit):
@@ -186,15 +192,11 @@ class ShouldBeLessThan(Check):
         ...
 
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = cls.get_value(dataset, model)
         threshold = rule_settings.threshold
-        if pass_if_lte(value, threshold):
-            return CheckResponse.success()
-        return CheckResponse(
-            logic_bin=rule_settings.failure_bin,
-            message=f"{cls.failure_message_name} greater than threshold ({ff(value)} > {threshold})",
-        )
+        if not is_lte(value, threshold):
+            return f"{cls.failure_message_name} greater than {threshold}"
 
 
 class LargeRoi(ShouldBeLessThan):
@@ -291,72 +293,40 @@ class ControlStdevFit(ShouldBeLessThan):
 # --------------------------------------------------------------------------------------------------
 class VarianceFit(Check):
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         constant_variance = model.settings.disttype != DistType.normal_ncv
-        anova = dataset.anova()
-        p_value2 = anova.test2.TEST
-        p_value3 = anova.test3.TEST
-
-        if is_valid_number(p_value2) and constant_variance and p_value2 < rule_settings.threshold:
-            return CheckResponse(
-                logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 2 = {ff(p_value2)})",
+        test = 2 if constant_variance else 3
+        pvalue = model.results.tests.p_values[test - 1]
+        if is_valid_number(pvalue) and pvalue < rule_settings.threshold:
+            return (
+                f"Variance model poorly fits dataset (p-value {test} < {rule_settings.threshold})"
             )
-
-        if (
-            is_valid_number(p_value3)
-            and not constant_variance
-            and p_value3 < rule_settings.threshold
-        ):
-            return CheckResponse(
-                logic_bin=rule_settings.failure_bin,
-                message=f"Variance model poorly fits dataset (p-value 3 = {ff(p_value3)})",
-            )
-
-        return CheckResponse.success()
 
 
 class VarianceType(Check):
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         constant_variance = model.settings.disttype != DistType.normal_ncv
-        anova = dataset.anova()
-        p_value2 = anova.test2.TEST
-        threshold = rule_settings.threshold
-
-        message = None
+        p_value2 = model.results.tests.p_values[1]
         if is_valid_number(p_value2):
-            # constant variance
-            if constant_variance and p_value2 < threshold:
-                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), constant variance selected"
-            elif not constant_variance and p_value2 > threshold:
-                message = f"Incorrect variance model (p-value 2 = {ff(p_value2)}), modeled variance selected"
-        else:
-            message = f"Correct variance model cannot be determined (p-value 2 = {ff(p_value2)})"
-
-        if message:
-            return CheckResponse(logic_bin=rule_settings.failure_bin, message=message)
-
-        return CheckResponse.success()
+            if constant_variance and p_value2 < rule_settings.threshold:
+                return f"Incorrect variance model (p-value 2 < {rule_settings.threshold})"
+            if not constant_variance and p_value2 > rule_settings.threshold:
+                return f"Incorrect variance model (p-value 2 > {rule_settings.threshold})"
 
 
 class NoDegreesOfFreedom(Check):
     @classmethod
-    def apply_rule(cls, dataset, model, rule_settings) -> CheckResponse:
+    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = get_dof(dataset, model.results)
-        if value > constants.ZEROISH:
-            return CheckResponse.success()
-        else:
-            return CheckResponse(
-                logic_bin=rule_settings.failure_bin,
-                message="Zero degrees of freedom; saturated model",
-            )
+        if not value > constants.ZEROISH:
+            return "Zero degrees of freedom; saturated model"
 
 
 class Warnings(Check):
     @classmethod
-    def apply_rule(cls, settings, dataset, output) -> CheckResponse:
-        return CheckResponse.success()
+    def run_check(cls, settings, dataset, output) -> Optional[str]:
+        return None
 
 
 RULE_MAP = {
