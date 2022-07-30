@@ -206,8 +206,7 @@ class ModelPriors(BaseModel):
     def __str__(self):
         ps = [self.priors[0].tbl_str_hdr()]
         ps.extend([p.tbl_str() for p in self.priors])
-        ps = "\n".join(ps)
-        p = f"""{self.prior_class.name} <{self.prior_class.value}>\n{ps}"""
+        p = "\n".join(ps)
         if self.variance_priors is not None:
             vps = "\n".join([p.tbl_str() for p in self.variance_priors])
             p += f"""\n{vps}"""

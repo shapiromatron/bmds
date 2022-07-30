@@ -6,47 +6,55 @@ from run3 import RunBmds3
 
 import bmds
 from bmds import constants
-from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType
+from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType, PriorClass
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
 
 class TestPriorOverrides:
-    def test_exp5(self, cdataset2, negative_cdataset):
-        model = continuous.ExponentialM5(cdataset2)
-        model.settings.priors.priors[2].name == "c"
-        assert model.settings.priors.priors[2].min_value == 0
-        assert model.settings.priors.priors[2].max_value == 18
-
-        model = continuous.ExponentialM5(negative_cdataset)
-        model.settings.priors.priors[2].name == "c"
-        assert model.settings.priors.priors[2].min_value == -18
-        assert model.settings.priors.priors[2].max_value == 0
-
     def test_hill(self, cdataset2):
-        cv = continuous.Hill(cdataset2, settings=dict(disttype=DistType.normal)).settings.priors
-        assert cv.get_prior("v").min_value == -1e8
-
-        ln = continuous.Hill(cdataset2, settings=dict(disttype=DistType.log_normal)).settings.priors
-        assert ln.get_prior("v").min_value == -1e8
-
-        ncv = continuous.Hill(
-            cdataset2, settings=dict(disttype=DistType.normal_ncv)
-        ).settings.priors
-        assert ncv.get_prior("v").min_value == -1000
+        for settings, priors in [
+            ({"is_increasing": True}, (0, 100, 1.2)),
+            ({"is_increasing": False}, (-100, 0, 1.2)),
+            ({"disttype": DistType.normal}, (0, 100, 1.2)),
+            ({"disttype": DistType.normal_ncv}, (0, 100, 0.1823)),
+        ]:
+            model = continuous.Hill(cdataset2, settings)
+            v = model.settings.priors.get_prior("v")
+            n = model.settings.priors.get_prior("n")
+            assert v.min_value == priors[0], settings
+            assert v.max_value == priors[1], settings
+            assert n.stdev == priors[2], settings
 
     def test_poly(self, cdataset2, negative_cdataset):
-        model = continuous.Polynomial(cdataset2)
-        model.settings.priors.priors[1].min_value == 0
-        model.settings.priors.priors[1].max_value == 1e8
-        model.settings.priors.priors[2].min_value == 0
-        model.settings.priors.priors[2].max_value == 1e8
+        for settings, priors in [
+            # fmt: off
+            ({"is_increasing": True}, (0, 18)),
+            ({"is_increasing": False}, (-18, 0)),
+            ({"is_increasing": True, "disttype": DistType.normal_ncv}, (0, 10_000)),
+            ({"is_increasing": False, "disttype": DistType.normal_ncv}, (-10_000, 0)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-18, 18)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-18, 18)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True, "disttype": DistType.normal_ncv}, (-10_000, 10_000)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False, "disttype": DistType.normal_ncv}, (-10_000, 10_000)),
+            # fmt: on
+        ]:
+            model = continuous.Polynomial(cdataset2, settings)
+            betaN = model.settings.priors.get_prior("betaN")
+            assert betaN.min_value == priors[0], settings
+            assert betaN.max_value == priors[1], settings
 
-        model = continuous.Polynomial(negative_cdataset)
-        model.settings.priors.priors[1].min_value = -1e8
-        model.settings.priors.priors[1].max_value == 0
-        model.settings.priors.priors[2].min_value == -1e8
-        model.settings.priors.priors[2].max_value == 0
+    def test_power(self, cdataset2):
+        for settings, priors in [
+            ({}, [0.1, -100, 100]),
+            ({"disttype": DistType.normal_ncv}, [1, -10000, 10000]),
+        ]:
+            model = continuous.Power(cdataset2, settings)
+            g = model.settings.priors.get_prior("g")
+            v = model.settings.priors.get_prior("v")
+            assert g.stdev == priors[0]
+            assert v.min_value == priors[1]
+            assert v.max_value == priors[2]
 
 
 class TestBmdModelContinuous:
@@ -93,17 +101,17 @@ def test_bmds3_increasing(cdataset2):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [52.866, 50.493, 55.422], 3187.6),
-        (continuous.ExponentialM5, [25.955, 24.578, 27.501], 3071.8),
-        (continuous.Power, [25.843, 24.357, 29.769], 3067.8),
-        (continuous.Hill, [30.435, 24.451, 34.459], 3074.6),
-        (continuous.Linear, [25.851, 24.355, 27.528], 3067.8),
-        (continuous.Polynomial, [25.866, 24.351, 28.653], 3067.8),
+        (continuous.ExponentialM3, [53, 50, 55], 3186),
+        (continuous.ExponentialM5, [26, 25, 28], 3072),
+        (continuous.Power, [26, 24, 30], 3070),
+        (continuous.Hill, [28, 25, 32], 3072),
+        (continuous.Linear, [26, 24, 28], 3068),
+        (continuous.Polynomial, [26, 24, 29], 3070),
     ]:
         result = Model(cdataset2).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)}),"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
         # print(res)
         assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
@@ -113,18 +121,18 @@ def test_bmds3_increasing(cdataset2):
 def test_bmds3_decreasing(negative_cdataset):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4296.3),
-        (continuous.ExponentialM5, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4298.3),
-        (continuous.Power, [56.5, 49.8, 63.6], 3079.5),
-        (continuous.Hill, [57.7, 51.0, 64.9], 3082.5),
-        (continuous.Linear, [35.3, 33.1, 37.8], 3117.3),
-        (continuous.Polynomial, [52.5, 46.2, 59.9], 3076.6),
+        (continuous.ExponentialM3, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4298),
+        (continuous.ExponentialM5, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4300),
+        (continuous.Power, [56, 50, 64], 3080),
+        (continuous.Hill, [63, 56, 70], 3086),
+        (continuous.Linear, [79, 75, 83], 3381),
+        (continuous.Polynomial, [52, 47, 60], 3077),
     ]:
         model = Model(negative_cdataset)
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        # res = f"(continuous.{Model.__name__}, {np.round(actual, 1).tolist()}, {round(result.fit.aic, 1)}),"
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
         # print(res)
         assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
@@ -135,26 +143,26 @@ def test_bmds3_variance(cdataset2):
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
-    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
+    # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal
-    assert pytest.approx(actual, rel=0.05) == [25.81, 24.32, 29.73]
+    assert pytest.approx(actual, rel=0.05) == [25.9, 24.4, 29.8]
     assert len(result.parameters.values) == 4
 
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal_ncv))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
-    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
+    # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal_ncv
     assert len(result.parameters.values) == 5
-    assert pytest.approx(actual, rel=0.05) == [14.43, 13.03, 14.73]
+    assert pytest.approx(actual, rel=0.05) == [14.6, 13.1, 17.3]
 
     # only Power and Exp can be used
     model = continuous.ExponentialM3(cdataset2, dict(disttype=DistType.log_normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
-    # print(f"{actual[0]:.2f}, {actual[1]:.2f}, {actual[2]:.2f}")
+    # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.log_normal
-    assert pytest.approx(actual, rel=0.05) == [104.59, 93.19, 118.99]
+    assert pytest.approx(actual, rel=0.05) == [130.1, 129.3, 141.1]
     assert len(result.parameters.values) == 5
 
 
