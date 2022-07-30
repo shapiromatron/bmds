@@ -1,8 +1,9 @@
 # import numpy as np
 import pytest
-from run3 import RunBmds3
 
 from bmds.bmds3.models import continuous
+
+from .run3 import RunBmds3
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
