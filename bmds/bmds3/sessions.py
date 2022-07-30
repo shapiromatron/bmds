@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
-from .. import constants
+from .. import __version__, constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from ..utils import citation
@@ -308,7 +308,7 @@ class BmdsSession:
 
 class Bmds330(BmdsSession):
     version_str = constants.BMDS330
-    version_pretty = "BMDS v3.3.0"
+    version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
     model_options = {
         constants.DICHOTOMOUS: {
@@ -349,6 +349,8 @@ class Bmds330(BmdsSession):
                 string=self.version_str,
                 pretty=self.version_pretty,
                 numeric=self.version_tuple,
+                python=__version__,
+                dll=self.dll_version(),
             ),
             dataset=self.dataset.serialize(),
             models=[model.serialize() for model in self.models],
