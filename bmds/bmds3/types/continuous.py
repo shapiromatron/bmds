@@ -271,38 +271,45 @@ class ContinuousParameters(BaseModel):
 
 
 class ContinuousGof(BaseModel):
-    dose: List[float]
-    size: List[int]
-    est_mean: List[float]
-    calc_mean: List[float]
-    obs_mean: List[float]
-    est_sd: List[float]
-    calc_sd: List[float]
-    obs_sd: List[float]
-    residual: List[float]
-    eb_lower: List[float]
-    eb_upper: List[float]
+    dose: NumpyFloatArray
+    size: NumpyIntArray
+    est_mean: NumpyFloatArray
+    calc_mean: NumpyFloatArray
+    obs_mean: NumpyFloatArray
+    est_sd: NumpyFloatArray
+    calc_sd: NumpyFloatArray
+    obs_sd: NumpyFloatArray
+    residual: NumpyFloatArray
+    eb_lower: NumpyFloatArray
+    eb_upper: NumpyFloatArray
     roi: float
 
     @classmethod
     def from_model(cls, model) -> "ContinuousGof":
         gof = model.structs.gof
+        # only keep indexes where the num ob obsMean + obsSD == 0;
+        # needed for continuous individual datasets where individual items are collapsed into groups
+        mask = np.flatnonzero(np.vstack([gof.np_obsMean, gof.np_obsSD]).sum(axis=0))
         return ContinuousGof(
-            dose=gof.np_dose.tolist(),
-            size=gof.np_size.tolist(),
-            est_mean=gof.np_estMean.tolist(),
-            calc_mean=gof.np_calcMean.tolist(),
-            obs_mean=gof.np_obsMean.tolist(),
-            est_sd=gof.np_estSD.tolist(),
-            calc_sd=gof.np_calcSD.tolist(),
-            obs_sd=gof.np_obsSD.tolist(),
-            residual=gof.np_res.tolist(),
-            eb_lower=gof.np_ebLower.tolist(),
-            eb_upper=gof.np_ebUpper.tolist(),
+            dose=gof.np_dose[mask],
+            size=gof.np_size[mask],
+            est_mean=gof.np_estMean[mask],
+            calc_mean=gof.np_calcMean[mask],
+            obs_mean=gof.np_obsMean[mask],
+            est_sd=gof.np_estSD[mask],
+            calc_sd=gof.np_calcSD[mask],
+            obs_sd=gof.np_obsSD[mask],
+            residual=gof.np_res[mask],
+            eb_lower=gof.np_ebLower[mask],
+            eb_upper=gof.np_ebUpper[mask],
             roi=residual_of_interest(
-                model.structs.summary.bmd, model.dataset.doses, gof.np_res.tolist()
+                model.structs.summary.bmd, model.dataset.doses, gof.np_res[mask].tolist()
             ),
         )
+
+    def dict(self, **kw) -> Dict:
+        d = super().dict(**kw)
+        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Dose|EstMean|CalcMean|ObsMean|EstStdev|CalcStdev|ObsStdev|Residual".split("|")
@@ -321,6 +328,9 @@ class ContinuousGof(BaseModel):
                 ]
             )
         return pretty_table(data, headers)
+
+    def n(self) -> int:
+        return self.dose.size
 
 
 class ContinuousDeviance(BaseModel):

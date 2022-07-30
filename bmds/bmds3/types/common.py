@@ -29,20 +29,15 @@ def clean_array(arr: float) -> float:
     )
 
 
-class NumpyFloatArray(np.ndarray):
+class PydanticNumpyArray(np.ndarray):
+    # pydantic friendly numpy arrays
+
     @classmethod
     def __get_validators__(cls):
         # one or more validators may be yielded which will be called in the
         # order to validate the input, each validator will receive as an input
         # the value returned from the previous validator
         yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        try:
-            return np.asarray(v, dtype="float")
-        except TypeError:
-            raise ValueError("invalid np.ndarray format")
 
     @classmethod
     def listify(cls, dict_: Dict):
@@ -53,10 +48,20 @@ class NumpyFloatArray(np.ndarray):
         return dict_
 
 
-class NumpyIntArray(NumpyFloatArray):
+class NumpyIntArray(PydanticNumpyArray):
     @classmethod
     def validate(cls, v):
         try:
             return np.asarray(v, dtype="int")
+        except TypeError:
+            raise ValueError("invalid np.ndarray format")
+
+
+class NumpyFloatArray(PydanticNumpyArray):
+    # Numpy arrays, agumented
+    @classmethod
+    def validate(cls, v):
+        try:
+            return np.asarray(v, dtype="float")
         except TypeError:
             raise ValueError("invalid np.ndarray format")
