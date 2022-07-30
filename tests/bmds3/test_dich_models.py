@@ -2,11 +2,12 @@ import json
 
 import numpy as np
 import pytest
-from run3 import RunBmds3
 
 import bmds
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
+
+from .run3 import RunBmds3
 
 
 class TestBmdModelDichotomous:

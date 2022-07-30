@@ -1,14 +1,14 @@
 import json
 
-# import numpy as np
 import pytest
-from run3 import RunBmds3
 
 import bmds
 from bmds import constants
 from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType, PriorClass
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
+
+from .run3 import RunBmds3
 
 
 class TestPriorOverrides:

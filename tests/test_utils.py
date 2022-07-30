@@ -1,8 +1,9 @@
 import pytest
-from bmds3.run3 import RunBmds3
 
 import bmds
 from bmds.utils import get_latest_dll_version
+
+from .bmds3.run3 import RunBmds3
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
