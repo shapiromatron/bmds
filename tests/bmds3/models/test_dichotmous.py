@@ -8,7 +8,7 @@ from bmds.bmds3.constants import PriorClass
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
 
-from .run3 import RunBmds3
+from ..run3 import RunBmds3
 
 
 class TestBmdModelDichotomous:

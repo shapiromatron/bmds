@@ -3,7 +3,7 @@ import pytest
 
 from bmds.bmds3.models import continuous
 
-from .run3 import RunBmds3
+from ..run3 import RunBmds3
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
@@ -19,9 +19,9 @@ def test_bmds3_increasing(cidataset):
         result = Model(cidataset).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
-        import numpy as np
-
-        res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
-        print(res)
+        # import numpy as np
+        #
+        # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
+        # print(res)
         # assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
         # assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
