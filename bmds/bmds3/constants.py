@@ -3,7 +3,6 @@ from typing import Tuple
 
 from pydantic import BaseModel
 
-
 BMDS_BLANK_VALUE = -9999
 CDF_TABLE_SIZE = 99
 MY_MAX_PARMS = 16

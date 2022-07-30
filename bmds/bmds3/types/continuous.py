@@ -61,6 +61,9 @@ class ContinuousModelSettings(BaseModel):
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     def text(self) -> str:
+        # todo - selectively show degree, samples, burn-in depending on model
+        # show calculated priors?
+        # move the text attribute to the model?
         return multi_lstrip(
             f"""\
         Is increasing: {self.is_increasing}
@@ -73,8 +76,7 @@ class ContinuousModelSettings(BaseModel):
         Samples: {self.samples}
         Burn-in: {self.burnin}
         Prior class: {self.priors.prior_class.name}
-        Priors:
-        {self.priors.tbl()}"""
+        """
         )
 
     def update_record(self, d: dict) -> None:
@@ -252,10 +254,19 @@ class ContinuousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|estimate|bounded".split("|")
+        headers = "parm|type|initial|stdev|min|max|estimate|bounded".split("|")
         data = []
-        for name, value, bounded in zip(self.names, self.values, self.bounded):
-            data.append([name, value, BOOL_ICON[bounded]])
+        for name, type, initial, stdev, min, max, value, bounded in zip(
+            self.names,
+            self.prior_type,
+            self.prior_initial_value,
+            self.prior_stdev,
+            self.prior_min_value,
+            self.prior_max_value,
+            self.values,
+            self.bounded,
+        ):
+            data.append([name, type, initial, stdev, min, max, value, BOOL_ICON[bounded]])
         return pretty_table(data, headers)
 
 
@@ -413,7 +424,6 @@ class ContinuousResult(BaseModel):
             ["AIC", self.fit.aic],
             ["LL", self.fit.loglikelihood],
             ["model_df", self.fit.model_df],
-            ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")
 

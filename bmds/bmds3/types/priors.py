@@ -79,6 +79,9 @@ class ModelPriors(BaseModel):
         for prior in self.priors:
             priors.append(prior.numeric_list())
 
+        # for multistage/polynomial, this assumes that the 3rd
+        # prior parameter is betaN ensure that this is always the case
+
         # remove degreeN; 1st order multistage/polynomial
         if degree and degree == 1:
             priors.pop(2)

@@ -8,6 +8,7 @@ from bmds.bmds3.constants import PriorClass
 
 from .run3 import RunBmds3
 
+
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestDichotomousMa:
     def test_bmds3_dichotomous_ma_session(self, ddataset2):
