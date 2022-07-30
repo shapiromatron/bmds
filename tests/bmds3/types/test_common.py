@@ -35,5 +35,3 @@ class TestNumpyFloatArray:
         for data in ["a", ["a", "a"], None]:
             with pytest.raises(ValidationError):
                 ExampleModel(d=data)
-
-
