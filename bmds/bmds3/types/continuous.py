@@ -398,15 +398,15 @@ class ContinuousPlotting(BaseModel):
             [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
         )
         dr_x = model.dataset.dose_linspace
-        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
-        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
-        critical_ys = np.zeros(xs) if bad_params else clean_array(model.dr_curve(xs, params))
+        dr_y = clean_array(model.dr_curve(dr_x, params))
+        critical_ys = clean_array(model.dr_curve(xs, params))
+        critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
         return cls(
             dr_x=dr_x.tolist(),
             dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if model.structs.summary.bmdl > 0 else constants.BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if model.structs.summary.bmd > 0 else constants.BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if model.structs.summary.bmdu > 0 else constants.BMDS_BLANK_VALUE,
+            bmdl_y=critical_ys[0],
+            bmd_y=critical_ys[1],
+            bmdu_y=critical_ys[2],
         )
 
     def dict(self, **kw) -> Dict:

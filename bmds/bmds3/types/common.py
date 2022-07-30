@@ -23,7 +23,7 @@ def residual_of_interest(bmd: float, doses: List[float], residuals: List[float])
     return residuals[index]
 
 
-def clean_array(arr: float) -> float:
+def clean_array(arr: np.ndarray) -> np.ndarray:
     return np.nan_to_num(
         arr, nan=BMDS_BLANK_VALUE, posinf=BMDS_BLANK_VALUE, neginf=BMDS_BLANK_VALUE
     )
