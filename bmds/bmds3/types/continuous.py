@@ -54,16 +54,12 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    # TODO - change to a prevalidate?
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     def text(self) -> str:
-        # todo - selectively show degree, samples, burn-in depending on model
-        # show calculated priors?
-        # move the text attribute to the model?
         return multi_lstrip(
             f"""\
         Is increasing: {self.is_increasing}
@@ -394,16 +390,15 @@ class ContinuousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> "ContinuousPlotting":
-        xs = np.array(
-            [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
-        )
+        summary = model.structs.summary
+        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
         dr_x = model.dataset.dose_linspace
         dr_y = clean_array(model.dr_curve(dr_x, params))
         critical_ys = clean_array(model.dr_curve(xs, params))
         critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
         return cls(
-            dr_x=dr_x.tolist(),
-            dr_y=dr_y.tolist(),
+            dr_x=dr_x,
+            dr_y=dr_y,
             bmdl_y=critical_ys[0],
             bmd_y=critical_ys[1],
             bmdu_y=critical_ys[2],

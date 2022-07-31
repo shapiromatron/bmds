@@ -46,7 +46,6 @@ class ModelPriors(BaseModel):
         return p
 
     def tbl(self) -> str:
-        # todo - change?
         headers = "name|type|initial_value|stdev|min_value|max_value".split("|")
         rows = [
             (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)

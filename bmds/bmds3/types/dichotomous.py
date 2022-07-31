@@ -45,9 +45,6 @@ class DichotomousModelSettings(BaseModel):
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     def text(self) -> str:
-        # todo - selectively show degree, samples, burn-in depending on model
-        # show calculated priors?
-        # move the text attribute to the model?
         return multi_lstrip(
             f"""\
         BMR Type: {self.bmr_type.name}
@@ -318,18 +315,18 @@ class DichotomousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> "DichotomousPlotting":
-        structs = model.structs
-        xs = np.array([structs.summary.bmdl, structs.summary.bmd, structs.summary.bmdu])
+        summary = model.structs.summary
+        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
         dr_x = model.dataset.dose_linspace
-        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
-        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
-        critical_ys = np.zeros(xs) if bad_params else clean_array(model.dr_curve(xs, params))
+        dr_y = clean_array(model.dr_curve(dr_x, params))
+        critical_ys = clean_array(model.dr_curve(xs, params))
+        critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
         return cls(
             dr_x=dr_x,
             dr_y=dr_y,
-            bmdl_y=critical_ys[0] if structs.summary.bmdl > 0 else constants.BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if structs.summary.bmd > 0 else constants.BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if structs.summary.bmdu > 0 else constants.BMDS_BLANK_VALUE,
+            bmdl_y=critical_ys[0],
+            bmd_y=critical_ys[1],
+            bmdu_y=critical_ys[2],
         )
 
     def dict(self, **kw) -> Dict:
