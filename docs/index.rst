@@ -4,14 +4,14 @@
 Contributors:
 ~~~~~~~~~~~~~
 
-- Andy Shapiro (`shapiromatron`_)
-- Bishwo Bhandari (`bishwobhandari`)
-- Danny Rabstejnek (`rabstejnek`)
+- Andy Shapiro (shapiromatron_)
+- Bishwo Bhandari (bishwobhandari_)
+- Danny Rabstejnek (rabstejnek_)
 - Longlong Yang
 
-.. _`shapiromatron`: https://github.com/shapiromatron
-.. _`bishwobhandari`: https://github.com/bishwobhandari
-.. _`rabstejnek`: https://github.com/rabstejnek
+.. _shapiromatron: https://github.com/shapiromatron
+.. _bishwobhandari: https://github.com/bishwobhandari
+.. _rabstejnek: https://github.com/rabstejnek
 
 
 Table of contents:

@@ -19,12 +19,6 @@ class Prior(BaseModel):
     min_value: float
     max_value: float
 
-    def tbl_str_hdr(self) -> str:
-        return "| param | type       |    initial |      stdev |        min |        max |"
-
-    def tbl_str(self) -> str:
-        return f"| {self.name:5} | {self.type.name:10} | {self.initial_value:10.3g} | {self.stdev:10.3g} | {self.min_value:10.3g} | {self.max_value:10.3g} |"
-
     def numeric_list(self) -> List[float]:
         return list(self.dict(exclude={"name"}).values())
 
@@ -35,18 +29,7 @@ class ModelPriors(BaseModel):
     variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
 
     def __str__(self):
-        # todo - change?
-        ps = [self.priors[0].tbl_str_hdr()]
-        ps.extend([p.tbl_str() for p in self.priors])
-        p = "\n".join(ps)
-        if self.variance_priors is not None:
-            vps = "\n".join([p.tbl_str() for p in self.variance_priors])
-            p += f"""\n{vps}"""
-        p += "\n"
-        return p
-
-    def tbl(self) -> str:
-        headers = "name|type|initial_value|stdev|min_value|max_value".split("|")
+        headers = "name|type|initial|stdev|min|max".split("|")
         rows = [
             (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
             for p in chain(self.priors, self.variance_priors or ())

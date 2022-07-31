@@ -7,8 +7,6 @@ Install the software using pip:
 
     pip install bmds
 
-Trouble installing? See notes on :ref:`Windows <windows-install>` or :ref:`Mac/Linux <mac-install>`.
-
 An example continuous summary dataset:
 
 .. code-block:: python

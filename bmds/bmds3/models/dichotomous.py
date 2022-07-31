@@ -206,7 +206,7 @@ class Multistage(BmdModelDichotomous):
         if model_settings.degree < 1:
             model_settings.degree = self.get_default_model_degree(dataset)
 
-        # TODO - update priors to use cancer multistage, if applicable?
+        # TODO - priors for cancer multistage must change
 
         return model_settings
 

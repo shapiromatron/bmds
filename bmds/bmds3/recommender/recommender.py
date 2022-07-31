@@ -135,11 +135,6 @@ class Recommender:
         if not self.settings.enabled:
             return
 
-        if hasattr(dataset, "_anova"):
-            # force recalculation - TODO - fix? shouldn't be necessary - is serialization causing?
-            del dataset._anova
-            dataset.anova()
-
         # apply rules to each model
         model_bins = []
         model_notes = []
