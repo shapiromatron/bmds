@@ -5,15 +5,9 @@ import numpy as np
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
-from ..constants import (
-    DichotomousModel,
-    DichotomousModelChoices,
-    DichotomousModelIds,
-    ModelPriors,
-    PriorClass,
-)
+from ..constants import DichotomousModel, DichotomousModelChoices, DichotomousModelIds, PriorClass
 from ..types.dichotomous import DichotomousAnalysis, DichotomousModelSettings, DichotomousResult
-from ..types.priors import get_dichotomous_prior
+from ..types.priors import ModelPriors, get_dichotomous_prior
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
 
@@ -92,6 +86,10 @@ class BmdModelDichotomous(BmdModel):
     def get_gof_pvalue(self) -> float:
         return self.results.gof.p_value
 
+    def get_priors_list(self) -> list[list]:
+        degree = self.settings.degree if self.degree_required else None
+        return self.settings.priors.priors_list(degree=degree)
+
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
@@ -149,6 +147,9 @@ class LogProbit(BmdModelDichotomous):
         b = params[2]
         return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
+
 
 class Gamma(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_gamma.value
@@ -165,8 +166,8 @@ class QuantalLinear(BmdModelDichotomous):
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        a = params[1]
-        return g + (1 - g) * 1 - np.exp(-a * doses)
+        b = params[1]
+        return g + (1 - g) * 1 - np.exp(-b * doses)
 
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_unrestricted
@@ -187,14 +188,15 @@ class DichotomousHill(BmdModelDichotomous):
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
-        n = params[1]
+        v = params[1]
         a = params[2]
         b = params[3]
-        return g + (1 - g) * n * (1 / (1 + np.exp(-a - b * np.log(doses))))
+        return g + (1 - g) * v * (1 / (1 + np.exp(-a - b * np.log(doses))))
 
 
 class Multistage(BmdModelDichotomous):
     bmd_model_class = DichotomousModelChoices.d_multistage.value
+    degree_required: bool = True
 
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
@@ -204,7 +206,7 @@ class Multistage(BmdModelDichotomous):
         if model_settings.degree < 1:
             model_settings.degree = self.get_default_model_degree(dataset)
 
-        # TODO - update priors to use cancer multistage, if applicable?
+        # TODO - priors for cancer multistage must change
 
         return model_settings
 

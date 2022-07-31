@@ -189,3 +189,4 @@ class LogicBin(enum.IntEnum):
 
 NULL = "-"
 ZEROISH = 1e-8
+BMDS_BLANK_VALUE = -9999

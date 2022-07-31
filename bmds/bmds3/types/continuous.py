@@ -11,7 +11,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 from ...constants import BOOL_ICON, Dtype
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, clean_array, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, NumpyIntArray, clean_array, list_t_c, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -72,8 +72,7 @@ class ContinuousModelSettings(BaseModel):
         Samples: {self.samples}
         Burn-in: {self.burnin}
         Prior class: {self.priors.prior_class.name}
-        Priors:
-        {self.priors.tbl()}"""
+        """
         )
 
     def update_record(self, d: dict) -> None:
@@ -122,10 +121,8 @@ class ContinuousAnalysis(BaseModel):
         return params
 
     def _priors_array(self) -> np.ndarray:
-        if self.model.id == constants.ContinuousModelIds.c_polynomial:
-            return self.priors.to_c(degree=self.degree, dist_type=self.disttype)
-        else:
-            return self.priors.to_c(dist_type=self.disttype)
+        degree = self.degree if self.model.id == constants.ContinuousModelIds.c_polynomial else None
+        return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
     def to_c(self) -> ContinuousStructs:
         priors = self._priors_array()
@@ -216,19 +213,36 @@ class ContinuousParameters(BaseModel):
     upper_ci: NumpyFloatArray
     bounded: NumpyFloatArray
     cov: NumpyFloatArray
+    prior_type: NumpyIntArray
+    prior_initial_value: NumpyFloatArray
+    prior_stdev: NumpyFloatArray
+    prior_min_value: NumpyFloatArray
+    prior_max_value: NumpyFloatArray
+
+    @classmethod
+    def get_priors(cls, model) -> np.ndarray:
+        priors_list = model.get_priors_list()
+        return np.array(priors_list, dtype=np.float64).T
 
     @classmethod
     def from_model(cls, model) -> "ContinuousParameters":
         result = model.structs.result
         summary = model.structs.summary
+        param_names = model.get_param_names()
+        priors = cls.get_priors(model)
         return cls(
-            names=model.get_param_names(),
+            names=param_names,
             values=result.np_parms,
             bounded=summary.np_bounded,
             se=summary.np_stdErr,
             lower_ci=summary.np_lowerConf,
             upper_ci=summary.np_upperConf,
             cov=result.np_cov.reshape(result.initial_n, result.initial_n),
+            prior_type=priors[0],
+            prior_initial_value=priors[1],
+            prior_stdev=priors[2],
+            prior_min_value=priors[3],
+            prior_max_value=priors[4],
         )
 
     def dict(self, **kw) -> Dict:
@@ -236,46 +250,62 @@ class ContinuousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|estimate|bounded".split("|")
+        headers = "parm|type|initial|stdev|min|max|estimate|bounded".split("|")
         data = []
-        for name, value, bounded in zip(self.names, self.values, self.bounded):
-            data.append([name, value, BOOL_ICON[bounded]])
+        for name, type, initial, stdev, min, max, value, bounded in zip(
+            self.names,
+            self.prior_type,
+            self.prior_initial_value,
+            self.prior_stdev,
+            self.prior_min_value,
+            self.prior_max_value,
+            self.values,
+            self.bounded,
+        ):
+            data.append([name, type, initial, stdev, min, max, value, BOOL_ICON[bounded]])
         return pretty_table(data, headers)
 
 
 class ContinuousGof(BaseModel):
-    dose: List[float]
-    size: List[int]
-    est_mean: List[float]
-    calc_mean: List[float]
-    obs_mean: List[float]
-    est_sd: List[float]
-    calc_sd: List[float]
-    obs_sd: List[float]
-    residual: List[float]
-    eb_lower: List[float]
-    eb_upper: List[float]
+    dose: NumpyFloatArray
+    size: NumpyIntArray
+    est_mean: NumpyFloatArray
+    calc_mean: NumpyFloatArray
+    obs_mean: NumpyFloatArray
+    est_sd: NumpyFloatArray
+    calc_sd: NumpyFloatArray
+    obs_sd: NumpyFloatArray
+    residual: NumpyFloatArray
+    eb_lower: NumpyFloatArray
+    eb_upper: NumpyFloatArray
     roi: float
 
     @classmethod
     def from_model(cls, model) -> "ContinuousGof":
         gof = model.structs.gof
+        # only keep indexes where the num ob obsMean + obsSD == 0;
+        # needed for continuous individual datasets where individual items are collapsed into groups
+        mask = np.flatnonzero(np.vstack([gof.np_obsMean, gof.np_obsSD]).sum(axis=0))
         return ContinuousGof(
-            dose=gof.np_dose.tolist(),
-            size=gof.np_size.tolist(),
-            est_mean=gof.np_estMean.tolist(),
-            calc_mean=gof.np_calcMean.tolist(),
-            obs_mean=gof.np_obsMean.tolist(),
-            est_sd=gof.np_estSD.tolist(),
-            calc_sd=gof.np_calcSD.tolist(),
-            obs_sd=gof.np_obsSD.tolist(),
-            residual=gof.np_res.tolist(),
-            eb_lower=gof.np_ebLower.tolist(),
-            eb_upper=gof.np_ebUpper.tolist(),
+            dose=gof.np_dose[mask],
+            size=gof.np_size[mask],
+            est_mean=gof.np_estMean[mask],
+            calc_mean=gof.np_calcMean[mask],
+            obs_mean=gof.np_obsMean[mask],
+            est_sd=gof.np_estSD[mask],
+            calc_sd=gof.np_calcSD[mask],
+            obs_sd=gof.np_obsSD[mask],
+            residual=gof.np_res[mask],
+            eb_lower=gof.np_ebLower[mask],
+            eb_upper=gof.np_ebUpper[mask],
             roi=residual_of_interest(
-                model.structs.summary.bmd, model.dataset.doses, gof.np_res.tolist()
+                model.structs.summary.bmd, model.dataset.doses, gof.np_res[mask].tolist()
             ),
         )
+
+    def dict(self, **kw) -> Dict:
+        d = super().dict(**kw)
+        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Dose|EstMean|CalcMean|ObsMean|EstStdev|CalcStdev|ObsStdev|Residual".split("|")
@@ -294,6 +324,9 @@ class ContinuousGof(BaseModel):
                 ]
             )
         return pretty_table(data, headers)
+
+    def n(self) -> int:
+        return self.dose.size
 
 
 class ContinuousDeviance(BaseModel):
@@ -357,19 +390,18 @@ class ContinuousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> "ContinuousPlotting":
-        xs = np.array(
-            [model.structs.summary.bmdl, model.structs.summary.bmd, model.structs.summary.bmdu]
-        )
+        summary = model.structs.summary
+        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
         dr_x = model.dataset.dose_linspace
-        bad_params = np.isclose(params, constants.BMDS_BLANK_VALUE).any()
-        dr_y = dr_x * 0 if bad_params else model.dr_curve(dr_x, params)
-        critical_ys = np.zeros(xs) if bad_params else clean_array(model.dr_curve(xs, params))
+        dr_y = clean_array(model.dr_curve(dr_x, params))
+        critical_ys = clean_array(model.dr_curve(xs, params))
+        critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
         return cls(
-            dr_x=dr_x.tolist(),
-            dr_y=dr_y.tolist(),
-            bmdl_y=critical_ys[0] if model.structs.summary.bmdl > 0 else constants.BMDS_BLANK_VALUE,
-            bmd_y=critical_ys[1] if model.structs.summary.bmd > 0 else constants.BMDS_BLANK_VALUE,
-            bmdu_y=critical_ys[2] if model.structs.summary.bmdu > 0 else constants.BMDS_BLANK_VALUE,
+            dr_x=dr_x,
+            dr_y=dr_y,
+            bmdl_y=critical_ys[0],
+            bmd_y=critical_ys[1],
+            bmdu_y=critical_ys[2],
         )
 
     def dict(self, **kw) -> Dict:
@@ -397,7 +429,6 @@ class ContinuousResult(BaseModel):
             ["AIC", self.fit.aic],
             ["LL", self.fit.loglikelihood],
             ["model_df", self.fit.model_df],
-            ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")
 

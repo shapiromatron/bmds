@@ -177,7 +177,7 @@
             "failure_bin": 0,
             "threshold": 2.0,
             "enabled_dichotomous": true,
-            "enabled_continuous": false,
+            "enabled_continuous": true,
             "enabled_nested": true
         }
     ]

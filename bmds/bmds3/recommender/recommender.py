@@ -129,20 +129,11 @@ class Recommender:
         self.settings: RecommenderSettings = settings
         self.results: Optional[RecommenderResults] = None
 
-    def check(self, dataset: DatasetBase, model, rule: Rule) -> CheckResponse:
-        CheckClass = RULE_MAP[rule.rule_class]
-        return CheckClass.check(dataset, model, rule)
-
     def recommend(self, dataset: DatasetBase, models: List[BmdModel]):
         self.results = RecommenderResults()
 
         if not self.settings.enabled:
             return
-
-        if hasattr(dataset, "_anova"):
-            # force recalculation - TODO - fix? shouldn't be necessary - is serialization causing?
-            del dataset._anova
-            dataset.anova()
 
         # apply rules to each model
         model_bins = []
@@ -159,7 +150,7 @@ class Recommender:
             if model.has_results:
                 # apply tests for each model
                 for rule in self.settings.rules:
-                    response = self.check(dataset, model, rule)
+                    response: CheckResponse = RULE_MAP[rule.rule_class].check(dataset, model, rule)
                     current_bin = max(response.logic_bin, current_bin)
                     if response.message:
                         notes[response.logic_bin].append(response.message)

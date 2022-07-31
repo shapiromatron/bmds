@@ -108,7 +108,7 @@ class NestedDichotomousDataset(DatasetBase):
         ax = fig.gca()
         ax.set_xlabel(self.get_xlabel())
         ax.set_ylabel(self.get_ylabel())
-        # TODO - add plot
+        # TODO - replace in BMDS 3.4
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
         ax.legend(**settings.LEGEND_OPTS)

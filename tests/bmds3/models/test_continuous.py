@@ -8,7 +8,7 @@ from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType, PriorClass
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
-from .run3 import RunBmds3
+from ..run3 import RunBmds3
 
 
 class TestPriorOverrides:
@@ -92,6 +92,17 @@ class TestBmdModelContinuous:
         text = model.text()
         assert "Hill" in text
         assert "Goodness of fit:" in text
+
+    def test_default_prior_class(self, cdataset2):
+        for Model, prior_class in [
+            (continuous.ExponentialM3, PriorClass.frequentist_restricted),
+            (continuous.ExponentialM5, PriorClass.frequentist_restricted),
+            (continuous.Power, PriorClass.frequentist_restricted),
+            (continuous.Hill, PriorClass.frequentist_restricted),
+            (continuous.Linear, PriorClass.frequentist_unrestricted),
+            (continuous.Polynomial, PriorClass.frequentist_restricted),
+        ]:
+            assert Model(cdataset2).settings.priors.prior_class is prior_class
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)

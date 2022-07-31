@@ -4,10 +4,11 @@ import numpy as np
 import pytest
 
 import bmds
+from bmds.bmds3.constants import PriorClass
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
 
-from .run3 import RunBmds3
+from ..run3 import RunBmds3
 
 
 class TestBmdModelDichotomous:
@@ -21,6 +22,23 @@ class TestBmdModelDichotomous:
         assert model.get_param_names() == ["b0", "b1", "b2"]
         model = dichotomous.Multistage(dataset=ddataset2, settings=dict(degree=3))
         assert model.get_param_names() == ["b0", "b1", "b2", "b3"]
+
+    def test_default_prior_class(self, ddataset2):
+        for Model, prior_class in [
+            # restricted
+            (dichotomous.DichotomousHill, PriorClass.frequentist_restricted),
+            (dichotomous.Gamma, PriorClass.frequentist_restricted),
+            (dichotomous.LogLogistic, PriorClass.frequentist_restricted),
+            (dichotomous.LogLogistic, PriorClass.frequentist_restricted),
+            (dichotomous.Multistage, PriorClass.frequentist_restricted),
+            (dichotomous.Weibull, PriorClass.frequentist_restricted),
+            # unrestricted
+            (dichotomous.Logistic, PriorClass.frequentist_unrestricted),
+            (dichotomous.LogProbit, PriorClass.frequentist_unrestricted),
+            (dichotomous.Probit, PriorClass.frequentist_unrestricted),
+            (dichotomous.QuantalLinear, PriorClass.frequentist_unrestricted),
+        ]:
+            assert Model(ddataset2).settings.priors.prior_class is prior_class
 
     @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_report(self, ddataset2):

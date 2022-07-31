@@ -2,7 +2,7 @@ import pytest
 
 from bmds.bmds3.models.base import BmdsLibraryManager
 
-from .run3 import RunBmds3
+from ..run3 import RunBmds3
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
