@@ -208,11 +208,15 @@ class Polynomial(BmdModelContinuous):
             beta1 = model_settings.priors.get_prior("beta1")
             betaN = model_settings.priors.get_prior("betaN")
             is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
-            g.min_value = -1000 if is_cv else 0
-            beta1.min_value = -18 if is_cv else -10_000
-            betaN.min_value = -18 if is_cv else -10_000
-            beta1.max_value = 18 if is_cv else 10_000
-            betaN.max_value = 18 if is_cv else 10_000
+            # update mins
+            g.min_value = -1e6 if is_cv else 0
+            beta1.min_value = -1e6 if is_cv else -18
+            betaN.min_value = -1e6 if is_cv else -18
+            # update maxes
+            g.max_value = 1e6 if is_cv else 1_000
+            beta1.max_value = 1e6 if is_cv else 18
+            betaN.max_value = 1e6 if is_cv else 18
+            # for restricted, betas in one direction
             if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
                 attr = "min_value" if model_settings.is_increasing else "max_value"
                 setattr(beta1, attr, 0)
