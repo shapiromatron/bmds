@@ -263,7 +263,7 @@ class ExponentialM3(BmdModelContinuous):
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
         b = params[1]
-        d = params[3]
+        d = params[2]
         sign = 1.0 if self.settings.is_increasing else -1.0
         return a * np.exp(sign * ((b * doses) ** d))
 

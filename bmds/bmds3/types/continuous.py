@@ -230,6 +230,21 @@ class ContinuousParameters(BaseModel):
         summary = model.structs.summary
         param_names = model.get_param_names()
         priors = cls.get_priors(model)
+
+        # DLL deletes the c parameter and shifts items down; correct in outputs here
+        if model.bmd_model_class.id == constants.ContinuousModelIds.c_exp_m3:
+
+            # do the same for parameter names for consistency
+            c_index = param_names.index("c")
+            param_names.pop(c_index)
+            param_names.append(constants.NULL_STR)
+
+            # shift priors as well
+            priors = priors.T
+            priors[c_index:-1] = priors[c_index + 1 :]
+            priors[-1] = np.zeros(priors.shape[1])
+            priors = priors.T
+
         return cls(
             names=param_names,
             values=result.np_parms,
@@ -250,9 +265,9 @@ class ContinuousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|type|initial|stdev|min|max|estimate|bounded".split("|")
+        headers = "parm|type|initial|stdev|min|max|estimate|lower|upper|bounded".split("|")
         data = []
-        for name, type, initial, stdev, min, max, value, bounded in zip(
+        for name, type, initial, stdev, min, max, value, lower, upper, bounded in zip(
             self.names,
             self.prior_type,
             self.prior_initial_value,
@@ -260,9 +275,13 @@ class ContinuousParameters(BaseModel):
             self.prior_min_value,
             self.prior_max_value,
             self.values,
+            self.lower_ci,
+            self.upper_ci,
             self.bounded,
         ):
-            data.append([name, type, initial, stdev, min, max, value, BOOL_ICON[bounded]])
+            data.append(
+                [name, type, initial, stdev, min, max, value, lower, upper, BOOL_ICON[bounded]]
+            )
         return pretty_table(data, headers)
 
 

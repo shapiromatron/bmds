@@ -23,3 +23,13 @@ class TestContinuousGof:
         assert res.gof.n() == len(cidataset.doses)
         assert res.gof.n() < len(cidataset.individual_doses)
         assert res.gof.n() == len(set(cidataset.individual_doses))
+
+
+class TestContinuousParameters:
+    def test_exp3(self, cdataset):
+        model = continuous.ExponentialM3(cdataset)
+        res = model.execute()
+        # param names for prior are as expected
+        assert model.get_param_names() == ["a", "b", "c", "d", "rho"]
+        # but outputs have been shifted
+        assert res.parameters.names == ["a", "b", "d", "rho", "NULL"]
