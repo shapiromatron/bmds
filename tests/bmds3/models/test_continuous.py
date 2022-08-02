@@ -29,14 +29,14 @@ class TestPriorOverrides:
     def test_poly(self, cdataset2, negative_cdataset):
         for settings, priors in [
             # fmt: off
-            ({"is_increasing": True}, (0, 18)),
-            ({"is_increasing": False}, (-18, 0)),
-            ({"is_increasing": True, "disttype": DistType.normal_ncv}, (0, 10_000)),
-            ({"is_increasing": False, "disttype": DistType.normal_ncv}, (-10_000, 0)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-18, 18)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-18, 18)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True, "disttype": DistType.normal_ncv}, (-10_000, 10_000)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False, "disttype": DistType.normal_ncv}, (-10_000, 10_000)),
+            ({"is_increasing": True}, (0, 1e6)),
+            ({"is_increasing": False}, (-1e6, 0)),
+            ({"is_increasing": True, "disttype": DistType.normal_ncv}, (0, 18)),
+            ({"is_increasing": False, "disttype": DistType.normal_ncv}, (-18, 0)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-1e6, 1e6)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-1e6, 1e6)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True, "disttype": DistType.normal_ncv}, (-18, 18)),
+            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False, "disttype": DistType.normal_ncv}, (-18, 18)),
             # fmt: on
         ]:
             model = continuous.Polynomial(cdataset2, settings)
@@ -136,7 +136,7 @@ def test_bmds3_decreasing(negative_cdataset):
         (continuous.ExponentialM5, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4300),
         (continuous.Power, [56, 50, 64], 3080),
         (continuous.Hill, [63, 56, 70], 3086),
-        (continuous.Linear, [79, 75, 83], 3381),
+        (continuous.Linear, [35, 33, 38], 3117),
         (continuous.Polynomial, [52, 47, 60], 3077),
     ]:
         model = Model(negative_cdataset)
