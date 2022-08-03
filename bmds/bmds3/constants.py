@@ -6,7 +6,6 @@ from pydantic import BaseModel
 BMDS_BLANK_VALUE = -9999
 N_BMD_DIST = 100
 NUM_PRIOR_COLS = 5
-NULL_STR = "NULL"
 
 
 class BmdModelSchema(BaseModel):

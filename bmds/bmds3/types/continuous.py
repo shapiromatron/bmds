@@ -3,6 +3,7 @@ from enum import IntEnum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from bmds.bmds3.constants import ContinuousModelChoices
@@ -237,22 +238,26 @@ class ContinuousParameters(BaseModel):
             # do the same for parameter names for consistency
             c_index = param_names.index("c")
             param_names.pop(c_index)
-            param_names.append(constants.NULL_STR)
 
             # shift priors as well
             priors = priors.T
             priors[c_index:-1] = priors[c_index + 1 :]
-            priors[-1] = np.zeros(priors.shape[1])
-            priors = priors.T
+            priors = priors[:-1].T
 
+            # reshape covariance
+            cov_n = result.initial_n - 1
+            cov = result.np_cov[: cov_n * cov_n].reshape(cov_n, cov_n)
+        else:
+            cov_n = result.initial_n
+            cov = result.np_cov.reshape(result.initial_n, result.initial_n)
         return cls(
             names=param_names,
-            values=result.np_parms,
-            bounded=summary.np_bounded,
-            se=summary.np_stdErr,
-            lower_ci=summary.np_lowerConf,
-            upper_ci=summary.np_upperConf,
-            cov=result.np_cov.reshape(result.initial_n, result.initial_n),
+            values=result.np_parms[:-1],
+            bounded=summary.np_bounded[:-1],
+            se=summary.np_stdErr[:-1],
+            lower_ci=summary.np_lowerConf[:-1],
+            upper_ci=summary.np_upperConf[:-1],
+            cov=cov,
             prior_type=priors[0],
             prior_initial_value=priors[1],
             prior_stdev=priors[2],
@@ -283,6 +288,11 @@ class ContinuousParameters(BaseModel):
                 [name, type, initial, stdev, min, max, value, lower, upper, BOOL_ICON[bounded]]
             )
         return pretty_table(data, headers)
+
+    def covariance_heatmap(self) -> pd.DataFrame:
+        df = pd.DataFrame(data=self.cov, columns=self.names, index=self.names)
+        df.style.background_gradient(cmap="viridis")
+        return df
 
 
 class ContinuousGof(BaseModel):
