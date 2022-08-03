@@ -28,7 +28,7 @@ class TestDichotomousMa:
         assert np.allclose(session.ma_weights, [0.5, 0.5])
         session.execute()
         assert np.allclose(session.model_average.results.priors, [0.5, 0.5])
-        assert np.allclose(session.model_average.results.posteriors, [0.065, 0.94], atol=0.05)
+        assert np.allclose(session.model_average.results.posteriors, [0.40, 0.60], atol=0.05)
 
         # custom; propagate through results
         session = bmds.session.Bmds330(dataset=ddataset2)
@@ -38,4 +38,4 @@ class TestDichotomousMa:
         assert np.allclose(session.ma_weights, [0.9, 0.1])
         session.execute()
         assert np.allclose(session.model_average.results.priors, [0.9, 0.1])
-        assert np.allclose(session.model_average.results.posteriors, [0.38, 0.62], atol=0.05)
+        assert np.allclose(session.model_average.results.posteriors, [0.86, 0.14], atol=0.05)
