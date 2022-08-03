@@ -157,14 +157,14 @@ def test_variance(cdataset2):
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal
     assert pytest.approx(actual, rel=0.05) == [25.9, 24.4, 29.8]
-    assert result.parameters.names == ['g', 'v', 'n', 'alpha']
+    assert result.parameters.names == ["g", "v", "n", "alpha"]
 
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal_ncv))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal_ncv
-    assert result.parameters.names == ['g', 'v', 'n', 'rho', 'alpha']
+    assert result.parameters.names == ["g", "v", "n", "rho", "alpha"]
     assert pytest.approx(actual, rel=0.05) == [14.6, 13.1, 17.3]
 
     # only Exp can be used
@@ -174,7 +174,7 @@ def test_variance(cdataset2):
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.log_normal
     assert pytest.approx(actual, rel=0.05) == [10.3, 9.71, 11.1]
-    assert result.parameters.names == ['a', 'b', 'c', 'd', 'log-alpha']
+    assert result.parameters.names == ["a", "b", "c", "d", "log-alpha"]
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
