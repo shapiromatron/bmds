@@ -94,7 +94,8 @@ _model_priors: Dict[str, ModelPriors] = {}
 def _load_model_priors():
     # lazy load model priors from CSV file
     def set_param_type(df):
-        return df.assign(variance_param=df.name.map({"rho": True, "alpha": True})).fillna(False)
+        names = {"rho": True, "alpha": True, "log-alpha": True}
+        return df.assign(variance_param=df.name.map(names)).fillna(False)
 
     def build_priors(df):
         priors = {}

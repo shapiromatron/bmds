@@ -1,5 +1,6 @@
 import pytest
 
+from bmds.bmds3.constants import DistType
 from bmds.bmds3.models import continuous
 
 from ..run3 import RunBmds3
@@ -30,6 +31,13 @@ class TestContinuousParameters:
         model = continuous.ExponentialM3(cdataset)
         res = model.execute()
         # param names for prior are as expected
-        assert model.get_param_names() == ["a", "b", "c", "d", "rho"]
+        assert model.get_param_names() == ["a", "b", "c", "d", "log-alpha"]
         # but outputs have been shifted
-        assert res.parameters.names == ["a", "b", "d", "rho", "NULL"]
+        assert res.parameters.names == ["a", "b", "d", "log-alpha", "NULL"]
+
+        model = continuous.ExponentialM3(cdataset, settings=dict(disttype=DistType.normal_ncv))
+        res = model.execute()
+        # param names for prior are as expected
+        assert model.get_param_names() == ["a", "b", "c", "d", "rho", "log-alpha"]
+        # but outputs have been shifted
+        assert res.parameters.names == ["a", "b", "d", "rho", "log-alpha", "NULL"]

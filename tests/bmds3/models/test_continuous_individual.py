@@ -9,12 +9,12 @@ from ..run3 import RunBmds3
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_increasing(cidataset):
     for Model, bmd_values, aic in [
-        (continuous.ExponentialM3, [471, 245, 481], 115),
-        (continuous.ExponentialM5, [438, 428, -9999], 116),
-        (continuous.Power, [466, 234, 1246], 117),
+        (continuous.ExponentialM3, [394, 258, 881], 114),
+        (continuous.ExponentialM5, [258, 104, -9999], 112),
+        (continuous.Power, [386, 247, 878], 114),
         (continuous.Hill, [178, 106, -9999], 112),
-        (continuous.Linear, [466, 0, 1306], 117),
-        (continuous.Polynomial, [466, 0, 1306], 117),
+        (continuous.Linear, [386, 247, 878], 114),
+        (continuous.Polynomial, [386, 247, 878], 114),
     ]:
         result = Model(cidataset).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]

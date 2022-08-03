@@ -65,17 +65,17 @@ class TestBmdModelContinuous:
             continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal)),
             continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.log_normal)),
         ]:
-            assert m.get_param_names() == ["g", "v", "n", "rho"]
+            assert m.get_param_names() == ["g", "v", "n", "alpha"]
         m = continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal_ncv))
         assert m.get_param_names() == ["g", "v", "n", "rho", "alpha"]
 
         # test polynomial
         model = continuous.Linear(dataset=cdataset2)
-        assert model.get_param_names() == ["b0", "b1", "rho"]
+        assert model.get_param_names() == ["b0", "b1", "alpha"]
         model = continuous.Polynomial(dataset=cdataset2)
-        assert model.get_param_names() == ["b0", "b1", "b2", "rho"]
+        assert model.get_param_names() == ["b0", "b1", "b2", "alpha"]
         model = continuous.Polynomial(dataset=cdataset2, settings=dict(degree=3))
-        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho"]
+        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "alpha"]
         model = continuous.Polynomial(
             dataset=cdataset2, settings=dict(degree=3, disttype=DistType.normal_ncv)
         )
@@ -106,7 +106,7 @@ class TestBmdModelContinuous:
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_bmds3_increasing(cdataset2):
+def test_increasing(cdataset2):
     """
     Basic tests to ensure AIC and BMD values are successfully created and stable for all model classes
     """
@@ -129,7 +129,7 @@ def test_bmds3_increasing(cdataset2):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_bmds3_decreasing(negative_cdataset):
+def test_decreasing(negative_cdataset):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
         (continuous.ExponentialM3, [BMDS_BLANK_VALUE, BMDS_BLANK_VALUE, BMDS_BLANK_VALUE], 4298),
@@ -150,35 +150,35 @@ def test_bmds3_decreasing(negative_cdataset):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_bmds3_variance(cdataset2):
+def test_variance(cdataset2):
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal
     assert pytest.approx(actual, rel=0.05) == [25.9, 24.4, 29.8]
-    assert len(result.parameters.values) == 4
+    assert result.parameters.names == ['g', 'v', 'n', 'alpha']
 
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal_ncv))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.normal_ncv
-    assert len(result.parameters.values) == 5
+    assert result.parameters.names == ['g', 'v', 'n', 'rho', 'alpha']
     assert pytest.approx(actual, rel=0.05) == [14.6, 13.1, 17.3]
 
-    # only Power and Exp can be used
-    model = continuous.ExponentialM3(cdataset2, dict(disttype=DistType.log_normal))
+    # only Exp can be used
+    model = continuous.ExponentialM5(cdataset2, dict(disttype=DistType.log_normal))
     result = model.execute()
     actual = [result.bmd, result.bmdl, result.bmdu]
     # print(f"{actual[0]:.1f}, {actual[1]:.1f}, {actual[2]:.1f}")
     assert model.settings.disttype is DistType.log_normal
-    assert pytest.approx(actual, rel=0.05) == [130.1, 129.3, 141.1]
-    assert len(result.parameters.values) == 5
+    assert pytest.approx(actual, rel=0.05) == [10.3, 9.71, 11.1]
+    assert result.parameters.names == ['a', 'b', 'c', 'd', 'log-alpha']
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_bmds3_continuous_polynomial(cdataset2):
+def test_continuous_polynomial(cdataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
         (1, [25.84, 24.358, 27.529], 3067.8),
@@ -197,7 +197,7 @@ def test_bmds3_continuous_polynomial(cdataset2):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_bmds3_continuous_session(cdataset2):
+def test_continuous_session(cdataset2):
     session = bmds.session.Bmds330(dataset=cdataset2)
     session.add_default_models()
     session.execute()
@@ -248,17 +248,3 @@ def test_decreasing_lognormal(negative_cdataset):
     for model in session.models:
         assert model.results.has_completed is False
         assert model.results.bmd == BMDS_BLANK_VALUE
-
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_infinite_bmr_values():
-    # check that infinite BMR values are correctly set to BMDS_BLANK_VALUE
-    ds = bmds.ContinuousDataset(
-        doses=[0.0, 50, 100],
-        ns=[20, 20, 20],
-        means=[5.26, 5.76, 6.13],
-        stdevs=[2.53, 1.47, 2.47],
-    )
-    model = continuous.ExponentialM3(ds)
-    model.execute()
-    assert model.results.plotting.bmdu_y == BMDS_BLANK_VALUE
