@@ -26,8 +26,14 @@ class TestContinuousGof:
         assert res.gof.n() == len(set(cidataset.individual_doses))
 
 
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestContinuousParameters:
     def test_exp3(self, cdataset):
+        """
+        Edge case for exp3 - the dll expects a prior for the c parameter, but the
+        returned output effectively drops the c array and shifts all other values down one.
+        We check that the input and output values are shifted as required.
+        """
         model = continuous.ExponentialM3(cdataset)
         res = model.execute()
         # param names for prior are as expected
