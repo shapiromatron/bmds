@@ -104,7 +104,7 @@ class BmdModelContinuous(BmdModel):
         if self.settings.disttype == DistType.normal_ncv:
             return list(self.bmd_model_class.variance_params)
         else:
-            return [self.bmd_model_class.variance_params[0]]
+            return [self.bmd_model_class.variance_params[1]]
 
     def get_gof_pvalue(self) -> float:
         return self.results.tests.p_values[3]
@@ -267,7 +267,7 @@ class ExponentialM3(BmdModelContinuous):
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
         b = params[1]
-        d = params[3]
+        d = params[2]
         sign = 1.0 if self.settings.is_increasing else -1.0
         return a * np.exp(sign * ((b * doses) ** d))
 

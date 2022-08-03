@@ -4,12 +4,8 @@ from typing import Tuple
 from pydantic import BaseModel
 
 BMDS_BLANK_VALUE = -9999
-CDF_TABLE_SIZE = 99
-MY_MAX_PARMS = 16
-N_BMD_DIST = 200
-NUM_LIKELIHOODS_OF_INTEREST = 5
+N_BMD_DIST = 100
 NUM_PRIOR_COLS = 5
-NUM_TESTS_OF_INTEREST = 4
 
 
 class BmdModelSchema(BaseModel):
@@ -134,14 +130,14 @@ class ContinuousModelChoices(Enum):
         id=ContinuousModelIds.c_exp_m3.value,
         verbose="ExponentialM3",
         params=("a", "b", "c", "d"),
-        variance_params=("rho", "alpha"),
+        variance_params=("rho", "log-alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
     )
     c_exp_m5 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m5.value,
         verbose="ExponentialM5",
         params=("a", "b", "c", "d"),
-        variance_params=("rho", "alpha"),
+        variance_params=("rho", "log-alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-(b * dose) ^ d)",
     )
 

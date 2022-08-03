@@ -47,11 +47,11 @@ class TestModelPriors:
         )
         assert np.allclose(mock_prior.to_c(
             dist_type=DistType.normal),
-            [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0]
+            [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0]
         )
         assert np.allclose(
             mock_prior.to_c(dist_type=DistType.log_normal),
-            [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0]
+            [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0, 1.0, 2.0, 3.0, 5.0]
         )
         assert np.allclose(
             mock_prior.to_c(dist_type=DistType.normal_ncv),

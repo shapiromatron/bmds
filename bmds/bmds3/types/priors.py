@@ -45,13 +45,9 @@ class ModelPriors(BaseModel):
         Raises:
             ValueError: if no value is found
         """
-        for p in self.priors:
+        for p in chain(self.priors, self.variance_priors or []):
             if p.name == name:
                 return p
-        if self.variance_priors:
-            for p in self.variance_priors:
-                if p.name == name:
-                    return p
         raise ValueError(f"No parameter named {name}")
 
     def priors_list(
@@ -75,12 +71,12 @@ class ModelPriors(BaseModel):
 
         # add constant variance parameter
         if dist_type and dist_type in {DistType.normal, DistType.log_normal}:
-            priors.append(self.variance_priors[0].numeric_list())
+            priors.append(self.variance_priors[1].numeric_list())
 
         # add non-constant variance parameter
         if dist_type and dist_type is DistType.normal_ncv:
-            for prior in self.variance_priors:
-                priors.append(prior.numeric_list())
+            for variance_prior in self.variance_priors:
+                priors.append(variance_prior.numeric_list())
 
         return priors
 
@@ -98,7 +94,8 @@ _model_priors: Dict[str, ModelPriors] = {}
 def _load_model_priors():
     # lazy load model priors from CSV file
     def set_param_type(df):
-        return df.assign(variance_param=df.name.map({"rho": True, "alpha": True})).fillna(False)
+        names = {"rho": True, "alpha": True, "log-alpha": True}
+        return df.assign(variance_param=df.name.map(names)).fillna(False)
 
     def build_priors(df):
         priors = {}

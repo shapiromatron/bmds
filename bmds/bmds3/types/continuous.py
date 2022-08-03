@@ -3,6 +3,7 @@ from enum import IntEnum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from bmds.bmds3.constants import ContinuousModelChoices
@@ -230,14 +231,33 @@ class ContinuousParameters(BaseModel):
         summary = model.structs.summary
         param_names = model.get_param_names()
         priors = cls.get_priors(model)
+
+        # DLL deletes the c parameter and shifts items down; correct in outputs here
+        if model.bmd_model_class.id == constants.ContinuousModelIds.c_exp_m3:
+
+            # do the same for parameter names for consistency
+            c_index = param_names.index("c")
+            param_names.pop(c_index)
+
+            # shift priors as well
+            priors = priors.T
+            priors[c_index:-1] = priors[c_index + 1 :]
+            priors = priors[:-1].T
+
+            # reshape covariance
+            cov_n = result.initial_n - 1
+            cov = result.np_cov[: cov_n * cov_n].reshape(cov_n, cov_n)
+        else:
+            cov_n = result.initial_n
+            cov = result.np_cov.reshape(result.initial_n, result.initial_n)
         return cls(
             names=param_names,
-            values=result.np_parms,
-            bounded=summary.np_bounded,
-            se=summary.np_stdErr,
-            lower_ci=summary.np_lowerConf,
-            upper_ci=summary.np_upperConf,
-            cov=result.np_cov.reshape(result.initial_n, result.initial_n),
+            values=result.np_parms[:-1],
+            bounded=summary.np_bounded[:-1],
+            se=summary.np_stdErr[:-1],
+            lower_ci=summary.np_lowerConf[:-1],
+            upper_ci=summary.np_upperConf[:-1],
+            cov=cov,
             prior_type=priors[0],
             prior_initial_value=priors[1],
             prior_stdev=priors[2],
@@ -250,9 +270,9 @@ class ContinuousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|type|initial|stdev|min|max|estimate|bounded".split("|")
+        headers = "parm|type|initial|stdev|min|max|estimate|lower|upper|bounded".split("|")
         data = []
-        for name, type, initial, stdev, min, max, value, bounded in zip(
+        for name, type, initial, stdev, min, max, value, lower, upper, bounded in zip(
             self.names,
             self.prior_type,
             self.prior_initial_value,
@@ -260,10 +280,19 @@ class ContinuousParameters(BaseModel):
             self.prior_min_value,
             self.prior_max_value,
             self.values,
+            self.lower_ci,
+            self.upper_ci,
             self.bounded,
         ):
-            data.append([name, type, initial, stdev, min, max, value, BOOL_ICON[bounded]])
+            data.append(
+                [name, type, initial, stdev, min, max, value, lower, upper, BOOL_ICON[bounded]]
+            )
         return pretty_table(data, headers)
+
+    def covariance_heatmap(self) -> pd.DataFrame:
+        df = pd.DataFrame(data=self.cov, columns=self.names, index=self.names)
+        df.style.background_gradient(cmap="viridis")
+        return df
 
 
 class ContinuousGof(BaseModel):
