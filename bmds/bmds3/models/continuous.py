@@ -104,7 +104,7 @@ class BmdModelContinuous(BmdModel):
         if self.settings.disttype == DistType.normal_ncv:
             return list(self.bmd_model_class.variance_params)
         else:
-            return [self.bmd_model_class.variance_params[0]]
+            return [self.bmd_model_class.variance_params[1]]
 
     def get_gof_pvalue(self) -> float:
         return self.results.tests.p_values[3]

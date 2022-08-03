@@ -71,7 +71,7 @@ class ModelPriors(BaseModel):
 
         # add constant variance parameter
         if dist_type and dist_type in {DistType.normal, DistType.log_normal}:
-            priors.append(self.variance_priors[0].numeric_list())
+            priors.append(self.variance_priors[1].numeric_list())
 
         # add non-constant variance parameter
         if dist_type and dist_type is DistType.normal_ncv:
