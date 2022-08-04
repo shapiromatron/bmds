@@ -232,6 +232,10 @@ class ContinuousParameters(BaseModel):
         param_names = model.get_param_names()
         priors = cls.get_priors(model)
 
+        cov_n = result.initial_n
+        cov = result.np_cov.reshape(result.initial_n, result.initial_n)
+        slice = None
+
         # DLL deletes the c parameter and shifts items down; correct in outputs here
         if model.bmd_model_class.id == constants.ContinuousModelIds.c_exp_m3:
 
@@ -247,16 +251,17 @@ class ContinuousParameters(BaseModel):
             # reshape covariance
             cov_n = result.initial_n - 1
             cov = result.np_cov[: cov_n * cov_n].reshape(cov_n, cov_n)
-        else:
-            cov_n = result.initial_n
-            cov = result.np_cov.reshape(result.initial_n, result.initial_n)
+
+            # change slice for other variables
+            slice = -1
+
         return cls(
             names=param_names,
-            values=result.np_parms[:-1],
-            bounded=summary.np_bounded[:-1],
-            se=summary.np_stdErr[:-1],
-            lower_ci=summary.np_lowerConf[:-1],
-            upper_ci=summary.np_upperConf[:-1],
+            values=result.np_parms[:slice],
+            bounded=summary.np_bounded[:slice],
+            se=summary.np_stdErr[:slice],
+            lower_ci=summary.np_lowerConf[:slice],
+            upper_ci=summary.np_upperConf[:slice],
             cov=cov,
             prior_type=priors[0],
             prior_initial_value=priors[1],
