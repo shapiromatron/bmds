@@ -221,7 +221,9 @@ class Multistage(BmdModelDichotomous):
         return g + (1 - g) * (1 - np.exp(-1.0 * val))
 
     def get_param_names(self) -> List[str]:
-        return [f"b{i}" for i in range(self.settings.degree + 1)]
+        names = [f"b{i}" for i in range(self.settings.degree + 1)]
+        names[0] = "g"
+        return names
 
 
 bmd_model_map = {
