@@ -19,9 +19,9 @@ class TestBmdModelDichotomous:
 
         # test multistage
         model = dichotomous.Multistage(dataset=ddataset2)
-        assert model.get_param_names() == ["b0", "b1", "b2"]
+        assert model.get_param_names() == ["g", "b1", "b2"]
         model = dichotomous.Multistage(dataset=ddataset2, settings=dict(degree=3))
-        assert model.get_param_names() == ["b0", "b1", "b2", "b3"]
+        assert model.get_param_names() == ["g", "b1", "b2", "b3"]
 
     def test_default_prior_class(self, ddataset2):
         for Model, prior_class in [

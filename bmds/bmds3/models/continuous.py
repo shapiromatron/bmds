@@ -236,6 +236,7 @@ class Polynomial(BmdModelContinuous):
     def get_param_names(self) -> List[str]:
         names = [f"b{i}" for i in range(self.settings.degree + 1)]
         names.extend(self.get_variance_param_names())
+        names[0] = "g"
         return names
 
 

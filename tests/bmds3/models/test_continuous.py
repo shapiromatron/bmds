@@ -71,15 +71,15 @@ class TestBmdModelContinuous:
 
         # test polynomial
         model = continuous.Linear(dataset=cdataset2)
-        assert model.get_param_names() == ["b0", "b1", "alpha"]
+        assert model.get_param_names() == ["g", "b1", "alpha"]
         model = continuous.Polynomial(dataset=cdataset2)
-        assert model.get_param_names() == ["b0", "b1", "b2", "alpha"]
+        assert model.get_param_names() == ["g", "b1", "b2", "alpha"]
         model = continuous.Polynomial(dataset=cdataset2, settings=dict(degree=3))
-        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "alpha"]
+        assert model.get_param_names() == ["g", "b1", "b2", "b3", "alpha"]
         model = continuous.Polynomial(
             dataset=cdataset2, settings=dict(degree=3, disttype=DistType.normal_ncv)
         )
-        assert model.get_param_names() == ["b0", "b1", "b2", "b3", "rho", "alpha"]
+        assert model.get_param_names() == ["g", "b1", "b2", "b3", "rho", "alpha"]
 
     @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_report(self, cdataset2):
