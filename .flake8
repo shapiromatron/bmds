@@ -12,5 +12,5 @@ exclude =
   bin,
   build,
   docs,
-  notebooks,
+  notebooks/private,
   venv
