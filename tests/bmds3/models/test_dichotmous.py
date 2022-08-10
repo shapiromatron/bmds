@@ -50,7 +50,7 @@ class TestBmdModelDichotomous:
         model.execute()
         text = model.text()
         assert "Gamma" in text
-        assert "Goodness of fit:" in text
+        assert "Goodness of Fit:" in text
 
     @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_risk_type(self, ddataset2):

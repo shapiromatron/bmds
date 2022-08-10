@@ -91,7 +91,7 @@ class TestBmdModelContinuous:
         model.execute()
         text = model.text()
         assert "Hill" in text
-        assert "Goodness of fit:" in text
+        assert "Goodness of Fit:" in text
 
     def test_default_prior_class(self, cdataset2):
         for Model, prior_class in [
