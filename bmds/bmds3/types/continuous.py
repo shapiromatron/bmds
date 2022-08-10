@@ -286,22 +286,25 @@ class ContinuousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|type|initial|stdev|min|max|estimate|lower|upper|bounded".split("|")
+        headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
         data = []
-        for name, type, initial, stdev, min, max, value, lower, upper, bounded in zip(
+        for name, value, bounded, se, lower_ci, upper_ci in zip(
             self.names,
-            self.prior_type,
-            self.prior_initial_value,
-            self.prior_stdev,
-            self.prior_min_value,
-            self.prior_max_value,
             self.values,
+            self.bounded,
+            self.se,
             self.lower_ci,
             self.upper_ci,
-            self.bounded,
         ):
             data.append(
-                [name, type, initial, stdev, min, max, value, lower, upper, BOOL_ICON[bounded]]
+                (
+                    name,
+                    value,
+                    BOOL_ICON[bounded],
+                    "NA" if bounded else f"{se:g}",
+                    "NA" if bounded else f"{lower_ci:g}",
+                    "NA" if bounded else f"{upper_ci:g}",
+                )
             )
         return pretty_table(data, headers)
 
@@ -353,22 +356,33 @@ class ContinuousGof(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "Dose|EstMean|CalcMean|ObsMean|EstStdev|CalcStdev|ObsStdev|Residual".split("|")
-        data = []
+        mean_headers = (
+            "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual".split("|")
+        )
+        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD".split("|")
+        mean_data = []
+        sd_data = []
         for idx in range(len(self.dose)):
-            data.append(
+            mean_data.append(
                 [
                     self.dose[idx],
-                    self.est_mean[idx],
-                    self.calc_mean[idx],
+                    self.size[idx],
                     self.obs_mean[idx],
-                    self.est_sd[idx],
-                    self.calc_sd[idx],
-                    self.obs_sd[idx],
+                    self.calc_mean[idx],
+                    self.est_mean[idx],
                     self.residual[idx],
                 ]
             )
-        return pretty_table(data, headers)
+            sd_data.append(
+                [
+                    self.dose[idx],
+                    self.size[idx],
+                    self.obs_sd[idx],
+                    self.calc_sd[idx],
+                    self.est_sd[idx],
+                ]
+            )
+        return pretty_table(mean_data, mean_headers) + "\n" + pretty_table(sd_data, sd_headers)
 
     def n(self) -> int:
         return self.dose.size
@@ -391,7 +405,7 @@ class ContinuousDeviance(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Name|Loglikelihood|num params|AIC".split("|")
+        headers = "Model|Log Likelihood|# Params|AIC".split("|")
         data = []
         for (name, loglikelihood, num_param, aic) in zip(
             self.names, self.loglikelihoods, self.num_params, self.aics
@@ -410,14 +424,14 @@ class ContinuousTests(BaseModel):
     def from_model(cls, model) -> "ContinuousTests":
         tests = model.structs.aod.toi_struct
         return cls(
-            names=["p_test1", "p_test2", "p_test3", "p_test4"],
+            names=["Test 1", "Test 2", "Test 3", "Test 4"],
             ll_ratios=tests.np_llRatio.tolist(),
             dfs=tests.np_DF.tolist(),
             p_values=tests.np_pVal.tolist(),
         )
 
     def tbl(self) -> str:
-        headers = "Name|Loglikelihood Ratio|DF|p_value".split("|")
+        headers = "Name|Loglikelihood Ratio|Test DOF|P-Value".split("|")
         data = []
         for (name, ll_ratio, df, p_value) in zip(
             self.names, self.ll_ratios, self.dfs, self.p_values
@@ -468,12 +482,13 @@ class ContinuousResult(BaseModel):
 
     def tbl(self) -> str:
         data = [
-            ["BMDL", self.bmdl],
             ["BMD", self.bmd],
+            ["BMDL", self.bmdl],
             ["BMDU", self.bmdu],
             ["AIC", self.fit.aic],
-            ["LL", self.fit.loglikelihood],
-            ["model_df", self.fit.model_df],
+            ["Log Likelihood", self.fit.loglikelihood],
+            ["P-Value", self.tests.p_values[3]],
+            ["Model DOF", self.tests.dfs[3]],
         ]
         return pretty_table(data, "")
 
@@ -483,16 +498,16 @@ class ContinuousResult(BaseModel):
         Summary:
         {self.tbl()}
 
-        Goodness of fit:
-        {self.gof.tbl()}
-
-        Parameters:
+        Model Parameters:
         {self.parameters.tbl()}
 
-        Deviances:
+        Goodness of Fit:
+        {self.gof.tbl()}
+
+        Likelihoods of Interest:
         {self.deviance.tbl()}
 
-        Tests:
+        Tests of Interest:
         {self.tests.tbl()}
         """
         )
