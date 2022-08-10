@@ -55,7 +55,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         fig = dataset.plot()
         ax = fig.gca()
         ax.set_ylim(-0.05, 1.05)
-        title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text()}"
+        title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text}"
         ax.set_title(title)
         if colorize:
             color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)

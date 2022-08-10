@@ -11,8 +11,9 @@ from pydantic import BaseModel
 from ... import plotting
 from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
 from ...datasets import DatasetType
-from ...utils import package_root
+from ...utils import multi_lstrip, package_root
 from ..constants import BmdModelSchema as BmdModelClass
+from ..types.priors import priors_tbl
 
 if TYPE_CHECKING:
     from ..sessions import BmdsSession
@@ -121,14 +122,29 @@ class BmdModel(abc.ABC):
 
     def text(self) -> str:
         """Text representation of model inputs and outputs outputs."""
-        name = f"╒════════════════════╕\n│ {self.name():18} │\n╘════════════════════╛"
-        settings = self.settings.text()
+        title = self.name().center(20) + "\n════════════════════"
+        settings = self.model_settings_text()
         if self.has_results:
             results = self.results.text(self.dataset)
         else:
             results = "Model has not successfully executed; no results available."
 
-        return "\n\n".join([name, settings, results])
+        return "\n\n".join([title, settings, results]) + "\n"
+
+    def model_settings_text(self) -> str:
+        input_tbl = self.settings.tbl(self.degree_required)
+        prior_tbl = priors_tbl(
+            self.get_param_names(), self.get_priors_list(), self.settings.priors.is_bayesian
+        )
+        return multi_lstrip(
+            f"""
+        Input Summary:
+        {input_tbl}
+
+        Input Parameters:
+        {prior_tbl}
+        """
+        )
 
     def plot(self):
         """
@@ -141,7 +157,7 @@ class BmdModel(abc.ABC):
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
-        title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text()}"
+        title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text}"
         ax.set_title(title)
         ax.plot(
             self.results.plotting.dr_x,
@@ -170,6 +186,10 @@ class BmdModel(abc.ABC):
 
     @abc.abstractmethod
     def get_param_names(self) -> List[str]:
+        ...
+
+    @abc.abstractmethod
+    def get_priors_list(self) -> list[list]:
         ...
 
     def to_dict(self) -> Dict:

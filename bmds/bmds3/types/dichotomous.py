@@ -41,21 +41,28 @@ class DichotomousModelSettings(BaseModel):
     burnin: conint(ge=5, le=1000) = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
+    @property
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
-    def text(self) -> str:
-        return multi_lstrip(
-            f"""\
-        BMR Type: {self.bmr_type.name}
-        BMR: {self.bmr}
-        Alpha: {self.alpha}
-        Degree: {self.degree}
-        Samples: {self.samples}
-        Burn-in: {self.burnin}
-        Prior class: {self.priors.prior_class.name}
-        """
-        )
+    @property
+    def confidence_level(self) -> float:
+        return 1 - self.alpha
+
+    def tbl(self, show_degree: bool = True) -> str:
+        data = [
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+            ["Modeling approach", self.priors.prior_class.name],
+        ]
+
+        if show_degree:
+            data.append(["Degree", self.degree])
+
+        if self.priors.is_bayesian:
+            data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
+
+        return pretty_table(data, "")
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""

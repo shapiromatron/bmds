@@ -54,7 +54,7 @@ def multi_lstrip(txt: str) -> str:
 
 
 def pretty_table(data, headers):
-    return tabulate.tabulate(data, headers=headers, tablefmt="fancy_grid")
+    return tabulate.tabulate(data, headers=headers, tablefmt="fancy_outline")
 
 
 def ff(value) -> str:
