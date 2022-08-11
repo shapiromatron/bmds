@@ -239,7 +239,7 @@ class BMDModel(abc.ABC):
         else:
             self._add_plot_failure(ax)
 
-        ax.legend(**settings.LEGEND_OPTS)
+        ax.legend(**plotting.LEGEND_OPTS)
 
         return fig
 

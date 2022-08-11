@@ -3,7 +3,6 @@ from typing import ClassVar, List, Optional
 import numpy as np
 from pydantic import confloat, conint, root_validator
 from scipy import stats
-from simple_settings import settings
 
 from .. import constants, plotting
 from ..utils import str_list
@@ -163,7 +162,7 @@ class DichotomousDataset(DatasetBase):
         )
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
-        ax.legend(**settings.LEGEND_OPTS)
+        ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
     def serialize(self) -> "DichotomousDatasetSchema":

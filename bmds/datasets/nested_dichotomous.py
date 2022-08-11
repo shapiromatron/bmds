@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-from simple_settings import settings
 
 from .. import constants, plotting
 from ..utils import str_list
@@ -111,7 +110,7 @@ class NestedDichotomousDataset(DatasetBase):
         # TODO - replace in BMDS 3.4
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title(self._get_dataset_name())
-        ax.legend(**settings.LEGEND_OPTS)
+        ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
 

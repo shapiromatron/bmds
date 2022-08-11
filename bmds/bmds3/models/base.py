@@ -162,13 +162,21 @@ class BmdModel(abc.ABC):
         ax.plot(
             self.results.plotting.dr_x,
             self.results.plotting.dr_y,
-            label=self.name(),
+            label=f"{self.name()} (BMD, BMDL, BMDU)",
             **plotting.LINE_FORMAT,
         )
         plotting.add_bmr_lines(
             ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
         )
         ax.legend(**plotting.LEGEND_OPTS)
+
+        # reorder handles and labels
+        handles, labels = ax.get_legend_handles_labels()
+        order = [1, 0]
+        ax.legend(
+            [handles[idx] for idx in order], [labels[idx] for idx in order], **plotting.LEGEND_OPTS
+        )
+
         return fig
 
     def cdf_plot(self):

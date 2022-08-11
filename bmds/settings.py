@@ -16,9 +16,6 @@ MAXIMUM_POLYNOMIAL_ORDER = 8
 # smallest BMDL will be recommended.
 SUFFICIENTLY_CLOSE_BMDL = 3
 
-# Legend options applied to all plots which are generated in the software
-LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
-
 # Only required if running BMDS on a non-Windows computer
 if platform.system() != "Windows":
     BMDS_REQUEST_URL = os.environ.get("BMDS_REQUEST_URL")
