@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist
+.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist test test-mpl-regenerate
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -55,14 +55,10 @@ format:  ## Modify python code using black & show flake8 issues
 	@black . && isort -q . && flake8 .
 
 test:
-	# This runs all of the tests.
-	#
-	# To compare mpl to baseline images (without it test just make sure test executes)
-	#   $ py.test --mpl
-	#
-	# To generate baseline matplotlib images:
-	#   $ py.test --mpl-generate-path=tests/data/mpl
 	py.test
+
+test-mpl-regenerate:
+	py.test --mpl-generate-path=tests/data/mpl
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs clean

@@ -104,6 +104,12 @@ class TestBmdModelContinuous:
         ]:
             assert Model(cdataset2).settings.priors.prior_class is prior_class
 
+    @pytest.mark.mpl_image_compare
+    def test_bmds3_continuous(self, cdataset2):
+        model = continuous.Hill(dataset=cdataset2)
+        model.execute()
+        return model.plot()
+
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_increasing(cdataset2):
