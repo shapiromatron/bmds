@@ -165,7 +165,9 @@ class BmdModel(abc.ABC):
             label=self.name(),
             **plotting.LINE_FORMAT,
         )
-        plotting.add_bmr_lines(ax, self.results.bmd, self.results.bmdl, self.results.plotting.bmd_y)
+        plotting.add_bmr_lines(
+            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
+        )
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 

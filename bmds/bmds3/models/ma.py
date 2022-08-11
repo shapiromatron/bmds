@@ -87,7 +87,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             lw=4,
             zorder=50,
         )
-        plotting.add_bmr_lines(ax, results.bmd, results.bmdl, results.bmd_y)
+        plotting.add_bmr_lines(ax, results.bmd, results.bmd_y, results.bmdl, results.bmdu)
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
