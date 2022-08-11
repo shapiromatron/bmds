@@ -253,6 +253,7 @@ class BMDModel(abc.ABC):
 
     def _add_bmr_lines(self, ax):
         # add BMD and BMDL lines to plot.
+        LINE_FORMAT = dict(c="#BFC05D", lw=2, zorder=60)
         bmd = self.output["BMD"]
         bmdl = self.output["BMDL"]
         xdomain = ax.xaxis.get_view_interval()
@@ -266,10 +267,10 @@ class BMDModel(abc.ABC):
             xmin=0,
             xmax=(bmd - xdomain[0]) / xrng,
             label="BMR, BMD, BMDL",
-            **plotting.BMD_LINE_FORMAT,
+            **LINE_FORMAT,
         )
-        ax.axvline(bmd, ymin=0, ymax=(ys[0] - ydomain[0]) / yrng, **plotting.BMD_LINE_FORMAT)
-        ax.axvline(bmdl, ymin=0, ymax=(ys[0] - ydomain[0]) / yrng, **plotting.BMD_LINE_FORMAT)
+        ax.axvline(bmd, ymin=0, ymax=(ys[0] - ydomain[0]) / yrng, **LINE_FORMAT)
+        ax.axvline(bmdl, ymin=0, ymax=(ys[0] - ydomain[0]) / yrng, **LINE_FORMAT)
         ax.text(
             bmd + xrng * 0.01,
             ydomain[0] + yrng * 0.02,
