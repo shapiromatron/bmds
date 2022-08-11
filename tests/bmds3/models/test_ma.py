@@ -40,8 +40,7 @@ class TestDichotomousMa:
         assert np.allclose(session.model_average.results.priors, [0.9, 0.1])
         assert np.allclose(session.model_average.results.posteriors, [0.86, 0.14], atol=0.05)
 
-    pytest.mark.mpl_image_compare(remove_text=True)
-
+    @pytest.mark.mpl_image_compare(remove_text=True)
     def test_bmds3_dichotomous_ma_plot(self, ddataset2):
         session = bmds.session.Bmds330(dataset=ddataset2)
         session.add_model(bmds.constants.M_Logistic, {"priors": PriorClass.bayesian})
