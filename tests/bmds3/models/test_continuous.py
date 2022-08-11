@@ -104,7 +104,8 @@ class TestBmdModelContinuous:
         ]:
             assert Model(cdataset2).settings.priors.prior_class is prior_class
 
-    @pytest.mark.mpl_image_compare
+    pytest.mark.mpl_image_compare(remove_text=True)
+
     def test_bmds3_continuous(self, cdataset2):
         model = continuous.Hill(dataset=cdataset2)
         model.execute()

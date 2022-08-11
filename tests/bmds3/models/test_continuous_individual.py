@@ -26,7 +26,8 @@ class TestBmdModelContinuousIndividual:
             assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
             assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
-    @pytest.mark.mpl_image_compare
+    pytest.mark.mpl_image_compare(remove_text=True)
+
     def test_bmds3_continuous_individual(self, cidataset):
         model = continuous.Power(dataset=cidataset)
         model.execute()

@@ -4,23 +4,31 @@ import bmds
 
 
 # dataset tests
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_cdataset_plot(cdataset):
     return cdataset.plot()
 
 
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_cidataset_plot(cidataset):
     return cidataset.plot()
 
 
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_ddataset_plot(ddataset):
     return ddataset.plot()
 
 
 # test custom axes
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_cdataset_plot_customized():
     return bmds.ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
@@ -32,7 +40,9 @@ def test_cdataset_plot_customized():
     ).plot()
 
 
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_cidataset_plot_customized():
     # fmt: off
     return bmds.ContinuousIndividualDataset(
@@ -60,7 +70,9 @@ def test_cidataset_plot_customized():
     # fmt: on
 
 
-@pytest.mark.mpl_image_compare
+pytest.mark.mpl_image_compare(remove_text=True)
+
+
 def test_ddataset_plot_customized():
     return bmds.DichotomousDataset(
         doses=[0, 1.96, 5.69, 29.75],
