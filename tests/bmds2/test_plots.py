@@ -2,7 +2,6 @@ import pytest
 
 from bmds.bmds2 import models
 
-
 # continuous model tests
 pytest.mark.mpl_image_compare(remove_text=True)
 

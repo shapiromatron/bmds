@@ -2,7 +2,6 @@ import pytest
 
 import bmds
 
-
 # dataset tests
 pytest.mark.mpl_image_compare(remove_text=True)
 
