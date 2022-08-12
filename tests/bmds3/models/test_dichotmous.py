@@ -69,7 +69,7 @@ class TestBmdModelDichotomous:
 
     @pytest.mark.mpl_image_compare
     @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-    def test_bmds3_dichotomous(self, ddataset2):
+    def test_bmds3_dichotomous_plot(self, ddataset2):
         model = dichotomous.Logistic(dataset=ddataset2)
         model.execute()
         return model.plot()

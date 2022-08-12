@@ -1,6 +1,7 @@
 from typing import ClassVar, List, Optional
 
 import numpy as np
+from matplotlib.figure import Figure
 from pydantic import confloat, conint, root_validator
 from scipy import stats
 
@@ -129,7 +130,7 @@ class DichotomousDataset(DatasetBase):
             )
         return self._plot_data
 
-    def plot(self):
+    def plot(self) -> Figure:
         """
         Return a matplotlib figure of the dose-response dataset.
 
@@ -148,11 +149,8 @@ class DichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
+        ax = self.setup_plot()
         plot_data = self.plot_data()
-        fig = plotting.create_empty_figure()
-        ax = fig.gca()
-        ax.set_xlabel(self.get_xlabel())
-        ax.set_ylabel(self.get_ylabel())
         ax.errorbar(
             self.doses,
             plot_data.mean,
@@ -160,10 +158,8 @@ class DichotomousDataset(DatasetBase):
             label="Fraction affected ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
-        ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title(self._get_dataset_name())
         ax.legend(**plotting.LEGEND_OPTS)
-        return fig
+        return ax.get_figure()
 
     def serialize(self) -> "DichotomousDatasetSchema":
         return DichotomousDatasetSchema(
