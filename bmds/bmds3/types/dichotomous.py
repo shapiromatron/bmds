@@ -41,21 +41,28 @@ class DichotomousModelSettings(BaseModel):
     burnin: conint(ge=5, le=1000) = 20
     priors: Union[None, PriorClass, ModelPriors]  # if None; default used
 
+    @property
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
-    def text(self) -> str:
-        return multi_lstrip(
-            f"""\
-        BMR Type: {self.bmr_type.name}
-        BMR: {self.bmr}
-        Alpha: {self.alpha}
-        Degree: {self.degree}
-        Samples: {self.samples}
-        Burn-in: {self.burnin}
-        Prior class: {self.priors.prior_class.name}
-        """
-        )
+    @property
+    def confidence_level(self) -> float:
+        return 1 - self.alpha
+
+    def tbl(self, show_degree: bool = True) -> str:
+        data = [
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+            ["Modeling approach", self.priors.prior_class.name],
+        ]
+
+        if show_degree:
+            data.append(["Degree", self.degree])
+
+        if self.priors.is_bayesian:
+            data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
+
+        return pretty_table(data, "")
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
@@ -191,16 +198,16 @@ class DichotomousPgofResult(BaseModel):
         )
 
     def tbl(self, dataset: DichotomousDataset) -> str:
-        headers = "Dose|EstProb|Expected|Observed|Size|ScaledRes".split("|")
+        headers = "Dose|Size|Observed|Expected|Est Prob|Scaled Residual".split("|")
         data = []
         for dg in range(dataset.num_dose_groups):
             data.append(
                 [
                     dataset.doses[dg],
-                    self.expected[dg] / dataset.ns[dg],
-                    self.expected[dg],
-                    dataset.incidences[dg],
                     dataset.ns[dg],
+                    dataset.incidences[dg],
+                    self.expected[dg],
+                    self.expected[dg] / dataset.ns[dg],
                     self.residual[dg],
                 ]
             )
@@ -252,19 +259,26 @@ class DichotomousParameters(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
-        headers = "parm|type|initial|stdev|min|max|estimate|bounded".split("|")
+        headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
         data = []
-        for name, type, initial, stdev, min, max, value, bounded in zip(
+        for name, value, bounded, se, lower_ci, upper_ci in zip(
             self.names,
-            self.prior_type,
-            self.prior_initial_value,
-            self.prior_stdev,
-            self.prior_min_value,
-            self.prior_max_value,
             self.values,
             self.bounded,
+            self.se,
+            self.lower_ci,
+            self.upper_ci,
         ):
-            data.append([name, type, initial, stdev, min, max, value, BOOL_ICON[bounded]])
+            data.append(
+                (
+                    name,
+                    value,
+                    BOOL_ICON[bounded],
+                    "NA" if bounded else f"{se:g}",
+                    "NA" if bounded else f"{lower_ci:g}",
+                    "NA" if bounded else f"{upper_ci:g}",
+                )
+            )
         return pretty_table(data, headers)
 
 
@@ -289,7 +303,7 @@ class DichotomousAnalysisOfDeviance(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Model|LL|#parms|deviance|test DF|pval".split("|")
+        headers = "Model|Log Likelihood|# Params|Deviance|Test DOF|P-Value".split("|")
         data = []
         for i in range(len(self.names)):
             # manually format columns b/c tabulate won't format if first row text is str
@@ -300,7 +314,7 @@ class DichotomousAnalysisOfDeviance(BaseModel):
                     self.params[i],
                     f"{self.deviance[i]:g}" if i > 0 else "-",
                     f"{self.df[i]:g}" if i > 0 else "-",
-                    f"{self.p_value[i]:g}" if i > 0 else "N/A",
+                    f"{self.p_value[i]:g}" if i > 0 else "-",
                 ]
             )
         return pretty_table(data, headers)
@@ -371,27 +385,26 @@ class DichotomousResult(BaseModel):
         Summary:
         {self.tbl()}
 
-        Goodness of fit:
-        {self.gof.tbl(dataset)}
-
-        Parameters:
+        Model Parameters:
         {self.parameters.tbl()}
 
-        Deviances:
+        Goodness of Fit:
+        {self.gof.tbl(dataset)}
+
+        Analysis of Deviance:
         {self.deviance.tbl()}
         """
         )
 
     def tbl(self) -> str:
         data = [
-            ["BMDL", self.bmdl],
             ["BMD", self.bmd],
+            ["BMDL", self.bmdl],
             ["BMDU", self.bmdu],
             ["AIC", self.fit.aic],
-            ["LL", self.fit.loglikelihood],
-            ["model_df", self.fit.model_df],
-            ["p-value", self.gof.p_value],
-            ["DOF", self.gof.df],
+            ["Log Likelihood", self.fit.loglikelihood],
+            ["P-Value", self.gof.p_value],
+            ["Overall DOF", self.gof.df],
             ["Chi²", self.fit.chisq],
         ]
         return pretty_table(data, "")

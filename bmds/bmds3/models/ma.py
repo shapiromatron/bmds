@@ -55,7 +55,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         fig = dataset.plot()
         ax = fig.gca()
         ax.set_ylim(-0.05, 1.05)
-        title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text()}"
+        title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text}"
         ax.set_title(title)
         if colorize:
             color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)
@@ -76,19 +76,26 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
                 label=label,
                 c=next(color_cycle),
                 linestyle=next(line_cycle),
-                zorder=40,
+                zorder=100,
                 lw=2,
             )
         ax.plot(
             self.results.dr_x,
             self.results.dr_y,
-            label="Model average",
+            label="Model average (BMD, BMDL, BMDU)",
             c="#6470C0",
             lw=4,
-            zorder=50,
+            zorder=110,
         )
-        plotting.add_bmr_lines(ax, results.bmd, results.bmdl, results.bmd_y)
-        ax.legend(**plotting.LEGEND_OPTS)
+        plotting.add_bmr_lines(ax, results.bmd, results.bmd_y, results.bmdl, results.bmdu)
+
+        # reorder handles and labels
+        handles, labels = ax.get_legend_handles_labels()
+        order = [2, 0, 1]
+        ax.legend(
+            [handles[idx] for idx in order], [labels[idx] for idx in order], **plotting.LEGEND_OPTS
+        )
+
         return fig
 
 

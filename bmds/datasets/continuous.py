@@ -2,9 +2,9 @@ from typing import ClassVar, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 from pydantic import confloat, conint, root_validator
 from scipy import stats
-from simple_settings import settings
 
 from .. import constants, plotting
 from ..stats.anova import AnovaTests
@@ -146,7 +146,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             ul=[mean + err for mean, err in zip(self.means, errorbars)],
         )
 
-    def plot(self):
+    def plot(self) -> Figure:
         """
         Return a matplotlib figure of the dose-response dataset.
 
@@ -164,10 +164,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        fig = plotting.create_empty_figure()
-        ax = fig.gca()
-        ax.set_xlabel(self.get_xlabel())
-        ax.set_ylabel(self.get_ylabel())
+        ax = self.setup_plot()
         ax.errorbar(
             self.doses,
             self.means,
@@ -175,10 +172,8 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             label="Mean ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
-        ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title(self._get_dataset_name())
-        ax.legend(**settings.LEGEND_OPTS)
-        return fig
+        ax.legend(**plotting.LEGEND_OPTS)
+        return ax.get_figure()
 
     def serialize(self) -> "ContinuousDatasetSchema":
         anova = self.anova()
@@ -346,7 +341,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     def dataset_length(self):
         return len(self.individual_doses)
 
-    def plot(self):
+    def plot(self) -> Figure:
         """
         Return a matplotlib figure of the dose-response dataset.
 
@@ -365,20 +360,15 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        fig = plotting.create_empty_figure()
-        ax = fig.gca()
-        ax.set_xlabel(self.get_xlabel())
-        ax.set_ylabel(self.get_ylabel())
+        ax = self.setup_plot()
         ax.scatter(
             self.individual_doses,
             self.responses,
             label="Data",
             **plotting.DATASET_INDIVIDUAL_FORMAT,
         )
-        ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title(self._get_dataset_name())
-        ax.legend(**settings.LEGEND_OPTS)
-        return fig
+        ax.legend(**plotting.LEGEND_OPTS)
+        return ax.get_figure()
 
     def serialize(self) -> "ContinuousIndividualDatasetSchema":
         anova = self.anova()

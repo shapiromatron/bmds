@@ -1,7 +1,6 @@
-from typing import Optional
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt  # noqa
+from matplotlib.colors import to_rgba
 
 mpl.use("Agg")  # prevent matplotlib framework issues
 
@@ -10,14 +9,23 @@ __all__ = []
 PLOT_FIGSIZE = (8, 5)
 DPI = 100
 PLOT_MARGINS = 0.05
-DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k", capsize=3, lw=1, zorder=100)
-DATASET_INDIVIDUAL_FORMAT = dict(s=35, alpha=0.60, c="k")
-LEGEND_OPTS = dict(loc="best", fontsize=8, fancybox=True, frameon=True)
-LINE_FORMAT = dict(c="#6470C0", lw=3, zorder=50)
-INDIVIDUAL_MODEL_COLORS = ["#6e40aa", "#e7298a", "#1b9e77", "#cc7939", "#666666"]
+DATASET_POINT_FORMAT = dict(ms=7, fmt="o", c="k", capsize=3, lw=1, zorder=50)
+DATASET_INDIVIDUAL_FORMAT = dict(s=35, color=to_rgba("#ffffff", 0.5), edgecolors="black")
+LEGEND_OPTS = dict(loc="best", fontsize=9, frameon=True, facecolor="white", markerscale=0.5)
+LINE_FORMAT = dict(c="#6470C0", lw=3, zorder=100)
+INDIVIDUAL_MODEL_COLORS = ["#6e40aa", "#e7298a", "#1b9e77", "#b8a800", "#666666"]
 INDIVIDUAL_LINE_STYLES = ["solid", "dotted", "dashed", "dashdot"]
-BMD_LINE_FORMAT = dict(c="#BFC05D", lw=2, zorder=60)
 BMD_LABEL_FORMAT = dict(size=9)
+BMD_LINE_FORMAT = dict(
+    c="#6470C0",
+    markeredgecolor="white",
+    markeredgewidth=2,
+    fmt="d",
+    ecolor=to_rgba("#6470C0", 0.7),
+    ms=12,
+    elinewidth=7,
+    zorder=150,
+)
 FAILURE_MESSAGE_FORMAT = dict(
     style="italic",
     weight="bold",
@@ -38,32 +46,16 @@ def close_figure(fig):
     plt.close(fig)
 
 
-def add_bmr_lines(
-    ax, bmd: Optional[float] = None, bmdl: Optional[float] = None, bmd_y: Optional[float] = None
-):
-    xdomain = ax.xaxis.get_view_interval()
-    xrng = xdomain[1] - xdomain[0]
+def add_bmr_lines(ax, bmd: float, bmd_y: float, bmdl: float, bmdu: float):
+    if bmd <= 0:
+        return
 
-    if bmd and bmd > 0:
-        ax.plot([0, bmd], [bmd_y, bmd_y], **BMD_LINE_FORMAT)
-        ax.plot([bmd, bmd], [0, bmd_y], **BMD_LINE_FORMAT)
-        ax.text(
-            bmd + xrng * 0.01,
-            0,
-            "BMD",
-            label="BMR, BMD, BMDL",
-            horizontalalignment="left",
-            verticalalignment="center",
-            **BMD_LABEL_FORMAT,
-        )
+    lower = 0 if bmdl < 0 else bmd - bmdl
+    upper = 0 if bmdu < 0 else bmdu - bmd
 
-    if bmdl and bmdl > 0:
-        ax.plot([bmdl, bmdl], [0, bmd_y], **BMD_LINE_FORMAT)
-        ax.text(
-            bmdl - xrng * 0.01,
-            0,
-            "BMDL",
-            horizontalalignment="right",
-            verticalalignment="center",
-            **BMD_LABEL_FORMAT,
-        )
+    ax.errorbar(
+        bmd,
+        bmd_y,
+        xerr=[[lower], [upper]],
+        **BMD_LINE_FORMAT,
+    )

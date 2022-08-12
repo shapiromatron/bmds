@@ -28,7 +28,10 @@ class ModelPriors(BaseModel):
     priors: List[Prior]  # priors for main model
     variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        return self.tbl()
+
+    def tbl(self) -> str:
         headers = "name|type|initial|stdev|min|max".split("|")
         rows = [
             (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
@@ -86,6 +89,13 @@ class ModelPriors(BaseModel):
         priors = self.priors_list(degree, dist_type)
         return np.array(priors, dtype=np.float64).flatten("F")
 
+    @property
+    def is_bayesian(self) -> bool:
+        try:
+            return self.prior_class.is_bayesian
+        except ValueError:
+            raise NotImplementedError("Handle custom case")
+
 
 # lazy mapping; saves copy as requested
 _model_priors: Dict[str, ModelPriors] = {}
@@ -132,3 +142,17 @@ def get_continuous_prior(model: ContinuousModel, prior_class: PriorClass) -> Mod
         _load_model_priors()
     key = f"{Dtype.CONTINUOUS}-{model.id}-{prior_class}"
     return _model_priors[key].copy(deep=True)
+
+
+def priors_tbl(params: list[str], priors: list[list], is_bayesian: bool) -> str:
+    headers = []
+    rows = []
+    if is_bayesian:
+        headers = "Parameter|Distribution|Initial|Stdev|Min|Max"
+        for name, values in zip(params, priors):
+            rows.append((name, values[0].name, values[1], values[2], values[3], values[4]))
+    else:
+        headers = "Parameter|Initial|Min|Max"
+        for name, values in zip(params, priors):
+            rows.append((name, values[1], values[3], values[4]))
+    return pretty_table(rows, headers.split("|"))

@@ -147,6 +147,26 @@ class DistType(IntEnum):
     normal_ncv = 2
     log_normal = 3
 
+    @property
+    def distribution_type(self) -> str:
+        return _dt_name[self]
+
+    @property
+    def variance_model(self) -> str:
+        return _dt_variance_model[self]
+
+
+_dt_name = {
+    DistType.normal: "Normal",
+    DistType.normal_ncv: "Normal",
+    DistType.log_normal: "Lognormal",
+}
+_dt_variance_model = {
+    DistType.normal: "Constant variance",
+    DistType.normal_ncv: "Nonconstant variance",
+    DistType.log_normal: "Constant variance",
+}
+
 
 class PriorType(IntEnum):
     Uniform = 0
@@ -161,12 +181,26 @@ class PriorClass(IntEnum):
     custom = 3
 
     @property
-    def name(self):
-        return _pc_name_mapping[self]
+    def name(self) -> str:
+        return _pc_name[self]
+
+    @property
+    def restriction(self) -> str:
+        return _pc_restriction[self]
+
+    @property
+    def is_bayesian(self) -> bool:
+        if self == self.custom:
+            raise ValueError("Cannot determine")
+        return self == self.bayesian
 
 
-_pc_name_mapping = {
+_pc_name = {
     PriorClass.frequentist_unrestricted: "Frequentist unrestricted",
     PriorClass.frequentist_restricted: "Frequentist restricted",
     PriorClass.bayesian: "Bayesian",
+}
+_pc_restriction = {
+    PriorClass.frequentist_unrestricted: "Unrestricted",
+    PriorClass.frequentist_restricted: "Restricted",
 }

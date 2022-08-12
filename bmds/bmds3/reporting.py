@@ -251,7 +251,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     body = report.styles.tbl_body
 
     footnotes = TableFootnote()
-    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
+    tbl = report.document.add_table(len(session.models) + 1, 8, style=styles.table)
 
     write_cell(tbl.cell(0, 0), "Model", style=hdr)
     write_cell(tbl.cell(0, 1), "Prior Weights", style=hdr)
@@ -259,9 +259,8 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 3), "BMDL", style=hdr)
     write_cell(tbl.cell(0, 4), "BMD", style=hdr)
     write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
-    write_pvalue_header(tbl.cell(0, 6), style=hdr)
-    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
-    write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
 
     ma = session.model_average
     for idx, model in enumerate(session.models, start=1):
@@ -271,9 +270,8 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         write_cell(tbl.cell(idx, 3), model.results.bmdl, body)
         write_cell(tbl.cell(idx, 4), model.results.bmd, body)
         write_cell(tbl.cell(idx, 5), model.results.bmdu, body)
-        write_cell(tbl.cell(idx, 6), model.get_gof_pvalue(), body)
-        write_cell(tbl.cell(idx, 7), model.results.gof.roi, body)
-        write_cell(tbl.cell(idx, 8), model.results.gof.residual[0], body)
+        write_cell(tbl.cell(idx, 6), model.results.gof.roi, body)
+        write_cell(tbl.cell(idx, 7), model.results.gof.residual[0], body)
 
     if ma:
         idx = len(tbl.rows)
@@ -286,10 +284,9 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         write_cell(tbl.cell(idx, 5), ma.results.bmdu, body)
         write_cell(tbl.cell(idx, 6), "-", body)
         write_cell(tbl.cell(idx, 7), "-", body)
-        write_cell(tbl.cell(idx, 8), "-", body)
 
     # set column width
-    widths = np.array([1, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 1, 1])
+    widths = np.array([1, 0.7, 0.7, 0.7, 0.7, 0.7, 1, 1])
     widths = widths / (widths.sum() / report.styles.portrait_width)
     for width, col in zip(widths, tbl.columns):
         set_column_width(col, width)

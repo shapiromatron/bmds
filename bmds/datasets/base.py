@@ -2,8 +2,11 @@ import abc
 from typing import Dict, List, Optional, TypeVar
 
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from pydantic import BaseModel
 
+from .. import plotting
 from ..constants import ZEROISH, Dtype
 
 
@@ -44,8 +47,27 @@ class DatasetBase(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def plot(self):
+    def plot(self) -> Figure:
         ...
+
+    def setup_plot(self) -> Axes:
+        """
+        Return a matplotlib Axes of the dose-response dataset.
+        """
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(self.get_xlabel())
+        ax.set_ylabel(self.get_ylabel())
+        ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title(self._get_dataset_name())
+
+        # set x bounds based on input data
+        min_x = np.min(self.doses)
+        max_x = np.max(self.doses)
+        x_range = max_x - min_x
+        ax.set_xlim(min_x - 0.05 * x_range, max_x + 0.05 * x_range)
+
+        return ax
 
     @abc.abstractmethod
     def drop_dose(self):

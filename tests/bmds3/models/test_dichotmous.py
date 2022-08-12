@@ -50,7 +50,7 @@ class TestBmdModelDichotomous:
         model.execute()
         text = model.text()
         assert "Gamma" in text
-        assert "Goodness of fit:" in text
+        assert "Goodness of Fit:" in text
 
     @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_risk_type(self, ddataset2):
@@ -66,6 +66,13 @@ class TestBmdModelDichotomous:
 
         assert not np.isclose(resp1.bmd, resp2.bmd)
         assert resp1.bmd < resp2.bmd
+
+    @pytest.mark.mpl_image_compare
+    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+    def test_bmds3_dichotomous_plot(self, ddataset2):
+        model = dichotomous.Logistic(dataset=ddataset2)
+        model.execute()
+        return model.plot()
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
