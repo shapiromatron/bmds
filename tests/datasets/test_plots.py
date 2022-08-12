@@ -27,8 +27,11 @@ def test_cdataset_plot_customized():
         ns=[111, 142, 143, 93, 42],
         means=[2.112, 2.095, 1.956, 1.587, 1.254],
         stdevs=[0.235, 0.209, 0.231, 0.263, 0.159],
-        xlabel="Dose (μg/m³)",
-        ylabel="Relative liver weight (mg/kg)",
+        name="Example",
+        dose_units="μg/m³",
+        response_units="%",
+        dose_name="Dose",
+        response_name="Relative liver weight",
     ).plot()
 
 
@@ -54,8 +57,11 @@ def test_cidataset_plot_customized():
             10.368, 10.5176, 11.3168, 12.002, 12.1186, 12.6368,
             9.9572, 10.1347, 10.7743, 11.0571, 11.1564, 12.0368
         ],
-        xlabel="Dose (μg/m³)",
-        ylabel="Relative liver weight (mg/kg)",
+        name="Example",
+        dose_units="μg/m³",
+        response_units="%",
+        dose_name="Dose",
+        response_name="Relative liver weight",
     ).plot()
     # fmt: on
 
@@ -66,6 +72,9 @@ def test_ddataset_plot_customized():
         doses=[0, 1.96, 5.69, 29.75],
         ns=[75, 49, 50, 49],
         incidences=[5, 1, 3, 14],
-        xlabel="Dose (μg/m³)",
-        ylabel="Fraction affected (%)",
+        name="Example",
+        dose_units="μg/m³",
+        response_units="%",
+        dose_name="Dose",
+        response_name="Fraction observed",
     ).plot()
