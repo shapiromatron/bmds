@@ -451,18 +451,9 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("suff_stat", ctypes.c_bool),  # true if continuous summary, false if individual data
         ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
         ("doses", ctypes.POINTER(ctypes.c_double)),
-        (
-            "sd",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # SD of the group if suff_stat = true, null otherwise
-        (
-            "n_group",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # N for each group if suff_stat = true, null otherwise
-        (
-            "prior",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # a column order matrix px5 where p is the number of parameters
+        ("sd", ctypes.POINTER(ctypes.c_double)),  # SD of the group if suff_stat = true else null
+        ("n_group", ctypes.POINTER(ctypes.c_double)),  # group N if suff_stat = true else null
+        ("prior", ctypes.POINTER(ctypes.c_double)),  # column order matrix px5 where p # params
         ("BMD_type", ctypes.c_int),  # type of BMD
         ("isIncreasing", ctypes.c_bool),  # if the BMD is defined increasing or decreasing
         ("BMR", ctypes.c_double),  # benchmark response related to the BMD type
@@ -474,7 +465,25 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("burnin", ctypes.c_int),
         ("parms", ctypes.c_int),  # number of parameters
         ("prior_cols", ctypes.c_int),
+        ("transform_dose", ctypes.c_int),
     ]
+
+    def __init__(self, *args, **kwargs):
+        self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
+        self.Y = np.ctypeslib.as_ctypes(self.np_Y)
+
+        self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
+        self.doses = np.ctypeslib.as_ctypes(self.np_doses)
+
+        self.np_sd = np.array(kwargs.pop("sd"), dtype=np.double)
+        self.sd = np.ctypeslib.as_ctypes(self.np_sd)
+
+        self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
+        self.n_group = np.ctypeslib.as_ctypes(self.np_n_group)
+
+        self.np_prior = kwargs.pop("prior")
+        self.prior = np.ctypeslib.as_ctypes(self.np_prior)
+        super().__init__(*args, **kwargs)
 
     def __str__(self) -> str:
         sd = self.sd[: self.n] if self.suff_stat else []
@@ -501,6 +510,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             burnin: {self.burnin}
             parms: {self.parms}
             prior_cols: {self.prior_cols}
+            transform_dose: {self.transform_dose}
             """
         )
 
