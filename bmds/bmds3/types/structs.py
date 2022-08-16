@@ -39,16 +39,30 @@ class DichotomousAnalysisStruct(ctypes.Structure):
         ("prior_cols", ctypes.c_int),  # columns in the prior
     ]
 
+    def __init__(self, *args, **kwargs):
+        self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
+        self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
+        self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
+        self.np_prior = kwargs.pop("prior")
+        super().__init__(
+            *args,
+            Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            **kwargs,
+        )
+
     def __str__(self) -> str:
-        n_prior = self.parms * self.prior_cols
-        return dedent(
+        txt = dedent(
             f"""
             model: {self.model}
             n: {self.n}
             Y: {self.Y[:self.n]}
             doses: {self.doses[:self.n]}
             n_group: {self.n_group[:self.n]}
-            prior<{n_prior}>: {self.prior[:n_prior]}
+            prior<{self.parms},{self.prior_cols}>:
+            <PRIOR>
             BMD_type: {self.BMD_type}
             BMR: {self.BMR}
             alpha: {self.alpha}
@@ -59,6 +73,8 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             prior_cols: {self.prior_cols}
             """
         )
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        return txt
 
 
 class DichotomousModelResultStruct(ctypes.Structure):
@@ -470,35 +486,32 @@ class ContinuousAnalysisStruct(ctypes.Structure):
 
     def __init__(self, *args, **kwargs):
         self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
-        self.Y = np.ctypeslib.as_ctypes(self.np_Y)
-
         self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
-        self.doses = np.ctypeslib.as_ctypes(self.np_doses)
-
         self.np_sd = np.array(kwargs.pop("sd"), dtype=np.double)
-        self.sd = np.ctypeslib.as_ctypes(self.np_sd)
-
         self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
-        self.n_group = np.ctypeslib.as_ctypes(self.np_n_group)
-
         self.np_prior = kwargs.pop("prior")
-        self.prior = np.ctypeslib.as_ctypes(self.np_prior)
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            *args,
+            Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            sd=self.np_sd.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            **kwargs,
+        )
 
     def __str__(self) -> str:
-        sd = self.sd[: self.n] if self.suff_stat else []
-        n_group = self.n_group[: self.n] if self.suff_stat else []
-        n_prior = self.parms * self.prior_cols
-        return dedent(
+        txt = dedent(
             f"""
             model: {self.model}
             n: {self.n}
             suff_stat: {self.suff_stat}
-            Y: {self.Y[:self.n]}
-            doses: {self.doses[:self.n]}
-            sd: {sd}
-            n_group: {n_group}
-            prior<{n_prior}>: {self.prior[:n_prior]}
+            Y: {self.np_Y}
+            doses: {self.np_doses}
+            sd: {self.np_sd}
+            n_group: {self.np_n_group}
+            prior<{self.parms, self.prior_cols}>
+            <PRIOR>
             BMD_type: {self.BMD_type}
             isIncreasing: {self.isIncreasing}
             BMR: {self.BMR}
@@ -513,6 +526,8 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             transform_dose: {self.transform_dose}
             """
         )
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        return txt
 
 
 class ContinuousModelResultStruct(ctypes.Structure):
