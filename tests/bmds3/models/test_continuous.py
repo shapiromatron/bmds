@@ -246,6 +246,8 @@ def test_decreasing_lognormal(negative_cdataset):
     for model in session.models:
         assert model.results.has_completed is True
         assert model.results.bmd == pytest.approx(100, rel=0.05)
+        # TODO - passes on mac; fails on debian - which is correct?
+        #      - on debian, has_completed is False
 
     session = bmds.session.Bmds330(dataset=negative_cdataset)
     settings = dict(disttype=DistType.log_normal)
