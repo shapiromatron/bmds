@@ -18,8 +18,6 @@ def get_version(dll: ctypes.CDLL) -> str:
 
 # DICHOTOMOUS MODELS
 # ------------------
-
-
 class DichotomousAnalysisStruct(ctypes.Structure):
 
     _fields_ = [
@@ -87,10 +85,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
-        (
-            "bmd_dist",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # bmd distribution (dist_numE x 2) matrix
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
         ("bmd", ctypes.c_double),  # the central estimate of the BMD
     ]
 
@@ -281,30 +276,26 @@ class DichotomousStructs(NamedTuple):
 
 # DICHOTOMOUS MODEL AVERAGING
 # ---------------------------
-
-
 class DichotomousMAAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("nmodels", ctypes.c_int),
-        (
-            "priors",
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-        ),
+        ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
         ("nparms", ctypes.POINTER(ctypes.c_int)),
         ("actual_parms", ctypes.POINTER(ctypes.c_int)),
-        (
-            "prior_cols",
-            ctypes.POINTER(ctypes.c_int),
-        ),
+        ("prior_cols", ctypes.POINTER(ctypes.c_int)),
         ("models", ctypes.POINTER(ctypes.c_int)),
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __init__(self, models: List[DichotomousAnalysisStruct], model_weights: npt.NDArray):
-        super().__init__()
+        self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
+        self.np_actual_parms = self.np_nparms.copy()
+        self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
+        self.np_models = np.array([model.model for model in models], dtype=np.int32)
+        self.np_modelPriors = model_weights
 
         # list of floats
-        priors = [
+        _priors = [
             list_t_c(
                 model.prior[: model.parms * model.prior_cols],
                 ctypes.c_double,
@@ -312,26 +303,18 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
             for model in models
         ]
 
-        # pointer of pointers
-        priors2 = list_t_c(
-            [ctypes.cast(el, ctypes.POINTER(ctypes.c_double)) for el in priors],
-            ctypes.POINTER(ctypes.c_double),
+        super().__init__(
+            nmodels=len(models),
+            nparms=self.np_nparms.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            actual_parms=self.np_actual_parms.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            prior_cols=self.np_prior_cols.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            models=self.np_models.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            modelPriors=model_weights.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            priors=list_t_c(
+                [ctypes.cast(el, ctypes.POINTER(ctypes.c_double)) for el in _priors],
+                ctypes.POINTER(ctypes.c_double),
+            ),
         )
-
-        self.nmodels = len(models)
-        self.priors = priors2
-
-        self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
-        self.np_actual_parms = self.np_nparms.copy()
-        self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
-        self.np_models = np.array([model.model for model in models], dtype=np.int32)
-        self.np_modelPriors = model_weights
-
-        self.nparms = np.ctypeslib.as_ctypes(self.np_nparms)
-        self.actual_parms = np.ctypeslib.as_ctypes(self.np_actual_parms)
-        self.prior_cols = np.ctypeslib.as_ctypes(self.np_prior_cols)
-        self.models = np.ctypeslib.as_ctypes(self.np_models)
-        self.modelPriors = np.ctypeslib.as_ctypes(self.np_modelPriors)
 
     def __str__(self) -> str:
         return dedent(
@@ -458,8 +441,6 @@ class DichotomousMAStructs(NamedTuple):
 
 # CONTINUOUS MODELS
 # -----------------
-
-
 class ContinuousAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("model", ctypes.c_int),
@@ -542,10 +523,7 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd", ctypes.c_double),  # The bmd at the maximum
-        (
-            "bmd_dist",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # bmd distribution (dist_numE x 2) matrix
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
     ]
 
     def __init__(self, *args, **kwargs):
