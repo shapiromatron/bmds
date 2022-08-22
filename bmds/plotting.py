@@ -20,10 +20,10 @@ BMD_LINE_FORMAT = dict(
     c="#6470C0",
     markeredgecolor="white",
     markeredgewidth=2,
-    fmt="d",
-    ecolor=to_rgba("#6470C0", 0.7),
-    ms=12,
-    elinewidth=7,
+    fmt="o",
+    ecolor=to_rgba("#6470C0", 0.6),
+    ms=10,
+    elinewidth=15,
     zorder=150,
 )
 FAILURE_MESSAGE_FORMAT = dict(
