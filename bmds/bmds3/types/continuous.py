@@ -12,7 +12,7 @@ from bmds.datasets.continuous import ContinuousDatasets
 from ...constants import BOOL_ICON, Dtype
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -137,11 +137,8 @@ class ContinuousAnalysis(BaseModel):
         return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
     def to_c(self) -> ContinuousStructs:
-        priors = self._priors_array()
-        priors_pointer = np.ctypeslib.as_ctypes(priors)
         nparms = self.num_params
-
-        struct = ContinuousAnalysisStruct(
+        inputs = dict(
             BMD_type=ctypes.c_int(self.BMD_type),
             BMR=ctypes.c_double(self.BMR),
             alpha=ctypes.c_double(self.alpha),
@@ -151,28 +148,36 @@ class ContinuousAnalysis(BaseModel):
             isIncreasing=ctypes.c_bool(self.is_increasing),
             model=ctypes.c_int(self.model.id),
             parms=ctypes.c_int(nparms),
-            prior=priors_pointer,
+            prior=self._priors_array(),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
             tail_prob=ctypes.c_double(self.tail_prob),
+            transform_dose=ctypes.c_int(0),
         )
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
-            struct.suff_stat = ctypes.c_bool(True)
-            struct.Y = list_t_c(self.dataset.means, ctypes.c_double)
-            struct.doses = list_t_c(self.dataset.doses, ctypes.c_double)
-            struct.n = ctypes.c_int(self.dataset.num_dose_groups)
-            struct.n_group = list_t_c(self.dataset.ns, ctypes.c_double)
-            struct.sd = list_t_c(self.dataset.stdevs, ctypes.c_double)
+            inputs.update(
+                suff_stat=ctypes.c_bool(True),
+                n=self.dataset.num_dose_groups,
+                doses=self.dataset.doses,
+                n_group=self.dataset.ns,
+                Y=self.dataset.means,
+                sd=self.dataset.stdevs,
+            )
+
         elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
-            struct.suff_stat = ctypes.c_bool(False)
-            struct.Y = list_t_c(self.dataset.responses, ctypes.c_double)
-            struct.doses = list_t_c(self.dataset.individual_doses, ctypes.c_double)
-            struct.n = ctypes.c_int(len(self.dataset.individual_doses))
-            struct.n_group = list_t_c([], ctypes.c_double)
-            struct.sd = list_t_c([], ctypes.c_double)
+            inputs.update(
+                suff_stat=ctypes.c_bool(False),
+                n=len(self.dataset.individual_doses),
+                doses=self.dataset.individual_doses,
+                n_group=[],
+                Y=self.dataset.responses,
+                sd=[],
+            )
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
+
+        struct = ContinuousAnalysisStruct(**inputs)
 
         return ContinuousStructs(
             analysis=struct,

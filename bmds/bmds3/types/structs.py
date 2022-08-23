@@ -18,8 +18,6 @@ def get_version(dll: ctypes.CDLL) -> str:
 
 # DICHOTOMOUS MODELS
 # ------------------
-
-
 class DichotomousAnalysisStruct(ctypes.Structure):
 
     _fields_ = [
@@ -39,16 +37,30 @@ class DichotomousAnalysisStruct(ctypes.Structure):
         ("prior_cols", ctypes.c_int),  # columns in the prior
     ]
 
+    def __init__(self, *args, **kwargs):
+        self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
+        self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
+        self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
+        self.np_prior = kwargs.pop("prior")
+        super().__init__(
+            *args,
+            Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            **kwargs,
+        )
+
     def __str__(self) -> str:
-        n_prior = self.parms * self.prior_cols
-        return dedent(
+        txt = dedent(
             f"""
             model: {self.model}
             n: {self.n}
             Y: {self.Y[:self.n]}
             doses: {self.doses[:self.n]}
             n_group: {self.n_group[:self.n]}
-            prior<{n_prior}>: {self.prior[:n_prior]}
+            prior<{self.parms},{self.prior_cols}>:
+            <PRIOR>
             BMD_type: {self.BMD_type}
             BMR: {self.BMR}
             alpha: {self.alpha}
@@ -59,6 +71,8 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             prior_cols: {self.prior_cols}
             """
         )
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        return txt
 
 
 class DichotomousModelResultStruct(ctypes.Structure):
@@ -71,10 +85,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
-        (
-            "bmd_dist",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # bmd distribution (dist_numE x 2) matrix
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
         ("bmd", ctypes.c_double),  # the central estimate of the BMD
     ]
 
@@ -265,30 +276,26 @@ class DichotomousStructs(NamedTuple):
 
 # DICHOTOMOUS MODEL AVERAGING
 # ---------------------------
-
-
 class DichotomousMAAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("nmodels", ctypes.c_int),
-        (
-            "priors",
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-        ),
+        ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
         ("nparms", ctypes.POINTER(ctypes.c_int)),
         ("actual_parms", ctypes.POINTER(ctypes.c_int)),
-        (
-            "prior_cols",
-            ctypes.POINTER(ctypes.c_int),
-        ),
+        ("prior_cols", ctypes.POINTER(ctypes.c_int)),
         ("models", ctypes.POINTER(ctypes.c_int)),
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __init__(self, models: List[DichotomousAnalysisStruct], model_weights: npt.NDArray):
-        super().__init__()
+        self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
+        self.np_actual_parms = self.np_nparms.copy()
+        self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
+        self.np_models = np.array([model.model for model in models], dtype=np.int32)
+        self.np_modelPriors = model_weights
 
         # list of floats
-        priors = [
+        _priors = [
             list_t_c(
                 model.prior[: model.parms * model.prior_cols],
                 ctypes.c_double,
@@ -296,26 +303,18 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
             for model in models
         ]
 
-        # pointer of pointers
-        priors2 = list_t_c(
-            [ctypes.cast(el, ctypes.POINTER(ctypes.c_double)) for el in priors],
-            ctypes.POINTER(ctypes.c_double),
+        super().__init__(
+            nmodels=len(models),
+            nparms=self.np_nparms.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            actual_parms=self.np_actual_parms.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            prior_cols=self.np_prior_cols.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            models=self.np_models.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            modelPriors=model_weights.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            priors=list_t_c(
+                [ctypes.cast(el, ctypes.POINTER(ctypes.c_double)) for el in _priors],
+                ctypes.POINTER(ctypes.c_double),
+            ),
         )
-
-        self.nmodels = len(models)
-        self.priors = priors2
-
-        self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
-        self.np_actual_parms = self.np_nparms.copy()
-        self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
-        self.np_models = np.array([model.model for model in models], dtype=np.int32)
-        self.np_modelPriors = model_weights
-
-        self.nparms = np.ctypeslib.as_ctypes(self.np_nparms)
-        self.actual_parms = np.ctypeslib.as_ctypes(self.np_actual_parms)
-        self.prior_cols = np.ctypeslib.as_ctypes(self.np_prior_cols)
-        self.models = np.ctypeslib.as_ctypes(self.np_models)
-        self.modelPriors = np.ctypeslib.as_ctypes(self.np_modelPriors)
 
     def __str__(self) -> str:
         return dedent(
@@ -442,8 +441,6 @@ class DichotomousMAStructs(NamedTuple):
 
 # CONTINUOUS MODELS
 # -----------------
-
-
 class ContinuousAnalysisStruct(ctypes.Structure):
     _fields_ = [
         ("model", ctypes.c_int),
@@ -451,18 +448,9 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("suff_stat", ctypes.c_bool),  # true if continuous summary, false if individual data
         ("Y", ctypes.POINTER(ctypes.c_double)),  # observed data means or actual data
         ("doses", ctypes.POINTER(ctypes.c_double)),
-        (
-            "sd",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # SD of the group if suff_stat = true, null otherwise
-        (
-            "n_group",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # N for each group if suff_stat = true, null otherwise
-        (
-            "prior",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # a column order matrix px5 where p is the number of parameters
+        ("sd", ctypes.POINTER(ctypes.c_double)),  # SD of the group if suff_stat = true else null
+        ("n_group", ctypes.POINTER(ctypes.c_double)),  # group N if suff_stat = true else null
+        ("prior", ctypes.POINTER(ctypes.c_double)),  # column order matrix px5 where p # params
         ("BMD_type", ctypes.c_int),  # type of BMD
         ("isIncreasing", ctypes.c_bool),  # if the BMD is defined increasing or decreasing
         ("BMR", ctypes.c_double),  # benchmark response related to the BMD type
@@ -474,22 +462,37 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("burnin", ctypes.c_int),
         ("parms", ctypes.c_int),  # number of parameters
         ("prior_cols", ctypes.c_int),
+        ("transform_dose", ctypes.c_int),
     ]
 
+    def __init__(self, *args, **kwargs):
+        self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
+        self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
+        self.np_sd = np.array(kwargs.pop("sd"), dtype=np.double)
+        self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
+        self.np_prior = kwargs.pop("prior")
+        super().__init__(
+            *args,
+            Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            sd=self.np_sd.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            **kwargs,
+        )
+
     def __str__(self) -> str:
-        sd = self.sd[: self.n] if self.suff_stat else []
-        n_group = self.n_group[: self.n] if self.suff_stat else []
-        n_prior = self.parms * self.prior_cols
-        return dedent(
+        txt = dedent(
             f"""
             model: {self.model}
             n: {self.n}
             suff_stat: {self.suff_stat}
-            Y: {self.Y[:self.n]}
-            doses: {self.doses[:self.n]}
-            sd: {sd}
-            n_group: {n_group}
-            prior<{n_prior}>: {self.prior[:n_prior]}
+            Y: {self.np_Y}
+            doses: {self.np_doses}
+            sd: {self.np_sd}
+            n_group: {self.np_n_group}
+            prior<{self.parms, self.prior_cols}>
+            <PRIOR>
             BMD_type: {self.BMD_type}
             isIncreasing: {self.isIncreasing}
             BMR: {self.BMR}
@@ -501,8 +504,11 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             burnin: {self.burnin}
             parms: {self.parms}
             prior_cols: {self.prior_cols}
+            transform_dose: {self.transform_dose}
             """
         )
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        return txt
 
 
 class ContinuousModelResultStruct(ctypes.Structure):
@@ -517,10 +523,7 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("model_df", ctypes.c_double),  # Used model degrees of freedom
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd", ctypes.c_double),  # The bmd at the maximum
-        (
-            "bmd_dist",
-            ctypes.POINTER(ctypes.c_double),
-        ),  # bmd distribution (dist_numE x 2) matrix
+        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
     ]
 
     def __init__(self, *args, **kwargs):

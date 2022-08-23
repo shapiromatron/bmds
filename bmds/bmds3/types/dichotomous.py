@@ -9,7 +9,7 @@ from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, list_t_c, residual_of_interest
+from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
 from .priors import ModelPriors, PriorClass
 from .structs import (
     BmdsResultsStruct,
@@ -111,16 +111,14 @@ class DichotomousAnalysis(BaseModel):
         return self.priors.to_c(degree=degree)
 
     def to_c(self) -> DichotomousStructs:
-        priors = self._priors_array()
-        priors_pointer = np.ctypeslib.as_ctypes(priors)
         return DichotomousStructs(
             analysis=DichotomousAnalysisStruct(
                 model=ctypes.c_int(self.model.id),
                 n=ctypes.c_int(self.dataset.num_dose_groups),
-                Y=list_t_c(self.dataset.incidences, ctypes.c_double),
-                doses=list_t_c(self.dataset.doses, ctypes.c_double),
-                n_group=list_t_c(self.dataset.ns, ctypes.c_double),
-                prior=priors_pointer,
+                Y=self.dataset.incidences,
+                doses=self.dataset.doses,
+                n_group=self.dataset.ns,
+                prior=self._priors_array(),
                 BMD_type=ctypes.c_int(self.BMD_type),
                 BMR=ctypes.c_double(self.BMR),
                 alpha=ctypes.c_double(self.alpha),
