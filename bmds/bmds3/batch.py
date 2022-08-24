@@ -14,7 +14,7 @@ from .sessions import BmdsSession
 
 class ExecutionResponse(NamedTuple):
     success: bool
-    content: Dict
+    content: Union[dict, list[dict]]
 
 
 class BmdsSessionBatch:
@@ -110,7 +110,11 @@ class BmdsSessionBatch:
         batch = cls()
         for result in tqdm(results, desc="Building batch..."):
             if result.success:
-                batch.sessions.append(BmdsSession.from_serialized(result.content))
+                if isinstance(result.content, list):
+                    for item in result.content:
+                        batch.sessions.append(BmdsSession.from_serialized(item))
+                else:
+                    batch.sessions.append(BmdsSession.from_serialized(result.content))
             else:
                 batch.errors.append(result.content)
 
