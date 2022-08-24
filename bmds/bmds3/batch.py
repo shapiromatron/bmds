@@ -1,6 +1,8 @@
 import json
 import os
+import zipfile
 from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Union
 
 import pandas as pd
@@ -136,3 +138,29 @@ class BmdsSessionBatch:
         sessions_data = json.loads(data)
         sessions = [BmdsSession.from_serialized(session) for session in sessions_data]
         return BmdsSessionBatch(sessions=sessions)
+
+    @classmethod
+    def load(cls, archive: Path) -> "BmdsSessionBatch":
+        """Load a BmdsSession from a compressed zipfile
+
+        Args:
+            fn (Path): The zipfile path
+
+        Returns:
+            BmdsSessionBatch: An instance of this session
+        """
+        with zipfile.ZipFile(archive) as zf:
+            with zf.open("data.json") as f:
+                data = f.read()
+        return BmdsSessionBatch.deserialize(data)
+
+    def save(self, archive: Path):
+        """Save BmdsSession to a compressed zipfile
+
+        Args:
+            fn (Path): The zipfile path
+        """
+        with zipfile.ZipFile(
+            archive, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+        ) as zf:
+            zf.writestr("data.json", data=self.serialize())
