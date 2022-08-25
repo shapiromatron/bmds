@@ -360,11 +360,11 @@ class ContinuousGof(BaseModel):
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
-    def tbl(self) -> str:
-        mean_headers = (
-            "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual".split("|")
-        )
-        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD".split("|")
+    def tbl(self, disttype: constants.DistType) -> str:
+        mean_headers = "Dose|Size|Observed Mean|Calculated Median|Estimated Median|Scaled Residual"
+        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD"
+        if disttype == constants.DistType.log_normal:
+            sd_headers = sd_headers.replace("ted SD", "ted GSD")
         mean_data = []
         sd_data = []
         for idx in range(len(self.dose)):
@@ -387,7 +387,12 @@ class ContinuousGof(BaseModel):
                     self.est_sd[idx],
                 ]
             )
-        return pretty_table(mean_data, mean_headers) + "\n" + pretty_table(sd_data, sd_headers)
+        return "\n".join(
+            [
+                pretty_table(mean_data, mean_headers.split("|")),
+                pretty_table(sd_data, sd_headers.split("|")),
+            ]
+        )
 
     def n(self) -> int:
         return self.dose.size
@@ -497,7 +502,7 @@ class ContinuousResult(BaseModel):
         ]
         return pretty_table(data, "")
 
-    def text(self, dataset: ContinuousDatasets) -> str:
+    def text(self, dataset: ContinuousDatasets, settings: ContinuousModelSettings) -> str:
         return multi_lstrip(
             f"""
         Summary:
@@ -507,7 +512,7 @@ class ContinuousResult(BaseModel):
         {self.parameters.tbl()}
 
         Goodness of Fit:
-        {self.gof.tbl()}
+        {self.gof.tbl(disttype=settings.disttype)}
 
         Likelihoods of Interest:
         {self.deviance.tbl()}

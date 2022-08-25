@@ -125,7 +125,7 @@ class BmdModel(abc.ABC):
         title = self.name().center(20) + "\n════════════════════"
         settings = self.model_settings_text()
         if self.has_results:
-            results = self.results.text(self.dataset)
+            results = self.results.text(self.dataset, self.settings)
         else:
             results = "Model has not successfully executed; no results available."
 

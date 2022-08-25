@@ -377,7 +377,7 @@ class DichotomousResult(BaseModel):
             plotting=plotting,
         )
 
-    def text(self, dataset: DichotomousDataset) -> str:
+    def text(self, dataset: DichotomousDataset, settings: DichotomousModelSettings) -> str:
         return multi_lstrip(
             f"""
         Summary:
