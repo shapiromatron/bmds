@@ -28,7 +28,7 @@ def write_citation(report: Report, session: BmdsSession, header_level: int):
     report.document.add_paragraph(text, styles.fixed_width)
 
 
-def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
+def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True):
     """Write dataset table to word report
 
     Args:
@@ -166,6 +166,35 @@ def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
     # write footnote
     if len(footnotes) > 0:
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
+
+
+def write_inputs_table(report: Report, session: BmdsSession):
+    """Add an input summary table to the document.
+
+    Assumes that all settings are consistent across models in a session; finds the model
+    with the maximum multistage/polynomial degree to write inputs.
+
+    Args:
+        report (Report): A report object
+        session (BmdsSession): the current model session
+
+    Raises:
+        ValueError: if no models are available in the session
+    """
+    if len(session.models) == 0:
+        raise ValueError("No models available")
+
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    degrees = [model.settings.degree for model in session.models]
+    model_index = degrees.index(max(degrees))
+    rows = session.models[model_index].settings.docx_table_data()
+    tbl = report.document.add_table(len(rows), 2, style=styles.table)
+    for idx, (key, value) in enumerate(rows):
+        write_cell(tbl.cell(idx, 0), key, style=hdr)
+        write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
 def write_pvalue_header(cell, style):

@@ -27,8 +27,8 @@ class DichotomousRiskType(IntEnum):
 
 
 _bmr_text_map = {
-    DichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
-    DichotomousRiskType.AddedRisk: "{:.0%} added risk",
+    DichotomousRiskType.ExtraRisk: "{:.0%} Extra Risk",
+    DichotomousRiskType.AddedRisk: "{:.0%} Added Risk",
 }
 
 
@@ -63,6 +63,14 @@ class DichotomousModelSettings(BaseModel):
             data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
 
         return pretty_table(data, "")
+
+    def docx_table_data(self) -> list:
+        return [
+            ["Setting", "Value"],
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+            ["Maximum Multistage Degree", self.degree],
+        ]
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""

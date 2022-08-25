@@ -35,13 +35,13 @@ class ContinuousRiskType(IntEnum):
 
 
 _bmr_text_map = {
-    ContinuousRiskType.AbsoluteDeviation: "{} absolute deviation",
-    ContinuousRiskType.StandardDeviation: "{} standard deviation",
-    ContinuousRiskType.RelativeDeviation: "{:.0%} relative deviation",
-    ContinuousRiskType.PointEstimate: "{} point estimation",
-    ContinuousRiskType.Extra: "{} extra",
-    ContinuousRiskType.HybridExtra: "{} hybrid extra",
-    ContinuousRiskType.HybridAdded: "{} hybrid added",
+    ContinuousRiskType.AbsoluteDeviation: "{} Absolute Deviation",
+    ContinuousRiskType.StandardDeviation: "{} Standard Deviation",
+    ContinuousRiskType.RelativeDeviation: "{:.0%} Relative Deviation",
+    ContinuousRiskType.PointEstimate: "{} Point Estimation",
+    ContinuousRiskType.Extra: "{} Extra",
+    ContinuousRiskType.HybridExtra: "{} Hybrid Extra",
+    ContinuousRiskType.HybridAdded: "{} Hybrid Added",
 }
 
 
@@ -69,10 +69,14 @@ class ContinuousModelSettings(BaseModel):
     def confidence_level(self) -> float:
         return 1 - self.alpha
 
+    @property
+    def distribution(self) -> str:
+        return f"{self.disttype.distribution_type} + {self.disttype.variance_model}"
+
     def tbl(self, show_degree: bool = True) -> str:
         data = [
             ["BMR", self.bmr_text],
-            ["Distribution", f"{self.disttype.distribution_type} + {self.disttype.variance_model}"],
+            ["Distribution", self.distribution],
             ["Modeling Direction", self.direction],
             ["Confidence Level", self.confidence_level],
             ["Tail Probability", self.tail_prob],
@@ -86,6 +90,17 @@ class ContinuousModelSettings(BaseModel):
             data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
 
         return pretty_table(data, "")
+
+    def docx_table_data(self) -> list:
+        return [
+            ["Setting", "Value"],
+            ["BMR Type", self.bmr_text],
+            ["Distribution", self.distribution],
+            ["Modeling Direction", self.direction],
+            ["Maximum Polynomial Degree", self.degree],
+            ["Confidence Level", self.confidence_level],
+            ["Tail Probability", self.tail_prob],
+        ]
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
