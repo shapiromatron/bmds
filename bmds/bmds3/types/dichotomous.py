@@ -286,6 +286,29 @@ class DichotomousParameters(BaseModel):
             )
         return pretty_table(data, headers)
 
+    def rows(self, extras: Dict) -> List[Dict]:
+        rows = []
+        for i in range(len(self.names)):
+            rows.append(
+                {
+                    **extras,
+                    **dict(
+                        name=self.names[i],
+                        value=self.values[i],
+                        se=self.se[i],
+                        lower_ci=self.lower_ci[i],
+                        upper_ci=self.upper_ci[i],
+                        bounded=self.bounded[i],
+                        prior_type=self.prior_type[i],
+                        prior_initial_value=self.prior_initial_value[i],
+                        prior_stdev=self.prior_stdev[i],
+                        prior_min_value=self.prior_min_value[i],
+                        prior_max_value=self.prior_max_value[i],
+                    ),
+                }
+            )
+        return rows
+
 
 class DichotomousAnalysisOfDeviance(BaseModel):
     names: List[str]

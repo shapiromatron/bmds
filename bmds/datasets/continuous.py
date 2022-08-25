@@ -198,6 +198,14 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             dataset_means=str_list(self.means),
         )
 
+    def rows(self, extras: dict) -> list[dict]:
+        """Return a list of rows; one for each item in a dataset"""
+        metadata = self.metadata.dict()
+        return [
+            {**extras, **metadata, **dict(dose=dose, n=n, mean=mean, stdev=stdev)}
+            for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
+        ]
+
 
 class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
@@ -391,6 +399,14 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
             dataset_stdevs=str_list(self.stdevs),
             dataset_means=str_list(self.means),
         )
+
+    def rows(self, extras: dict) -> list[dict]:
+        """Return a list of rows; one for each item in a dataset"""
+        metadata = self.metadata.dict()
+        return [
+            {**extras, **metadata, **dict(dose=dose, response=response)}
+            for dose, response in zip(self.individual_doses, self.responses)
+        ]
 
 
 class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
