@@ -1,7 +1,9 @@
 import json
 import os
+import zipfile
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, Dict, List, NamedTuple, Optional
+from pathlib import Path
+from typing import Callable, List, NamedTuple, Optional, Union
 
 import pandas as pd
 from tqdm import tqdm
@@ -14,11 +16,11 @@ from .sessions import BmdsSession
 
 class ExecutionResponse(NamedTuple):
     success: bool
-    content: Dict
+    content: Union[dict, list[dict]]
 
 
 class BmdsSessionBatch:
-    def __init__(self, sessions: List[BmdsSession] = None):
+    def __init__(self, sessions: Optional[List[BmdsSession]] = None):
         if sessions is None:
             sessions = []
         self.sessions: List[BmdsSession] = sessions
@@ -77,15 +79,16 @@ class BmdsSessionBatch:
         return json.dumps([session.to_dict() for session in self.sessions])
 
     @classmethod
-    def multiprocess_execute(
+    def execute(
         cls, datasets: List[DatasetBase], runner: Callable, nprocs: Optional[int] = None
     ) -> "BmdsSessionBatch":
-        """Execute sessions using multiple cores.
+        """Execute sessions using multiple processors.
 
         Args:
             datasets (List[DatasetBase]): The datasets to execute
             runner (Callable[dataset] -> ExecutionResponse): The method which executes a session
-            nprocs (Optional[int]): the number of processors to use; defaults to N-1
+            nprocs (Optional[int]): the number of processors to use; defaults to N-1. If 1 is
+                specified; the batch session is called linearly without a process pool
 
         Returns:
             A BmdsSessionBatch with sessions executed.
@@ -93,24 +96,33 @@ class BmdsSessionBatch:
         if nprocs is None:
             nprocs = max(os.cpu_count() - 1, 1)
 
-        # adapted from https://gist.github.com/alexeygrigorev/79c97c1e9dd854562df9bbeea76fc5de
-        with ProcessPoolExecutor(max_workers=nprocs) as executor:
-            with tqdm(total=len(datasets), desc="Executing...") as progress:
+        results: List[ExecutionResponse] = []
+        if nprocs == 1:
+            # run without a ProcessPoolExecutor; useful for debugging
+            for dataset in tqdm(datasets, desc="Executing..."):
+                results.append(runner(dataset))
+        else:
+            # adapted from https://gist.github.com/alexeygrigorev/79c97c1e9dd854562df9bbeea76fc5de
+            with ProcessPoolExecutor(max_workers=nprocs) as executor:
+                with tqdm(total=len(datasets), desc="Executing...") as progress:
 
-                futures = []
-                for dataset in datasets:
-                    future = executor.submit(runner, dataset)
-                    future.add_done_callback(lambda p: progress.update())
-                    futures.append(future)
+                    futures = []
+                    for dataset in datasets:
+                        future = executor.submit(runner, dataset)
+                        future.add_done_callback(lambda p: progress.update())
+                        futures.append(future)
 
-                results: List[ExecutionResponse] = []
-                for future in futures:
-                    results.append(future.result())
+                    for future in futures:
+                        results.append(future.result())
 
         batch = cls()
         for result in tqdm(results, desc="Building batch..."):
             if result.success:
-                batch.sessions.append(BmdsSession.from_serialized(result.content))
+                if isinstance(result.content, list):
+                    for item in result.content:
+                        batch.sessions.append(BmdsSession.from_serialized(item))
+                else:
+                    batch.sessions.append(BmdsSession.from_serialized(result.content))
             else:
                 batch.errors.append(result.content)
 
@@ -126,3 +138,29 @@ class BmdsSessionBatch:
         sessions_data = json.loads(data)
         sessions = [BmdsSession.from_serialized(session) for session in sessions_data]
         return BmdsSessionBatch(sessions=sessions)
+
+    @classmethod
+    def load(cls, archive: Path) -> "BmdsSessionBatch":
+        """Load a BmdsSession from a compressed zipfile
+
+        Args:
+            fn (Path): The zipfile path
+
+        Returns:
+            BmdsSessionBatch: An instance of this session
+        """
+        with zipfile.ZipFile(archive) as zf:
+            with zf.open("data.json") as f:
+                data = f.read()
+        return BmdsSessionBatch.deserialize(data)
+
+    def save(self, archive: Path):
+        """Save BmdsSession to a compressed zipfile
+
+        Args:
+            fn (Path): The zipfile path
+        """
+        with zipfile.ZipFile(
+            archive, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+        ) as zf:
+            zf.writestr("data.json", data=self.serialize())

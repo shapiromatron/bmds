@@ -4,8 +4,7 @@ from pathlib import Path
 import pytest
 
 import bmds
-from bmds import constants
-from bmds.bmds3 import BmdsSession, BmdsSessionBatch
+from bmds.bmds3 import BmdsSession
 
 from .run3 import RunBmds3
 
@@ -104,55 +103,3 @@ class TestBmds330:
         citations = session.citation()
         assert citations["paper"].startswith("Pham LL")
         assert citations["software"].startswith("Python BMDS.")
-
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-class TestBmdsSessionBatch:
-    def test_exports_dichotomous(self, ddataset2, rewrite_data_files):
-        datasets = [ddataset2]
-        batch = BmdsSessionBatch()
-        for dataset in datasets:
-            session = bmds.session.Bmds330(dataset=dataset)
-            session.add_default_models()
-            session.execute_and_recommend()
-            batch.sessions.append(session)
-
-            session = bmds.session.Bmds330(dataset=dataset)
-            session.add_default_bayesian_models()
-            session.execute()
-            batch.sessions.append(session)
-
-        # check serialization/deserialization
-        data = batch.serialize()
-        batch2 = batch.deserialize(data)
-        assert len(batch2.sessions) == len(batch.sessions)
-
-        # check exports
-        df = batch.to_df()
-        docx = batch.to_docx()
-
-        if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-d-batch.xlsx").expanduser(), index=False)
-            docx.save(Path("~/Desktop/bmds3-d-batch.docx").expanduser())
-
-    def test_exports_continuous(self, cdataset2, cidataset, rewrite_data_files):
-        datasets = [cdataset2, cidataset]
-        batch = BmdsSessionBatch()
-        for dataset in datasets:
-            session = bmds.session.Bmds330(dataset=dataset)
-            session.add_model(constants.M_Power)
-            session.execute_and_recommend()
-            batch.sessions.append(session)
-
-        # check serialization/deserialization
-        data = batch.serialize()
-        batch2 = batch.deserialize(data)
-        assert len(batch2.sessions) == len(batch.sessions)
-
-        # check exports
-        df = batch.to_df()
-        docx = batch.to_docx()
-
-        if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-c-batch.xlsx").expanduser(), index=False)
-            docx.save(Path("~/Desktop/bmds3-c-batch.docx").expanduser())

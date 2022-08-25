@@ -140,9 +140,7 @@ class Power(BmdModelContinuous):
             PriorClass.frequentist_restricted,
         ]:
             is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
-            g = model_settings.priors.get_prior("g")
             v = model_settings.priors.get_prior("v")
-            g.stdev = 0.1 if is_cv else 1
             v.min_value = -100 if is_cv else -10_000
             v.max_value = 100 if is_cv else 10_000
 
@@ -157,24 +155,6 @@ class Power(BmdModelContinuous):
 
 class Hill(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_hill.value
-
-    def get_model_settings(
-        self, dataset: ContinuousDatasets, settings: InputModelSettings
-    ) -> ContinuousModelSettings:
-        model_settings = super().get_model_settings(dataset, settings)
-
-        if model_settings.priors.prior_class in [
-            PriorClass.frequentist_unrestricted,
-            PriorClass.frequentist_restricted,
-        ]:
-            v = model_settings.priors.get_prior("v")
-            n = model_settings.priors.get_prior("n")
-            is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
-            n.stdev = 1.2 if is_cv else 0.1823  # ln(1.2)
-            v.min_value = 0 if model_settings.is_increasing else -100
-            v.max_value = 100 if model_settings.is_increasing else 0
-
-        return model_settings
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]
@@ -211,11 +191,9 @@ class Polynomial(BmdModelContinuous):
             # update mins
             g.min_value = -1e6 if is_cv else 0
             beta1.min_value = -1e6 if is_cv else -18
-            betaN.min_value = -1e6 if is_cv else -18
             # update maxes
             g.max_value = 1e6 if is_cv else 1_000
             beta1.max_value = 1e6 if is_cv else 18
-            betaN.max_value = 1e6 if is_cv else 18
             # for restricted, betas in one direction
             if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
                 attr = "min_value" if model_settings.is_increasing else "max_value"
