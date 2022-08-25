@@ -26,9 +26,9 @@ class TestPriorOverrides:
             # fmt: on
         ]:
             model = continuous.Polynomial(cdataset2, settings)
-            betaN = model.settings.priors.get_prior("betaN")
-            assert betaN.min_value == priors[0], settings
-            assert betaN.max_value == priors[1], settings
+            beta1 = model.settings.priors.get_prior("beta1")
+            assert beta1.min_value == priors[0], settings
+            assert beta1.max_value == priors[1], settings
 
     def test_power(self, cdataset2):
         for settings, priors in [
