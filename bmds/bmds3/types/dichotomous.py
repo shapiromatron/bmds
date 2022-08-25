@@ -75,11 +75,10 @@ class DichotomousModelSettings(BaseModel):
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            bmr=self.bmr,
-            bmr_type=self.bmr_type.name,
-            alpha=self.alpha,
+            bmr=self.bmr_text,
+            confidence_level=self.confidence_level,
             degree=self.degree,
-            prior_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 
@@ -424,8 +423,8 @@ class DichotomousResult(BaseModel):
             aic=self.fit.aic,
             loglikelihood=self.fit.loglikelihood,
             p_value=self.gof.p_value,
-            model_df=self.fit.model_df,
-            total_df=self.fit.total_df,
+            overall_dof=self.gof.df,
+            bic_equiv=self.fit.bic_equiv,
             chi_squared=self.fit.chisq,
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],

@@ -94,7 +94,7 @@ class ContinuousModelSettings(BaseModel):
     def docx_table_data(self) -> list:
         return [
             ["Setting", "Value"],
-            ["BMR Type", self.bmr_text],
+            ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
             ["Modeling Direction", self.direction],
             ["Maximum Polynomial Degree", self.degree],
@@ -105,14 +105,13 @@ class ContinuousModelSettings(BaseModel):
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            is_increasing=self.is_increasing,
-            bmr=self.bmr,
-            bmr_type=self.bmr_type.name,
-            alpha=self.alpha,
-            tail_prop=self.tail_prob,
+            bmr=self.bmr_text,
+            distribution=self.distribution,
+            direction=self.direction,
+            confidence_level=self.confidence_level,
+            tail_probability=self.tail_prob,
             degree=self.degree,
-            dist_type=self.disttype.name,
-            prior_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 
@@ -566,9 +565,7 @@ class ContinuousResult(BaseModel):
             p_value2=self.tests.p_values[1],
             p_value3=self.tests.p_values[2],
             p_value4=self.tests.p_values[3],
-            model_df=self.fit.model_df,
-            total_df=self.fit.total_df,
-            chi_squared=self.fit.chisq,
+            model_dof=self.tests.dfs[3],
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],
         )
