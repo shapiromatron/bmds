@@ -12,20 +12,6 @@ from ..run3 import RunBmds3
 
 
 class TestPriorOverrides:
-    def test_hill(self, cdataset2):
-        for settings, priors in [
-            ({"is_increasing": True}, (0, 100, 1.2)),
-            ({"is_increasing": False}, (-100, 0, 1.2)),
-            ({"disttype": DistType.normal}, (0, 100, 1.2)),
-            ({"disttype": DistType.normal_ncv}, (0, 100, 0.1823)),
-        ]:
-            model = continuous.Hill(cdataset2, settings)
-            v = model.settings.priors.get_prior("v")
-            n = model.settings.priors.get_prior("n")
-            assert v.min_value == priors[0], settings
-            assert v.max_value == priors[1], settings
-            assert n.stdev == priors[2], settings
-
     def test_poly(self, cdataset2, negative_cdataset):
         for settings, priors in [
             # fmt: off
@@ -50,9 +36,7 @@ class TestPriorOverrides:
             ({"disttype": DistType.normal_ncv}, [1, -10000, 10000]),
         ]:
             model = continuous.Power(cdataset2, settings)
-            g = model.settings.priors.get_prior("g")
             v = model.settings.priors.get_prior("v")
-            assert g.stdev == priors[0]
             assert v.min_value == priors[1]
             assert v.max_value == priors[2]
 

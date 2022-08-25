@@ -78,36 +78,19 @@ def continuous_priors(f: StringIO):
     f.write("## Continuous\n\n")
 
     write_model(f, continuous.ExponentialM3)
-    print_c_model(continuous.ExponentialM3, {"priors": PriorClass.frequentist_restricted})
-    print_c_model(continuous.ExponentialM3, {"priors": PriorClass.bayesian})
+    print_c_model(continuous.ExponentialM3, dict(priors=PriorClass.frequentist_restricted))
+    print_c_model(continuous.ExponentialM3, dict(priors=PriorClass.bayesian))
     write_break(f)
 
     write_model(f, continuous.ExponentialM5)
-    print_c_model(continuous.ExponentialM5, {"priors": PriorClass.frequentist_restricted})
-    print_c_model(continuous.ExponentialM5, {"priors": PriorClass.bayesian})
+    print_c_model(continuous.ExponentialM5, dict(priors=PriorClass.frequentist_restricted))
+    print_c_model(continuous.ExponentialM5, dict(priors=PriorClass.bayesian))
     write_break(f)
 
     write_model(f, continuous.Hill)
-    for settings in [
-        # fmt: off
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal, is_increasing=True),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal, is_increasing=False),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal, is_increasing=True),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal, is_increasing=False),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv , is_increasing=True),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv, is_increasing=False),
-
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal, is_increasing=True),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal, is_increasing=False),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.log_normal, is_increasing=True),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.log_normal, is_increasing=False),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv , is_increasing=True),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv, is_increasing=False),
-
-        dict(priors=PriorClass.bayesian),
-        # fmt: on
-    ]:
-        print_c_model(continuous.Hill, settings)
+    print_c_model(continuous.Hill, dict(priors=PriorClass.frequentist_restricted))
+    print_c_model(continuous.Hill, dict(priors=PriorClass.frequentist_unrestricted))
+    print_c_model(continuous.Hill, dict(priors=PriorClass.bayesian))
     write_break(f)
 
     write_model(f, continuous.Linear)
