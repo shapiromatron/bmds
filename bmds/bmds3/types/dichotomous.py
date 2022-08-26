@@ -10,7 +10,7 @@ from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
-from .priors import ModelPriors, PriorClass
+from .priors import ModelPriors, PriorClass, PriorType
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -298,12 +298,12 @@ class DichotomousParameters(BaseModel):
                         se=self.se[i],
                         lower_ci=self.lower_ci[i],
                         upper_ci=self.upper_ci[i],
-                        bounded=self.bounded[i],
-                        prior_type=self.prior_type[i],
-                        prior_initial_value=self.prior_initial_value[i],
-                        prior_stdev=self.prior_stdev[i],
-                        prior_min_value=self.prior_min_value[i],
-                        prior_max_value=self.prior_max_value[i],
+                        bounded=bool(self.bounded[i]),
+                        initial_distribution=PriorType(self.prior_type[i]).name,
+                        initial_value=self.prior_initial_value[i],
+                        initial_stdev=self.prior_stdev[i],
+                        initial_min_value=self.prior_min_value[i],
+                        initial_max_value=self.prior_max_value[i],
                     ),
                 }
             )
