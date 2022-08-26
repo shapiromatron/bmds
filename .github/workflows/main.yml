@@ -18,9 +18,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: loc
+        shell: bash
         run: |
-          sudo apt-get install -y cloc
-          make loc
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            apt-get install -y cloc
+            make loc
+          fi
       - name: Install dependencies
         run: |
           pip install -U pip wheel
