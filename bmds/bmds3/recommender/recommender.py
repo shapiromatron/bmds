@@ -85,12 +85,9 @@ class RecommenderResults(BaseModel):
     model_notes: List[Dict[int, List[str]]] = []
 
     def bin_text(self, index: int) -> str:
-        model_bin = self.model_bin[index]
-        text = BIN_TEXT_BMDS3[model_bin]
-        if model_bin is LogicBin.NO_CHANGE:
-            rec = "Recommended" if self.recommended_model_index == index else "Alternate"
-            text = f"{text} - {rec}"
-        return text
+        if self.recommended_model_index == index:
+            return f"Recommended - Lowest {self.recommended_model_variable.upper()}"
+        return BIN_TEXT_BMDS3[self.model_bin[index]]
 
     def notes_text(self, index: int) -> str:
         notes = self.model_notes[index].values()

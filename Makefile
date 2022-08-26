@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist test test-mpl test-mpl-regenerate
+.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist loc test test-mpl test-mpl-regenerate
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -62,6 +62,14 @@ test-mpl:  ## Run all tests; compare matplotlib figures
 
 test-mpl-regenerate:  ## Regenerate matplotlib figures in tests
 	py.test --mpl-generate-path=tests/data/mpl
+
+loc: ## Generate lines of code report
+	@cloc \
+		--exclude-dir=build,dist,notebooks,venv \
+		--exclude-ext=json,yaml,svg,toml,ini \
+		--vcs=git \
+		--counted loc-files.txt \
+		.
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs clean

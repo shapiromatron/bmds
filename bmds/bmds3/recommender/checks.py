@@ -296,11 +296,10 @@ class VarianceFit(Check):
     def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         constant_variance = model.settings.disttype != DistType.normal_ncv
         test = 2 if constant_variance else 3
+        model_str = "Constant" if constant_variance else "Nonconstant"
         pvalue = model.results.tests.p_values[test - 1]
         if is_valid_number(pvalue) and pvalue < rule_settings.threshold:
-            return (
-                f"Variance model poorly fits dataset (p-value {test} < {rule_settings.threshold})"
-            )
+            return f"{model_str} variance test failed (Test {test} p-value < {rule_settings.threshold})"
 
 
 class VarianceType(Check):
@@ -310,9 +309,9 @@ class VarianceType(Check):
         p_value2 = model.results.tests.p_values[1]
         if is_valid_number(p_value2):
             if constant_variance and p_value2 < rule_settings.threshold:
-                return f"Incorrect variance model (p-value 2 < {rule_settings.threshold})"
+                return f"Incorrect variance model (Test 2 p-value < {rule_settings.threshold})"
             if not constant_variance and p_value2 > rule_settings.threshold:
-                return f"Incorrect variance model (p-value 2 > {rule_settings.threshold})"
+                return f"Incorrect variance model (Test 2 p-value > {rule_settings.threshold})"
 
 
 class NoDegreesOfFreedom(Check):

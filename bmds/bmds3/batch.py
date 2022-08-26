@@ -38,6 +38,7 @@ class BmdsSessionBatch:
         dataset_format_long: bool = True,
         all_models: bool = False,
         bmd_cdf_table: bool = False,
+        session_inputs_table: bool = False,
     ):
         """Append each session to a single document
 
@@ -48,6 +49,9 @@ class BmdsSessionBatch:
             dataset_format_long (bool, default True): long or wide dataset table format
             all_models (bool, default False):  Show all models, not just selected
             bmd_cdf_table (bool, default False): Export BMD CDF table
+            session_inputs_table (bool, default False): Write an inputs table for a session,
+                assuming a single model's input settings are representative of all models in a
+                session, which may not always be true
 
         Returns:
             A python docx.Document object with content added.
@@ -63,6 +67,7 @@ class BmdsSessionBatch:
                 dataset_format_long=dataset_format_long,
                 all_models=all_models,
                 bmd_cdf_table=bmd_cdf_table,
+                session_inputs_table=session_inputs_table,
             )
 
         if citation and len(self.sessions) > 0:
