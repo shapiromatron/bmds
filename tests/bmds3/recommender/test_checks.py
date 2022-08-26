@@ -80,6 +80,10 @@ class TestChecks:
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Abs(Residual of interest) greater than 2.0"
 
+    def test_gof(self, ddataset):
+        # TODO - here
+        # pass
+
     def test_variance_type(self, cdataset):
         model = mock.MagicMock()
         settings = Rule(

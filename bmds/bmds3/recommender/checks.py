@@ -175,6 +175,10 @@ class GoodnessOfFit(ShouldBeGreaterThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Optional[Number]:
+        # only run test if DOF is > 0
+        dof = get_dof(dataset, model.results)
+        if dof <= constants.ZEROISH:
+            return None
         return get_gof_pvalue(dataset, model.results)
 
 
@@ -318,7 +322,7 @@ class NoDegreesOfFreedom(Check):
     @classmethod
     def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = get_dof(dataset, model.results)
-        if not value > constants.ZEROISH:
+        if not value >= constants.ZEROISH:
             return "Zero degrees of freedom; saturated model"
 
 
