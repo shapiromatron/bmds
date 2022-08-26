@@ -253,6 +253,7 @@ class BmdsSession:
         dataset_format_long: bool = True,
         all_models: bool = False,
         bmd_cdf_table: bool = False,
+        session_inputs_table: bool = False,
     ):
         """Return a Document object with the session executed
 
@@ -263,6 +264,9 @@ class BmdsSession:
             dataset_format_long (bool, default True): long or wide dataset table format
             all_models (bool, default False):  Show all models, not just selected
             bmd_cdf_table (bool, default False): Export BMD CDF table
+            session_inputs_table (bool, default False): Write an inputs table for a session,
+                assuming a single model's input settings are representative of all models in a
+                session, which may not always be true
 
         Returns:
             A python docx.Document object with content added.
@@ -270,11 +274,23 @@ class BmdsSession:
         if report is None:
             report = Report.build_default()
 
+        # remove empty first paragraph, if one exists
+        if len(report.document.paragraphs) > 0:
+            p = report.document.paragraphs[0]
+            if not p.text and not p.runs:
+                el = p._element
+                el.getparent().remove(el)
+                p._p = p._element = None
+
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Session results", h1)
-        report.document.add_paragraph("Input dataset", h2)
-        reporting.write_dataset_tbl(report, self.dataset, dataset_format_long)
+        report.document.add_paragraph("Session Results", h1)
+        report.document.add_paragraph("Input Dataset", h2)
+        reporting.write_dataset_table(report, self.dataset, dataset_format_long)
+
+        if session_inputs_table:
+            report.document.add_paragraph("Input Settings", h2)
+            reporting.write_inputs_table(report, self)
 
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
@@ -282,17 +298,17 @@ class BmdsSession:
             if self.model_average:
                 reporting.plot_bma(report, self)
             if all_models:
-                report.document.add_paragraph("Individual model results", h2)
+                report.document.add_paragraph("Individual Model Results", h2)
                 reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
 
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
             reporting.write_frequentist_table(report, self)
             if all_models:
-                report.document.add_paragraph("Individual model results", h2)
+                report.document.add_paragraph("Individual Model Results", h2)
                 reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
             else:
-                report.document.add_paragraph("Selected model", h2)
+                report.document.add_paragraph("Selected Model", h2)
                 if self.selected.model:
                     reporting.write_model(
                         report, self.selected.model, bmd_cdf_table, header_level + 2

@@ -105,20 +105,23 @@ class TestChecks:
         settings = Rule(
             rule_class=RuleClass.variance_fit, failure_bin=LogicBin.FAILURE, threshold=0.1
         )
-        for disttype, pvalues, bin in [
+        for disttype, pvalues, bin, message in [
+            # fmt: off
             # pass if test 2 > 0.1
-            (DistType.normal, [1, 0.09, 1, 1], LogicBin.FAILURE),
-            (DistType.log_normal, [1, 0.09, 1, 1], LogicBin.FAILURE),
-            (DistType.normal, [0, 0.11, 0, 0], LogicBin.NO_CHANGE),
-            (DistType.log_normal, [0, 0.11, 0, 0], LogicBin.NO_CHANGE),
+            (DistType.normal, [1, 0.09, 1, 1], LogicBin.FAILURE, "Constant variance test failed (Test 2 p-value < 0.1)"),
+            (DistType.log_normal, [1, 0.09, 1, 1], LogicBin.FAILURE, "Constant variance test failed (Test 2 p-value < 0.1)"),
+            (DistType.normal, [0, 0.11, 0, 0], LogicBin.NO_CHANGE, ""),
+            (DistType.log_normal, [0, 0.11, 0, 0], LogicBin.NO_CHANGE, ""),
             # pass if test 3 > 0.1
-            (DistType.normal_ncv, [1, 1, 0.09, 1], LogicBin.FAILURE),
-            (DistType.normal_ncv, [0, 0, 0.11, 0], LogicBin.NO_CHANGE),
+            (DistType.normal_ncv, [1, 1, 0.09, 1], LogicBin.FAILURE, "Nonconstant variance test failed (Test 3 p-value < 0.1)"),
+            (DistType.normal_ncv, [0, 0, 0.11, 0], LogicBin.NO_CHANGE, ""),
+            # fmt: on
         ]:
             model.settings.disttype = disttype
             model.results.tests.p_values = pvalues
             resp = checks.VarianceFit.check(cdataset, model, settings)
             assert resp.logic_bin == bin
+            assert resp.message == message
 
     def test_zero_df(self, ddataset):
         model = mock.MagicMock()

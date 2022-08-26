@@ -10,7 +10,7 @@ from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
-from .priors import ModelPriors, PriorClass
+from .priors import ModelPriors, PriorClass, PriorType
 from .structs import (
     BmdsResultsStruct,
     DichotomousAnalysisStruct,
@@ -27,8 +27,8 @@ class DichotomousRiskType(IntEnum):
 
 
 _bmr_text_map = {
-    DichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
-    DichotomousRiskType.AddedRisk: "{:.0%} added risk",
+    DichotomousRiskType.ExtraRisk: "{:.0%} Extra Risk",
+    DichotomousRiskType.AddedRisk: "{:.0%} Added Risk",
 }
 
 
@@ -64,14 +64,21 @@ class DichotomousModelSettings(BaseModel):
 
         return pretty_table(data, "")
 
+    def docx_table_data(self) -> list:
+        return [
+            ["Setting", "Value"],
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+            ["Maximum Multistage Degree", self.degree],
+        ]
+
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            bmr=self.bmr,
-            bmr_type=self.bmr_type.name,
-            alpha=self.alpha,
+            bmr=self.bmr_text,
+            confidence_level=self.confidence_level,
             degree=self.degree,
-            prior_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 
@@ -279,6 +286,29 @@ class DichotomousParameters(BaseModel):
             )
         return pretty_table(data, headers)
 
+    def rows(self, extras: Dict) -> List[Dict]:
+        rows = []
+        for i in range(len(self.names)):
+            rows.append(
+                {
+                    **extras,
+                    **dict(
+                        name=self.names[i],
+                        value=self.values[i],
+                        se=self.se[i],
+                        lower_ci=self.lower_ci[i],
+                        upper_ci=self.upper_ci[i],
+                        bounded=bool(self.bounded[i]),
+                        initial_distribution=PriorType(self.prior_type[i]).name,
+                        initial_value=self.prior_initial_value[i],
+                        initial_stdev=self.prior_stdev[i],
+                        initial_min_value=self.prior_min_value[i],
+                        initial_max_value=self.prior_max_value[i],
+                    ),
+                }
+            )
+        return rows
+
 
 class DichotomousAnalysisOfDeviance(BaseModel):
     names: List[str]
@@ -377,7 +407,7 @@ class DichotomousResult(BaseModel):
             plotting=plotting,
         )
 
-    def text(self, dataset: DichotomousDataset) -> str:
+    def text(self, dataset: DichotomousDataset, settings: DichotomousModelSettings) -> str:
         return multi_lstrip(
             f"""
         Summary:
@@ -416,8 +446,8 @@ class DichotomousResult(BaseModel):
             aic=self.fit.aic,
             loglikelihood=self.fit.loglikelihood,
             p_value=self.gof.p_value,
-            model_df=self.fit.model_df,
-            total_df=self.fit.total_df,
+            overall_dof=self.gof.df,
+            bic_equiv=self.fit.bic_equiv,
             chi_squared=self.fit.chisq,
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],

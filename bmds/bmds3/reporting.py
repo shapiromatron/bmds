@@ -28,7 +28,7 @@ def write_citation(report: Report, session: BmdsSession, header_level: int):
     report.document.add_paragraph(text, styles.fixed_width)
 
 
-def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
+def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True):
     """Write dataset table to word report
 
     Args:
@@ -168,6 +168,35 @@ def write_dataset_tbl(report: Report, dataset: DatasetBase, long: bool = True):
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 
+def write_inputs_table(report: Report, session: BmdsSession):
+    """Add an input summary table to the document.
+
+    Assumes that all settings are consistent across models in a session; finds the model
+    with the maximum multistage/polynomial degree to write inputs.
+
+    Args:
+        report (Report): A report object
+        session (BmdsSession): the current model session
+
+    Raises:
+        ValueError: if no models are available in the session
+    """
+    if len(session.models) == 0:
+        raise ValueError("No models available")
+
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    degrees = [model.settings.degree for model in session.models]
+    model_index = degrees.index(max(degrees))
+    rows = session.models[model_index].settings.docx_table_data()
+    tbl = report.document.add_table(len(rows), 2, style=styles.table)
+    for idx, (key, value) in enumerate(rows):
+        write_cell(tbl.cell(idx, 0), key, style=hdr)
+        write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
+
+
 def write_pvalue_header(cell, style):
     # write _P_-Value cell; requires run for italics
     p = cell.paragraphs[0]
@@ -251,7 +280,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     body = report.styles.tbl_body
 
     footnotes = TableFootnote()
-    tbl = report.document.add_table(len(session.models) + 1, 8, style=styles.table)
+    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
 
     write_cell(tbl.cell(0, 0), "Model", style=hdr)
     write_cell(tbl.cell(0, 1), "Prior Weights", style=hdr)
@@ -259,8 +288,9 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 3), "BMDL", style=hdr)
     write_cell(tbl.cell(0, 4), "BMD", style=hdr)
     write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
-    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
-    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 6), "Unnormalized Log Posterior Probability", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
     ma = session.model_average
     for idx, model in enumerate(session.models, start=1):
@@ -270,8 +300,9 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         write_cell(tbl.cell(idx, 3), model.results.bmdl, body)
         write_cell(tbl.cell(idx, 4), model.results.bmd, body)
         write_cell(tbl.cell(idx, 5), model.results.bmdu, body)
-        write_cell(tbl.cell(idx, 6), model.results.gof.roi, body)
-        write_cell(tbl.cell(idx, 7), model.results.gof.residual[0], body)
+        write_cell(tbl.cell(idx, 6), model.results.fit.bic_equiv, body)
+        write_cell(tbl.cell(idx, 7), model.results.gof.roi, body)
+        write_cell(tbl.cell(idx, 8), model.results.gof.residual[0], body)
 
     if ma:
         idx = len(tbl.rows)
@@ -284,9 +315,10 @@ def write_bayesian_table(report: Report, session: BmdsSession):
         write_cell(tbl.cell(idx, 5), ma.results.bmdu, body)
         write_cell(tbl.cell(idx, 6), "-", body)
         write_cell(tbl.cell(idx, 7), "-", body)
+        write_cell(tbl.cell(idx, 8), "-", body)
 
     # set column width
-    widths = np.array([1, 0.7, 0.7, 0.7, 0.7, 0.7, 1, 1])
+    widths = np.array([1.1, 0.9, 0.9, 0.9, 0.9, 0.9, 1, 1, 1])
     widths = widths / (widths.sum() / report.styles.portrait_width)
     for width, col in zip(widths, tbl.columns):
         set_column_width(col, width)

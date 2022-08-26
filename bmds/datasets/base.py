@@ -130,6 +130,10 @@ class DatasetBase(abc.ABC):
             dataset_response_units=self.metadata.response_units,
         )
 
+    def rows(self, extras: dict) -> list[dict]:
+        """Return a list of rows; one for each item in a dataset"""
+        ...
+
 
 DatasetType = TypeVar("DatasetType", bound=DatasetBase)
 

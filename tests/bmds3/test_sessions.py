@@ -86,7 +86,7 @@ class TestBmds330:
         df = session.to_df()
 
         # docx
-        docx = session.to_docx()
+        docx = session.to_docx(session_inputs_table=True)
 
         if rewrite_data_files:
             df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)

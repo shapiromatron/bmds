@@ -6,14 +6,13 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
-from bmds.bmds3.constants import ContinuousModelChoices
-from bmds.datasets.continuous import ContinuousDatasets
-
 from ...constants import BOOL_ICON, Dtype
+from ...datasets.continuous import ContinuousDatasets
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
+from ..constants import ContinuousModelChoices
 from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
-from .priors import ModelPriors, PriorClass
+from .priors import ModelPriors, PriorClass, PriorType
 from .structs import (
     BmdsResultsStruct,
     ContinuousAnalysisStruct,
@@ -35,13 +34,13 @@ class ContinuousRiskType(IntEnum):
 
 
 _bmr_text_map = {
-    ContinuousRiskType.AbsoluteDeviation: "{} absolute deviation",
-    ContinuousRiskType.StandardDeviation: "{} standard deviation",
-    ContinuousRiskType.RelativeDeviation: "{:.0%} relative deviation",
-    ContinuousRiskType.PointEstimate: "{} point estimation",
-    ContinuousRiskType.Extra: "{} extra",
-    ContinuousRiskType.HybridExtra: "{} hybrid extra",
-    ContinuousRiskType.HybridAdded: "{} hybrid added",
+    ContinuousRiskType.AbsoluteDeviation: "{} Absolute Deviation",
+    ContinuousRiskType.StandardDeviation: "{} Standard Deviation",
+    ContinuousRiskType.RelativeDeviation: "{:.0%} Relative Deviation",
+    ContinuousRiskType.PointEstimate: "{} Point Estimation",
+    ContinuousRiskType.Extra: "{} Extra",
+    ContinuousRiskType.HybridExtra: "{} Hybrid Extra",
+    ContinuousRiskType.HybridAdded: "{} Hybrid Added",
 }
 
 
@@ -69,10 +68,14 @@ class ContinuousModelSettings(BaseModel):
     def confidence_level(self) -> float:
         return 1 - self.alpha
 
+    @property
+    def distribution(self) -> str:
+        return f"{self.disttype.distribution_type} + {self.disttype.variance_model}"
+
     def tbl(self, show_degree: bool = True) -> str:
         data = [
             ["BMR", self.bmr_text],
-            ["Distribution", f"{self.disttype.distribution_type} + {self.disttype.variance_model}"],
+            ["Distribution", self.distribution],
             ["Modeling Direction", self.direction],
             ["Confidence Level", self.confidence_level],
             ["Tail Probability", self.tail_prob],
@@ -87,17 +90,27 @@ class ContinuousModelSettings(BaseModel):
 
         return pretty_table(data, "")
 
+    def docx_table_data(self) -> list:
+        return [
+            ["Setting", "Value"],
+            ["BMR", self.bmr_text],
+            ["Distribution", self.distribution],
+            ["Modeling Direction", self.direction],
+            ["Maximum Polynomial Degree", self.degree],
+            ["Confidence Level", self.confidence_level],
+            ["Tail Probability", self.tail_prob],
+        ]
+
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
-            is_increasing=self.is_increasing,
-            bmr=self.bmr,
-            bmr_type=self.bmr_type.name,
-            alpha=self.alpha,
-            tail_prop=self.tail_prob,
+            bmr=self.bmr_text,
+            distribution=self.distribution,
+            direction=self.direction,
+            confidence_level=self.confidence_level,
+            tail_probability=self.tail_prob,
             degree=self.degree,
-            dist_type=self.disttype.name,
-            prior_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 
@@ -318,6 +331,29 @@ class ContinuousParameters(BaseModel):
         df.style.background_gradient(cmap="viridis")
         return df
 
+    def rows(self, extras: Dict) -> List[Dict]:
+        rows = []
+        for i in range(len(self.names)):
+            rows.append(
+                {
+                    **extras,
+                    **dict(
+                        name=self.names[i],
+                        value=self.values[i],
+                        se=self.se[i],
+                        lower_ci=self.lower_ci[i],
+                        upper_ci=self.upper_ci[i],
+                        bounded=bool(self.bounded[i]),
+                        initial_distribution=PriorType(self.prior_type[i]).name,
+                        initial_value=self.prior_initial_value[i],
+                        initial_stdev=self.prior_stdev[i],
+                        initial_min_value=self.prior_min_value[i],
+                        initial_max_value=self.prior_max_value[i],
+                    ),
+                }
+            )
+        return rows
+
 
 class ContinuousGof(BaseModel):
     dose: NumpyFloatArray
@@ -360,11 +396,12 @@ class ContinuousGof(BaseModel):
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
-    def tbl(self) -> str:
-        mean_headers = (
-            "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual".split("|")
-        )
-        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD".split("|")
+    def tbl(self, disttype: constants.DistType) -> str:
+        mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
+        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD"
+        if disttype == constants.DistType.log_normal:
+            mean_headers = mean_headers.replace("ted Mean", "ted Median")
+            sd_headers = sd_headers.replace("ted SD", "ted GSD")
         mean_data = []
         sd_data = []
         for idx in range(len(self.dose)):
@@ -387,7 +424,12 @@ class ContinuousGof(BaseModel):
                     self.est_sd[idx],
                 ]
             )
-        return pretty_table(mean_data, mean_headers) + "\n" + pretty_table(sd_data, sd_headers)
+        return "\n".join(
+            [
+                pretty_table(mean_data, mean_headers.split("|")),
+                pretty_table(sd_data, sd_headers.split("|")),
+            ]
+        )
 
     def n(self) -> int:
         return self.dose.size
@@ -497,7 +539,7 @@ class ContinuousResult(BaseModel):
         ]
         return pretty_table(data, "")
 
-    def text(self, dataset: ContinuousDatasets) -> str:
+    def text(self, dataset: ContinuousDatasets, settings: ContinuousModelSettings) -> str:
         return multi_lstrip(
             f"""
         Summary:
@@ -507,7 +549,7 @@ class ContinuousResult(BaseModel):
         {self.parameters.tbl()}
 
         Goodness of Fit:
-        {self.gof.tbl()}
+        {self.gof.tbl(disttype=settings.disttype)}
 
         Likelihoods of Interest:
         {self.deviance.tbl()}
@@ -546,9 +588,7 @@ class ContinuousResult(BaseModel):
             p_value2=self.tests.p_values[1],
             p_value3=self.tests.p_values[2],
             p_value4=self.tests.p_values[3],
-            model_df=self.fit.model_df,
-            total_df=self.fit.total_df,
-            chi_squared=self.fit.chisq,
+            model_dof=self.tests.dfs[3],
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],
         )

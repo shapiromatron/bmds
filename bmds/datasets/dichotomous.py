@@ -180,6 +180,14 @@ class DichotomousDataset(DatasetBase):
             dataset_incidences=str_list(self.incidences),
         )
 
+    def rows(self, extras: dict) -> list[dict]:
+        """Return a list of rows; one for each item in a dataset"""
+        metadata = self.metadata.dict()
+        rows = []
+        for dose, n, incidence in zip(self.doses, self.ns, self.incidences):
+            rows.append({**extras, **metadata, **dict(dose=dose, n=n, incidence=incidence)})
+        return rows
+
 
 class DichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
