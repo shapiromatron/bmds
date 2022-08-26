@@ -17,6 +17,10 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: loc
+        run: |
+          sudo apt-get install -y cloc
+          make loc
       - name: Install dependencies
         run: |
           pip install -U pip wheel
