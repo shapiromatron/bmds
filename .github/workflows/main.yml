@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
-            apt-get install -y cloc
+            sudo apt-get install -y cloc
             make loc
           fi
       - name: Install dependencies
