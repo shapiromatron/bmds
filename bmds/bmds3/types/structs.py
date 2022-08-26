@@ -507,9 +507,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             transform_dose: {self.transform_dose}
             """
         )
-        # something weird? is this  broken?
-        # priors look strange when changing stdev to 9999 in power model
-        txt = txt.replace("<PRIOR>", str(self.np_prior))  # ???
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
         return txt
 
 
