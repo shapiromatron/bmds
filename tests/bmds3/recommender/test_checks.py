@@ -49,6 +49,7 @@ class TestChecks:
         # good values
         for value in [BMDS_BLANK_VALUE, None, 0.1, 0.11]:
             model.results.gof.p_value = value
+            model.results.gof.df = 1  # we need this additional for RuleClass.gof
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
@@ -56,6 +57,7 @@ class TestChecks:
         # bad values
         for value in [0.09]:
             model.results.gof.p_value = value
+            model.results.gof.df = 1  # we need this additional for RuleClass.gof
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Goodness of fit p-value less than 0.1"
@@ -81,8 +83,34 @@ class TestChecks:
             assert resp.message == "Abs(Residual of interest) greater than 2.0"
 
     def test_gof(self, ddataset):
-        # TODO - here
-        # pass
+        model = mock.MagicMock()
+        settings = Rule(rule_class=RuleClass.gof, failure_bin=LogicBin.FAILURE, threshold=0.1)
+
+        # good values
+        for p_value, df in [
+            # these actually pass
+            (0.1, 1),
+            (0.11, 1),
+            # skip test when we dont have a p_value
+            (BMDS_BLANK_VALUE, 1),
+            (None, 1),
+            # skip test when DOF is 0ish
+            (0.11, 0),
+            (0.01, 0),
+        ]:
+            model.results.gof.p_value = p_value
+            model.results.gof.df = df
+            resp = checks.GoodnessOfFit.check(ddataset, model, settings)
+            assert resp.logic_bin == LogicBin.NO_CHANGE
+            assert resp.message == ""
+
+        # bad values
+        for p_value, df in [(0.01, 1)]:
+            model.results.gof.p_value = p_value
+            model.results.gof.df = df
+            resp = checks.GoodnessOfFit.check(ddataset, model, settings)
+            assert resp.logic_bin == LogicBin.FAILURE
+            assert resp.message == "Goodness of fit p-value less than 0.1"
 
     def test_variance_type(self, cdataset):
         model = mock.MagicMock()

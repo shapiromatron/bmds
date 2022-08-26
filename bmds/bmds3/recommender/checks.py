@@ -166,11 +166,6 @@ class ShouldBeGreaterThan(Check):
 
 
 class GoodnessOfFit(ShouldBeGreaterThan):
-    """
-    In BMDS3.3 Excel, this check is overloaded w/ the NoDegreesOfFreedom check below;
-    they are separated here.
-    """
-
     failure_message_name = "Goodness of fit p-value"
 
     @classmethod
@@ -322,7 +317,7 @@ class NoDegreesOfFreedom(Check):
     @classmethod
     def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
         value = get_dof(dataset, model.results)
-        if not value >= constants.ZEROISH:
+        if value <= constants.ZEROISH:
             return "Zero degrees of freedom; saturated model"
 
 
