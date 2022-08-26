@@ -398,9 +398,10 @@ class ContinuousGof(BaseModel):
         return NumpyFloatArray.listify(d)
 
     def tbl(self, disttype: constants.DistType) -> str:
-        mean_headers = "Dose|Size|Observed Mean|Calculated Median|Estimated Median|Scaled Residual"
+        mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
         sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD"
         if disttype == constants.DistType.log_normal:
+            mean_headers = mean_headers.replace("ted Mean", "ted Median")
             sd_headers = sd_headers.replace("ted SD", "ted GSD")
         mean_data = []
         sd_data = []
