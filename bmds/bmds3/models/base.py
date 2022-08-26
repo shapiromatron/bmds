@@ -141,7 +141,7 @@ class BmdModel(abc.ABC):
         Input Summary:
         {input_tbl}
 
-        Input Parameters:
+        Parameter Settings:
         {prior_tbl}
         """
         )
