@@ -2,6 +2,7 @@ import json
 import os
 import zipfile
 from concurrent.futures import ProcessPoolExecutor
+from io import BytesIO
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Union
 
@@ -26,9 +27,47 @@ class BmdsSessionBatch:
         self.sessions: List[BmdsSession] = sessions
         self.errors = []
 
-    def to_df(self) -> pd.DataFrame:
-        dfs = [session.to_df() for session in self.sessions]
+    def df_summary(self) -> pd.DataFrame:
+        dfs = [
+            session.to_df(extras=dict(session_indexx=idx))
+            for idx, session in enumerate(self.sessions)
+        ]
         return pd.concat(dfs).dropna(axis=1, how="all").fillna("")
+
+    def df_dataset(self) -> pd.DataFrame:
+        data: list[dict] = []
+        for idx, session in enumerate(self.sessions):
+            data.extend(session.dataset.rows(extras=dict(session_index=idx)))
+        return pd.DataFrame(data=data)
+
+    def df_params(self) -> pd.DataFrame:
+        data: list[dict] = []
+        for idx, session in enumerate(self.sessions):
+            for model_index, model in enumerate(session.models):
+                if model.has_results:
+                    data.extend(
+                        model.results.parameters.rows(
+                            extras=dict(
+                                session_index=idx,
+                                model_index=model_index,
+                                model_name=model.name(),
+                            )
+                        )
+                    )
+        return pd.DataFrame(data=data)
+
+    def to_excel(self, path: Optional[Path] = None) -> Union[Path, BytesIO]:
+        f: Union[Path, BytesIO] = path or BytesIO()
+        writer = pd.ExcelWriter(f)
+        data = {
+            "summary": self.df_summary(),
+            "datasets": self.df_dataset(),
+            "parameters": self.df_params(),
+        }
+        for name, df in data.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+        writer.save()
+        return f
 
     def to_docx(
         self,

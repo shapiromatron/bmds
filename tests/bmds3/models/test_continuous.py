@@ -30,6 +30,24 @@ class TestPriorOverrides:
             assert beta1.min_value == priors[0], settings
             assert beta1.max_value == priors[1], settings
 
+    def test_exp3(self, cdataset2):
+        for settings, priors in [
+            ({"priors": PriorClass.frequentist_restricted, "is_increasing": True}, (0, 20)),
+            ({"priors": PriorClass.frequentist_restricted, "is_increasing": False}, (-20, 0)),
+        ]:
+            model = continuous.ExponentialM3(cdataset2, settings)
+            c = model.settings.priors.get_prior("c")
+            assert (c.min_value, c.max_value) == priors
+
+    def test_exp5(self, cdataset2):
+        for settings, priors in [
+            ({"priors": PriorClass.frequentist_restricted, "is_increasing": True}, (0, 20)),
+            ({"priors": PriorClass.frequentist_restricted, "is_increasing": False}, (-20, 0)),
+        ]:
+            model = continuous.ExponentialM5(cdataset2, settings)
+            c = model.settings.priors.get_prior("c")
+            assert (c.min_value, c.max_value) == priors
+
     def test_power(self, cdataset2):
         for settings, priors in [
             ({}, [0.1, -100, 100]),

@@ -243,6 +243,17 @@ class Linear(Polynomial):
 class ExponentialM3(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m3.value
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+            attr = "min_value" if model_settings.is_increasing else "max_value"
+            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
+
+        return model_settings
+
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]
         b = params[1]
@@ -253,6 +264,17 @@ class ExponentialM3(BmdModelContinuous):
 
 class ExponentialM5(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_exp_m5.value
+
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
+            attr = "min_value" if model_settings.is_increasing else "max_value"
+            setattr(model_settings.priors.get_prior("c"), attr, 0.0)
+
+        return model_settings
 
     def dr_curve(self, doses, params) -> np.ndarray:
         a = params[0]

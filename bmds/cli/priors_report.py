@@ -78,13 +78,21 @@ def continuous_priors(f: StringIO):
     f.write("## Continuous\n\n")
 
     write_model(f, continuous.ExponentialM3)
-    print_c_model(continuous.ExponentialM3, dict(priors=PriorClass.frequentist_restricted))
-    print_c_model(continuous.ExponentialM3, dict(priors=PriorClass.bayesian))
+    for settings in [
+        dict(priors=PriorClass.frequentist_restricted, is_increasing=True),
+        dict(priors=PriorClass.frequentist_restricted, is_increasing=False),
+        dict(priors=PriorClass.bayesian),
+    ]:
+        print_c_model(continuous.ExponentialM3, settings)
     write_break(f)
 
     write_model(f, continuous.ExponentialM5)
-    print_c_model(continuous.ExponentialM5, dict(priors=PriorClass.frequentist_restricted))
-    print_c_model(continuous.ExponentialM5, dict(priors=PriorClass.bayesian))
+    for settings in [
+        dict(priors=PriorClass.frequentist_restricted, is_increasing=True),
+        dict(priors=PriorClass.frequentist_restricted, is_increasing=False),
+        dict(priors=PriorClass.bayesian),
+    ]:
+        print_c_model(continuous.ExponentialM5, settings)
     write_break(f)
 
     write_model(f, continuous.Hill)
