@@ -196,9 +196,11 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self) -> pd.DataFrame:
-        """
-        Export an executed session to a pandas dataframe
+    def to_df(self, extras: Optional[dict] = None) -> pd.DataFrame:
+        """Export an executed session to a pandas dataframe
+
+        Args:
+            extras (dict, optional): _description_. Defaults to None.
 
         Returns:
             pd.DataFrame: A pandas dataframe
@@ -206,14 +208,16 @@ class BmdsSession:
 
         dataset_dict = {}
         self.dataset.update_record(dataset_dict)
+        extras = extras or {}
 
         # add a row for each model
         models = []
         for model_index, model in enumerate(self.models):
-            d: dict[str, Any] = dict(
-                model_index=model_index,
-                model_name=model.name(),
-            )
+            d: dict[str, Any] = {
+                **extras,
+                **dataset_dict,
+                **dict(model_index=model_index, model_name=model.name()),
+            }
             model.settings.update_record(d)
             model.results.update_record(d)
 
@@ -229,6 +233,8 @@ class BmdsSession:
         # add model average row
         if self.model_average:
             d = dict(
+                **extras,
+                **dataset_dict,
                 model_index=100,
                 model_name="Model average",
             )
@@ -236,14 +242,7 @@ class BmdsSession:
             self.model_average.results.update_record(d)
             models.append(d)
 
-        # merge dataset with other items in dataframe; reorder rows
-        df = pd.DataFrame(models)
-        columns = list(dataset_dict.keys())
-        columns.extend(df.columns.tolist())
-        df = df.assign(**dataset_dict)
-        df = df[columns]
-
-        return df
+        return pd.DataFrame(models)
 
     def to_docx(
         self,
