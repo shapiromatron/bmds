@@ -55,11 +55,11 @@ class TestBmdsSessionBatch:
             zf.unlink()
 
         # check exports
-        df = batch.to_df()
+        excel = batch.to_excel()
         docx = batch.to_docx()
 
         if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-d-batch.xlsx").expanduser(), index=False)
+            Path("~/Desktop/bmds3-d-batch.xlsx").expanduser().write_bytes(excel.getvalue())
             docx.save(Path("~/Desktop/bmds3-d-batch.docx").expanduser())
 
     def test_exports_continuous(self, cdataset2, cidataset, rewrite_data_files):
@@ -77,9 +77,9 @@ class TestBmdsSessionBatch:
         assert len(batch2.sessions) == len(batch.sessions)
 
         # check exports
-        df = batch.to_df()
+        excel = batch.to_excel()
         docx = batch.to_docx()
 
         if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-c-batch.xlsx").expanduser(), index=False)
+            Path("~/Desktop/bmds3-c-batch.xlsx").expanduser().write_bytes(excel.getvalue())
             docx.save(Path("~/Desktop/bmds3-c-batch.docx").expanduser())
