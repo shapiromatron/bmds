@@ -146,7 +146,6 @@ class ContinuousAnalysis(BaseModel):
         return params
 
     def _priors_array(self) -> np.ndarray:
-        # off?
         degree = self.degree if self.model.id == constants.ContinuousModelIds.c_polynomial else None
         return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
@@ -162,7 +161,7 @@ class ContinuousAnalysis(BaseModel):
             isIncreasing=ctypes.c_bool(self.is_increasing),
             model=ctypes.c_int(self.model.id),
             parms=ctypes.c_int(nparms),
-            prior=self._priors_array(),  # TODO -huh?
+            prior=self._priors_array(),
             prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
             samples=ctypes.c_int(self.samples),
             tail_prob=ctypes.c_double(self.tail_prob),
