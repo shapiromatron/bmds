@@ -38,9 +38,8 @@ class BmdModelDichotomous(BmdModel):
 
         return model_settings
 
-    def execute(self) -> DichotomousResult:
-        # setup inputs
-        inputs = DichotomousAnalysis(
+    def _build_inputs(self) -> DichotomousAnalysis:
+        return DichotomousAnalysis(
             model=self.bmd_model_class,
             dataset=self.dataset,
             priors=self.settings.priors,
@@ -51,9 +50,11 @@ class BmdModelDichotomous(BmdModel):
             samples=self.settings.samples,
             burnin=self.settings.burnin,
         )
+
+    def execute(self) -> DichotomousResult:
+        inputs = self._build_inputs()
         structs = inputs.to_c()
         self.structs = structs
-
         dll = self.get_dll()
         dll.runBMDSDichoAnalysis(
             ctypes.pointer(structs.analysis),

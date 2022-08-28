@@ -61,6 +61,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             n_group: {self.n_group[:self.n]}
             prior<{self.parms},{self.prior_cols}>:
             <PRIOR>
+            priors <unprocessed>: {", ".join(str(v) for v in self.np_prior.tolist())}
             BMD_type: {self.BMD_type}
             BMR: {self.BMR}
             alpha: {self.alpha}
@@ -71,7 +72,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             prior_cols: {self.prior_cols}
             """
         )
-        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.prior_cols, self.parms).T))
         return txt
 
 
@@ -493,6 +494,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             n_group: {self.np_n_group}
             prior<{self.parms, self.prior_cols}>
             <PRIOR>
+            priors <unprocessed>: {", ".join(str(v) for v in self.np_prior.tolist())}
             BMD_type: {self.BMD_type}
             isIncreasing: {self.isIncreasing}
             BMR: {self.BMR}
@@ -507,7 +509,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
             transform_dose: {self.transform_dose}
             """
         )
-        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.parms, self.prior_cols)))
+        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.prior_cols, self.parms).T))
         return txt
 
 

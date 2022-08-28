@@ -49,8 +49,8 @@ class BmdModelContinuous(BmdModel):
 
         return model_settings
 
-    def execute(self):
-        inputs = ContinuousAnalysis(
+    def _build_inputs(self) -> ContinuousAnalysis:
+        return ContinuousAnalysis(
             model=self.bmd_model_class,
             dataset=self.dataset,
             priors=self.settings.priors,
@@ -64,6 +64,9 @@ class BmdModelContinuous(BmdModel):
             burnin=self.settings.burnin,
             degree=self.settings.degree,
         )
+
+    def execute(self):
+        inputs = self._build_inputs()
         structs = inputs.to_c()
         self.structs = structs
 
