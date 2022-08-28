@@ -9,7 +9,8 @@ from typing import Dict, Tuple
 import pandas as pd
 from simple_settings import settings
 
-from .. import __version__, constants
+from .. import constants
+from ..version import __version__
 from . import exports, logic, models, remote, reporter
 
 logger = logging.getLogger(__name__)

@@ -9,7 +9,7 @@ from typing import Iterable, Optional
 import numpy as np
 import tabulate
 
-from . import __version__
+from .version import __version__
 
 # http://stackoverflow.com/questions/24130623/
 # Don't display the Windows GPF dialog if the invoked program dies.

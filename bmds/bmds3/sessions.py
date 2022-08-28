@@ -9,10 +9,11 @@ import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
-from .. import __version__, constants
+from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from ..utils import citation
+from ..version import __version__
 from . import reporting
 from .constants import PriorClass
 from .models import continuous as c3
