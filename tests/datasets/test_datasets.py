@@ -82,7 +82,7 @@ class TestDichotomousDataset:
             # different sized lists
             bmds.DichotomousDataset(doses=dummy4, ns=dummy3, incidences=dummy3)
             # incidence > n
-            bmds.DichotomousDataset(doses=dummy3, ns=[3, 3, 3], incidences=[3, 3, 4t])
+            bmds.DichotomousDataset(doses=dummy3, ns=[3, 3, 3], incidences=[3, 3, 4])
             # zero in ns data
             bmds.DichotomousDataset(doses=dummy3, ns=[0, 2, 3], incidences=dummy3)
 
@@ -233,12 +233,16 @@ class TestContinuousSummaryDataset:
     def test_validation(self):
         # these should be valid
         bmds.ContinuousDataset(doses=dummy3, ns=dummy3, means=dummy3, stdevs=dummy3)
+        # some data adjustments result in non-integer based counts
+        bmds.ContinuousDataset(doses=dummy3, ns=dummy3_floats, means=dummy3, stdevs=dummy3)
         # these should raise errors
         with pytest.raises((IndexError, ValueError)):
             # insufficient number of dose groups
             bmds.ContinuousDataset(doses=dummy2, ns=dummy2, means=dummy2, stdevs=dummy2)
             # different sized lists
             bmds.ContinuousDataset(doses=dummy4, ns=dummy3, means=dummy3, stdevs=dummy3)
+            # zero in ns data
+            bmds.ContinuousDataset(doses=dummy3, ns=[0, 2, 3], means=dummy3, stdevs=dummy3)
 
     def test_extra_kwargs(self):
         ds = bmds.ContinuousDataset(

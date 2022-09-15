@@ -159,6 +159,21 @@ def test_decreasing(negative_cdataset):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_continuous_float_counts(cdataset2):
+    for n in cdataset2.ns:
+        n += 0.1
+    # ensure float based data works
+    for Model, bmd_values, aic in [
+        (continuous.Power, [25.9, 24.3, 29.8], 3067),
+    ]:
+        model = Model(cdataset2)
+        result = model.execute()
+        actual = [result.bmd, result.bmdl, result.bmdu]
+        assert pytest.approx(bmd_values, rel=0.05) == actual
+        assert pytest.approx(aic, rel=0.01) == result.fit.aic
+
+
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_variance(cdataset2):
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()

@@ -357,7 +357,7 @@ class ContinuousParameters(BaseModel):
 
 class ContinuousGof(BaseModel):
     dose: NumpyFloatArray
-    size: NumpyIntArray
+    size: NumpyFloatArray
     est_mean: NumpyFloatArray
     calc_mean: NumpyFloatArray
     obs_mean: NumpyFloatArray
