@@ -2,7 +2,7 @@ from typing import ClassVar, List, Optional
 
 import numpy as np
 from matplotlib.figure import Figure
-from pydantic import confloat, conint, root_validator
+from pydantic import confloat, root_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -33,7 +33,7 @@ class DichotomousDataset(DatasetBase):
 
     DEFAULT_YLABEL = "Fraction affected"
 
-    def __init__(self, doses: List[float], ns: List[int], incidences: List[float], **metadata):
+    def __init__(self, doses: List[float], ns: List[float], incidences: List[float], **metadata):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
@@ -193,8 +193,8 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
     doses: List[confloat(ge=0)]
-    ns: List[conint(ge=1)]
-    incidences: List[conint(ge=0)]
+    ns: List[confloat(gt=0)]
+    incidences: List[confloat(ge=0)]
     plotting: Optional[DatasetPlottingSchema]
 
     MIN_DG: ClassVar = 3

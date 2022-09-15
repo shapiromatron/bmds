@@ -100,6 +100,19 @@ def test_bmds3_dichotomous_models(ddataset2):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_dichotomous_float_counts(ddataset3):
+    # ensure float based data works
+    for Model, bmd_values, aic in [
+        (dichotomous.Logistic, [47.2, 30.7, 69.5], 49.2),
+    ]:
+        model = Model(ddataset3)
+        result = model.execute()
+        actual = [result.bmd, result.bmdl, result.bmdu]
+        assert pytest.approx(bmd_values, abs=0.5) == actual
+        assert pytest.approx(aic, abs=3.0) == result.fit.aic
+
+
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_dichotomous_multistage(ddataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [

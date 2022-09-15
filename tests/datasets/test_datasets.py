@@ -10,6 +10,7 @@ dummy2 = [1, 2]
 dummy3 = [1, 2, 3]
 dummy4 = [1, 2, 3, 4]
 dummy3_dups = [0, 0, 1]
+dummy3_floats = [0.1, 0.2, 0.3]
 
 
 class TestBaseDatasetFunctionality:
@@ -72,12 +73,18 @@ class TestDichotomousDataset:
     def test_validation(self):
         # these should be valid
         bmds.DichotomousDataset(doses=dummy3, ns=dummy3, incidences=dummy3)
+        # some data adjustments result in non-integer based counts
+        bmds.DichotomousDataset(doses=dummy3_floats, ns=dummy3_floats, incidences=dummy3_floats)
         # these should raise errors
         with pytest.raises((IndexError, ValueError)):
             # insufficient number of dose groups
             bmds.DichotomousDataset(doses=dummy2, ns=dummy2, incidences=dummy2)
             # different sized lists
             bmds.DichotomousDataset(doses=dummy4, ns=dummy3, incidences=dummy3)
+            # incidence > n
+            bmds.DichotomousDataset(doses=dummy3, ns=[3, 3, 3], incidences=[3, 3, 4t])
+            # zero in ns data
+            bmds.DichotomousDataset(doses=dummy3, ns=[0, 2, 3], incidences=dummy3)
 
     def test_metadata(self):
         ds = bmds.DichotomousDataset(
