@@ -3,7 +3,7 @@ from typing import ClassVar, List, Optional, Union
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from pydantic import confloat, conint, root_validator
+from pydantic import confloat, root_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -88,7 +88,12 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
     dtype = constants.Dtype.CONTINUOUS
 
     def __init__(
-        self, doses: List[float], ns: List[int], means: List[float], stdevs: List[float], **metadata
+        self,
+        doses: List[float],
+        ns: List[float],
+        means: List[float],
+        stdevs: List[float],
+        **metadata,
     ):
         self.doses = doses
         self.ns = ns
@@ -211,7 +216,7 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
     doses: List[confloat(ge=0)]
-    ns: List[conint(ge=1)]
+    ns: List[confloat(gt=0)]
     means: List[float]
     stdevs: List[confloat(ge=0)]
     anova: Optional[AnovaTests]

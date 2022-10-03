@@ -159,6 +159,21 @@ def test_decreasing(negative_cdataset):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
+def test_bmds3_continuous_float_counts(cdataset2):
+    for n in cdataset2.ns:
+        n += 0.1
+    # ensure float based data works
+    for Model, bmd_values, aic in [
+        (continuous.Power, [25.9, 24.3, 29.8], 3067),
+    ]:
+        model = Model(cdataset2)
+        result = model.execute()
+        actual = [result.bmd, result.bmdl, result.bmdu]
+        assert pytest.approx(bmd_values, rel=0.05) == actual
+        assert pytest.approx(aic, rel=0.01) == result.fit.aic
+
+
+@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_variance(cdataset2):
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()
@@ -239,17 +254,24 @@ def test_increasing_lognormal(cdataset2):
 
 
 @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
-def test_decreasing_lognormal(negative_cdataset):
-    session = bmds.session.Bmds330(dataset=negative_cdataset)
+def test_decreasing_lognormal():
+    ds = bmds.ContinuousDataset(
+        doses=[0, 10, 50, 100, 250],
+        ns=[30, 30, 30, 30, 30],
+        means=[0.116, 0.113, 0.108, 0.108, 0.106],
+        stdevs=[0.006, 0.006, 0.004, 0.009, 0.008],
+    )
+
+    session = bmds.session.Bmds330(dataset=ds)
     settings = dict(disttype=DistType.log_normal)
     for model in (constants.M_ExponentialM3, constants.M_ExponentialM5):
         session.add_model(model, settings)
     session.execute()
-    for model in session.models:
+    for model, bmd in zip(session.models, [227, 46]):
         assert model.results.has_completed is True
-        assert model.results.bmd == pytest.approx(100, rel=0.05)
+        assert model.results.bmd == pytest.approx(bmd, rel=0.05)
 
-    session = bmds.session.Bmds330(dataset=negative_cdataset)
+    session = bmds.session.Bmds330(dataset=ds)
     settings = dict(disttype=DistType.log_normal)
     for model in (constants.M_Hill, constants.M_Power, constants.M_Polynomial):
         session.add_model(model, settings)

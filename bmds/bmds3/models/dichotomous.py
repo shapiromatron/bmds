@@ -146,7 +146,7 @@ class LogProbit(BmdModelDichotomous):
         g = params[0]
         a = params[1]
         b = params[2]
-        return g + (1 - g) * (1 / (1 + np.exp(-a - b * np.log(doses))))
+        return g + (1 - g) * norm.cdf(a + b * np.log(doses))
 
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_unrestricted

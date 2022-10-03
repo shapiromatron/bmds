@@ -108,6 +108,16 @@ def ddataset2():
 
 
 @pytest.fixture
+def ddataset3():
+    # float based count data based on possible data transformations
+    return bmds.DichotomousDataset(
+        doses=[0, 50, 100, 150, 200],
+        ns=[10.1, 10.2, 10.3, 10.4, 10.5],
+        incidences=[0.0, 2.5, 3.5, 7.5, 9.5],
+    )
+
+
+@pytest.fixture
 def anova_dataset():
     variances = [
         0.884408974,

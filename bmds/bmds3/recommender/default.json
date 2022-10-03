@@ -143,7 +143,7 @@
         {
             "rule_class": "variance_type",
             "failure_bin": 1,
-            "threshold": 0.1,
+            "threshold": 0.05,
             "enabled_dichotomous": false,
             "enabled_continuous": false,
             "enabled_nested": false
