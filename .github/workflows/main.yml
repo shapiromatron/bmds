@@ -36,9 +36,10 @@ jobs:
             sudo apt-get install -y make libgslcblas0 libgsl-dev
             sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
-            ls -lah /usr/local/lib/libg*
             ldd bmds/bin/BMDS330/libDRBMD.so
-            ln -s /usr/local/lib/libgsl.so /usr/local/lib/libgsl.so.25
+            ls -lah /usr/lib/
+            ls -lah /usr/lib/x86_64-linux-gnu/
+            ln -s /usr/lib/x86_64-linux-gnu/libgsl.so /usr/local/lib/libgsl.so.25
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       - name: Install dependencies
