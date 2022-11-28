@@ -33,6 +33,7 @@ jobs:
           python -m pip install -U pip wheel
           python -m pip install -r requirements_dev.txt
       - name: Setup linux environment
+        shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update -y

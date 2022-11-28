@@ -1,7 +1,6 @@
 name: Lines of Code
 
 on:
-  pull_request:
   push:
     branches:
       - main
