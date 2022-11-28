@@ -28,6 +28,14 @@ jobs:
             sudo apt-get install -y cloc
             make loc
           fi
+      - name: Setup environment
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update -y
+            sudo apt-get install -y make libgslcblas0 libgsl-dev
+            sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
+            export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
+          fi
       - name: Install dependencies
         run: |
           python -m pip install -U pip wheel
@@ -41,8 +49,6 @@ jobs:
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo pwd
-            sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
           fi
-          make test
+          py.test tests/test_utils.py
