@@ -41,7 +41,8 @@ jobs:
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
-            cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
+            sudo pwd
+            sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
           fi
           make test
