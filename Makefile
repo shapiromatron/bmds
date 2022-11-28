@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist loc test test-mpl test-mpl-regenerate
+.PHONY: dev docs lint format test test-mpl test-mpl-regenerate clean dist release loc
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -29,21 +29,10 @@ help:
 dev: ## Start developer environment
 	./bin/dev.sh
 
-clean: ## remove all build, test and Python artifacts
-	# remove build artifacts
-	rm -rf build/
-	rm -rf dist/
-	rm -rf .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
-	# remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-	# remove test and coverage artifacts
-	rm -fr .tox/
-	rm -fr htmlcov/
+docs: ## Generate Sphinx HTML documentation, including API docs
+	$(MAKE) -C docs clean
+	$(MAKE) -C docs html
+	$(BROWSER) docs/_build/html/index.html
 
 lint: ## Check for python formatting issues via black & flake8
 	@black . --check && isort -q --check . && flake8 .
@@ -60,6 +49,31 @@ test-mpl: ## Run all tests; compare matplotlib figures
 test-mpl-regenerate: ## Regenerate matplotlib figures in tests
 	py.test --mpl-generate-path=tests/data/mpl
 
+clean: ## Remove all build, test and Python artifacts
+	# remove build artifacts
+	rm -rf build/
+	rm -rf dist/
+	rm -rf .eggs/
+	find . -name '*.egg-info' -exec rm -fr {} +
+	find . -name '*.egg' -exec rm -f {} +
+	# remove Python file artifacts
+	find . -name '*.pyc' -exec rm -f {} +
+	find . -name '*.pyo' -exec rm -f {} +
+	find . -name '*~' -exec rm -f {} +
+	find . -name '__pycache__' -exec rm -fr {} +
+	# remove test and coverage artifacts
+	rm -fr .tox/
+	rm -fr htmlcov/
+
+dist: clean ## Builds python wheels
+	python setup.py bdist_wheel
+	ls -l dist
+
+release: dist ## Package and upload a release
+	twine upload dist/*
+	git tag -a "$(shell python setup.py --version)" -m ""
+	git push --tags
+
 loc: ## Generate lines of code report
 	@cloc \
 		--exclude-dir=build,dist,notebooks,venv \
@@ -69,17 +83,3 @@ loc: ## Generate lines of code report
 		--md \
 		--report-file=loc.txt \
 		.
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
-
-release: dist ## package and upload a release
-	twine upload dist/*
-	git tag -a "$(shell python setup.py --version)" -m ""
-	git push --tags
-
-dist: clean ## builds source and wheel package
-	python setup.py bdist_wheel
-	ls -l dist
