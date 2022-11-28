@@ -29,38 +29,35 @@ help:
 dev: ## Start developer environment
 	./bin/dev.sh
 
-clean: clean-build clean-pyc clean-test ## remove all build, test and Python artifacts
-
-clean-build: ## remove build artifacts
+clean: ## remove all build, test and Python artifacts
+	# remove build artifacts
 	rm -rf build/
 	rm -rf dist/
 	rm -rf .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
-
-clean-pyc: ## remove Python file artifacts
+	# remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
+	# remove test and coverage artifacts
 	rm -fr .tox/
 	rm -fr htmlcov/
 
-lint:  ## Check for python formatting issues via black & flake8
+lint: ## Check for python formatting issues via black & flake8
 	@black . --check && isort -q --check . && flake8 .
 
-format:  ## Modify python code using black & show flake8 issues
+format: ## Modify python code using black & show flake8 issues
 	@black . && isort -q . && flake8 .
 
-test:  ## Run all tests, except matplotlib figures
+test: ## Run all tests, except matplotlib figures
 	py.test
 
-test-mpl:  ## Run all tests; compare matplotlib figures
+test-mpl: ## Run all tests; compare matplotlib figures
 	py.test --mpl
 
-test-mpl-regenerate:  ## Regenerate matplotlib figures in tests
+test-mpl-regenerate: ## Regenerate matplotlib figures in tests
 	py.test --mpl-generate-path=tests/data/mpl
 
 loc: ## Generate lines of code report
