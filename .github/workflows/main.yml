@@ -13,7 +13,8 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.9]
-        os: ["ubuntu-22.04", "windows-2022"]
+        # os: ["ubuntu-22.04", "windows-2022"]
+        os: ["ubuntu-22.04"]
 
     steps:
       - uses: actions/checkout@v3
@@ -35,6 +36,7 @@ jobs:
             sudo apt-get install -y make libgslcblas0 libgsl-dev
             sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
+            ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       - name: Install dependencies
         run: |
