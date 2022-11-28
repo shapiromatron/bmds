@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -41,7 +43,6 @@ jobs:
             export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
             sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             sudo ln -s /lib/x86_64-linux-gnu/libgsl.so /usr/local/lib/libgsl.so.25
-            ls /lib/x86_64-linux-gnu/libg*
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       - name: Check linting
