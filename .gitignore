@@ -20,6 +20,3 @@ venv/
 
 # created by bmds2.7
 log.txt
-
-# until released
-bmds/bin/BMDS330
