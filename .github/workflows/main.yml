@@ -37,7 +37,10 @@ jobs:
             sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
             sudo ln -s /usr/lib/libgsl.so /usr/local/lib/libgsl.so.25
+            sudo ln -s /usr/lib/libgsl.so /usr/lib/libgsl.so.25
             ln -s /usr/lib/libgsl.so bmds/bin/BMDS330/libgsl.so.25
+            ls -lah /usr/local/lib
+            ls -lah bmds/bin/BMDS330/
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       # - name: Install dependencies
