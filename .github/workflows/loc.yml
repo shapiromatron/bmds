@@ -1,0 +1,18 @@
+name: Lines of Code
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: loc
+        shell: bash
+        run: |
+          sudo apt-get install -y cloc
+          make loc

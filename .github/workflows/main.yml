@@ -22,40 +22,39 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: loc
-        shell: bash
+      - name: try to restore pip cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg', 'requirements_dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt-get install -y cloc
-            make loc
-          fi
-      - name: Setup environment
+          python -m pip install -U pip wheel
+          python -m pip install -r requirements_dev.txt
+      - name: Setup linux environment
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update -y
             sudo apt-get install -y make libgslcblas0 libgsl-dev
-            sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
-            sudo ldconfig
-            ldd bmds/bin/BMDS330/libDRBMD.so
+            sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
             sudo ln -s /lib/x86_64-linux-gnu/libgsl.so /usr/local/lib/libgsl.so.25
             ls /lib/x86_64-linux-gnu/libg*
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install -U pip wheel
-      #     python -m pip install -r requirements_dev.txt
-      # - name: Check linting
-      #   run: |
-      #     make lint
-      # - name: Test with pytest
-      #   env:
-      #     BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
-      #     BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
-      #   run: |
-      #     if [ "$RUNNER_OS" == "Linux" ]; then
-      #       export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
-      #       ldd bmds/bin/BMDS330/libDRBMD.so
-      #     fi
-      #     py.test tests/test_utils.py
+      - name: Check linting
+        run: |
+          make lint
+      - name: Unit tests
+        env:
+          BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
+          BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            echo $LD_LIBRARY_PATH
+            export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
+            ldd bmds/bin/BMDS330/libDRBMD.so
+          fi
+          make test
