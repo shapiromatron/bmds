@@ -5,4 +5,4 @@ recursive-include bmds *.csv
 recursive-include bmds *.docx
 recursive-include bmds *.json
 recursive-include bmds/benchmarks/datasets/data *.zip
-recursive-include bmds/bin *
+recursive-include bmds/bin *.exe *.dll *.dylib *.so *.txt
