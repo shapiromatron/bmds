@@ -18,5 +18,5 @@ jobs:
           make loc
       - name: Generate report
         run: |
-          echo '# Lines of Code:\n\n' >> $GITHUB_STEP_SUMMARY
+          echo '# Lines of Code:' >> $GITHUB_STEP_SUMMARY
           cat loc.txt >> $GITHUB_STEP_SUMMARY

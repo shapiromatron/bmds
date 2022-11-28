@@ -47,6 +47,7 @@ jobs:
         run: |
           make lint
       - name: Unit tests
+        shell: bash
         env:
           BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
           BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
