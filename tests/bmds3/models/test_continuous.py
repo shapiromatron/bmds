@@ -148,8 +148,8 @@ def test_decreasing(negative_cdataset):
         # for regenerating values
         # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
         # print(res)
-        assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
-        assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
+        assert pytest.approx(bmd_values, rel=0.1) == actual, Model.__name__
+        assert pytest.approx(aic, rel=0.1) == result.fit.aic, Model.__name__
 
 
 def test_bmds3_continuous_float_counts(cdataset2):

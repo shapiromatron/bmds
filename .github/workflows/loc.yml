@@ -11,8 +11,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - name: loc
+      - name: Install and execute
         shell: bash
         run: |
           sudo apt-get install -y cloc
           make loc
+      - name: Generate report
+        run: |
+          echo '# Lines of Code:\n\n' >> $GITHUB_STEP_SUMMARY
+          cat loc.txt >> $GITHUB_STEP_SUMMARY
