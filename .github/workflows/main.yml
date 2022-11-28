@@ -38,14 +38,8 @@ jobs:
             export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
             sudo ldconfig
             ldd bmds/bin/BMDS330/libDRBMD.so
-            echo "ls /usr/lib"
-            ls -lah /usr/lib
-            echo "ls /lib/x86_64-linux-gnu/"
-            ls -lah /lib/x86_64-linux-gnu/
-            echo "now symlinking..."
-            sudo ln -s /usr/lib/libgsl.so /usr/local/lib/libgsl.so.25
-            sudo ln -s /usr/lib/libgsl.so /usr/lib/libgsl.so.25
-            ln -s /usr/lib/libgsl.so bmds/bin/BMDS330/libgsl.so.25
+            sudo ln -s /lib/x86_64-linux-gnu/libgsl.so /usr/local/lib/libgsl.so.25
+            ls /lib/x86_64-linux-gnu/libg*
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       # - name: Install dependencies
