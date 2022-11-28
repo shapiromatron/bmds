@@ -8,8 +8,6 @@ from bmds.bmds3.constants import PriorClass
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
 
-from ..run3 import RunBmds3
-
 
 class TestBmdModelDichotomous:
     def test_get_param_names(self, ddataset2):
@@ -40,7 +38,6 @@ class TestBmdModelDichotomous:
         ]:
             assert Model(ddataset2).settings.priors.prior_class is prior_class
 
-    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_report(self, ddataset2):
         model = dichotomous.Gamma(dataset=ddataset2)
         text = model.text()
@@ -52,7 +49,6 @@ class TestBmdModelDichotomous:
         assert "Gamma" in text
         assert "Goodness of Fit:" in text
 
-    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_risk_type(self, ddataset2):
         # extra (default)
         model = dichotomous.Logistic(dataset=ddataset2)
@@ -68,14 +64,12 @@ class TestBmdModelDichotomous:
         assert resp1.bmd < resp2.bmd
 
     @pytest.mark.mpl_image_compare
-    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_bmds3_dichotomous_plot(self, ddataset2):
         model = dichotomous.Logistic(dataset=ddataset2)
         model.execute()
         return model.plot()
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_dichotomous_models(ddataset2):
     # compare bmd, bmdl, bmdu, aic values
     for Model, bmd_values, aic in [
@@ -99,7 +93,6 @@ def test_bmds3_dichotomous_models(ddataset2):
         assert pytest.approx(aic, abs=3.0) == result.fit.aic
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_dichotomous_float_counts(ddataset3):
     # ensure float based data works
     for Model, bmd_values, aic in [
@@ -112,7 +105,6 @@ def test_bmds3_dichotomous_float_counts(ddataset3):
         assert pytest.approx(aic, abs=3.0) == result.fit.aic
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_dichotomous_multistage(ddataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
@@ -131,7 +123,6 @@ def test_bmds3_dichotomous_multistage(ddataset2):
         assert pytest.approx(aic, abs=5.0) == result.fit.aic
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_dichotomous_session(ddataset2):
     session = bmds.session.Bmds330(dataset=ddataset2)
     session.add_default_models()

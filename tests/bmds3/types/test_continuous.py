@@ -1,12 +1,7 @@
-import pytest
-
 from bmds.bmds3.constants import DistType
 from bmds.bmds3.models import continuous
 
-from ..run3 import RunBmds3
 
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestContinuousGof:
     def test_collapse(self, cdataset, cidataset):
         # goodness of fit should collapse into non-zero fields
@@ -26,7 +21,6 @@ class TestContinuousGof:
         assert res.gof.n() == len(set(cidataset.individual_doses))
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestContinuousParameters:
     def test_exp3(self, cdataset):
         """

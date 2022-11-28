@@ -4,8 +4,6 @@ from pydantic import ValidationError
 import bmds
 from bmds.bmds3.recommender.recommender import Recommender, RecommenderSettings
 
-from ..run3 import RunBmds3
-
 
 class TestRecommenderSettings:
     def test_default(self):
@@ -29,7 +27,6 @@ class TestRecommender:
         assert df.shape == (22, 6)
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestSessionRecommender:
     def test_apply_logic_dich(self, ddataset2):
         session = bmds.session.Bmds330(dataset=ddataset2)

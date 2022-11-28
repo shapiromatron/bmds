@@ -1,15 +1,10 @@
 import json
 from pathlib import Path
 
-import pytest
-
 import bmds
 from bmds.bmds3 import BmdsSession
 
-from .run3 import RunBmds3
 
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmds330:
     def test_serialization(self, ddataset2):
         # make sure serialize looks correct

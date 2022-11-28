@@ -1,6 +1,10 @@
-name: CI
+name: Linting and Unit Tests
 
-on: [pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -9,12 +13,12 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.9]
-        os: ["ubuntu-20.04", "windows-2019"]
+        os: ["ubuntu-22.04", "windows-2022"]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: loc
@@ -26,8 +30,8 @@ jobs:
           fi
       - name: Install dependencies
         run: |
-          pip install -U pip wheel
-          pip install -r requirements_dev.txt
+          python -m pip install -U pip wheel
+          python -m pip install -r requirements_dev.txt
       - name: Check linting
         run: |
           make lint
