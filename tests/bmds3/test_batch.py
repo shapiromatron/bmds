@@ -1,17 +1,12 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-
 import bmds
 from bmds import constants
 from bmds.bmds3.batch import BmdsSessionBatch, ExecutionResponse
 from bmds.bmds3.sessions import Bmds330
 
-from .run3 import RunBmds3
 
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmdsSessionBatch:
     def test_execute(self, ddataset2):
         def runner(ds):

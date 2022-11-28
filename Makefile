@@ -69,6 +69,8 @@ loc: ## Generate lines of code report
 		--exclude-ext=json,yaml,svg,toml,ini \
 		--vcs=git \
 		--counted loc-files.txt \
+		--md \
+		--report-file=loc.txt \
 		.
 
 docs: ## generate Sphinx HTML documentation, including API docs

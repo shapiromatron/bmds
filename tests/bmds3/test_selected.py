@@ -1,11 +1,6 @@
-import pytest
-
 import bmds
 
-from .run3 import RunBmds3
 
-
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 class TestBmdsSelector:
     def test_selection(self, ddataset2):
         session = bmds.session.Bmds330(dataset=ddataset2)
