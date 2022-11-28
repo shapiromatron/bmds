@@ -1,8 +1,12 @@
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
-recursive-include bmds *.csv
-recursive-include bmds *.docx
-recursive-include bmds *.json
+recursive-include bmds *.csv *.docx *.json *.txt
 recursive-include bmds/benchmarks/datasets/data *.zip
-recursive-include bmds/bin *
+
+# comment/uncomment lines below depending on OS environment
+# By default, all files are included but we can build smaller wheels
+# to only include those which are required when generating the OS-specific wheels
+recursive-include bmds/bin *.so
+recursive-include bmds/bin *.dylib
+recursive-include bmds/bin *.exe *.dll
