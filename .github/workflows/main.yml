@@ -35,14 +35,17 @@ jobs:
             sudo apt-get update -y
             sudo apt-get install -y make libgslcblas0 libgsl-dev
             sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
-            export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib"
+            export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
             sudo ldconfig
-            ls -lah /usr/lib/libgsl*
+            ldd bmds/bin/BMDS330/libDRBMD.so
+            echo "ls /usr/lib"
+            ls -lah /usr/lib
+            echo "ls /lib/x86_64-linux-gnu/"
+            ls -lah /lib/x86_64-linux-gnu/
+            echo "now symlinking..."
             sudo ln -s /usr/lib/libgsl.so /usr/local/lib/libgsl.so.25
             sudo ln -s /usr/lib/libgsl.so /usr/lib/libgsl.so.25
             ln -s /usr/lib/libgsl.so bmds/bin/BMDS330/libgsl.so.25
-            ls -lah /usr/local/lib
-            ls -lah bmds/bin/BMDS330/
             ldd bmds/bin/BMDS330/libDRBMD.so
           fi
       # - name: Install dependencies
