@@ -1,0 +1,24 @@
+name: Lines of Code
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - name: Install and execute
+        shell: bash
+        run: |
+          sudo apt-get install -y cloc
+          make loc
+      - name: Generate report
+        run: |
+          echo '# Lines of Code:' >> $GITHUB_STEP_SUMMARY
+          cat loc.txt >> $GITHUB_STEP_SUMMARY

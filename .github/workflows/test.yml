@@ -1,0 +1,67 @@
+name: Linting and Unit Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.9]
+        os: ["ubuntu-22.04", "windows-2022"]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Restore pip cache (Linux)
+        uses: actions/cache@v3
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg', 'requirements_dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Restore pip cache (Windows)
+        uses: actions/cache@v3
+        if: startsWith(runner.os, 'Windows')
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg', 'requirements_dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip wheel
+          python -m pip install -r requirements_dev.txt
+      - name: Setup linux environment
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y make libgslcblas0 libgsl-dev
+          export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
+          sudo cp vendor/libnlopt.so /usr/local/lib/libnlopt.so.0
+          sudo ln -s /lib/x86_64-linux-gnu/libgsl.so /usr/local/lib/libgsl.so.25
+          ldd bmds/bin/BMDS330/libDRBMD.so
+      - name: Check linting
+        run: |
+          make lint
+      - name: Unit tests
+        shell: bash
+        env:
+          BMDS_REQUEST_URL: ${{ secrets.BMDS_REQUEST_URL }}
+          BMDS_TOKEN: ${{ secrets.BMDS_TOKEN }}
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            export "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"
+          fi
+          make test

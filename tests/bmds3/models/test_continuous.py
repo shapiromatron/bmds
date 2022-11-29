@@ -8,8 +8,6 @@ from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType, PriorClass
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
 
-from ..run3 import RunBmds3
-
 
 class TestPriorOverrides:
     def test_poly(self, cdataset2, negative_cdataset):
@@ -83,7 +81,6 @@ class TestBmdModelContinuous:
         )
         assert model.get_param_names() == ["g", "b1", "b2", "b3", "rho", "alpha"]
 
-    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_report(self, cdataset2):
         model = continuous.Hill(dataset=cdataset2)
         text = model.text()
@@ -107,14 +104,12 @@ class TestBmdModelContinuous:
             assert Model(cdataset2).settings.priors.prior_class is prior_class
 
     @pytest.mark.mpl_image_compare
-    @pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
     def test_bmds3_continuous_plot(self, cdataset2):
         model = continuous.Hill(dataset=cdataset2)
         model.execute()
         return model.plot()
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_increasing(cdataset2):
     """
     Basic tests to ensure AIC and BMD values are successfully created and stable for all model classes
@@ -137,7 +132,6 @@ def test_increasing(cdataset2):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_decreasing(negative_cdataset):
     # test decreasing means dataset
     for Model, bmd_values, aic in [
@@ -154,11 +148,10 @@ def test_decreasing(negative_cdataset):
         # for regenerating values
         # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
         # print(res)
-        assert pytest.approx(bmd_values, rel=0.05) == actual, Model.__name__
-        assert pytest.approx(aic, rel=0.01) == result.fit.aic, Model.__name__
+        assert pytest.approx(bmd_values, rel=0.1) == actual, Model.__name__
+        assert pytest.approx(aic, rel=0.1) == result.fit.aic, Model.__name__
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_bmds3_continuous_float_counts(cdataset2):
     for n in cdataset2.ns:
         n += 0.1
@@ -173,7 +166,6 @@ def test_bmds3_continuous_float_counts(cdataset2):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_variance(cdataset2):
     model = continuous.Power(cdataset2, dict(disttype=DistType.normal))
     result = model.execute()
@@ -201,7 +193,6 @@ def test_variance(cdataset2):
     assert result.parameters.names == ["a", "b", "c", "d", "log-alpha"]
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_continuous_polynomial(cdataset2):
     # compare bmd, bmdl, bmdu, aic values
     for degree, bmd_values, aic in [
@@ -220,7 +211,6 @@ def test_continuous_polynomial(cdataset2):
         assert pytest.approx(aic, rel=0.01) == result.fit.aic, degree
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_continuous_session(cdataset2):
     session = bmds.session.Bmds330(dataset=cdataset2)
     session.add_default_models()
@@ -232,7 +222,6 @@ def test_continuous_session(cdataset2):
     print(json.dumps(d))
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_increasing_lognormal(cdataset2):
     session = bmds.session.Bmds330(dataset=cdataset2)
     settings = dict(disttype=DistType.log_normal)
@@ -253,7 +242,6 @@ def test_increasing_lognormal(cdataset2):
         assert model.results.bmd == BMDS_BLANK_VALUE
 
 
-@pytest.mark.skipif(not RunBmds3.should_run, reason=RunBmds3.skip_reason)
 def test_decreasing_lognormal():
     ds = bmds.ContinuousDataset(
         doses=[0, 10, 50, 100, 250],

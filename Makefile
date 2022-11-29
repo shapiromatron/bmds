@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build lint format docs release dist loc test test-mpl test-mpl-regenerate
+.PHONY: dev docs lint format test test-mpl test-mpl-regenerate clean dist release loc
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -29,39 +29,50 @@ help:
 dev: ## Start developer environment
 	./bin/dev.sh
 
-clean: clean-build clean-pyc clean-test ## remove all build, test and Python artifacts
+docs: ## Generate Sphinx HTML documentation, including API docs
+	$(MAKE) -C docs clean
+	$(MAKE) -C docs html
+	$(BROWSER) docs/_build/html/index.html
 
-clean-build: ## remove build artifacts
+lint: ## Check for python formatting issues via black & flake8
+	@black . --check && isort -q --check . && flake8 .
+
+format: ## Modify python code using black & show flake8 issues
+	@black . && isort -q . && flake8 .
+
+test: ## Run all tests, except matplotlib figures
+	py.test
+
+test-mpl: ## Run all tests; compare matplotlib figures
+	py.test --mpl
+
+test-mpl-regenerate: ## Regenerate matplotlib figures in tests
+	py.test --mpl-generate-path=tests/data/mpl
+
+clean: ## Remove all build, test and Python artifacts
+	# remove build artifacts
 	rm -rf build/
 	rm -rf dist/
 	rm -rf .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
-
-clean-pyc: ## remove Python file artifacts
+	# remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
+	# remove test and coverage artifacts
 	rm -fr .tox/
 	rm -fr htmlcov/
 
-lint:  ## Check for python formatting issues via black & flake8
-	@black . --check && isort -q --check . && flake8 .
+dist: clean ## Builds python wheels
+	python setup.py bdist_wheel
+	ls -l dist
 
-format:  ## Modify python code using black & show flake8 issues
-	@black . && isort -q . && flake8 .
-
-test:  ## Run all tests, except matplotlib figures
-	py.test
-
-test-mpl:  ## Run all tests; compare matplotlib figures
-	py.test --mpl
-
-test-mpl-regenerate:  ## Regenerate matplotlib figures in tests
-	py.test --mpl-generate-path=tests/data/mpl
+release: dist ## Package and upload a release
+	twine upload dist/*
+	git tag -a "$(shell python setup.py --version)" -m ""
+	git push --tags
 
 loc: ## Generate lines of code report
 	@cloc \
@@ -69,18 +80,6 @@ loc: ## Generate lines of code report
 		--exclude-ext=json,yaml,svg,toml,ini \
 		--vcs=git \
 		--counted loc-files.txt \
+		--md \
+		--report-file=loc.txt \
 		.
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
-
-release: dist ## package and upload a release
-	twine upload dist/*
-	git tag -a "$(shell python setup.py --version)" -m ""
-	git push --tags
-
-dist: clean ## builds source and wheel package
-	python setup.py bdist_wheel
-	ls -l dist
