@@ -2,18 +2,21 @@
 History
 =======
 
-v1.0.0.dev (YYYY-MM-DD)
------------------------
-* Added BMDS 3.3 support
+Version 22.1 (2022-12-06)
+-------------------------
+
+* Added BMDS 3.3 (2022.10) support. Since the shared object can now be compiled in multiple environments, we no longer allow remote execution for newer version of BMDS.
 * Removed BMDS < 2.7 support
+* Supported wheels to build for mac, linux, and windows.
 * Added black and flake8 to enforce code style
 * Increase minimum python version to 3.9
 * Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
 * Removed `asyncio`; use `ThreadPoolExecutor` instead
+* Switched to calendar year versioning. It uses a two-part CalVer versioning scheme, such as 21.1. The first number is the year. The second is the release number within that year.
 
+Version 0.11.0 (2018-09-14)
+---------------------------
 
-v0.11.0 (2018-09-14)
---------------------
 * Used black and flake8 to enforce code style
 * Support Python3.7
 * Add new `DichotomousCancerDataset` which only needs 2 dose-groups
@@ -29,25 +32,25 @@ v0.11.0 (2018-09-14)
     * Update reporting (xlsx) to include prior sessions when doses are dropped
     * Update reporting (docx) to better document sessions where doses are dropped
 
+Version 0.10.0 (2018-04-11)
+---------------------------
 
-v0.10.0 (2018-04-11)
---------------------
 * Add Quantal linear as a default model instead of Multistage-1
 * Update documentation on default model recommendation logic
 * Fix special case where all BMDLs are 0 for model recommendations
 
+Version 0.9.1 (2018-02-22)
+--------------------------
 
-v0.9.1 (2018-02-22)
--------------------
 * Hotfix - batch word reporter
 * Used default 300 dpi for printing figures in Word reports
 * Use token for authentication for remote bmds execution monkeypatch instead of login (paired with updated `bmds-server`_)
 
 .. _`bmds-server`: https://bmds-server.readthedocs.io/
 
+Version 0.9.0 (2017-11-07)
+--------------------------
 
-v0.9.0 (2017-11-07)
--------------------
 * Add BMDS version 2.7
 * Added new ``Reporter`` class for creating Microsoft Word reports, as well as a default template for creating Word files. The reports may contain:
     - a table for the input dataset (on by default)
@@ -62,9 +65,9 @@ v0.9.0 (2017-11-07)
     - revise title to include dataset name and BMR
     - add legend
 
+Version 0.8.1 (2017-06-06)
+--------------------------
 
-v0.8.1 (2017-06-06)
--------------------
 * Use ``asyncio.create_subprocess_exec`` instead of custom Thread implementation for running BMDS models
 * Add new output to capture if BMDS model killed (``execution_halted``) based on Timeout; added to all output formats
 * Capture ``stdout`` and ``stderr`` for models which successfully complete  (in variables appropriately named ``stdout`` and ``stderr``); added to dict and data-frame outputs
@@ -80,9 +83,9 @@ v0.8.1 (2017-06-06)
 
 .. _Appveyor: https://ci.appveyor.com/project/shapiromatron/bmds
 
+Version 0.8.0 (2017-04-28)
+--------------------------
 
-v0.8.0 (2017-04-28)
--------------------
 * **BREAKING CHANGE 💥💥💥**: dropped support for Python 2 and Python ≤ 3.4
 * **PERFORMANCE 🏁🏁🏁**: asyncio_ python 3 standard library used for performance gains
 * Added new :ref:`performance section <performance>` notes on eeking out more speed using multiprocessing_
@@ -93,42 +96,44 @@ v0.8.0 (2017-04-28)
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _multiprocessing: https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor
 
-v0.7.0 (2017-03-17)
--------------------
+Version 0.7.0 (2017-03-17)
+--------------------------
+
 * Recommend the most parsimonious model, instead of the first model with target AIC/BMDL
 * Add new method to the session, ``execute_and_recommend``, with the option to try dropping doses until a model recommendation exists, or the dataset is exhausted
 * Add runtime details to output
 * Hide model failure popup when bmds unexpectedly fails  (significant performance boost)
 * Log failures by default, including displaying failed input (d) files
 
-v0.6.0 (2017-03-10)
--------------------
+Version 0.6.0 (2017-03-10)
+--------------------------
+
 * Added new ``drop_dose`` method to Dataset
 * Do not attempt to execute model when there are too few dose-groups
 * Remove doses-dropped parameter from dataset init
 * Add example notebook running actual data
 
-v0.5.3 (2017-03-02)
--------------------
+Version 0.5.3 (2017-03-02)
+--------------------------
 
 * Prevent errors when software is run with un-runnable dose-response datasets
 * Handle edge-cases for ANOVA calculation failure
 * Fix 002 bmds temporary file cleanup
 
-v0.5.2 (2017-02-15)
--------------------
+Version 0.5.2 (2017-02-15)
+--------------------------
 
 * Add custom exceptions for BMDS package
 * Explicitly check that BMDS remote-server authentication is successful
 * Hotfix - fix error when running continuous models with 3 dose groups
 
-v0.5.1 (2016-12-23)
--------------------
+Version 0.5.1 (2016-12-23)
+--------------------------
 
 * hotfix - fix exponential models (they create additional temporary files, had to ensure that they're collected and removed.)
 
-v0.5.0 (2016-12-23)
--------------------
+Version 0.5.0 (2016-12-23)
+--------------------------
 
 * For multistage and multistage cancer, by default an order 1 polynomial model is also executed (previously started at order 2)
 * Update documentation beyond quickstart including API
@@ -137,8 +142,8 @@ v0.5.0 (2016-12-23)
 * Export dose-response plots
 * Improve documentation with better describing API and quickstart
 
-v0.4.0 (2016-12-14)
--------------------
+Version 0.4.0 (2016-12-14)
+--------------------------
 
 * Added Dichotomous-Hill model to list of dichotomous models
 * Allowed global overrides (such as BMR settings) as an optional input to ``Session.add_default_models``
@@ -149,8 +154,8 @@ v0.4.0 (2016-12-14)
     - Polynomial like models include: Polynomial, Multistage, and Multistage-Cancer
 * Added the ability to use individual continuous data, instead of summary data
 
-v0.3.0 (2016-12-05)
--------------------
+Version 0.3.0 (2016-12-05)
+--------------------------
 
 * Model recommendation system enabled [`Wignall et al. 2014`_]
 * Default continuous variance model now calculated based on dataset using same statistics as BMDS [Thanks Longlong!]
@@ -160,21 +165,21 @@ v0.3.0 (2016-12-05)
 
 .. _`Wignall et al. 2014`: https://doi.org/10.1289/ehp.1307539
 
-v0.2.0 (2016-11-23)
--------------------
+Version 0.2.0 (2016-11-23)
+--------------------------
 
 * Remove older version of BMDS unused in model code
 * Updated to working versions of BMDS code
 
-v0.1.0 (2016-10-25)
--------------------
+Version 0.1.0 (2016-10-25)
+--------------------------
 
 * Allowed for monkeypatch check for executing on linux, since BMDS is Windows-only
 * Added model recommendation logic
 * Added python 3 support (3.5)
 * First PyPI release
 
-v0.0.1 (2016-07-29)
--------------------
+Version 0.0.1 (2016-07-29)
+--------------------------
 
 * Initial version (github only)

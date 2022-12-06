@@ -133,14 +133,14 @@ def _load_model_priors():
 def get_dichotomous_prior(model: DichotomousModel, prior_class: PriorClass) -> ModelPriors:
     if len(_model_priors) == 0:
         _load_model_priors()
-    key = f"{Dtype.DICHOTOMOUS}-{model.id}-{prior_class}"
+    key = f"{Dtype.DICHOTOMOUS.value}-{model.id}-{prior_class}"
     return _model_priors[key].copy(deep=True)
 
 
 def get_continuous_prior(model: ContinuousModel, prior_class: PriorClass) -> ModelPriors:
     if len(_model_priors) == 0:
         _load_model_priors()
-    key = f"{Dtype.CONTINUOUS}-{model.id}-{prior_class}"
+    key = f"{Dtype.CONTINUOUS.value}-{model.id}-{prior_class}"
     return _model_priors[key].copy(deep=True)
 
 

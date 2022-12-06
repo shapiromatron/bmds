@@ -15,18 +15,6 @@ model version.  To get the latest version BMDS Session, you can use the :func:`b
 .. autoclass:: bmds.session.BMDS
     :members:
 
-.. autoclass:: bmds.session.BMDS_v231
-    :members:
-
-.. autoclass:: bmds.session.BMDS_v240
-    :members:
-
-.. autoclass:: bmds.session.BMDS_v260
-    :members:
-
-.. autoclass:: bmds.session.BMDS_v2601
-    :members:
-
 .. autoclass:: bmds.session.BMDS_v270
     :members:
 
@@ -55,30 +43,3 @@ dataset types implemented currently:
 
 .. autoclass:: bmds.datasets.ContinuousIndividualDataset
     :members:
-
-BMD models
-----------
-
-.. autoclass:: bmds.models.BMDModel
-    :members:
-
-Batch runs using SessionBatch
------------------------------
-
-.. automodule:: bmds.batch
-    :members:
-
-Reporting in Word
------------------
-
-Sending BMDS results from a session is also possible.
-
-To save a single Session to a Word file, use the
-:func:`bmds.session.BMDS.to_docx` method.
-
-To save multiple sessions to a Word file, use a :class:`bmds.reporter.Reporter`
-object. This also allows a custom Word template and custom Word styles to be
-applied to outputs.
-
-.. autoclass:: bmds.reporter.Reporter
-    :members: __init__, add_session, save
