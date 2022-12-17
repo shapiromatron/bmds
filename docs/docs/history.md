@@ -2,15 +2,15 @@
 
 ## Version 22.1
 
+* Switched to calendar year versioning. It uses a two-part CalVer versioning scheme, such as 22.1. The first number is the year. The second is the release number within that year, starting with v1. Patch versions may be created if changes are minor.
 * Added BMDS 3.3 (2022.10) support. Since the shared object can now be compiled in multiple environments, we no longer allow remote execution for newer version of BMDS.
 * Removed BMDS < 2.7 support
-* Supported wheels to build for mac, linux, and windows.
+* Supported wheels to build for Mac, Linux, and Windows
 * Added black and flake8 to enforce code style
 * Increase minimum python version to 3.9
 * Allow dichotomous cancer datasets to drop doses to 2 dose-groups instead of 3
 * Removed `asyncio`; use `ThreadPoolExecutor` instead
-* Converted documentation to markdown mkdocs instead of sphinx
-* Switched to calendar year versioning. It uses a two-part CalVer versioning scheme, such as 21.1. The first number is the year. The second is the release number within that year
+* Converted documentation to mkdocs instead of sphinx
 
 Released on 2022-12-17.
 

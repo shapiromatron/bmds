@@ -5,7 +5,7 @@ for recommending a best-fitting model from a suite of models run in BMDS. The
 rules are a combination of heuristic and statistical rules, and have been
 generated from primarily from a few different sources:
 
-1. US EPA BMDS technical guidance ([EPA 2012](https://www.epa.gov/risk/benchmark-dose-technical-guidance))
+1. USEPA BMDS technical guidance ([EPA 2012](https://www.epa.gov/risk/benchmark-dose-technical-guidance))
 2. [Wignall et al. 2014](http://dx.doi.org/10.1289/ehp.1307539)
 
 A user selects which models to run and then all models are executed.
