@@ -1,0 +1,33 @@
+site_name: Python BMDS
+repo_url: https://github.com/shapiromatron/bmds
+repo_name: shapiromatron/bmds
+edit_uri: ""
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    primary: teal
+    accent: teal
+  features:
+    - navigation.instant
+    - navigation.tracking
+nav:
+  - Overview: index.md
+  - installation.md
+  - logic.md
+  - benchmarks.md
+  - history.md
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.arithmatex:
+        generic: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
