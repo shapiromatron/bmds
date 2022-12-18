@@ -1,4 +1,4 @@
-.PHONY: dev docs lint format test test-mpl test-mpl-regenerate clean dist release loc
+.PHONY: dev docs docs-serve lint format test test-mpl test-mpl-regenerate clean dist release loc
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -29,10 +29,11 @@ help:
 dev: ## Start developer environment
 	./bin/dev.sh
 
-docs: ## Generate Sphinx HTML documentation, including API docs
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+docs: ## Build documentation
+	cd docs; mkdocs build --strict
+
+docs-serve: ## Generate documentation
+	cd docs; mkdocs serve -a localhost:8050
 
 lint: ## Check for python formatting issues via black & flake8
 	@black . --check && isort -q --check . && flake8 .

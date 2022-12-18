@@ -14,14 +14,7 @@ BMDS Python interface
 .. image:: https://zenodo.org/badge/61229626.svg
    :target: https://zenodo.org/badge/latestdoi/61229626
 
-This Python package is designed to run the U.S. EPA BMDS_ software from a python
-interface. The toolkit is currently used in the following projects:
+This Python package is designed to run the `USEPA BMDS`_ software from a python
+interface. It requires Python3.9+.
 
-- The Health Assessment Workspace Collaborative (`HAWC`_)
-- `BMDS server`_
-
-It requires Python3.9+.
-
-.. _`BMDS`: https://www.epa.gov/bmds
-.. _`HAWC`: https://hawcproject.org
-.. _`BMDS server`: https://github.com/shapiromatron/bmds-server/
+.. _`USEPA BMDS`: https://www.epa.gov/bmds
