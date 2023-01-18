@@ -1,6 +1,8 @@
-from typing import List
+import math
+from typing import ClassVar, List
 
 import numpy as np
+from pydantic import root_validator
 
 from .. import constants, plotting
 from ..utils import str_list
@@ -122,6 +124,9 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
     incidences: List[int]
     litter_covariates: List[float]
 
+    MIN_N: ClassVar = 3
+    MAX_N: ClassVar = math.inf
+
     def deserialize(self) -> NestedDichotomousDataset:
         ds = NestedDichotomousDataset(
             doses=self.doses,
@@ -131,3 +136,20 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
             **self.metadata.dict(),
         )
         return ds
+
+    @root_validator(skip_on_failure=True)
+    def num_groups(cls, values):
+        n_doses = len(values=["doses"])
+        n_litter_ns = len(values=["litter_ns"])
+        n_incidences = len(values=["incidences"])
+        n_litter_covariates = len(values=["litter_covariates"])
+        if len(set([n_doses, n_litter_ns, n_incidences, n_litter_covariates])) > 1:
+            raise ValueError("Length of dose, litter, incidence, and covariate are not the same")
+        if n_doses < cls.MIN_N:
+            raise ValueError(f"At least {cls.MIN_N} groups are required")
+        if n_doses > cls.MAX_N:
+            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
+        for incidence, n in zip(values['incidences'], values['litter_ns']):
+            if incidence > n:
+                raise ValueError(f"Incidence cannot be greater than N ({incidence} > {n})")
+        return values
