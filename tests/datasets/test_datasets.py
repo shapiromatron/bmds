@@ -6,6 +6,8 @@ from pydantic import ValidationError
 
 import bmds
 
+from ..bmds2.run import windows_only
+
 dummy2 = [1, 2]
 dummy3 = [1, 2, 3]
 dummy4 = [1, 2, 3, 4]
@@ -524,7 +526,7 @@ class TestContinuousIndividualDataset:
         assert ds1.serialize().dict() == ds2.serialize().dict()
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_correct_variance_model(cdataset):
     # Check that the correct variance model is selected for dataset
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
