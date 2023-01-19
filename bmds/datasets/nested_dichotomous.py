@@ -149,7 +149,7 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
             raise ValueError(f"At least {cls.MIN_N} groups are required")
         if n_doses > cls.MAX_N:
             raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
-        for incidence, n in zip(values['incidences'], values['litter_ns']):
+        for incidence, n in zip(values["incidences"], values["litter_ns"]):
             if incidence > n:
                 raise ValueError(f"Incidence cannot be greater than N ({incidence} > {n})")
         return values
