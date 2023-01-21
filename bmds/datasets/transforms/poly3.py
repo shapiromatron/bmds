@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def adjust_incidence(
-    df: pd.DataFrame, power: float = 3, max_day: Optional[int] = None
+    df: pd.DataFrame, power: Optional[float] = 3, max_day: Optional[int] = 730
 ) -> pd.DataFrame:
     if df.columns.tolist() != ["dose", "day", "has_tumor"]:
         raise ValueError("Unexpected column names")
@@ -31,3 +31,16 @@ def summary_stats(df: pd.DataFrame) -> pd.DataFrame:
     df2.loc[:, "proportion"] = df2.incidence / df2.n
     df2.loc[:, "adj_proportion"] = df2.incidence / df2.adj_n
     return df2
+
+
+def calculate(
+    doses: list[float],
+    day: list[int],
+    has_tumor: list[int],
+    power: Optional[float] = 3,
+    max_day: Optional[int] = 730,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    df = pd.DataFrame(dict(dose=doses, day=day, has_tumor=has_tumor))
+    df2 = adjust_incidence(df, power, max_day)
+    df3 = summary_stats(df2)
+    return df2, df3
