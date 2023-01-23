@@ -704,7 +704,7 @@ class TestSchema:
 
         data = deepcopy(v1)
         data["doses"] = [1, 2]
-        with pytest.raises(ValidationError, match="same length"):
+        with pytest.raises(ValidationError, match="Length of doses and responses are not the same"):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
 
         data = {
@@ -713,5 +713,5 @@ class TestSchema:
             "responses": [20, 20],
             "metadata": {},
         }
-        with pytest.raises(ValidationError, match="Must have 3 or more dose groups"):
+        with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)

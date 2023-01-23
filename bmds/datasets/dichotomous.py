@@ -270,7 +270,7 @@ class DichotomousCancerDataset(DichotomousDataset):
 
 
 class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
-    MIN_DG: ClassVar = 2
+    MIN_N: ClassVar = 2
 
     def deserialize(self) -> DichotomousCancerDataset:
         ds = DichotomousCancerDataset(

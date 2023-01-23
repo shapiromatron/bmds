@@ -117,7 +117,7 @@ class NestedDichotomousDataset(DatasetBase):
 
 
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):
-    dtype: constants.Dtype
+    dtype: constants.Dtype = constants.Dtype.NESTED_DICHOTOMOUS
     metadata: DatasetMetadata
     doses: List[float]
     litter_ns: List[int]
@@ -139,10 +139,10 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
 
     @root_validator(skip_on_failure=True)
     def num_groups(cls, values):
-        n_doses = len(values=["doses"])
-        n_litter_ns = len(values=["litter_ns"])
-        n_incidences = len(values=["incidences"])
-        n_litter_covariates = len(values=["litter_covariates"])
+        n_doses = len(values["doses"])
+        n_litter_ns = len(values["litter_ns"])
+        n_incidences = len(values["incidences"])
+        n_litter_covariates = len(values["litter_covariates"])
         if len(set([n_doses, n_litter_ns, n_incidences, n_litter_covariates])) > 1:
             raise ValueError("Length of dose, litter, incidence, and covariate are not the same")
         if n_doses < cls.MIN_N:
