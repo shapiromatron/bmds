@@ -7,6 +7,8 @@ import pytest
 import bmds
 from bmds.bmds2 import models
 
+from .run import windows_only
+
 
 def test_executable_path():
 
@@ -19,7 +21,7 @@ def test_executable_path():
                 assert os.path.exists(exe)
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_default_execution(cdataset, ddataset, cidataset):
     # All models execute given valid inputs
 
@@ -120,7 +122,7 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert np.isclose(actual, expected).all()
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_parameter_settings(cdataset):
     # assert to settings are used
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
@@ -146,7 +148,7 @@ def test_parameter_settings(cdataset):
     assert model2.output["parameters"]["beta_3"]["estimate"] == 0.0
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_tiny_datasets():
     # Observation # < parameters # for Hill model.
     # Make sure this doesn't break execution or recommendation.
@@ -168,7 +170,7 @@ def test_tiny_datasets():
     assert session.recommended_model_index is None
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_continuous_restrictions(cdataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     session.add_model(bmds.constants.M_Power)
@@ -191,7 +193,7 @@ def test_continuous_restrictions(cdataset):
     assert "Power parameter is not restricted" in hill2.outfile
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_dichotomous_restrictions(ddataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset)
     for model in session.model_options:
@@ -222,7 +224,7 @@ def test_can_be_executed(bad_cdataset):
     assert model.can_be_executed is False
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_bad_datasets(bad_cdataset, bad_ddataset):
     # ensure library doesn't fail with a terrible dataset that should never
     # be executed in the first place (which causes BMDS to throw NaN)
@@ -235,7 +237,7 @@ def test_bad_datasets(bad_cdataset, bad_ddataset):
     assert session.recommended_model_index is None
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     session = bmds.BMDS.version(
         "BMDS270", bmds.constants.DICHOTOMOUS, dataset=ddataset_requires_dose_drop
@@ -248,7 +250,7 @@ def test_execute_with_dosedrop(ddataset_requires_dose_drop):
     assert len(session.dataset.ns) == len(session.original_dataset.ns) - 1
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_large_dataset():
     # N is so large that the residual table cannot be parsed correctly
     dataset = bmds.ContinuousDataset(

@@ -3,7 +3,6 @@ import os
 import platform
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from datetime import datetime
 from typing import Dict, Tuple
 
 import pandas as pd
@@ -11,7 +10,7 @@ from simple_settings import settings
 
 from .. import constants
 from ..version import __version__
-from . import exports, logic, models, remote, reporter
+from . import exports, logic, models, reporter
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +89,7 @@ class BMDS:
         if self._can_execute_locally():
             self._execute()
         else:
-            self._execute_remote()
+            raise RuntimeError("Can only execute on Windows")
 
     def _execute(self):
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -98,30 +97,6 @@ class BMDS:
 
         # evaluate response; throw Exceptions if raised
         list(promises)
-
-    def _execute_remote(self):
-        # submit data
-        start_time = datetime.now()
-        executable_models = []
-        for model in self.models:
-            model.execution_start = start_time
-            if model.can_be_executed:
-                executable_models.append(model)
-            else:
-                remote._set_results(model)
-
-        if len(executable_models) == 0:
-            return
-
-        session = remote._get_requests_session()
-        payload = remote._get_payload(executable_models)
-        logger.debug(f"Submitting payload: {payload}")
-        resp = session.post(session._BMDS_REQUEST_URL, data=payload)
-
-        # parse results for each model
-        jsoned = resp.json()
-        for model, results in zip(executable_models, jsoned):
-            remote._set_results(model, results)
 
     @property
     def recommendation_enabled(self):
