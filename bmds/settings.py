@@ -41,7 +41,6 @@ LOGGING = {
     },
     "loggers": {
         "": {"handlers": ["logfile"], "level": "INFO"},
-        "requests.packages.urllib3": {"handlers": ["logfile"], "level": "INFO"},
     },
 }
 

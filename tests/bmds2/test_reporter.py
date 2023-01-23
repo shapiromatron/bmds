@@ -1,9 +1,9 @@
-import pytest
-
 import bmds
 
+from .run import windows_only
 
-@pytest.mark.vcr()
+
+@windows_only
 def test_reporter(cdataset, ddataset, cidataset, rewrite_data_files):
     # Check that API works; if VIEW_REPORTS is in test environment then reports
     # are also written to disk for manual inspection.
