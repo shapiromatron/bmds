@@ -1,10 +1,11 @@
 import numpy as np
-import pytest
 
 import bmds
 
+from .run import windows_only
 
-@pytest.mark.vcr()
+
+@windows_only
 def test_batch(cdataset, ddataset):
 
     batch = bmds.bmds2.SessionBatch()

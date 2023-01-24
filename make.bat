@@ -12,7 +12,6 @@ goto :help
 :help
 echo.Please use `make ^<target^>` where ^<target^> is one of
 echo.  test         run python tests
-echo.  test-refresh removes mock requests and runs python tests
 echo.  lint         perform both lint-py and lint-js
 echo.  format       perform both format-py and lint-js
 echo.  dist         builds source and wheel package
@@ -27,11 +26,6 @@ black . && isort -q . && flake8 .
 goto :eof
 
 :test
-py.test
-goto :eof
-
-:test-refresh
-rmdir /s /q .\tests\cassettes
 py.test
 goto :eof
 

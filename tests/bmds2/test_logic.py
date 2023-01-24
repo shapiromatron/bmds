@@ -5,6 +5,8 @@ import pytest
 import bmds
 from bmds.bmds2.logic import Recommender, rules
 
+from .run import windows_only
+
 
 def dedentify(txt):
     return textwrap.dedent(txt).strip()
@@ -124,7 +126,7 @@ def test_rules_df():
     assert df.shape == (20, 4)
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_apply_logic(cdataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
     for model in session.model_options:
@@ -381,7 +383,7 @@ def test_error_messages(cdataset):
         assert msg == expected
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_parsimonious_recommendation(reduced_cdataset):
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=reduced_cdataset)
     session.add_default_models()
@@ -408,7 +410,7 @@ def test_parsimonious_recommendation(reduced_cdataset):
     assert Recommender._get_parsimonious_model(models).name == "Linear"
 
 
-@pytest.mark.vcr()
+@windows_only
 def test_no_bmdl():
     # this model is valid but returns a BMDL of 0; confirm it can be recommended
     ds = bmds.DichotomousDataset(

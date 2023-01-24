@@ -7,13 +7,6 @@ import bmds
 
 
 @pytest.fixture(scope="session")
-def vcr_config():
-    return {
-        "filter_headers": [("authorization", "<omitted>")],
-    }
-
-
-@pytest.fixture(scope="session")
 def data_path():
     return Path(__file__).parent.absolute() / "data"
 
@@ -29,12 +22,6 @@ def rewrite_data_files():
     A test exists in CI to ensure that this flag is set to False on commit.
     """
     return False
-
-
-@pytest.fixture(scope="module")
-def vcr_cassette_dir(request):
-    cassette_dir = Path(__file__).parent.absolute() / "data/cassettes" / request.module.__name__
-    return str(cassette_dir)
 
 
 @pytest.fixture
