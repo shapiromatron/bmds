@@ -45,13 +45,11 @@ def summary_stats(df: pd.DataFrame) -> pd.DataFrame:
     dichotomous dose-response modeling.
 
     Args:
-        df (pd.DataFrame): _description_
-
-    Raises:
-        ValueError: _description_
+        df (pd.DataFrame): The input dataframe of individual response data with adjustment
+            calculated from the `adjust_n` method above.
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: A dataframe of group-level values, both adjusted and unadjusted
     """
     columns = ["dose", "day", "has_tumor", "adj_n"]
     if df.columns.tolist() != columns:
