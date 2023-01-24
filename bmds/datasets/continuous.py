@@ -1,3 +1,4 @@
+import math
 from typing import ClassVar, List, Optional, Union
 
 import numpy as np
@@ -222,7 +223,8 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     anova: Optional[AnovaTests]
     plotting: Optional[DatasetPlottingSchema]
 
-    MIN_DG: ClassVar = 3
+    MIN_N: ClassVar = 3
+    MAX_N: ClassVar = math.inf
 
     @root_validator(skip_on_failure=True)
     def num_groups(cls, values):
@@ -230,10 +232,12 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
         n_ns = len(values["ns"])
         n_means = len(values["means"])
         n_stdevs = len(values["stdevs"])
-        if len(set([n_doses, n_ns, n_means, n_stdevs])) != 1:
-            raise ValueError("Length of dose, n, mean, stdevs are not the same")
-        if n_doses < cls.MIN_DG:
-            raise ValueError(f"At least {cls.MIN_DG} groups are required")
+        if len(set([n_doses, n_ns, n_means, n_stdevs])) > 1:
+            raise ValueError("Length of doses, ns, means, and stdevs are not the same")
+        if n_doses < cls.MIN_N:
+            raise ValueError(f"At least {cls.MIN_N} groups are required")
+        if n_doses > cls.MAX_N:
+            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
         return values
 
     def deserialize(self) -> ContinuousDataset:
@@ -421,8 +425,19 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     responses: List[float]
     anova: Optional[AnovaTests]
 
+    MIN_N: ClassVar = 3
+    MAX_N: ClassVar = math.inf
+
     @root_validator(skip_on_failure=True)
     def num_groups(cls, values):
+        n_doses = len(values["doses"])
+        n_responses = len(values["responses"])
+        if len(set([n_doses, n_responses])) > 1:
+            raise ValueError("Length of doses and responses are not the same")
+        if n_doses < cls.MIN_N:
+            raise ValueError(f"At least {cls.MIN_N} groups are required")
+        if n_doses > cls.MAX_N:
+            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
         # may throw ValueErrors; caught in validator
         ContinuousIndividualDataset(doses=values["doses"], responses=values["responses"])
         return values

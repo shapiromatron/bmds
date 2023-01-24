@@ -15,222 +15,6 @@ dummy3_dups = [0, 0, 1]
 dummy3_floats = [0.1, 0.2, 0.3]
 
 
-class TestBaseDatasetFunctionality:
-    # we use dichotomous as subclass to test; these methods are on base
-
-    def test_dose_space(self):
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
-        )
-        xs = ds.dose_linspace
-        assert xs.min() == bmds.constants.ZEROISH
-        assert xs.max() == 29.75
-        assert xs.size == 100
-
-    def test_reporting_metadata(self):
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
-        )
-        assert ds._get_dose_units_text() == ""
-        assert ds._get_response_units_text() == ""
-        assert ds._get_dataset_name() == "BMDS output results"
-
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75],
-            ns=[75, 49, 50, 49],
-            incidences=[5, 1, 3, 14],
-            id=123,
-            name="example dataset",
-            dose_units="mg/kg/d",
-            response_units="ug/m3",
-            dose_name="Intravenous",
-            response_name="Volume",
-        )
-        assert ds._get_dose_units_text() == " (mg/kg/d)"
-        assert ds._get_response_units_text() == " (ug/m3)"
-        assert ds._get_dataset_name() == "example dataset"
-
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75],
-            ns=[75, 49, 50, 49],
-            incidences=[5, 1, 3, 14],
-            id=123,
-        )
-        assert ds._get_dataset_name() == "Dataset #123"
-
-    def test_extra_metadata(self):
-        # extra metadata is allowed, but not used in bmds
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75],
-            ns=[75, 49, 50, 49],
-            incidences=[5, 1, 3, 14],
-            id=123,
-            extra=[1, 2, 3],
-        )
-        assert ds.metadata.extra == [1, 2, 3]
-        assert ds.metadata.dict()["extra"] == [1, 2, 3]
-
-
-class TestDichotomousDataset:
-    def test_validation(self):
-        # these should be valid
-        bmds.DichotomousDataset(doses=dummy3, ns=dummy3, incidences=dummy3)
-        # some data adjustments result in non-integer based counts
-        bmds.DichotomousDataset(doses=dummy3_floats, ns=dummy3_floats, incidences=dummy3_floats)
-        # these should raise errors
-        with pytest.raises((IndexError, ValueError)):
-            # insufficient number of dose groups
-            bmds.DichotomousDataset(doses=dummy2, ns=dummy2, incidences=dummy2)
-            # different sized lists
-            bmds.DichotomousDataset(doses=dummy4, ns=dummy3, incidences=dummy3)
-            # incidence > n
-            bmds.DichotomousDataset(doses=dummy3, ns=[3, 3, 3], incidences=[3, 3, 4])
-            # zero in ns data
-            bmds.DichotomousDataset(doses=dummy3, ns=[0, 2, 3], incidences=dummy3)
-
-    def test_metadata(self):
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75], ns=[75, 49, 50, 49], incidences=[5, 1, 3, 14]
-        )
-        assert ds.to_dict()["metadata"] == {
-            "id": None,
-            "name": "",
-            "dose_units": "",
-            "response_units": "",
-            "dose_name": "",
-            "response_name": "",
-        }
-
-        assert ds.get_xlabel() == "Dose"
-        assert ds.get_ylabel() == "Fraction affected"
-
-        ds = bmds.DichotomousDataset(
-            doses=[0, 1.96, 5.69, 29.75],
-            ns=[75, 49, 50, 49],
-            incidences=[5, 1, 3, 14],
-            id=123,
-            name="example dataset",
-            dose_units="mg/kg/d",
-            response_units="ug/m3",
-            dose_name="Intravenous",
-            response_name="Volume",
-        )
-        assert ds.to_dict()["metadata"] == {
-            "id": 123,
-            "name": "example dataset",
-            "dose_units": "mg/kg/d",
-            "response_units": "ug/m3",
-            "dose_name": "Intravenous",
-            "response_name": "Volume",
-        }
-        assert ds.get_xlabel() == "Intravenous (mg/kg/d)"
-        assert ds.get_ylabel() == "Volume (ug/m3)"
-
-    def test_dfile_outputs(self):
-        ds = bmds.DichotomousDataset(doses=dummy3, ns=[5, 5, 5], incidences=[0, 1, 2])
-        dfile = ds.as_dfile()
-        expected = "Dose Incidence NEGATIVE_RESPONSE\n1.000000 0 5\n2.000000 1 4\n3.000000 2 3"
-        assert dfile == expected
-
-    def test_dose_drops(self):
-        ddataset = bmds.DichotomousDataset(
-            doses=list(reversed([0, 1.96, 5.69, 29.75])),
-            ns=list(reversed([75, 49, 50, 49])),
-            incidences=list(reversed([5, 1, 3, 14])),
-        )
-        assert (
-            ddataset.as_dfile()
-            == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47\n29.750000 14 35"
-        )  # noqa
-        ddataset.drop_dose()
-        assert (
-            ddataset.as_dfile()
-            == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47"
-        )  # noqa
-        with pytest.raises(ValueError):
-            ddataset.drop_dose()
-
-    def test_serialize(self):
-        ds1 = bmds.DichotomousDataset(
-            doses=[1, 2, 3, 4], ns=[1, 2, 3, 4], incidences=[1, 2, 3, 4], id=123, name="test"
-        )
-
-        # make sure serialize looks correct
-        serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
-            "dtype": "D",
-            "metadata": {
-                "id": 123,
-                "name": "test",
-                "dose_units": "",
-                "response_units": "",
-                "dose_name": "",
-                "response_name": "",
-            },
-            "doses": [1.0, 2.0, 3.0, 4.0],
-            "ns": [1, 2, 3, 4],
-            "incidences": [1, 2, 3, 4],
-        }
-
-        # make sure we get the correct class back
-        ds2 = serialized.deserialize()
-        assert isinstance(ds2, bmds.DichotomousDataset)
-        assert not isinstance(ds2, bmds.DichotomousCancerDataset)
-
-        # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
-
-
-class TestDichotomousCancerDataset:
-    def test_validation(self):
-        # these should be valid
-        bmds.DichotomousCancerDataset(doses=dummy2, ns=dummy2, incidences=dummy2)
-
-    def test_dose_drops(self):
-        # assert you can drop to 2 dose-groups for dichotomous cancer
-        dcdataset = bmds.DichotomousCancerDataset(
-            doses=list(reversed([0, 1.96, 5.69, 29.75])),
-            ns=list(reversed([75, 49, 50, 49])),
-            incidences=list(reversed([5, 1, 3, 14])),
-        )
-        dcdataset.drop_dose()
-        dcdataset.drop_dose()
-        expected = "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48"
-        assert dcdataset.as_dfile() == expected
-        with pytest.raises(ValueError):
-            dcdataset.drop_dose()
-
-    def test_serialize(self):
-        ds1 = bmds.DichotomousCancerDataset(
-            doses=[1, 2, 3, 4], ns=[1, 2, 3, 4], incidences=[1, 2, 3, 4], id=123, name="test"
-        )
-
-        # make sure serialize looks correct
-        serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
-            "dtype": "DC",
-            "metadata": {
-                "id": 123,
-                "name": "test",
-                "dose_units": "",
-                "response_units": "",
-                "dose_name": "",
-                "response_name": "",
-            },
-            "doses": [1.0, 2.0, 3.0, 4.0],
-            "ns": [1, 2, 3, 4],
-            "incidences": [1, 2, 3, 4],
-        }
-
-        # make sure we get the correct class back
-        ds2 = serialized.deserialize()
-        assert isinstance(ds2, bmds.DichotomousDataset)
-        assert isinstance(ds2, bmds.DichotomousCancerDataset)
-
-        # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
-
-
 class TestContinuousSummaryDataset:
     def test_validation(self):
         # these should be valid
@@ -306,6 +90,21 @@ class TestContinuousSummaryDataset:
         ds = bmds.ContinuousDataset(doses=dummy4, ns=dummy4, means=[0, 2, -1, 0], stdevs=dummy4)
         assert ds.is_increasing is True
 
+    @windows_only
+    def test_correct_variance_model(self, cdataset):
+        # Check that the correct variance model is selected for dataset
+        session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
+        for model in session.model_options:
+            session.add_model(bmds.constants.M_Power)
+        session.execute()
+        model = session.models[0]
+        anova = cdataset.anova()
+        calc_pvalue2 = anova.test2.TEST
+        correct_pvalue2 = model.output["p_value2"]
+        # large tolerance due to reporting in text-file
+        atol = 1e-3
+        assert np.isclose(calc_pvalue2, correct_pvalue2, atol=atol)
+
     def test_anova(self, anova_dataset, bad_anova_dataset):
         # Check that anova generates expected output from original specifications.
         report = anova_dataset.get_anova_report()
@@ -344,7 +143,6 @@ class TestContinuousSummaryDataset:
         assert ds._get_response_units_text() == " (mg/kg)"
 
     def test_dose_drops(self, cidataset):
-
         cdataset = bmds.ContinuousDataset(
             doses=list(reversed([0, 10, 50, 150, 400])),
             ns=list(reversed([111, 142, 143, 93, 42])),
@@ -526,192 +324,53 @@ class TestContinuousIndividualDataset:
         assert ds1.serialize().dict() == ds2.serialize().dict()
 
 
-@windows_only
-def test_correct_variance_model(cdataset):
-    # Check that the correct variance model is selected for dataset
-    session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)
-    for model in session.model_options:
-        session.add_model(bmds.constants.M_Power)
-    session.execute()
-    model = session.models[0]
-    anova = cdataset.anova()
-    calc_pvalue2 = anova.test2.TEST
-    correct_pvalue2 = model.output["p_value2"]
-    # large tolerance due to reporting in text-file
-    atol = 1e-3
-    assert np.isclose(calc_pvalue2, correct_pvalue2, atol=atol)
-
-
-class TestNestedDichtomousDataset:
-    def test_validation(self):
-        # these should be valid
-        bmds.NestedDichotomousDataset(
-            doses=dummy3, litter_ns=dummy3, incidences=dummy3, litter_covariates=dummy3
-        )
-        # these should raise errors
-        with pytest.raises((IndexError, ValueError)):
-            # insufficient number of dose groups
-            bmds.NestedDichotomousDataset(
-                doses=dummy2, litter_ns=dummy2, incidences=dummy2, litter_covariates=dummy2
-            )
-            # different sized lists
-            bmds.NestedDichotomousDataset(
-                doses=dummy4, litter_ns=dummy3, incidences=dummy3, litter_covariates=dummy3
-            )
-
-    def test_metadata(self):
-        ds = bmds.NestedDichotomousDataset(
-            doses=dummy3, litter_ns=dummy3, incidences=dummy3, litter_covariates=dummy3
-        )
-        assert ds.to_dict()["metadata"] == {
-            "id": None,
-            "name": "",
-            "dose_units": "",
-            "response_units": "",
-            "dose_name": "",
-            "response_name": "",
-        }
-
-        assert ds.get_xlabel() == "Dose"
-        assert ds.get_ylabel() == "Fraction affected"
-
-        ds = bmds.NestedDichotomousDataset(
-            doses=dummy3,
-            litter_ns=dummy3,
-            incidences=dummy3,
-            litter_covariates=dummy3,
-            id=123,
-            name="example dataset",
-            dose_units="mg/kg/d",
-            response_units="ug/m3",
-            dose_name="Intravenous",
-            response_name="Volume",
-        )
-        assert ds.to_dict()["metadata"] == {
-            "id": 123,
-            "name": "example dataset",
-            "dose_units": "mg/kg/d",
-            "response_units": "ug/m3",
-            "dose_name": "Intravenous",
-            "response_name": "Volume",
-        }
-        assert ds.get_xlabel() == "Intravenous (mg/kg/d)"
-        assert ds.get_ylabel() == "Volume (ug/m3)"
-
-    def test_drop_dose(self, nd_dataset):
-        with pytest.raises(NotImplementedError):
-            nd_dataset.drop_dose()
-
-    def test_serialize(self, nd_dataset):
-        ds1 = nd_dataset
-
-        # make sure serialize looks correct
-        # fmt: off
-        assert ds1.serialize().dict() == {
-            "dtype": "ND",
-            "metadata": {
-                "id": 123,
-                "name": "",
-                "dose_units": "",
-                "response_units": "",
-                "dose_name": "",
-                "response_name": "",
-            },
-            "doses": [
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                25, 25, 25, 25, 25, 25, 25, 25, 25,
-                50, 50, 50, 50, 50, 50, 50, 50, 50,
-            ],
-            "litter_ns": [
-                16, 9, 15, 14, 13, 9, 10, 14, 10, 11, 14,
-                9, 14, 9, 13, 12, 10, 10, 11, 14,
-                11, 11, 14, 11, 10, 11, 10, 15, 7,
-            ],
-            "incidences": [
-                1, 1, 2, 3, 3, 0, 2, 2, 1, 2, 4,
-                5, 6, 2, 6, 3, 1, 2, 4, 3,
-                4, 5, 5, 4, 5, 4, 5, 6, 2,
-            ],
-            "litter_covariates": [
-                16, 9, 15, 14, 13, 9, 10, 14, 10, 11, 14,
-                9, 14, 9, 13, 12, 10, 10, 11, 14,
-                11, 11, 14, 11, 10, 11, 10, 15, 7,
-            ]
-
-        }
-        # fmt: on
-
-        # make sure we get the correct class back
-        ds2 = ds1.serialize().deserialize()
-        assert isinstance(ds2, bmds.NestedDichotomousDataset)
-
-        # check serialization equality
-        assert ds1.serialize().dict() == ds2.serialize().dict()
-
-
-class TestSchema:
-    def test_dichotomous(self, ddataset):
-        # check that cycling through serialization returns the same
-        v1 = ddataset.serialize().dict()
-        v2 = bmds.DichotomousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
-        assert v1 == v2
-
-        data = deepcopy(v1)
-        data["ns"] = [1, 2]
-        with pytest.raises(ValidationError, match="Length"):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
-
-        data = {
-            "dtype": "D",
-            "doses": [0, 10],
-            "ns": [20, 20],
-            "incidences": [0, 0],
-            "metadata": {},
-        }
-        # two groups ok for a cancer dataset
-        bmds.DichotomousCancerDatasetSchema.parse_obj(data)
-        # but not ok for a standard dataset
-        with pytest.raises(ValidationError, match="At least 3 groups are required"):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
-
-    def test_continuous(self, cdataset):
+class TestContinuousDatasetSchema:
+    def test_schema(self, cdataset):
         # check that cycling through serialization returns the same
         v1 = cdataset.serialize().dict()
         v2 = bmds.ContinuousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
         assert v1 == v2
 
         data = deepcopy(v1)
-        data["ns"] = [1, 2]
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of doses, ns, means, and stdevs are not the same",
+        ):
+            bmds.ContinuousDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
+        data.update(ns=[1, 2])
         with pytest.raises(ValidationError, match="Length"):
             bmds.ContinuousDatasetSchema.parse_obj(data)
 
-        data = {
-            "dtype": "C",
-            "doses": [0, 10],
-            "ns": [20, 20],
-            "means": [0, 0],
-            "stdevs": [1, 1],
-            "metadata": {},
-        }
+        data = deepcopy(v1)
+        data.update(doses=[0, 10], ns=[20, 20], means=[0, 0], stdevs=[1, 1])
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.ContinuousDatasetSchema.parse_obj(data)
 
-    def test_ci_continuous(self, cidataset):
+
+class TestContinuousIndividualDatasetSchema:
+    def test_schema(self, cidataset):
         # check that cycling through serialization returns the same
         v1 = cidataset.serialize().dict()
         v2 = bmds.ContinuousIndividualDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
         assert v1 == v2
 
         data = deepcopy(v1)
-        data["doses"] = [1, 2]
-        with pytest.raises(ValidationError, match="same length"):
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of doses and responses are not the same",
+        ):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
 
-        data = {
-            "dtype": "CI",
-            "doses": [0, 10],
-            "responses": [20, 20],
-            "metadata": {},
-        }
-        with pytest.raises(ValidationError, match="Must have 3 or more dose groups"):
+        data = deepcopy(v1)
+        data["doses"] = [1, 2]
+        with pytest.raises(ValidationError, match="Length of doses and responses are not the same"):
+            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
+        data.update(doses=[0, 10], responses=[20, 20])
+        with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
