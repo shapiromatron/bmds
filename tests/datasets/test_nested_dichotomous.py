@@ -1,4 +1,7 @@
+from copy import deepcopy
+
 import pytest
+from pydantic import ValidationError
 
 import bmds
 
@@ -7,7 +10,7 @@ dummy3 = [1, 2, 3]
 dummy4 = [1, 2, 3, 4]
 
 
-class TestNestedDichtomousDataset:
+class TestNestedDichotomousDataset:
     def test_validation(self):
         # these should be valid
         bmds.NestedDichotomousDataset(
@@ -112,3 +115,31 @@ class TestNestedDichtomousDataset:
 
         # check serialization equality
         assert ds1.serialize().dict() == ds2.serialize().dict()
+
+
+class TestNestedDichotomousSchema:
+    def test_schema(self, nd_dataset):
+        # check that cycling through serialization returns the same
+        v1 = nd_dataset.serialize().dict()
+        v2 = bmds.NestedDichotomousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        assert v1 == v2
+
+        data = deepcopy(v1)
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of dose, litter, incidence, and covariate are not the same",
+        ):
+            bmds.NestedDichotomousDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
+        data.update(
+            doses=[0, 10], litter_ns=[10, 10], incidences=[10, 10], litter_covariates=[1, 1]
+        )
+        with pytest.raises(ValidationError, match="At least 3 groups are required"):
+            bmds.NestedDichotomousDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
+        data["incidences"][0] = data["litter_ns"][0] + 1
+        with pytest.raises(ValidationError, match="Incidence cannot be greater than N"):
+            bmds.NestedDichotomousDatasetSchema.parse_obj(data)

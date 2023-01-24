@@ -233,7 +233,7 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
         n_means = len(values["means"])
         n_stdevs = len(values["stdevs"])
         if len(set([n_doses, n_ns, n_means, n_stdevs])) > 1:
-            raise ValueError("Length of dose, n, mean, and stdevs are not the same")
+            raise ValueError("Length of doses, ns, means, and stdevs are not the same")
         if n_doses < cls.MIN_N:
             raise ValueError(f"At least {cls.MIN_N} groups are required")
         if n_doses > cls.MAX_N:

@@ -207,7 +207,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
         n_ns = len(values["ns"])
         n_incidences = len(values["incidences"])
         if len(set([n_doses, n_ns, n_incidences])) > 1:
-            raise ValueError("Length of dose, n, and incidence are not the same")
+            raise ValueError("Length of doses, ns, and incidences are not the same")
         if n_doses < cls.MIN_N:
             raise ValueError(f"At least {cls.MIN_N} groups are required")
         if n_doses > cls.MAX_N:

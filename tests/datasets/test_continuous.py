@@ -332,18 +332,20 @@ class TestContinuousDatasetSchema:
         assert v1 == v2
 
         data = deepcopy(v1)
-        data["ns"] = [1, 2]
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of doses, ns, means, and stdevs are not the same",
+        ):
+            bmds.ContinuousDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
+        data.update(ns=[1, 2])
         with pytest.raises(ValidationError, match="Length"):
             bmds.ContinuousDatasetSchema.parse_obj(data)
 
-        data = {
-            "dtype": "C",
-            "doses": [0, 10],
-            "ns": [20, 20],
-            "means": [0, 0],
-            "stdevs": [1, 1],
-            "metadata": {},
-        }
+        data = deepcopy(v1)
+        data.update(doses=[0, 10], ns=[20, 20], means=[0, 0], stdevs=[1, 1])
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.ContinuousDatasetSchema.parse_obj(data)
 
@@ -356,15 +358,19 @@ class TestContinuousIndividualDatasetSchema:
         assert v1 == v2
 
         data = deepcopy(v1)
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of doses and responses are not the same",
+        ):
+            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+
+        data = deepcopy(v1)
         data["doses"] = [1, 2]
         with pytest.raises(ValidationError, match="Length of doses and responses are not the same"):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
 
-        data = {
-            "dtype": "CI",
-            "doses": [0, 10],
-            "responses": [20, 20],
-            "metadata": {},
-        }
+        data = deepcopy(v1)
+        data.update(doses=[0, 10], responses=[20, 20])
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.ContinuousIndividualDatasetSchema.parse_obj(data)

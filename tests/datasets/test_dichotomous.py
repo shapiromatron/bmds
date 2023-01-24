@@ -183,15 +183,29 @@ class TestDichotomousDatasetSchema:
         with pytest.raises(ValidationError, match="Length"):
             bmds.DichotomousDatasetSchema.parse_obj(data)
 
-        data = {
-            "dtype": "D",
-            "doses": [0, 10],
-            "ns": [20, 20],
-            "incidences": [0, 0],
-            "metadata": {},
-        }
-        # two groups ok for a cancer dataset
+        data = deepcopy(v1)
+        data["doses"] = data["doses"][:-1]
+        with pytest.raises(
+            ValidationError,
+            match="Length of doses, ns, and incidences are not the same",
+        ):
+            bmds.DichotomousDatasetSchema.parse_obj(data)
+
+        # check incidence > n
+        data = deepcopy(v1)
+        data.update(incidences=[75, 49, 50, 49], ns=[5, 1, 3, 14])
+        with pytest.raises(ValidationError, match="Incidence cannot be greater than N"):
+            bmds.DichotomousDatasetSchema.parse_obj(data)
+
+        # min groups (dichotomous)
+        data = deepcopy(v1)
+        data.update(doses=[1, 2], ns=[1, 2], incidences=[1, 2])
         bmds.DichotomousCancerDatasetSchema.parse_obj(data)
-        # but not ok for a standard dataset
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
             bmds.DichotomousDatasetSchema.parse_obj(data)
+
+        # min groups (cancer dichotomous)
+        data = deepcopy(v1)
+        data.update(doses=[1], ns=[1], incidences=[1])
+        with pytest.raises(ValidationError, match="At least 2 groups are required"):
+            bmds.DichotomousCancerDatasetSchema.parse_obj(data)
