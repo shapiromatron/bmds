@@ -1,15 +1,15 @@
 # docs
-mkdocs-material==8.3.9
+mkdocs-material==9.0.6
 
 # tests
-pytest==7.1.2
+pytest==7.2.1
 pytest-mpl==0.16.1
 
 # lint and formatting tools
-black==22.6.0
-flake8==4.0.1
-flake8-isort==4.1.2.post0
-isort==5.10.1
+black==22.12.0
+flake8==6.0.0
+flake8-isort==6.0.0
+isort==5.11.4
 
 # install bmds in editable mode
 -e .
