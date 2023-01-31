@@ -178,7 +178,6 @@ class PriorClass(IntEnum):
     frequentist_unrestricted = 0
     frequentist_restricted = 1
     bayesian = 2
-    custom = 3
 
     @property
     def name(self) -> str:
@@ -190,8 +189,6 @@ class PriorClass(IntEnum):
 
     @property
     def is_bayesian(self) -> bool:
-        if self == self.custom:
-            raise ValueError("Cannot determine")
         return self == self.bayesian
 
 

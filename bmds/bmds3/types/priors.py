@@ -91,10 +91,7 @@ class ModelPriors(BaseModel):
 
     @property
     def is_bayesian(self) -> bool:
-        try:
-            return self.prior_class.is_bayesian
-        except ValueError:
-            raise NotImplementedError("Handle custom case")
+        return self.prior_class.is_bayesian
 
 
 # lazy mapping; saves copy as requested
