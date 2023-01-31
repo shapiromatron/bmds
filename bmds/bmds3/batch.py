@@ -58,15 +58,14 @@ class BmdsSessionBatch:
 
     def to_excel(self, path: Optional[Path] = None) -> Union[Path, BytesIO]:
         f: Union[Path, BytesIO] = path or BytesIO()
-        writer = pd.ExcelWriter(f)
-        data = {
-            "summary": self.df_summary(),
-            "datasets": self.df_dataset(),
-            "parameters": self.df_params(),
-        }
-        for name, df in data.items():
-            df.to_excel(writer, sheet_name=name, index=False)
-        writer.save()
+        with pd.ExcelWriter(f) as writer:
+            data = {
+                "summary": self.df_summary(),
+                "datasets": self.df_dataset(),
+                "parameters": self.df_params(),
+            }
+            for name, df in data.items():
+                df.to_excel(writer, sheet_name=name, index=False)
         return f
 
     def to_docx(

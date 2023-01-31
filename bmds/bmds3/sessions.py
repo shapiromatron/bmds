@@ -150,13 +150,8 @@ class BmdsSession:
         self.recommend()
 
     def is_bayesian(self) -> bool:
-        """Determine if models are using a bayesian or frequentist approach.
-
-        Looks at the first model's prior to determine if it's bayesian, else assume frequentist.
-        """
-        # TODO - fix with handle PriorClass.custom, perhaps if any type is != 0?
-        first_class = self.models[0].settings.priors.prior_class
-        return first_class is PriorClass.bayesian
+        """Determine if models are using a bayesian or frequentist approach."""
+        return self.models[0].settings.priors.is_bayesian
 
     def citation(self) -> dict:
         return citation(self.dll_version())
