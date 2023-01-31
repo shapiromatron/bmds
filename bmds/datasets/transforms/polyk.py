@@ -11,7 +11,7 @@ import pandas as pd
 
 
 def adjust_n(
-    df: pd.DataFrame, k: Optional[float] = 3, max_day: Optional[int] = 730
+    df: pd.DataFrame, k: Optional[float] = 3, max_day: Optional[int] = None
 ) -> pd.DataFrame:
     """Adjust the n for individual observations in a dataset.
 
