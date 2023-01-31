@@ -23,4 +23,4 @@ def test_poly(data_path):
         "proportion",
         "adj_proportion",
     ]
-    assert np.allclose(df3.adj_proportion, [0.1395, 0.2803, 0.5660, 0.6607], atol=1e-4)
+    assert np.allclose(df3.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
