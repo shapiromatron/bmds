@@ -24,3 +24,27 @@ def test_poly(data_path):
         "adj_proportion",
     ]
     assert np.allclose(df3.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
+
+
+def test_calculate(data_path):
+    df = pd.read_csv(data_path / "datasets/transforms/polyk.csv")
+
+    # using no max day; derived from data
+    _, res = polyk.calculate(
+        doses=df.dose.tolist(),
+        day=df.day.tolist(),
+        has_tumor=df.has_tumor.tolist(),
+        k=3,
+    )
+    assert df.day.max() == 734
+    assert np.allclose(res.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
+
+    # fixing max_day to a 2 yr cancer bioassay duration
+    _, res = polyk.calculate(
+        doses=df.dose.tolist(),
+        day=df.day.tolist(),
+        has_tumor=df.has_tumor.tolist(),
+        k=3,
+        max_day=730,
+    )
+    assert np.allclose(res.adj_proportion, [0.1395, 0.2803, 0.5660, 0.6607], atol=1e-4)
