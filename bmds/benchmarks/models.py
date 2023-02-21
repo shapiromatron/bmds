@@ -46,17 +46,17 @@ class Dataset(Base):
     def to_bmds(self):
         if self.dtype == "D":
             return datasets.DichotomousDataset(
-                doses=np.array(self.doses.split(","), dtype=np.float).tolist(),
-                ns=np.array(self.ns.split(","), dtype=np.float).tolist(),
-                incidences=np.array(self.incidences.split(","), dtype=np.float).tolist(),
+                doses=np.array(self.doses.split(","), dtype=np.float64).tolist(),
+                ns=np.array(self.ns.split(","), dtype=np.float64).tolist(),
+                incidences=np.array(self.incidences.split(","), dtype=np.float64).tolist(),
                 id=self.id,
             )
         elif self.dtype == "C":
             return datasets.ContinuousDataset(
-                doses=np.array(self.doses.split(","), dtype=np.float).tolist(),
-                ns=np.array(self.ns.split(","), dtype=np.float).tolist(),
-                means=np.array(self.means.split(","), dtype=np.float).tolist(),
-                stdevs=np.array(self.stdevs.split(","), dtype=np.float).tolist(),
+                doses=np.array(self.doses.split(","), dtype=np.float64).tolist(),
+                ns=np.array(self.ns.split(","), dtype=np.float64).tolist(),
+                means=np.array(self.means.split(","), dtype=np.float64).tolist(),
+                stdevs=np.array(self.stdevs.split(","), dtype=np.float64).tolist(),
                 id=self.id,
             )
         else:
