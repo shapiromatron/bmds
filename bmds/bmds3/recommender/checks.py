@@ -1,5 +1,5 @@
 import math
-from typing import Any, Optional, Union
+from typing import Any, Optional, Self, Union
 
 from pydantic import BaseModel
 
@@ -15,7 +15,7 @@ class CheckResponse(BaseModel):
     message: str
 
     @classmethod
-    def success(cls) -> "CheckResponse":
+    def success(cls) -> Self:
         return CheckResponse(logic_bin=constants.LogicBin.NO_CHANGE, message="")
 
 

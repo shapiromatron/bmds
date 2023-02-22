@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Optional, Union
+from typing import Optional, Self, Union
 
 import numpy as np
 import pandas as pd
@@ -212,7 +212,7 @@ class ContinuousModelResult(BaseModel):
     bmd_dist: NumpyFloatArray
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousModelResult":
+    def from_model(cls, model) -> Self:
         summary = model.structs.summary
         result = model.structs.result
         arr = result.np_bmd_dist.reshape(2, result.dist_numE)
@@ -230,13 +230,13 @@ class ContinuousModelResult(BaseModel):
             bmd_dist=arr,
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
 
 class ContinuousParameters(BaseModel):
-    names: List[str]
+    names: list[str]
     values: NumpyFloatArray
     se: NumpyFloatArray
     lower_ci: NumpyFloatArray
@@ -255,7 +255,7 @@ class ContinuousParameters(BaseModel):
         return np.array(priors_list, dtype=np.float64).T
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousParameters":
+    def from_model(cls, model) -> Self:
         result = model.structs.result
         summary = model.structs.summary
         param_names = model.get_param_names()
@@ -299,7 +299,7 @@ class ContinuousParameters(BaseModel):
             prior_max_value=priors[4],
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
@@ -331,7 +331,7 @@ class ContinuousParameters(BaseModel):
         df.style.background_gradient(cmap="viridis")
         return df
 
-    def rows(self, extras: Dict) -> List[Dict]:
+    def rows(self, extras: dict) -> list[dict]:
         rows = []
         for i in range(len(self.names)):
             rows.append(
@@ -370,7 +370,7 @@ class ContinuousGof(BaseModel):
     roi: float
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousGof":
+    def from_model(cls, model) -> Self:
         gof = model.structs.gof
         # only keep indexes where the num ob obsMean + obsSD == 0;
         # needed for continuous individual datasets where individual items are collapsed into groups
@@ -392,7 +392,7 @@ class ContinuousGof(BaseModel):
             ),
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
@@ -436,13 +436,13 @@ class ContinuousGof(BaseModel):
 
 
 class ContinuousDeviance(BaseModel):
-    names: List[str]
-    loglikelihoods: List[float]
-    num_params: List[int]
-    aics: List[float]
+    names: list[str]
+    loglikelihoods: list[float]
+    num_params: list[int]
+    aics: list[float]
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousDeviance":
+    def from_model(cls, model) -> Self:
         aod = model.structs.aod
         return cls(
             names=["A1", "A2", "A3", "fitted", "reduced"],
@@ -462,13 +462,13 @@ class ContinuousDeviance(BaseModel):
 
 
 class ContinuousTests(BaseModel):
-    names: List[str]
-    ll_ratios: List[float]
-    dfs: List[float]
-    p_values: List[float]
+    names: list[str]
+    ll_ratios: list[float]
+    dfs: list[float]
+    p_values: list[float]
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousTests":
+    def from_model(cls, model) -> Self:
         tests = model.structs.aod.toi_struct
         return cls(
             names=["Test 1", "Test 2", "Test 3", "Test 4"],
@@ -495,7 +495,7 @@ class ContinuousPlotting(BaseModel):
     bmdu_y: float
 
     @classmethod
-    def from_model(cls, model, params) -> "ContinuousPlotting":
+    def from_model(cls, model, params) -> Self:
         summary = model.structs.summary
         xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
         dr_x = model.dataset.dose_linspace
@@ -510,7 +510,7 @@ class ContinuousPlotting(BaseModel):
             bmdu_y=critical_ys[2],
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
@@ -560,7 +560,7 @@ class ContinuousResult(BaseModel):
         )
 
     @classmethod
-    def from_model(cls, model) -> "ContinuousResult":
+    def from_model(cls, model) -> Self:
         summary = model.structs.summary
         params = ContinuousParameters.from_model(model)
         return cls(

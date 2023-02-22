@@ -1,15 +1,15 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import numpy as np
 
 from ..constants import BMDS_BLANK_VALUE
 
 
-def list_t_c(list: List[Any], ctype):
+def list_t_c(list: list[Any], ctype):
     return (ctype * len(list))(*list)
 
 
-def residual_of_interest(bmd: float, doses: List[float], residuals: List[float]) -> float:
+def residual_of_interest(bmd: float, doses: list[float], residuals: list[float]) -> float:
     if bmd <= 0:
         return BMDS_BLANK_VALUE
     diffs = [abs(bmd - dose) for dose in doses]
@@ -34,7 +34,7 @@ class PydanticNumpyArray(np.ndarray):
         yield cls.validate
 
     @classmethod
-    def listify(cls, dict_: Dict):
+    def listify(cls, dict_: dict):
         # convert numpy arrays to lists which can be json serialized
         for key, value in dict_.items():
             if isinstance(value, np.ndarray):

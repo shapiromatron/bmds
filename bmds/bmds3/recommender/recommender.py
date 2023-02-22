@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional, Self
 
 import numpy as np
 import pandas as pd
@@ -43,7 +43,7 @@ class RecommenderSettings(BaseModel):
     recommend_questionable: bool = False
     recommend_viable: bool = True
     sufficiently_close_bmdl: float = 3
-    rules: List[Rule]
+    rules: list[Rule]
 
     _default: Optional[str] = None
 
@@ -57,7 +57,7 @@ class RecommenderSettings(BaseModel):
         return rules
 
     @classmethod
-    def build_default(cls) -> "RecommenderSettings":
+    def build_default(cls) -> Self:
         if cls._default is None:
             path = Path(__file__).parent / "default.json"
             cls._default = path.read_text()
@@ -81,8 +81,8 @@ class RecommenderSettings(BaseModel):
 class RecommenderResults(BaseModel):
     recommended_model_index: Optional[int]
     recommended_model_variable: Optional[str]
-    model_bin: List[LogicBin] = []
-    model_notes: List[Dict[int, List[str]]] = []
+    model_bin: list[LogicBin] = []
+    model_notes: list[dict[int, list[str]]] = []
 
     def bin_text(self, index: int) -> str:
         if self.recommended_model_index == index:
@@ -126,7 +126,7 @@ class Recommender:
         self.settings: RecommenderSettings = settings
         self.results: Optional[RecommenderResults] = None
 
-    def recommend(self, dataset: DatasetBase, models: List[BmdModel]):
+    def recommend(self, dataset: DatasetBase, models: list[BmdModel]):
         self.results = RecommenderResults()
 
         if not self.settings.enabled:
@@ -138,7 +138,7 @@ class Recommender:
         for model in models:
             # set defaults
             current_bin = LogicBin.NO_CHANGE
-            notes: Dict[int, List[str]] = {
+            notes: dict[int, list[str]] = {
                 LogicBin.NO_CHANGE: [],
                 LogicBin.WARNING: [],
                 LogicBin.FAILURE: [],
@@ -189,12 +189,12 @@ class Recommender:
         model = self._get_parsimonious_model(model_subset)
         self.results.recommended_model_index = models.index(model)
 
-    def _get_bmdl_ratio(self, models: List[BmdModel]) -> float:
+    def _get_bmdl_ratio(self, models: list[BmdModel]) -> float:
         """Return BMDL ratio in list of models."""
         bmdls = [model.results.bmdl for model in models if model.results.bmdl > 0]
         return max(bmdls) / min(bmdls)
 
-    def _get_recommended_models(self, models: List[BmdModel], field: str) -> List[BmdModel]:
+    def _get_recommended_models(self, models: list[BmdModel], field: str) -> list[BmdModel]:
         """
         Returns a list of models which have the minimum target field value
         for a given field name (AIC or BMDL).
@@ -209,7 +209,7 @@ class Recommender:
         matches = np.where(values == values.min())[0].tolist()
         return [models[i] for i in matches]
 
-    def _get_parsimonious_model(self, models: List[BmdModel]) -> BmdModel:
+    def _get_parsimonious_model(self, models: list[BmdModel]) -> BmdModel:
         """
         Return the most parsimonious model of all available models. The most
         parsimonious model is defined as the model with the fewest number of

@@ -1,5 +1,5 @@
 import math
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -90,10 +90,10 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def __init__(
         self,
-        doses: List[float],
-        ns: List[float],
-        means: List[float],
-        stdevs: List[float],
+        doses: list[float],
+        ns: list[float],
+        means: list[float],
+        stdevs: list[float],
         **metadata,
     ):
         self.doses = doses
@@ -216,10 +216,10 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: List[confloat(ge=0)]
-    ns: List[confloat(gt=0)]
-    means: List[float]
-    stdevs: List[confloat(ge=0)]
+    doses: list[confloat(ge=0)]
+    ns: list[confloat(gt=0)]
+    means: list[float]
+    stdevs: list[confloat(ge=0)]
     anova: Optional[AnovaTests]
     plotting: Optional[DatasetPlottingSchema]
 
@@ -288,7 +288,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.CONTINUOUS_INDIVIDUAL
 
-    def __init__(self, doses: List[float], responses: List[float], **metadata):
+    def __init__(self, doses: list[float], responses: list[float], **metadata):
         data = self._prepare_summary_data(doses, responses)
         for key, value in data.items():
             setattr(self, key, value)
@@ -421,8 +421,8 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: List[confloat(ge=0)]
-    responses: List[float]
+    doses: list[confloat(ge=0)]
+    responses: list[float]
     anova: Optional[AnovaTests]
 
     MIN_N: ClassVar = 3

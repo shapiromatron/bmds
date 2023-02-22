@@ -1,5 +1,5 @@
 import ctypes
-from typing import List, Optional, Type
+from typing import Optional, Type
 
 import numpy as np
 
@@ -98,7 +98,7 @@ class BmdModelContinuous(BmdModel):
             results=self.results,
         )
 
-    def get_param_names(self) -> List[str]:
+    def get_param_names(self) -> list[str]:
         names = list(self.bmd_model_class.params)
         names.extend(self.get_variance_param_names())
         return names
@@ -214,7 +214,7 @@ class Polynomial(BmdModelContinuous):
             val += params[i] * doses**i
         return val
 
-    def get_param_names(self) -> List[str]:
+    def get_param_names(self) -> list[str]:
         names = [f"b{i}" for i in range(self.settings.degree + 1)]
         names.extend(self.get_variance_param_names())
         names[0] = "g"

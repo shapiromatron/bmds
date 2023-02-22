@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, List, Optional, TypeVar
+from typing import Optional, TypeVar
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -145,7 +145,7 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
         from .dichotomous import DichotomousCancerDatasetSchema, DichotomousDatasetSchema
         from .nested_dichotomous import NestedDichotomousDatasetSchema
 
-        _dataset_schema_map: Dict = {
+        _dataset_schema_map: dict = {
             Dtype.CONTINUOUS: ContinuousDatasetSchema,
             Dtype.CONTINUOUS_INDIVIDUAL: ContinuousIndividualDatasetSchema,
             Dtype.DICHOTOMOUS: DichotomousDatasetSchema,
@@ -163,6 +163,6 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
 
 
 class DatasetPlottingSchema(BaseModel):
-    mean: Optional[List[float]]
-    ll: List[float]
-    ul: List[float]
+    mean: Optional[list[float]]
+    ll: list[float]
+    ul: list[float]

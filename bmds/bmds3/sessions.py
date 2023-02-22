@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -38,8 +38,8 @@ class BmdsSession:
 
     version_str: str
     version_pretty: str
-    version_tuple: Tuple[int, ...]
-    model_options: Dict[str, Dict]
+    version_tuple: tuple[int, ...]
+    model_options: dict[str, dict]
 
     def __init__(
         self,
@@ -47,14 +47,14 @@ class BmdsSession:
         recommendation_settings: Optional[RecommenderSettings] = None,
     ):
         self.dataset = dataset
-        self.models: List[BmdModel] = []
+        self.models: list[BmdModel] = []
         self.ma_weights: Optional[npt.NDArray] = None
         self.model_average: Optional[BmdModelAveraging] = None
         self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
         self.recommender: Optional[Recommender] = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: Dict = None, model_average: bool = True):
+    def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -96,7 +96,7 @@ class BmdsSession:
         weights = np.array(weights)
         self.ma_weights = weights / weights.sum()
 
-    def add_model_averaging(self, weights: Optional[List[float]] = None):
+    def add_model_averaging(self, weights: Optional[list[float]] = None):
         """
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
@@ -168,7 +168,7 @@ class BmdsSession:
         return get_version(dll)
 
     @classmethod
-    def from_serialized(cls, data: Dict) -> BmdsSession:
+    def from_serialized(cls, data: dict) -> BmdsSession:
         try:
             version = data["version"]["numeric"]
             dtype = data["dataset"]["dtype"]

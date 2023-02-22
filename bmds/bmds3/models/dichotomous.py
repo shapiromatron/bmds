@@ -1,5 +1,5 @@
 import ctypes
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -72,7 +72,7 @@ class BmdModelDichotomous(BmdModel):
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_restricted
 
-    def get_param_names(self) -> List[str]:
+    def get_param_names(self) -> list[str]:
         names = list(self.bmd_model_class.params)
         return names
 
@@ -221,7 +221,7 @@ class Multistage(BmdModelDichotomous):
             val += params[i] * doses**i
         return g + (1 - g) * (1 - np.exp(-1.0 * val))
 
-    def get_param_names(self) -> List[str]:
+    def get_param_names(self) -> list[str]:
         names = [f"b{i}" for i in range(self.settings.degree + 1)]
         names[0] = "g"
         return names

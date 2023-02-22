@@ -1,5 +1,5 @@
 import math
-from typing import ClassVar, List
+from typing import ClassVar
 
 import numpy as np
 from pydantic import root_validator
@@ -18,10 +18,10 @@ class NestedDichotomousDataset(DatasetBase):
 
     def __init__(
         self,
-        doses: List[float],
-        litter_ns: List[int],
-        incidences: List[float],
-        litter_covariates: List[int],
+        doses: list[float],
+        litter_ns: list[int],
+        incidences: list[float],
+        litter_covariates: list[int],
         **metadata,
     ):
         self.doses = doses
@@ -119,10 +119,10 @@ class NestedDichotomousDataset(DatasetBase):
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype = constants.Dtype.NESTED_DICHOTOMOUS
     metadata: DatasetMetadata
-    doses: List[float]
-    litter_ns: List[int]
-    incidences: List[int]
-    litter_covariates: List[float]
+    doses: list[float]
+    litter_ns: list[int]
+    incidences: list[int]
+    litter_covariates: list[float]
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf

@@ -1,5 +1,4 @@
 from enum import Enum, IntEnum
-from typing import Tuple
 
 from pydantic import BaseModel
 
@@ -15,7 +14,7 @@ class BmdModelSchema(BaseModel):
 
 
 class DichotomousModel(BmdModelSchema):
-    params: Tuple[str, ...]
+    params: tuple[str, ...]
 
     @property
     def num_params(self):
@@ -92,8 +91,8 @@ class DichotomousModelChoices(Enum):
 
 
 class ContinuousModel(BmdModelSchema):
-    params: Tuple[str, ...]
-    variance_params: Tuple[str, ...]
+    params: tuple[str, ...]
+    variance_params: tuple[str, ...]
 
 
 class ContinuousModelIds(IntEnum):

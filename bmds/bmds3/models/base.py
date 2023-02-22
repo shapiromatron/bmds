@@ -4,7 +4,7 @@ import abc
 import ctypes
 import logging
 import platform
-from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, NamedTuple, Optional, Self, Union
 
 from pydantic import BaseModel
 
@@ -30,7 +30,7 @@ class BmdsLibraryManager:
     def __init__(self):
         raise RuntimeError("Use as a static-class")
 
-    _dll_cache: Dict[str, ctypes.CDLL] = {}
+    _dll_cache: dict[str, ctypes.CDLL] = {}
 
     @classmethod
     def get_dll(cls, bmds_version: str, base_name: str) -> ctypes.CDLL:
@@ -74,7 +74,7 @@ class BmdsLibraryManager:
         return dll
 
 
-InputModelSettings = Optional[Union[Dict, BaseModel]]
+InputModelSettings = Optional[Union[dict, BaseModel]]
 
 
 class BmdModel(abc.ABC):
@@ -195,14 +195,14 @@ class BmdModel(abc.ABC):
         return fig
 
     @abc.abstractmethod
-    def get_param_names(self) -> List[str]:
+    def get_param_names(self) -> list[str]:
         ...
 
     @abc.abstractmethod
     def get_priors_list(self) -> list[list]:
         ...
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return self.serialize().dict()
 
     @abc.abstractmethod
@@ -212,7 +212,7 @@ class BmdModel(abc.ABC):
 
 class BmdModelSchema(BaseModel):
     @classmethod
-    def get_subclass(cls, dtype: Dtype) -> "BmdModelSchema":
+    def get_subclass(cls, dtype: Dtype) -> Self:
         from .continuous import BmdModelContinuousSchema
         from .dichotomous import BmdModelDichotomousSchema
 
@@ -235,7 +235,7 @@ class BmdModelAveraging(abc.ABC):
     def __init__(
         self,
         session: BmdsSession,
-        models: List[BmdModel],
+        models: list[BmdModel],
         settings: InputModelSettings = None,
     ):
         self.session = session
@@ -271,13 +271,13 @@ class BmdModelAveraging(abc.ABC):
     def plot(self):
         ...
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return self.serialize.dict()
 
 
 class BmdModelAveragingSchema(BaseModel):
     @classmethod
-    def get_subclass(cls, dtype: Dtype) -> "BmdModelAveragingSchema":
+    def get_subclass(cls, dtype: Dtype) -> Self:
         from .ma import BmdModelAveragingDichotomousSchema
 
         if dtype in (Dtype.DICHOTOMOUS, Dtype.DICHOTOMOUS_CANCER):
