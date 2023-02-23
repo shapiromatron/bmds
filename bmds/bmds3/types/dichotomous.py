@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Self, Union
+from typing import Self
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
@@ -39,7 +39,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+    priors: PriorClass | ModelPriors | None  # if None; default used
 
     @property
     def bmr_text(self) -> str:

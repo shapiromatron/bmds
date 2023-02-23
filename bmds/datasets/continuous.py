@@ -1,5 +1,5 @@
 import math
-from typing import ClassVar, Optional, Union
+from typing import ClassVar, Optional
 
 import numpy as np
 import pandas as pd
@@ -452,5 +452,5 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
         return ds
 
 
-ContinuousDatasets = Union[ContinuousDataset, ContinuousIndividualDataset]
-ContinuousDatasetSchemas = Union[ContinuousDatasetSchema, ContinuousIndividualDatasetSchema]
+ContinuousDatasets = ContinuousDataset | ContinuousIndividualDataset
+ContinuousDatasetSchemas = ContinuousDatasetSchema | ContinuousIndividualDatasetSchema

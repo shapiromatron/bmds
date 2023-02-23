@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Optional, Self, Union
+from typing import Optional, Self
 
 import numpy as np
 import pandas as pd
@@ -54,7 +54,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+    priors: PriorClass | ModelPriors | None  # if None; default used
 
     @property
     def bmr_text(self) -> str:

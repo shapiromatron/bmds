@@ -4,7 +4,7 @@ import abc
 import ctypes
 import logging
 import platform
-from typing import TYPE_CHECKING, NamedTuple, Optional, Self, Union
+from typing import TYPE_CHECKING, NamedTuple, Optional, Self
 
 from pydantic import BaseModel
 
@@ -74,7 +74,7 @@ class BmdsLibraryManager:
         return dll
 
 
-InputModelSettings = Optional[Union[dict, BaseModel]]
+InputModelSettings = dict | BaseModel | None
 
 
 class BmdModel(abc.ABC):

@@ -4,7 +4,7 @@ import zipfile
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Self, Union
+from typing import Callable, NamedTuple, Optional, Self
 
 import pandas as pd
 from tqdm import tqdm
@@ -17,7 +17,7 @@ from .sessions import BmdsSession
 
 class ExecutionResponse(NamedTuple):
     success: bool
-    content: Union[dict, list[dict]]
+    content: dict | list[dict]
 
 
 class BmdsSessionBatch:
@@ -56,8 +56,8 @@ class BmdsSessionBatch:
                     )
         return pd.DataFrame(data=data)
 
-    def to_excel(self, path: Optional[Path] = None) -> Union[Path, BytesIO]:
-        f: Union[Path, BytesIO] = path or BytesIO()
+    def to_excel(self, path: Optional[Path] = None) -> Path | BytesIO:
+        f: Path | BytesIO = path or BytesIO()
         with pd.ExcelWriter(f) as writer:
             data = {
                 "summary": self.df_summary(),

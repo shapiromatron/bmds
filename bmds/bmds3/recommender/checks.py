@@ -1,5 +1,5 @@
 import math
-from typing import Any, Optional, Self, Union
+from typing import Any, Optional, Self
 
 from pydantic import BaseModel
 
@@ -7,7 +7,7 @@ from ... import constants
 from ..constants import BMDS_BLANK_VALUE, DistType
 from .constants import RuleClass
 
-Number = Union[float, int]
+Number = float | int
 
 
 class CheckResponse(BaseModel):
