@@ -50,44 +50,44 @@ class AnovaTests(BaseModel):
         # The xlk is not real
         xlk = (a1 + a2 + a3 + ar) / 4
         parm_known = 1
-        anovalist = [Test() for i in range(5)]
+        anovas = [Test() for i in range(5)]
 
         # Compute DF and assign LLK for each test
-        anovalist[0].DF = n_obs + 1
-        anovalist[0].SS = a1
+        anovas[0].DF = n_obs + 1
+        anovas[0].SS = a1
 
-        anovalist[1].DF = 2 * n_obs
-        anovalist[1].SS = a2
+        anovas[1].DF = 2 * n_obs
+        anovas[1].SS = a2
 
-        anovalist[2].DF = n_obs + 2 - parm_known
-        anovalist[2].SS = a3
+        anovas[2].DF = n_obs + 2 - parm_known
+        anovas[2].SS = a3
 
-        anovalist[3].DF = 2
-        anovalist[3].SS = ar
+        anovas[3].DF = 2
+        anovas[3].SS = ar
 
-        anovalist[4].DF = nparm - 2
-        anovalist[4].SS = xlk
+        anovas[4].DF = nparm - 2
+        anovas[4].SS = xlk
 
         # Compute likelihood ratio MSE and CDF
-        anovalist[0].MSE = 2 * (a2 - a1)
-        anovalist[0].CDF = anovalist[1].DF - anovalist[0].DF
+        anovas[0].MSE = 2 * (a2 - a1)
+        anovas[0].CDF = anovas[1].DF - anovas[0].DF
 
-        anovalist[1].MSE = 2 * (a2 - a3)
-        anovalist[1].CDF = anovalist[1].DF - anovalist[2].DF
+        anovas[1].MSE = 2 * (a2 - a3)
+        anovas[1].CDF = anovas[1].DF - anovas[2].DF
 
-        anovalist[2].MSE = 2 * (a3 - xlk)
-        anovalist[2].CDF = anovalist[2].DF - anovalist[4].DF
+        anovas[2].MSE = 2 * (a3 - xlk)
+        anovas[2].CDF = anovas[2].DF - anovas[4].DF
 
-        anovalist[3].MSE = 2 * (a2 - ar)
-        anovalist[3].CDF = anovalist[1].DF - anovalist[3].DF
+        anovas[3].MSE = 2 * (a2 - ar)
+        anovas[3].CDF = anovas[1].DF - anovas[3].DF
 
-        for anova in anovalist:
+        for anova in anovas:
             anova.AIC = -2 * (anova.SS - anova.DF)
             if anova.MSE >= 0.0 and anova.CDF > 0:
                 anova.TEST = 1 - stats.chi2.cdf(anova.MSE, anova.CDF)
 
         # Only return test 1, test 2 and test 3 in the order
-        return cls(test1=anovalist[3], test2=anovalist[0], test3=anovalist[1])
+        return cls(test1=anovas[3], test2=anovas[0], test3=anovas[1])
 
     @staticmethod
     def output_3tests(tests) -> str:

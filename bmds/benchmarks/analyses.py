@@ -1,5 +1,5 @@
 import abc
-from enum import IntEnum
+from enum import Enum
 
 from ..constants import Dtype, Version
 from .datasets import BenchmarkDataset
@@ -88,7 +88,7 @@ class FitContinuousAnalysis(Analysis):
         bulk_save_models(self.key, results)
 
 
-class BenchmarkAnalyses(IntEnum):
+class BenchmarkAnalyses(Enum):
     """
     A specific type of BMDS analysis that can be conducted
     """
