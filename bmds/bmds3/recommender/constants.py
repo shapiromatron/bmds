@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class RuleClass(str, Enum):
+class RuleClass(StrEnum):
     gof = "gof"
     dof_zero = "dof_zero"
     high_bmd = "high_bmd"

@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ class VersionSchema(BaseModel):
 class SessionSchemaBase(BaseModel):
     version: VersionSchema
     dataset: DatasetSchemaBase
-    models: List[BmdModelSchema]
+    models: list[BmdModelSchema]
     model_average: Optional[BmdModelAveragingSchema]
     recommender: Optional[RecommenderSchema]
     selected: SelectedModelSchema

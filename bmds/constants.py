@@ -1,4 +1,4 @@
-import enum
+from enum import IntEnum, StrEnum
 
 DICHOTOMOUS = "D"
 DICHOTOMOUS_CANCER = "DC"
@@ -8,7 +8,7 @@ NESTED_DICHOTOMOUS = "ND"
 MULTI_TUMOR = "MT"
 
 
-class ModelClass(str, enum.Enum):
+class ModelClass(StrEnum):
     # Types of modeling sessions
     DICHOTOMOUS = DICHOTOMOUS
     CONTINUOUS = CONTINUOUS
@@ -16,7 +16,7 @@ class ModelClass(str, enum.Enum):
     MULTI_TUMOR = MULTI_TUMOR
 
 
-class Dtype(str, enum.Enum):
+class Dtype(StrEnum):
     # Types of dose-response datasets
     DICHOTOMOUS = DICHOTOMOUS
     DICHOTOMOUS_CANCER = DICHOTOMOUS_CANCER
@@ -42,7 +42,7 @@ BMDS_TWOS = {BMDS270}
 BMDS_THREES = {BMDS330}
 
 
-class Version(str, enum.Enum):
+class Version(StrEnum):
     BMDS270 = "BMDS270"
     BMDS330 = "BMDS330"
 
@@ -181,7 +181,7 @@ BOOL_ICON = {True: "yes", False: "no"}  # unicode issues with Consolas font
 BIN_TEXT_BMDS3 = {BIN_NO_CHANGE: "Viable", BIN_WARNING: "Questionable", BIN_FAILURE: "Unusable"}
 
 
-class LogicBin(enum.IntEnum):
+class LogicBin(IntEnum):
     NO_CHANGE = BIN_NO_CHANGE
     WARNING = BIN_WARNING
     FAILURE = BIN_FAILURE

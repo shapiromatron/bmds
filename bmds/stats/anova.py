@@ -1,4 +1,5 @@
 from math import log
+from typing import Self
 
 from pydantic import BaseModel
 from scipy import stats
@@ -43,50 +44,50 @@ class AnovaTests(BaseModel):
         return lkA1, lkA2, lkA3, lkR
 
     @classmethod
-    def get_anova_c3_tests(cls, nparm, n_obs, a1, a2, a3, ar) -> "AnovaTests":
+    def get_anova_c3_tests(cls, nparm, n_obs, a1, a2, a3, ar) -> Self:
         # Based on Hill model, modified from DTMS3ANOVAC.c
 
         # The xlk is not real
         xlk = (a1 + a2 + a3 + ar) / 4
         parm_known = 1
-        anovaList = [Test() for i in range(5)]
+        anovas = [Test() for i in range(5)]
 
         # Compute DF and assign LLK for each test
-        anovaList[0].DF = n_obs + 1
-        anovaList[0].SS = a1
+        anovas[0].DF = n_obs + 1
+        anovas[0].SS = a1
 
-        anovaList[1].DF = 2 * n_obs
-        anovaList[1].SS = a2
+        anovas[1].DF = 2 * n_obs
+        anovas[1].SS = a2
 
-        anovaList[2].DF = n_obs + 2 - parm_known
-        anovaList[2].SS = a3
+        anovas[2].DF = n_obs + 2 - parm_known
+        anovas[2].SS = a3
 
-        anovaList[3].DF = 2
-        anovaList[3].SS = ar
+        anovas[3].DF = 2
+        anovas[3].SS = ar
 
-        anovaList[4].DF = nparm - 2
-        anovaList[4].SS = xlk
+        anovas[4].DF = nparm - 2
+        anovas[4].SS = xlk
 
         # Compute likelihood ratio MSE and CDF
-        anovaList[0].MSE = 2 * (a2 - a1)
-        anovaList[0].CDF = anovaList[1].DF - anovaList[0].DF
+        anovas[0].MSE = 2 * (a2 - a1)
+        anovas[0].CDF = anovas[1].DF - anovas[0].DF
 
-        anovaList[1].MSE = 2 * (a2 - a3)
-        anovaList[1].CDF = anovaList[1].DF - anovaList[2].DF
+        anovas[1].MSE = 2 * (a2 - a3)
+        anovas[1].CDF = anovas[1].DF - anovas[2].DF
 
-        anovaList[2].MSE = 2 * (a3 - xlk)
-        anovaList[2].CDF = anovaList[2].DF - anovaList[4].DF
+        anovas[2].MSE = 2 * (a3 - xlk)
+        anovas[2].CDF = anovas[2].DF - anovas[4].DF
 
-        anovaList[3].MSE = 2 * (a2 - ar)
-        anovaList[3].CDF = anovaList[1].DF - anovaList[3].DF
+        anovas[3].MSE = 2 * (a2 - ar)
+        anovas[3].CDF = anovas[1].DF - anovas[3].DF
 
-        for anova in anovaList:
+        for anova in anovas:
             anova.AIC = -2 * (anova.SS - anova.DF)
             if anova.MSE >= 0.0 and anova.CDF > 0:
                 anova.TEST = 1 - stats.chi2.cdf(anova.MSE, anova.CDF)
 
         # Only return test 1, test 2 and test 3 in the order
-        return cls(test1=anovaList[3], test2=anovaList[0], test3=anovaList[1])
+        return cls(test1=anovas[3], test2=anovas[0], test3=anovas[1])
 
     @staticmethod
     def output_3tests(tests) -> str:

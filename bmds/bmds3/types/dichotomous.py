@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Dict, List, Union
+from typing import Self
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
@@ -39,7 +39,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: Union[None, PriorClass, ModelPriors]  # if None; default used
+    priors: PriorClass | ModelPriors | None  # if None; default used
 
     @property
     def bmr_text(self) -> str:
@@ -154,7 +154,7 @@ class DichotomousModelResult(BaseModel):
     bmd_dist: NumpyFloatArray
 
     @classmethod
-    def from_model(cls, model) -> "DichotomousModelResult":
+    def from_model(cls, model) -> Self:
         result = model.structs.result
         summary = model.structs.summary
         # reshape; get rid of 0 and inf; must be JSON serializable
@@ -172,16 +172,16 @@ class DichotomousModelResult(BaseModel):
             bmd_dist=arr,
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
 
 class DichotomousPgofResult(BaseModel):
-    expected: List[float]
-    residual: List[float]
-    eb_lower: List[float]
-    eb_upper: List[float]
+    expected: list[float]
+    residual: list[float]
+    eb_lower: list[float]
+    eb_upper: list[float]
     test_statistic: float
     p_value: float
     roi: float
@@ -220,7 +220,7 @@ class DichotomousPgofResult(BaseModel):
 
 
 class DichotomousParameters(BaseModel):
-    names: List[str]
+    names: list[str]
     values: NumpyFloatArray
     se: NumpyFloatArray
     lower_ci: NumpyFloatArray
@@ -239,7 +239,7 @@ class DichotomousParameters(BaseModel):
         return np.array(priors_list, dtype=np.float64).T
 
     @classmethod
-    def from_model(cls, model) -> "DichotomousParameters":
+    def from_model(cls, model) -> Self:
         result = model.structs.result
         summary = model.structs.summary
         param_names = model.get_param_names()
@@ -259,7 +259,7 @@ class DichotomousParameters(BaseModel):
             prior_max_value=priors[4],
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
@@ -286,7 +286,7 @@ class DichotomousParameters(BaseModel):
             )
         return pretty_table(data, headers)
 
-    def rows(self, extras: Dict) -> List[Dict]:
+    def rows(self, extras: dict) -> list[dict]:
         rows = []
         for i in range(len(self.names)):
             rows.append(
@@ -311,15 +311,15 @@ class DichotomousParameters(BaseModel):
 
 
 class DichotomousAnalysisOfDeviance(BaseModel):
-    names: List[str]
-    ll: List[float]
-    params: List[int]
-    deviance: List[float]
-    df: List[int]
-    p_value: List[float]
+    names: list[str]
+    ll: list[float]
+    params: list[int]
+    deviance: list[float]
+    df: list[int]
+    p_value: list[float]
 
     @classmethod
-    def from_model(cls, model) -> "DichotomousAnalysisOfDeviance":
+    def from_model(cls, model) -> Self:
         aod = model.structs.aod
         return cls(
             names=["Full model", "Fitted model", "Reduced model"],
@@ -356,7 +356,7 @@ class DichotomousPlotting(BaseModel):
     bmdu_y: float
 
     @classmethod
-    def from_model(cls, model, params) -> "DichotomousPlotting":
+    def from_model(cls, model, params) -> Self:
         summary = model.structs.summary
         xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
         dr_x = model.dataset.dose_linspace
@@ -371,7 +371,7 @@ class DichotomousPlotting(BaseModel):
             bmdu_y=critical_ys[2],
         )
 
-    def dict(self, **kw) -> Dict:
+    def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
@@ -388,7 +388,7 @@ class DichotomousResult(BaseModel):
     plotting: DichotomousPlotting
 
     @classmethod
-    def from_model(cls, model) -> "DichotomousResult":
+    def from_model(cls, model) -> Self:
         summary = model.structs.summary
         fit = DichotomousModelResult.from_model(model)
         gof = DichotomousPgofResult.from_model(model)

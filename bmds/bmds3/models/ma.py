@@ -1,6 +1,5 @@
 import ctypes
 from itertools import cycle
-from typing import List
 
 from ... import plotting
 from ..types.dichotomous import DichotomousModelSettings
@@ -102,7 +101,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
     settings: DichotomousModelSettings
     results: DichotomousModelAverageResult
-    model_indexes: List[int]
+    model_indexes: list[int]
 
     def deserialize(self, session) -> BmdModelAveragingDichotomous:
         models = [session.models[idx] for idx in self.model_indexes]

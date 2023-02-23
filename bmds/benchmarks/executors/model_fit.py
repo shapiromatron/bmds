@@ -1,5 +1,3 @@
-from typing import List
-
 from ... import constants
 from ...bmds2.models import continuous as c2
 from ...bmds2.models import dichotomous as d2
@@ -10,7 +8,7 @@ from ..models import ModelResult
 from .shared import nan_to_default
 
 
-def build_jobs(datasets, version: constants.Version, dtype: constants.Dtype) -> List:
+def build_jobs(datasets, version: constants.Version, dtype: constants.Dtype) -> list:
     check = (version, dtype)
     if check == (constants.Version.BMDS270, constants.Dtype.CONTINUOUS):
         models = (

@@ -1,6 +1,6 @@
 import ctypes
 from textwrap import dedent
-from typing import List, NamedTuple
+from typing import NamedTuple, Self
 
 import numpy as np
 import numpy.typing as npt
@@ -288,7 +288,7 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __init__(self, models: List[DichotomousAnalysisStruct], model_weights: npt.NDArray):
+    def __init__(self, models: list[DichotomousAnalysisStruct], model_weights: npt.NDArray):
         self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
         self.np_actual_parms = self.np_nparms.copy()
         self.np_prior_cols = np.array([model.prior_cols for model in models], dtype=np.int32)
@@ -340,7 +340,7 @@ class DichotomousMAResultStruct(ctypes.Structure):
         ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __init__(self, models: List[DichotomousModelResultStruct]):
+    def __init__(self, models: list[DichotomousModelResultStruct]):
         self.nmodels = len(models)
         self.models = list_t_c(
             [ctypes.pointer(model) for model in models],
@@ -411,7 +411,7 @@ class DichotomousMAStructs(NamedTuple):
     result: MAResultsStruct
 
     @classmethod
-    def from_session(cls, dataset, models, weights) -> "DichotomousMAStructs":
+    def from_session(cls, dataset, models, weights) -> Self:
 
         return cls(
             analysis=DichotomousMAAnalysisStruct(

@@ -1,6 +1,6 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, List
+from typing import Callable
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,15 +15,15 @@ def nan_to_default(val) -> float:
     return BMDS_BLANK_VALUE if isinstance(val, str) or np.isnan(val) else val
 
 
-def multiprocess(jobs: List, run: Callable) -> List:
+def multiprocess(jobs: list, run: Callable) -> list:
     """Run a list of jobs in multiprocessing
 
     Args:
-        jobs (List): A list of jobs
+        jobs (list): A list of jobs
         run (Callable): A callable executor
 
     Returns:
-        List: A list of results
+        list: A list of results
     """
     nprocs = max(os.cpu_count() - 1, 1)
     results = []

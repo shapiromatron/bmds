@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from . import constants
 from .bmds2.sessions import BMDS_v270
@@ -10,7 +10,7 @@ class BMDS:
     A single dataset, related models, outputs, and model recommendations.
     """
 
-    _BMDS_VERSIONS: Dict[str, Any] = {
+    _BMDS_VERSIONS: dict[str, Any] = {
         constants.BMDS270: BMDS_v270,
         constants.BMDS330: Bmds330,
     }

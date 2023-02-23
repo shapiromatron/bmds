@@ -3,7 +3,6 @@ import os
 import platform
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from typing import Dict, Tuple
 
 import pandas as pd
 from simple_settings import settings
@@ -22,8 +21,8 @@ class BMDS:
 
     version_str: str = ""
     version_pretty: str = ""
-    version_tuple: Tuple[int, ...] = ()
-    model_options: Dict[str, Dict] = {}
+    version_tuple: tuple[int, ...] = ()
+    model_options: dict[str, dict] = {}
 
     bmr_options = {
         constants.DICHOTOMOUS: constants.DICHOTOMOUS_BMRS,
@@ -36,11 +35,11 @@ class BMDS:
         """
         Attributes:
             dtype (str): dataset type
-            models (List[Models]): list of BMDS models to be included
+            models (list[Models]): list of BMDS models to be included
             dataset (Dataset): A BMDS dataset, mutable if doses are dropped
             original_dataset (Dataset): The unchanged original dataset.
             doses_dropped (int): the number of doses dropped in current session
-            doses_dropped_sessions (Dict[int, Session): history of prior sessions
+            doses_dropped_sessions (dict[int, Session): history of prior sessions
         """
         self.dtype = dtype
         if self.dtype not in constants.DTYPES:

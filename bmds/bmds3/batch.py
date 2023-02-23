@@ -4,7 +4,7 @@ import zipfile
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Optional, Union
+from typing import Callable, NamedTuple, Optional, Self
 
 import pandas as pd
 from tqdm import tqdm
@@ -17,14 +17,14 @@ from .sessions import BmdsSession
 
 class ExecutionResponse(NamedTuple):
     success: bool
-    content: Union[dict, list[dict]]
+    content: dict | list[dict]
 
 
 class BmdsSessionBatch:
-    def __init__(self, sessions: Optional[List[BmdsSession]] = None):
+    def __init__(self, sessions: Optional[list[BmdsSession]] = None):
         if sessions is None:
             sessions = []
-        self.sessions: List[BmdsSession] = sessions
+        self.sessions: list[BmdsSession] = sessions
         self.errors = []
 
     def df_summary(self) -> pd.DataFrame:
@@ -56,8 +56,8 @@ class BmdsSessionBatch:
                     )
         return pd.DataFrame(data=data)
 
-    def to_excel(self, path: Optional[Path] = None) -> Union[Path, BytesIO]:
-        f: Union[Path, BytesIO] = path or BytesIO()
+    def to_excel(self, path: Optional[Path] = None) -> Path | BytesIO:
+        f: Path | BytesIO = path or BytesIO()
         with pd.ExcelWriter(f) as writer:
             data = {
                 "summary": self.df_summary(),
@@ -123,12 +123,12 @@ class BmdsSessionBatch:
 
     @classmethod
     def execute(
-        cls, datasets: List[DatasetBase], runner: Callable, nprocs: Optional[int] = None
-    ) -> "BmdsSessionBatch":
+        cls, datasets: list[DatasetBase], runner: Callable, nprocs: Optional[int] = None
+    ) -> Self:
         """Execute sessions using multiple processors.
 
         Args:
-            datasets (List[DatasetBase]): The datasets to execute
+            datasets (list[DatasetBase]): The datasets to execute
             runner (Callable[dataset] -> ExecutionResponse): The method which executes a session
             nprocs (Optional[int]): the number of processors to use; defaults to N-1. If 1 is
                 specified; the batch session is called linearly without a process pool
@@ -139,7 +139,7 @@ class BmdsSessionBatch:
         if nprocs is None:
             nprocs = max(os.cpu_count() - 1, 1)
 
-        results: List[ExecutionResponse] = []
+        results: list[ExecutionResponse] = []
         if nprocs == 1:
             # run without a ProcessPoolExecutor; useful for debugging
             for dataset in tqdm(datasets, desc="Executing..."):
@@ -172,7 +172,7 @@ class BmdsSessionBatch:
         return batch
 
     @classmethod
-    def deserialize(cls, data: str) -> "BmdsSessionBatch":
+    def deserialize(cls, data: str) -> Self:
         """Load serialized batch export into a batch session.
 
         Args:
@@ -183,7 +183,7 @@ class BmdsSessionBatch:
         return BmdsSessionBatch(sessions=sessions)
 
     @classmethod
-    def load(cls, archive: Path) -> "BmdsSessionBatch":
+    def load(cls, archive: Path) -> Self:
         """Load a BmdsSession from a compressed zipfile
 
         Args:

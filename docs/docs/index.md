@@ -5,7 +5,7 @@
 [![docs](https://readthedocs.org/projects/bmds/badge/?version=latest)](https://bmds.readthedocs.io/en/latest/?badge=latest)
 [![zenodo](https://zenodo.org/badge/61229626.svg)](https://zenodo.org/badge/latestdoi/61229626)
 
-A python package is designed to run the [USEPA BMDS](https://www.epa.gov/bmds) software. It requires Python3.9+.
+A python package is designed to run the [USEPA BMDS](https://www.epa.gov/bmds) software. It requires Python3.11+.
 
 ## Quickstart
 

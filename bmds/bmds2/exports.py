@@ -1,7 +1,4 @@
-from typing import Dict, List
-
-
-def df_ordered_dict(include_io=True) -> Dict[str, List]:
+def df_ordered_dict(include_io=True) -> dict[str, list]:
     """
     Return an ordered defaultdict designed to create tabular exports from datasets
     """

@@ -1,6 +1,6 @@
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -19,14 +19,14 @@ class Prior(BaseModel):
     min_value: float
     max_value: float
 
-    def numeric_list(self) -> List[float]:
+    def numeric_list(self) -> list[float]:
         return list(self.dict(exclude={"name"}).values())
 
 
 class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
-    priors: List[Prior]  # priors for main model
-    variance_priors: Optional[List[Prior]]  # priors for variance model (continuous-only)
+    priors: list[Prior]  # priors for main model
+    variance_priors: Optional[list[Prior]]  # priors for variance model (continuous-only)
 
     def __str__(self) -> str:
         return self.tbl()
@@ -95,7 +95,7 @@ class ModelPriors(BaseModel):
 
 
 # lazy mapping; saves copy as requested
-_model_priors: Dict[str, ModelPriors] = {}
+_model_priors: dict[str, ModelPriors] = {}
 
 
 def _load_model_priors():

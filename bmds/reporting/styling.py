@@ -1,6 +1,6 @@
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from docx import Document
 from docx.shared import Inches
@@ -32,7 +32,7 @@ class Report(BaseModel):
     styles: ReporterStyleGuide
 
     @classmethod
-    def build_default(cls) -> "Report":
+    def build_default(cls) -> Self:
         fn = Path(__file__).parent / "templates/base.docx"
         doc = Document(str(fn))
         return Report(document=doc, styles=ReporterStyleGuide())
