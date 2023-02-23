@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import NamedTuple
 
 import pandas as pd
@@ -13,7 +13,7 @@ class BenchmarkDatasetMetadata(NamedTuple):
     dataset_key: str
 
 
-class BenchmarkDataset(Enum):
+class BenchmarkDataset(StrEnum):
     """A benchmark dataset that can be used in to run an analysis"""
 
     TOXREFDB_V2 = (
