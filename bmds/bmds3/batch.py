@@ -29,7 +29,7 @@ class BmdsSessionBatch:
 
     def df_summary(self) -> pd.DataFrame:
         dfs = [
-            session.to_df(extras=dict(session_indexx=idx))
+            session.to_df(extras=dict(session_index=idx))
             for idx, session in enumerate(self.sessions)
         ]
         return pd.concat(dfs).dropna(axis=1, how="all").fillna("")
