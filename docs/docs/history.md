@@ -1,5 +1,21 @@
 # History
 
+## Version 23.1
+
+* Updated BMDS core for 3.3 (2022.10 → 2022.03), which fixed a few bugs.
+    * Fixed bug in model deviance calculations
+    * Fixed bug in dichotomous scaled residual calculations
+* Minimum Python version increased to 3.11
+* Add additional data validation for input data to prevent erroneous data inputs
+* Add survival adjusted poly-k response test
+* Remove remote execution support for BMDS 2.7; remote execution no longer possible in this package
+* Remove Custom PriorClass; existing priors can still be modified as needed without this Enum item
+* Fix typo in Excel export column names
+* Modernize typing annotation using features in python 3.9, 3.10, and 3.11.
+* Modernize build tooling and other development environment package updates
+
+Released on 2023-02-XX.
+
 ## Version 22.1
 
 * Switched to calendar year versioning. It uses a two-part CalVer versioning scheme, such as 22.1. The first number is the year. The second is the release number within that year, starting with v1. Patch versions may be created if changes are minor
