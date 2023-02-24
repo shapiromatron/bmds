@@ -130,3 +130,10 @@ def test_bmds3_dichotomous_session(ddataset2):
     d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))
+
+
+def test_bmds3_dichotomous_parameters(ddataset2):
+    # check analysis of deviance and scaled residuals
+    model = dichotomous.Logistic(ddataset2)
+    result = model.execute()
+    assert result.deviance.p_value[2] == pytest.approx(0.0)
