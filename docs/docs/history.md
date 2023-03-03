@@ -14,7 +14,7 @@
 * Modernize typing annotation using features in python 3.9, 3.10, and 3.11.
 * Modernize build tooling and other development environment package updates
 
-Released on 2023-02-XX.
+Released on 2023-03-03.
 
 ## Version 22.1
 
