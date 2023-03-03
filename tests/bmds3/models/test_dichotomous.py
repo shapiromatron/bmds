@@ -130,3 +130,18 @@ def test_bmds3_dichotomous_session(ddataset2):
     d = session.to_dict()
     # ensure json-serializable
     print(json.dumps(d))
+
+
+def test_bmds3_dichotomous_fit_parameters(ddataset2):
+    # check fit parameters for dichotomous modeling
+    model = dichotomous.Logistic(ddataset2)
+    res = model.execute()
+    # overall fit
+    actual = [res.fit.loglikelihood, res.fit.aic, res.gof.p_value, res.gof.df, res.fit.chisq]
+    assert actual == pytest.approx([179.98, 363.96, 0.48, 3.0, 2.45], abs=0.01)
+    # scaled residuals
+    assert res.gof.residual == pytest.approx([-1.08, -0.42, 0.94, -0.14, -0.46], abs=0.01)
+    # deviance
+    assert res.deviance.deviance == pytest.approx([-9999.0, 3.57, 307.681], abs=0.01)
+    assert res.deviance.df == pytest.approx([-9999, 3, 4])
+    assert res.deviance.p_value == pytest.approx([-9999.0, 0.311, 0.0], abs=0.01)
