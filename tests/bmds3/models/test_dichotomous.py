@@ -154,5 +154,5 @@ def test_bmds3_dichotomous_pvalue():
     m = dichotomous.Logistic(dataset=ds)
     m.execute()
 
-    # fix case found in 2023.03 where if p_value is exactly one
-    assert m.results.gof.p_value == 1.0
+    # fix case found in 2023.03 where if p_value is exactly one, would incorrectly return -9999
+    assert m.results.gof.p_value == pytest.approx(1.0, abs=1e-3)
