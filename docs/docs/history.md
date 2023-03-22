@@ -1,8 +1,15 @@
 # History
 
+## Version 23.2
+
+* Updated BMDS core for 3.3 (2023.03 → 2023.03.01)
+    * Fixed bug in dichotomous scaled residual calculations that occurred when estimated probability equals one
+
+Released on 2023-03-21.
+
 ## Version 23.1
 
-* Updated BMDS core for 3.3 (2022.10 → 2022.03), which fixed a few bugs.
+* Updated BMDS core for 3.3 (2022.10 → 2023.03), which fixed a few bugs.
     * Fixed bug in model deviance calculations
     * Fixed bug in dichotomous scaled residual calculations
 * Minimum Python version increased to 3.11

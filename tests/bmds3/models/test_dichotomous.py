@@ -145,3 +145,14 @@ def test_bmds3_dichotomous_fit_parameters(ddataset2):
     assert res.deviance.deviance == pytest.approx([-9999.0, 3.57, 307.681], abs=0.01)
     assert res.deviance.df == pytest.approx([-9999, 3, 4])
     assert res.deviance.p_value == pytest.approx([-9999.0, 0.311, 0.0], abs=0.01)
+
+
+def test_bmds3_dichotomous_pvalue():
+    ds = bmds.datasets.DichotomousDataset(
+        doses=[0, 10, 30, 100], ns=[20, 20, 20, 20], incidences=[0, 0, 8, 20]
+    )
+    m = dichotomous.Logistic(dataset=ds)
+    m.execute()
+
+    # fix case found in 2023.03 where if p_value is exactly one, would incorrectly return -9999
+    assert m.results.gof.p_value == pytest.approx(1.0, abs=1e-3)
