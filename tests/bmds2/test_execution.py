@@ -182,7 +182,7 @@ def test_continuous_restrictions(cdataset):
     for m in session.models:
         assert m.output_created is True
 
-    assert "The power is restricted to be greater than or equal to 1" in power1.outfile  # noqa
+    assert "The power is restricted to be greater than or equal to 1" in power1.outfile
     assert "The power is not restricted" in power2.outfile
     assert "Power parameter restricted to be greater than 1" in hill1.outfile
     assert "Power parameter is not restricted" in hill2.outfile

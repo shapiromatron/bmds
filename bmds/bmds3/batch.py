@@ -1,10 +1,11 @@
 import json
 import os
 import zipfile
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Self
+from typing import NamedTuple, Self
 
 import pandas as pd
 from tqdm import tqdm
@@ -21,7 +22,7 @@ class ExecutionResponse(NamedTuple):
 
 
 class BmdsSessionBatch:
-    def __init__(self, sessions: Optional[list[BmdsSession]] = None):
+    def __init__(self, sessions: list[BmdsSession] | None = None):
         if sessions is None:
             sessions = []
         self.sessions: list[BmdsSession] = sessions
@@ -56,7 +57,7 @@ class BmdsSessionBatch:
                     )
         return pd.DataFrame(data=data)
 
-    def to_excel(self, path: Optional[Path] = None) -> Path | BytesIO:
+    def to_excel(self, path: Path | None = None) -> Path | BytesIO:
         f: Path | BytesIO = path or BytesIO()
         with pd.ExcelWriter(f) as writer:
             data = {
@@ -70,7 +71,7 @@ class BmdsSessionBatch:
 
     def to_docx(
         self,
-        report: Optional[Report] = None,
+        report: Report | None = None,
         header_level: int = 1,
         citation: bool = True,
         dataset_format_long: bool = True,
@@ -123,7 +124,7 @@ class BmdsSessionBatch:
 
     @classmethod
     def execute(
-        cls, datasets: list[DatasetBase], runner: Callable, nprocs: Optional[int] = None
+        cls, datasets: list[DatasetBase], runner: Callable, nprocs: int | None = None
     ) -> Self:
         """Execute sessions using multiple processors.
 

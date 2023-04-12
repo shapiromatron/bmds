@@ -4,7 +4,7 @@ import abc
 import ctypes
 import logging
 import platform
-from typing import TYPE_CHECKING, NamedTuple, Optional, Self
+from typing import TYPE_CHECKING, NamedTuple, Self
 
 from pydantic import BaseModel
 
@@ -58,7 +58,7 @@ class BmdsLibraryManager:
         elif os_ == "Darwin":
             filename += ".dylib"
         else:
-            raise EnvironmentError(f"Unknown OS: {os_}")
+            raise OSError(f"Unknown OS: {os_}")
 
         path = package_root / "bin" / bmds_version / filename
         key = str(path)
@@ -90,8 +90,8 @@ class BmdModel(abc.ABC):
     def __init__(self, dataset: DatasetType, settings: InputModelSettings = None):
         self.dataset = dataset
         self.settings = self.get_model_settings(dataset, settings)
-        self.structs: Optional[NamedTuple] = None  # used for model averaging
-        self.results: Optional[BaseModel] = None
+        self.structs: NamedTuple | None = None  # used for model averaging
+        self.results: BaseModel | None = None
 
     def name(self) -> str:
         # return name of model; may be setting-specific
@@ -243,7 +243,7 @@ class BmdModelAveraging(abc.ABC):
         # if not settings are not specified copy settings from first model
         initial_settings = settings if settings is not None else models[0].settings
         self.settings = self.get_model_settings(initial_settings)
-        self.results: Optional[BaseModel] = None
+        self.results: BaseModel | None = None
 
     def get_dll(self) -> ctypes.CDLL:
         return BmdsLibraryManager.get_dll(bmds_version=self.model_version, base_name="libDRBMD")
@@ -264,7 +264,7 @@ class BmdModelAveraging(abc.ABC):
         return self.results is not None
 
     @abc.abstractmethod
-    def serialize(self, session) -> "BmdModelAveragingSchema":
+    def serialize(self, session) -> BmdModelAveragingSchema:
         ...
 
     @abc.abstractmethod

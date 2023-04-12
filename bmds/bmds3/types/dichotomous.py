@@ -273,6 +273,7 @@ class DichotomousParameters(BaseModel):
             self.se,
             self.lower_ci,
             self.upper_ci,
+            strict=True,
         ):
             data.append(
                 (

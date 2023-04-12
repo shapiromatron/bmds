@@ -1,5 +1,4 @@
 import ctypes
-from typing import Optional, Type
 
 import numpy as np
 
@@ -121,7 +120,7 @@ class BmdModelContinuousSchema(BmdModelSchema):
     name: str
     model_class: ContinuousModel
     settings: ContinuousModelSettings
-    results: Optional[ContinuousResult]
+    results: ContinuousResult | None
 
     def deserialize(self, dataset: ContinuousDatasets) -> BmdModelContinuous:
         Model = get_model_class(self)
@@ -295,7 +294,7 @@ _bmd_model_map = {
 }
 
 
-def get_model_class(data: BmdModelContinuousSchema) -> Type[BmdModelContinuous]:
+def get_model_class(data: BmdModelContinuousSchema) -> type[BmdModelContinuous]:
     """Get continuous model class given the schema
 
     Generally this is a dictionary lookup; however there is a special case for

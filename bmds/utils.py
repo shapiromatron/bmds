@@ -2,9 +2,9 @@ import ctypes
 import os
 import sys
 import tempfile
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Optional
 
 import numpy as np
 import tabulate
@@ -62,20 +62,20 @@ def ff(value) -> str:
     if isinstance(value, str):
         return value
     elif abs(value) > 1e6:
-        return "{:.1E}".format(value)
+        return f"{value:.1E}"
     elif value > 0 and value < 0.001:
         return "<0.001"
     elif np.isclose(value, int(value)):
         return str(int(value))
     else:
-        return "{:.3f}".format(value).rstrip("0")
+        return f"{value:.3f}".rstrip("0")
 
 
 def str_list(items: Iterable) -> str:
     return ",".join([str(item) for item in items])
 
 
-def citation(dll_version: Optional[str] = None) -> dict:
+def citation(dll_version: str | None = None) -> dict:
     """
     Return a citation for the software.
     """

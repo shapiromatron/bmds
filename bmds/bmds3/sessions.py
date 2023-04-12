@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -44,14 +44,14 @@ class BmdsSession:
     def __init__(
         self,
         dataset: DatasetType,
-        recommendation_settings: Optional[RecommenderSettings] = None,
+        recommendation_settings: RecommenderSettings | None = None,
     ):
         self.dataset = dataset
         self.models: list[BmdModel] = []
-        self.ma_weights: Optional[npt.NDArray] = None
-        self.model_average: Optional[BmdModelAveraging] = None
-        self.recommendation_settings: Optional[RecommenderSettings] = recommendation_settings
-        self.recommender: Optional[Recommender] = None
+        self.ma_weights: npt.NDArray | None = None
+        self.model_average: BmdModelAveraging | None = None
+        self.recommendation_settings: RecommenderSettings | None = recommendation_settings
+        self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
     def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
@@ -88,7 +88,7 @@ class BmdsSession:
         instance = Model(dataset=self.dataset, settings=settings)
         self.models.append(instance)
 
-    def set_ma_weights(self, weights: Optional[npt.ArrayLike] = None):
+    def set_ma_weights(self, weights: npt.ArrayLike | None = None):
         if weights is None:
             weights = np.full(len(self.models), 1 / len(self.models), dtype=np.float64)
         if len(self.models) != len(weights):
@@ -96,14 +96,14 @@ class BmdsSession:
         weights = np.array(weights)
         self.ma_weights = weights / weights.sum()
 
-    def add_model_averaging(self, weights: Optional[list[float]] = None):
+    def add_model_averaging(self, weights: list[float] | None = None):
         """
         Must be added average other models are added since a shallow copy is taken, and the
         execution of model averaging assumes all other models were executed.
         """
         if weights or self.ma_weights is None:
             self.set_ma_weights(weights)
-        instance = ma.BmdModelAveragingDichotomous(session=self, models=copy((self.models)))
+        instance = ma.BmdModelAveragingDichotomous(session=self, models=copy(self.models))
         self.model_average = instance
 
     def execute(self):
@@ -127,7 +127,7 @@ class BmdsSession:
         else:
             raise ValueError("Recommendation not enabled.")
 
-    def select(self, model: Optional[BmdModel], notes: str = ""):
+    def select(self, model: BmdModel | None, notes: str = ""):
         self.selected.select(model, notes)
 
     @property
@@ -164,7 +164,7 @@ class BmdsSession:
     @classmethod
     def dll_version(cls) -> str:
         model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
-        dll = model.get_dll()  # noqa: F841
+        dll = model.get_dll()
         return get_version(dll)
 
     @classmethod
@@ -192,7 +192,7 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().dict()
 
-    def to_df(self, extras: Optional[dict] = None) -> pd.DataFrame:
+    def to_df(self, extras: dict | None = None) -> pd.DataFrame:
         """Export an executed session to a pandas dataframe
 
         Args:
@@ -354,7 +354,7 @@ class Bmds330(BmdsSession):
         },
     }
 
-    def serialize(self) -> "Bmds330Schema":
+    def serialize(self) -> Bmds330Schema:
         schema = Bmds330Schema(
             version=dict(
                 string=self.version_str,

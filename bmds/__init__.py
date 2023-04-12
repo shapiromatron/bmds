@@ -5,7 +5,7 @@ isort:skip_file
 """
 import os
 
-os.environ.setdefault("SIMPLE_SETTINGS", "bmds.settings")  # noqa
+os.environ.setdefault("SIMPLE_SETTINGS", "bmds.settings")
 
 from . import bmds2, constants  # noqa
 from .datasets import *  # noqa
