@@ -228,7 +228,6 @@ class ControlStdevResiduals(ShouldBeLessThan):
             and len(output["fit_est_stdev"]) > 0
             and len(output["fit_stdev"]) > 0
         ):
-
             try:
                 modeled = abs(output["fit_est_stdev"][0])
                 actual = abs(output["fit_stdev"][0])

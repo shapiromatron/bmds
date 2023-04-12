@@ -63,7 +63,6 @@ def dichotomous_priors(f: StringIO):
 
 
 def continuous_priors(f: StringIO):
-
     continuous_dataset = ContinuousDataset(
         doses=[0, 10, 50, 150, 400],
         ns=[10, 10, 10, 10, 10],

@@ -7,7 +7,6 @@ from .run import windows_only
 
 @windows_only
 def test_batch(cdataset, ddataset):
-
     batch = bmds.bmds2.SessionBatch()
 
     session = bmds.BMDS.version("BMDS270", bmds.constants.CONTINUOUS, dataset=cdataset)

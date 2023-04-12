@@ -11,7 +11,6 @@ class Recommender:
     """
 
     def __init__(self, dtype):
-
         rule_args = dict()
         if dtype == constants.DICHOTOMOUS:
             pass
@@ -70,7 +69,6 @@ class Recommender:
     def recommend(self, dataset, models):
         # apply rules to each model
         for model in models:
-
             # set global recommendations
             model.recommended = False
             model.recommended_variable = None

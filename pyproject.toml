@@ -1,18 +1,7 @@
 [tool.black]
 line-length = 100
-target-version = ['py36', 'py37', 'py38']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.tox,
-  | _build,
-  | bin,
-  | docs,
-  | notebooks/private,
-  | venv
-)/
-'''
+target-version = ['py311']
+extend-exclude = '(notebooks/private)'
 
 [tool.isort]
 atomic = true
