@@ -1,5 +1,3 @@
-from typing import Optional, Tuple
-
 from pydantic import BaseModel
 
 from ...datasets.base import DatasetSchemaBase
@@ -11,7 +9,7 @@ from ..selected import SelectedModelSchema
 class VersionSchema(BaseModel):
     string: str
     pretty: str
-    numeric: Tuple[int, ...]
+    numeric: tuple[int, ...]
     python: str
     dll: str
 
@@ -20,6 +18,6 @@ class SessionSchemaBase(BaseModel):
     version: VersionSchema
     dataset: DatasetSchemaBase
     models: list[BmdModelSchema]
-    model_average: Optional[BmdModelAveragingSchema]
-    recommender: Optional[RecommenderSchema]
+    model_average: BmdModelAveragingSchema | None
+    recommender: RecommenderSchema | None
     selected: SelectedModelSchema

@@ -5,14 +5,11 @@ Bailer AJ, Portier CJ. Effects of treatment-induced mortality and tumor-induced 
 for carcinogenicity in small samples. Biometrics. 1988 Jun;44(2):417-31.
 PMID: 3390507. DOI: 10.2307/2531856
 """
-from typing import Optional
 
 import pandas as pd
 
 
-def adjust_n(
-    df: pd.DataFrame, k: Optional[float] = 3, max_day: Optional[int] = None
-) -> pd.DataFrame:
+def adjust_n(df: pd.DataFrame, k: float | None = 3, max_day: int | None = None) -> pd.DataFrame:
     """Adjust the n for individual observations in a dataset.
 
     Args:
@@ -71,8 +68,8 @@ def calculate(
     doses: list[float],
     day: list[int],
     has_tumor: list[int],
-    k: Optional[float] = 3,
-    max_day: Optional[int] = None,
+    k: float | None = 3,
+    max_day: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Calculate polyk adjustment on a dataset
 

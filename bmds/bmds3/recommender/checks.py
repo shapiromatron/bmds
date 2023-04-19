@@ -1,5 +1,5 @@
 import math
-from typing import Any, Optional, Self
+from typing import Any, Self
 
 from pydantic import BaseModel
 
@@ -20,7 +20,6 @@ class CheckResponse(BaseModel):
 
 
 class Check:
-
     _enabled_attribute = {
         constants.Dtype.DICHOTOMOUS: "enabled_dichotomous",
         constants.Dtype.DICHOTOMOUS_CANCER: "enabled_dichotomous",
@@ -41,7 +40,7 @@ class Check:
         return CheckResponse.success()
 
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         """Execute a check; return an error message if failure, else None"""
         raise NotImplementedError("")
 
@@ -53,7 +52,7 @@ def is_valid_number(value: Any) -> bool:
         return False
 
 
-def number_or_none(value: Any) -> Optional[Number]:
+def number_or_none(value: Any) -> Number | None:
     if not is_valid_number(value):
         return None
     return value
@@ -95,11 +94,11 @@ class ExistenceCheck(Check):
     failure_message_name: str
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         ...
 
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         value = cls.get_value(dataset, model)
         if not is_valid_number(value):
             return f"{cls.failure_message_name} does not exist"
@@ -109,7 +108,7 @@ class AicExists(ExistenceCheck):
     failure_message_name = "AIC"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         return model.results.fit.aic
 
 
@@ -117,7 +116,7 @@ class BmdExists(ExistenceCheck):
     failure_message_name = "BMD"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         return model.results.bmd
 
 
@@ -125,7 +124,7 @@ class RoiExists(ExistenceCheck):
     failure_message_name = "Residual of interest"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         return model.results.gof.roi
 
 
@@ -133,7 +132,7 @@ class BmdlExists(ExistenceCheck):
     failure_message_name = "BMDL"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         # bmdl must also be non-zero
         if model.results.bmdl == 0:
             return BMDS_BLANK_VALUE
@@ -144,7 +143,7 @@ class BmduExists(ExistenceCheck):
     failure_message_name = "BMDU"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         return model.results.bmdu
 
 
@@ -154,11 +153,11 @@ class ShouldBeGreaterThan(Check):
     failure_message_name: str
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         ...
 
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         value = cls.get_value(dataset, model)
         threshold = rule_settings.threshold
         if not is_gte(value, threshold):
@@ -169,7 +168,7 @@ class GoodnessOfFit(ShouldBeGreaterThan):
     failure_message_name = "Goodness of fit p-value"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         # only run test if DOF is > 0
         dof = get_dof(dataset, model.results)
         if dof <= constants.ZEROISH:
@@ -187,11 +186,11 @@ class ShouldBeLessThan(Check):
     failure_message_name: str
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         ...
 
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         value = cls.get_value(dataset, model)
         threshold = rule_settings.threshold
         if not is_lte(value, threshold):
@@ -202,7 +201,7 @@ class LargeRoi(ShouldBeLessThan):
     failure_message_name = "Abs(Residual of interest)"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         roi = model.results.gof.roi
         if is_valid_number(roi):
             return abs(roi)
@@ -213,7 +212,7 @@ class BmdBmdlRatio(ShouldBeLessThan):
     failure_message_name = "BMD/BMDL ratio"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         bmd = model.results.bmd
         bmdl = model.results.bmdl
         if is_valid_number(bmd) and is_valid_number(bmdl) and bmdl > 0:
@@ -225,7 +224,7 @@ class LowBmd(ShouldBeLessThan):
     failure_message_name = "lowest dose/BMD ratio"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         min_dose = min([dose for dose in dataset.doses if dose > 0])
         bmd = model.results.bmd
         if is_valid_number(min_dose) and is_valid_number(bmd) and bmd > 0:
@@ -237,7 +236,7 @@ class LowBmdl(ShouldBeLessThan):
     failure_message_name = "lowest dose/BMDL ratio"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         min_dose = min([d for d in dataset.doses if d > 0])
         bmdl = model.results.bmdl
         if is_valid_number(min_dose) and is_valid_number(bmdl) and bmdl > 0:
@@ -249,7 +248,7 @@ class HighBmd(ShouldBeLessThan):
     failure_message_name = "BMD/highest dose ratio"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         max_dose = max(dataset.doses)
         bmd = model.results.bmd
         if is_valid_number(max_dose) and is_valid_number(bmd) and bmd > 0:
@@ -261,7 +260,7 @@ class HighBmdl(ShouldBeLessThan):
     failure_message_name = "BMDL/highest dose ratio"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         max_dose = max(dataset.doses)
         bmdl = model.results.bmdl
         if is_valid_number(max_dose) and is_valid_number(bmdl) and bmdl > 0:
@@ -273,7 +272,7 @@ class HighControlResidual(ShouldBeLessThan):
     failure_message_name = "Residual at control"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         residual = model.results.gof.residual[0]
         return abs(residual)
 
@@ -282,7 +281,7 @@ class ControlStdevFit(ShouldBeLessThan):
     failure_message_name = "Control stdev. fit"
 
     @classmethod
-    def get_value(cls, dataset, model) -> Optional[Number]:
+    def get_value(cls, dataset, model) -> Number | None:
         modeled = model.results.gof.est_sd[0]
         actual = model.results.gof.calc_sd[0]
         return modeled / max(actual, 1e-6)
@@ -292,7 +291,7 @@ class ControlStdevFit(ShouldBeLessThan):
 # --------------------------------------------------------------------------------------------------
 class VarianceFit(Check):
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         constant_variance = model.settings.disttype != DistType.normal_ncv
         test = 2 if constant_variance else 3
         model_str = "Constant" if constant_variance else "Nonconstant"
@@ -303,7 +302,7 @@ class VarianceFit(Check):
 
 class VarianceType(Check):
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         constant_variance = model.settings.disttype != DistType.normal_ncv
         p_value2 = model.results.tests.p_values[1]
         if is_valid_number(p_value2):
@@ -315,7 +314,7 @@ class VarianceType(Check):
 
 class NoDegreesOfFreedom(Check):
     @classmethod
-    def run_check(cls, dataset, model, rule_settings) -> Optional[str]:
+    def run_check(cls, dataset, model, rule_settings) -> str | None:
         value = get_dof(dataset, model.results)
         if value <= constants.ZEROISH:
             return "Zero degrees of freedom; saturated model"
@@ -323,7 +322,7 @@ class NoDegreesOfFreedom(Check):
 
 class Warnings(Check):
     @classmethod
-    def run_check(cls, settings, dataset, output) -> Optional[str]:
+    def run_check(cls, settings, dataset, output) -> str | None:
         return None
 
 

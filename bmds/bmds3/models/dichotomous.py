@@ -1,5 +1,4 @@
 import ctypes
-from typing import Optional
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -96,7 +95,7 @@ class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
     model_class: DichotomousModel
     settings: DichotomousModelSettings
-    results: Optional[DichotomousResult]
+    results: DichotomousResult | None
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
         Model = bmd_model_map[self.model_class.id]

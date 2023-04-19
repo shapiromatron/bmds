@@ -209,10 +209,9 @@ class BMDS:
         df.to_excel(filename, index=False)
 
     def save_plots(self, directory, prefix=None, format="png", dpi=None, recommended_only=False):
-
         directory = os.path.expanduser(directory)
         if not os.path.exists(directory):
-            raise ValueError("Directory not found: {}".format(directory))
+            raise ValueError(f"Directory not found: {directory}")
 
         for model in self.models:
             if recommended_only and (
@@ -220,9 +219,9 @@ class BMDS:
             ):
                 continue
 
-            fn = "{}.{}".format(model.name, format)
+            fn = f"{model.name}.{format}"
             if prefix is not None:
-                fn = "{}-{}".format(prefix, fn)
+                fn = f"{prefix}-{fn}"
 
             fig = model.plot()
             fig.savefig(os.path.join(directory, fn), dpi=dpi)

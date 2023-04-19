@@ -1,5 +1,5 @@
 import matplotlib as mpl
-import matplotlib.pyplot as plt  # noqa
+import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 
 mpl.use("Agg")  # prevent matplotlib framework issues

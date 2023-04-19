@@ -1,5 +1,5 @@
 import abc
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -11,7 +11,7 @@ from ..constants import ZEROISH, Dtype
 
 
 class DatasetMetadata(BaseModel):
-    id: Optional[int]
+    id: int | None
     name: str = ""
     dose_units: str = ""
     response_units: str = ""
@@ -130,6 +130,7 @@ class DatasetBase(abc.ABC):
             dataset_response_units=self.metadata.response_units,
         )
 
+    @abc.abstractmethod
     def rows(self, extras: dict) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
         ...
@@ -163,6 +164,6 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
 
 
 class DatasetPlottingSchema(BaseModel):
-    mean: Optional[list[float]]
+    mean: list[float] | None
     ll: list[float]
     ul: list[float]

@@ -35,11 +35,11 @@ docs: ## Build documentation
 docs-serve: ## Generate documentation
 	cd docs; mkdocs serve -a localhost:8050
 
-lint: ## Check for python formatting issues via black & flake8
-	@black . --check && isort -q --check . && flake8 .
+lint: ## Check formatting issues
+	@black . --check && ruff .
 
-format: ## Modify python code using black & show flake8 issues
-	@black . && isort -q . && flake8 .
+format: ## Fix formatting issues where possible
+	@black . && ruff . --fix --show-fixes
 
 test: ## Run all tests, except matplotlib figures
 	py.test

@@ -44,7 +44,8 @@ class OutputParser:
     }
 
     def __init__(self, output_text, dtype, model_name):
-        assert dtype in constants.DTYPES
+        if dtype not in constants.DTYPES:
+            raise ValueError(f"Unknown dtype {dtype}")
         if "exponential" in model_name.lower():
             dtype = EXPONENTIAL
 
@@ -105,12 +106,12 @@ class OutputParser:
                 if (
                     outs[i]
                     == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
-                ):  # noqa
+                ):
                     self._lbl_parameter(outs, i)
                 elif (
                     outs[i]
                     == r"     Dose     Est._Prob.    Expected    Observed     Size       Residual"
-                ):  # noqa
+                ):
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
 
         elif self.dtype in constants.CONTINUOUS_DTYPES:
@@ -118,43 +119,37 @@ class OutputParser:
                 if (
                     outs[i]
                     == r"       Variable         Estimate        Std. Err.     Lower Conf. Limit   Upper Conf. Limit"
-                ):  # noqa
+                ):
                     self._lbl_parameter(outs, i)
                 elif (
                     outs[i]
                     == r" Dose       N    Obs Mean     Est Mean   Obs Std Dev  Est Std Dev   Scaled Res."
-                ):  # noqa
+                ):
                     self._lbl_fit_cont_dich(outs, i, fit_tbl)
-                elif (
-                    outs[i] == r"   Test    -2*log(Likelihood Ratio)  Test df        p-value    "
-                ):  # noqa
+                elif outs[i] == r"   Test    -2*log(Likelihood Ratio)  Test df        p-value    ":
                     self._lbl_pvalue(outs, i)
-                elif (
-                    outs[i] == r"            Model      Log(likelihood)   # Param's      AIC"
-                ):  # noqa
+                elif outs[i] == r"            Model      Log(likelihood)   # Param's      AIC":
                     self._lbl_aic_cont_exp(outs, i)
 
         elif self.dtype == EXPONENTIAL:
             for i in range(len(outs)):
                 if outs[i] == r"                     Parameter Estimates":
                     self._lbl_parameter(outs, i)
-                elif outs[i] == r"     Dose      N         Obs Mean     Obs Std Dev":  # noqa
+                elif outs[i] == r"     Dose      N         Obs Mean     Obs Std Dev":
                     self._lbl_fit_exp(outs, i, "observed_summary")
-                elif outs[i] == r"     Dose      Obs Mean":  # noqa
+                elif outs[i] == r"     Dose      Obs Mean":
                     self._lbl_fit_exp(outs, i, "observed_individual")
-                elif (
-                    outs[i] == r"      Dose      Est Mean      Est Std     Scaled Residual"
-                ):  # noqa
+                elif outs[i] == r"      Dose      Est Mean      Est Std     Scaled Residual":
                     self._lbl_fit_exp(outs, i, "estimated")
                 elif (
                     outs[i]
                     == r"     Test          -2*log(Likelihood Ratio)       D. F.         p-value"
-                ):  # noqa
+                ):
                     self._lbl_pvalue(outs, i)
                 elif (
                     outs[i]
                     == r"                     Model      Log(likelihood)      DF         AIC"
-                ):  # noqa
+                ):
                     self._lbl_aic_cont_exp(outs, i)
 
     def _cleanup_nans(self):
@@ -219,8 +214,8 @@ class OutputParser:
             r"BMR value is not in the range of the mean function",
             r"BMD = 100\*\(maximum dose\)",
             r"BMDL computation failed\.",
-            "Warning:  optimum may not have been found.  Bad completion code in Optimization routine.",  # noqa
-            "Warning: Likelihood for fitted model larger than the Likelihood for model A3.",  # noqa
+            "Warning:  optimum may not have been found.  Bad completion code in Optimization routine.",
+            "Warning: Likelihood for fitted model larger than the Likelihood for model A3.",
         )
         self.output["warnings"] = []
         for warning in warnings:
@@ -237,9 +232,7 @@ class OutputParser:
         and p-value.
         """
         m = re.search(
-            r"Chi\^2 = ({0}|\w+) +d.f. = +({0}|\w+) +P-value = +({0}|\w+)".format(
-                self.re_num
-            ),  # noqa
+            r"Chi\^2 = ({0}|\w+) +d.f. = +({0}|\w+) +P-value = +({0}|\w+)".format(self.re_num),
             self.output_text,
         )
         cw = {1: "Chi2", 2: "df", 3: "p_value4"}
@@ -285,7 +278,7 @@ class OutputParser:
         elif table_name == "observed_individual":
             tbl_names = ("fit_dose", "fit_observed")
         elif table_name == "estimated":
-            tbl_names = ("fit_dose", "fit_estimated", "fit_est_stdev", "fit_residuals")  # noqa
+            tbl_names = ("fit_dose", "fit_estimated", "fit_est_stdev", "fit_residuals")
 
         while i < len(outs) and len(outs[i]) > 0:
             vals = outs[i].split()

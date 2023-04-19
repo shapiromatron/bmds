@@ -1,6 +1,5 @@
 from itertools import chain
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -26,7 +25,7 @@ class Prior(BaseModel):
 class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: list[Prior]  # priors for main model
-    variance_priors: Optional[list[Prior]]  # priors for variance model (continuous-only)
+    variance_priors: list[Prior] | None  # priors for variance model (continuous-only)
 
     def __str__(self) -> str:
         return self.tbl()
@@ -54,7 +53,7 @@ class ModelPriors(BaseModel):
         raise ValueError(f"No parameter named {name}")
 
     def priors_list(
-        self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
+        self, degree: int | None = None, dist_type: DistType | None = None
     ) -> list[list]:
         priors = []
         for prior in self.priors:
@@ -83,9 +82,7 @@ class ModelPriors(BaseModel):
 
         return priors
 
-    def to_c(
-        self, degree: Optional[int] = None, dist_type: Optional[DistType] = None
-    ) -> np.ndarray:
+    def to_c(self, degree: int | None = None, dist_type: DistType | None = None) -> np.ndarray:
         priors = self.priors_list(degree, dist_type)
         return np.array(priors, dtype=np.float64).flatten("F")
 
@@ -146,10 +143,10 @@ def priors_tbl(params: list[str], priors: list[list], is_bayesian: bool) -> str:
     rows = []
     if is_bayesian:
         headers = "Parameter|Distribution|Initial|Stdev|Min|Max"
-        for name, values in zip(params, priors):
+        for name, values in zip(params, priors, strict=True):
             rows.append((name, values[0].name, values[1], values[2], values[3], values[4]))
     else:
         headers = "Parameter|Initial|Min|Max"
-        for name, values in zip(params, priors):
+        for name, values in zip(params, priors, strict=True):
             rows.append((name, values[1], values[3], values[4]))
     return pretty_table(rows, headers.split("|"))

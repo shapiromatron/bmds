@@ -11,7 +11,6 @@ from .run import windows_only
 
 
 def test_executable_path():
-
     parents = (models.Dichotomous, models.DichotomousCancer, models.Continuous)
 
     for name, obj in inspect.getmembers(bmds):
@@ -31,7 +30,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 10
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -51,7 +49,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 12
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -84,7 +81,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 10
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -104,7 +100,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 3
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -187,7 +182,7 @@ def test_continuous_restrictions(cdataset):
     for m in session.models:
         assert m.output_created is True
 
-    assert "The power is restricted to be greater than or equal to 1" in power1.outfile  # noqa
+    assert "The power is restricted to be greater than or equal to 1" in power1.outfile
     assert "The power is not restricted" in power2.outfile
     assert "Power parameter restricted to be greater than 1" in hill1.outfile
     assert "Power parameter is not restricted" in hill2.outfile

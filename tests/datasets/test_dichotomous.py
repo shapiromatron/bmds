@@ -81,12 +81,12 @@ class TestDichotomousDataset:
         assert (
             ddataset.as_dfile()
             == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47\n29.750000 14 35"
-        )  # noqa
+        )
         ddataset.drop_dose()
         assert (
             ddataset.as_dfile()
             == "Dose Incidence NEGATIVE_RESPONSE\n0.000000 5 70\n1.960000 1 48\n5.690000 3 47"
-        )  # noqa
+        )
         with pytest.raises(ValueError):
             ddataset.drop_dose()
 

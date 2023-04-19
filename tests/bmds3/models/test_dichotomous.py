@@ -129,7 +129,7 @@ def test_bmds3_dichotomous_session(ddataset2):
     session.execute()
     d = session.to_dict()
     # ensure json-serializable
-    print(json.dumps(d))
+    json.dumps(d)
 
 
 def test_bmds3_dichotomous_fit_parameters(ddataset2):

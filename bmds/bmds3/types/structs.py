@@ -19,7 +19,6 @@ def get_version(dll: ctypes.CDLL) -> str:
 # DICHOTOMOUS MODELS
 # ------------------
 class DichotomousAnalysisStruct(ctypes.Structure):
-
     _fields_ = [
         ("model", ctypes.c_int),  # Model Type as listed in DichModel
         ("n", ctypes.c_int),  # total number of observations obs/n
@@ -119,7 +118,6 @@ class DichotomousModelResultStruct(ctypes.Structure):
 
 
 class DichotomousPgofResultStruct(ctypes.Structure):
-
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("expected", ctypes.POINTER(ctypes.c_double)),
@@ -412,7 +410,6 @@ class DichotomousMAStructs(NamedTuple):
 
     @classmethod
     def from_session(cls, dataset, models, weights) -> Self:
-
         return cls(
             analysis=DichotomousMAAnalysisStruct(
                 [model.structs.analysis for model in models], weights

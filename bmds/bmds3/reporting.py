@@ -54,7 +54,7 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
             write_cell(tbl.cell(0, 3), "Std. Dev." + response_units_text, hdr)
 
             for i, (dose, n, mean, stdev) in enumerate(
-                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
+                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs, strict=True)
             ):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
@@ -66,7 +66,6 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 set_column_width(col, width)
 
         else:
-
             tbl = report.document.add_table(3, dataset.num_dose_groups + 1, style=styles.table)
 
             write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
@@ -74,7 +73,7 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
             write_cell(tbl.cell(2, 0), "Mean ± SD" + response_units_text, hdr)
 
             for i, (dose, n, mean, stdev) in enumerate(
-                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs)
+                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs, strict=True)
             ):
                 write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
                 write_cell(tbl.cell(1, i + 1), n, styles.tbl_body)
@@ -91,7 +90,9 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
             write_cell(tbl.cell(0, 1), "N", hdr)
             write_cell(tbl.cell(0, 2), "Incidence", hdr)
 
-            for i, (dose, inc, n) in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
+            for i, (dose, inc, n) in enumerate(
+                zip(dataset.doses, dataset.incidences, dataset.ns, strict=True)
+            ):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), n, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 2), inc, styles.tbl_body)
@@ -101,13 +102,14 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 set_column_width(col, width)
 
         else:
-
             tbl = report.document.add_table(2, dataset.num_dose_groups + 1, style=styles.table)
 
             write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
             write_cell(tbl.cell(1, 0), "Affected / Total (%)" + response_units_text, hdr)
 
-            for i, (dose, inc, n) in enumerate(zip(dataset.doses, dataset.incidences, dataset.ns)):
+            for i, (dose, inc, n) in enumerate(
+                zip(dataset.doses, dataset.incidences, dataset.ns, strict=True)
+            ):
                 frac = inc / float(n)
                 write_cell(tbl.cell(0, i + 1), dose, styles.tbl_body)
                 write_cell(tbl.cell(1, i + 1), f"{inc}/{n}\n({frac:.1%})", styles.tbl_body)
@@ -136,15 +138,16 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
             write_cell(tbl.cell(0, 1), "Response", hdr)
 
             # write data
-            for i, (dose, response) in enumerate(zip(dataset.individual_doses, dataset.responses)):
+            for i, (dose, response) in enumerate(
+                zip(dataset.individual_doses, dataset.responses, strict=True)
+            ):
                 write_cell(tbl.cell(i + 1, 0), dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), response, styles.tbl_body)
 
-            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1]):
+            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1], strict=True):
                 set_column_width(col, width)
 
         else:
-
             # create a table
             tbl = report.document.add_table(df.shape[0] + 1, 2, style=styles.table)
 
@@ -157,7 +160,7 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 write_cell(tbl.cell(i + 1, 0), row.dose, styles.tbl_body)
                 write_cell(tbl.cell(i + 1, 1), row.response, styles.tbl_body)
 
-            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1]):
+            for col, width in zip(tbl.columns, [1, styles.portrait_width - 1], strict=True):
                 set_column_width(col, width)
 
     else:
@@ -259,7 +262,7 @@ def write_frequentist_table(report: Report, session: BmdsSession):
     # set column width
     widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
     widths = widths / (widths.sum() / styles.portrait_width)
-    for width, col in zip(widths, tbl.columns):
+    for width, col in zip(widths, tbl.columns, strict=True):
         set_column_width(col, width)
 
     # write footnote
@@ -320,7 +323,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     # set column width
     widths = np.array([1.1, 0.9, 0.9, 0.9, 0.9, 0.9, 1, 1, 1])
     widths = widths / (widths.sum() / report.styles.portrait_width)
-    for width, col in zip(widths, tbl.columns):
+    for width, col in zip(widths, tbl.columns, strict=True):
         set_column_width(col, width)
 
     # write footnote

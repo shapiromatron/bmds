@@ -1,6 +1,6 @@
 import ctypes
 from enum import IntEnum
-from typing import Optional, Self
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -46,7 +46,7 @@ _bmr_text_map = {
 
 class ContinuousModelSettings(BaseModel):
     bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
-    is_increasing: Optional[bool]  # if None; autodetect used
+    is_increasing: bool | None  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
     disttype: constants.DistType = constants.DistType.normal
@@ -267,7 +267,6 @@ class ContinuousParameters(BaseModel):
 
         # DLL deletes the c parameter and shifts items down; correct in outputs here
         if model.bmd_model_class.id == constants.ContinuousModelIds.c_exp_m3:
-
             # do the same for parameter names for consistency
             c_index = param_names.index("c")
             param_names.pop(c_index)
@@ -313,6 +312,7 @@ class ContinuousParameters(BaseModel):
             self.se,
             self.lower_ci,
             self.upper_ci,
+            strict=True,
         ):
             data.append(
                 (
@@ -454,8 +454,8 @@ class ContinuousDeviance(BaseModel):
     def tbl(self) -> str:
         headers = "Model|Log Likelihood|# Params|AIC".split("|")
         data = []
-        for (name, loglikelihood, num_param, aic) in zip(
-            self.names, self.loglikelihoods, self.num_params, self.aics
+        for name, loglikelihood, num_param, aic in zip(
+            self.names, self.loglikelihoods, self.num_params, self.aics, strict=True
         ):
             data.append([name, loglikelihood, num_param, aic])
         return pretty_table(data, headers)
@@ -480,8 +480,8 @@ class ContinuousTests(BaseModel):
     def tbl(self) -> str:
         headers = "Name|Loglikelihood Ratio|Test DOF|P-Value".split("|")
         data = []
-        for (name, ll_ratio, df, p_value) in zip(
-            self.names, self.ll_ratios, self.dfs, self.p_values
+        for name, ll_ratio, df, p_value in zip(
+            self.names, self.ll_ratios, self.dfs, self.p_values, strict=True
         ):
             data.append([name, ll_ratio, df, p_value])
         return pretty_table(data, headers)
