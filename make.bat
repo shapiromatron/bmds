@@ -21,7 +21,7 @@ black . --check && ruff .
 goto :eof
 
 :format
-black . && ruff . --fix
+black . && ruff . --fix --show-fixes
 goto :eof
 
 :test

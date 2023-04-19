@@ -39,7 +39,7 @@ lint: ## Check formatting issues
 	@black . --check && ruff .
 
 format: ## Fix formatting issues where possible
-	@black . && ruff . --fix
+	@black . && ruff . --fix --show-fixes
 
 test: ## Run all tests, except matplotlib figures
 	py.test
