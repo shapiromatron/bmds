@@ -17,6 +17,7 @@ venv/
 *.py[cod]
 .env
 *.db
+bmdscore.cp311-win_amd64.pyd
 
 # created by bmds2.7
 log.txt
