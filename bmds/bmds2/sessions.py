@@ -209,7 +209,6 @@ class BMDS:
         df.to_excel(filename, index=False)
 
     def save_plots(self, directory, prefix=None, format="png", dpi=None, recommended_only=False):
-
         directory = os.path.expanduser(directory)
         if not os.path.exists(directory):
             raise ValueError("Directory not found: {}".format(directory))

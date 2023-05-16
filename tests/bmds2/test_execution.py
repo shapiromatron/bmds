@@ -11,7 +11,6 @@ from .run import windows_only
 
 
 def test_executable_path():
-
     parents = (models.Dichotomous, models.DichotomousCancer, models.Continuous)
 
     for name, obj in inspect.getmembers(bmds):
@@ -31,7 +30,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 10
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -51,7 +49,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 12
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -84,7 +81,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 10
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0
@@ -104,7 +100,6 @@ def test_default_execution(cdataset, ddataset, cidataset):
     assert len(session.models) == 3
     session.execute()
     for model in session.models:
-
         # check correct completion
         assert model.output_created is True
         assert len(model.outfile) > 0

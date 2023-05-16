@@ -66,7 +66,6 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 set_column_width(col, width)
 
         else:
-
             tbl = report.document.add_table(3, dataset.num_dose_groups + 1, style=styles.table)
 
             write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
@@ -101,7 +100,6 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 set_column_width(col, width)
 
         else:
-
             tbl = report.document.add_table(2, dataset.num_dose_groups + 1, style=styles.table)
 
             write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, hdr)
@@ -144,7 +142,6 @@ def write_dataset_table(report: Report, dataset: DatasetBase, long: bool = True)
                 set_column_width(col, width)
 
         else:
-
             # create a table
             tbl = report.document.add_table(df.shape[0] + 1, 2, style=styles.table)
 

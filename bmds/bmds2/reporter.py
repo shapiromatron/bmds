@@ -11,7 +11,6 @@ from ..utils import ff as default_float_formatter
 
 
 class Reporter:
-
     PORTRAIT_WIDTH = 6.5  # available width to use for tables
 
     def __init__(self, template=None, styles=None):
@@ -130,7 +129,6 @@ class Reporter:
             cell.width = Inches(size_in_inches)
 
     def _add_dataset(self, session):
-
         footnotes = TableFootnote()
         dataset = session.original_dataset
 
@@ -156,7 +154,6 @@ class Reporter:
         response_units_text = dataset._get_response_units_text()
 
         if isinstance(dataset, datasets.DichotomousDataset):
-
             tbl = self.doc.add_table(2, dataset.num_dose_groups + 1, style=self.styles.table)
 
             self._write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, style=hdr)
@@ -180,7 +177,6 @@ class Reporter:
                 self._set_col_width(col, w)
 
         elif isinstance(dataset, datasets.ContinuousIndividualDataset):
-
             tbl = self.doc.add_table(dataset.num_dose_groups + 1, 2, style=self.styles.table)
 
             self._write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, style=hdr)
@@ -200,7 +196,6 @@ class Reporter:
             self._set_col_width(tbl.columns[1], 5.5)
 
         elif isinstance(dataset, datasets.ContinuousDataset):
-
             tbl = self.doc.add_table(3, dataset.num_dose_groups + 1, style=self.styles.table)
 
             self._write_cell(tbl.cell(0, 0), "Dose" + dose_units_text, style=hdr)
@@ -225,7 +220,6 @@ class Reporter:
             footnotes.add_footnote_text(self.doc, self.styles.tbl_footnote)
 
     def _write_cell(self, cell, value, style=None, float_formatter=None):
-
         if style is None:
             style = self.styles.tbl_body
 
@@ -452,7 +446,6 @@ class Reporter:
             self.doc.add_paragraph("All model outputs", self.styles.header_2)
 
         for model in session.models:
-
             if model.recommended and except_recommended:
                 continue
 

@@ -20,7 +20,6 @@ class CheckResponse(BaseModel):
 
 
 class Check:
-
     _enabled_attribute = {
         constants.Dtype.DICHOTOMOUS: "enabled_dichotomous",
         constants.Dtype.DICHOTOMOUS_CANCER: "enabled_dichotomous",

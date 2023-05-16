@@ -148,7 +148,6 @@ class BmdsSessionBatch:
             # adapted from https://gist.github.com/alexeygrigorev/79c97c1e9dd854562df9bbeea76fc5de
             with ProcessPoolExecutor(max_workers=nprocs) as executor:
                 with tqdm(total=len(datasets), desc="Executing...") as progress:
-
                     futures = []
                     for dataset in datasets:
                         future = executor.submit(runner, dataset)
