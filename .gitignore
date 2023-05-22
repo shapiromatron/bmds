@@ -18,6 +18,7 @@ venv/
 .env
 *.db
 bmdscore.cp311-win_amd64.pyd
+*.ipnyb
 
 # created by bmds2.7
 log.txt
