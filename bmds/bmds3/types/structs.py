@@ -4,54 +4,72 @@ from typing import NamedTuple, Self
 
 import numpy as np
 import numpy.typing as npt
+from pydantic import BaseModel
 
+
+
+from bmds import bmdscore
 from .. import constants
 from .common import list_t_c
 
 
 def get_version(dll: ctypes.CDLL) -> str:
     """Get the version from the bmds shared object"""
-    buffer = ctypes.create_string_buffer(32)
-    dll.version(ctypes.pointer(buffer))
-    return buffer.value.decode("utf8")
+    return bmdscore.version()
 
 
 # DICHOTOMOUS MODELS
 # ------------------
 class DichotomousAnalysisStruct(ctypes.Structure):
+    # DOUBLE -> FLOAT OR CONBYTES ? ?
+    model: int  # Model Type as listed in DichModel
+    n: int  # total number of observations obs/n
+    Y: float  # observed +
+    doses: float
+    n_group: float  # size of the group
+    prior: float  # a column order matrix parms X prior_cols
+    BMD_type: int  # 1 = extra ; added otherwise
+    BMR: float
+    alpha: float  # alpha of the analysis
+    degree: int  # degree of polynomial used only multistage
+    samples: int  # number of MCMC samples
+    burnin: int  # size of burnin
+    parms: int  # number of parameters in the model
+    # prior_cols: int  # columns in the prior
 
-    _fields_ = [
-        ("model", ctypes.c_int),  # Model Type as listed in DichModel
-        ("n", ctypes.c_int),  # total number of observations obs/n
-        ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
-        ("doses", ctypes.POINTER(ctypes.c_double)),
-        ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
-        ("prior", ctypes.POINTER(ctypes.c_double)),  # a column order matrix parms X prior_cols
-        ("BMD_type", ctypes.c_int),  # 1 = extra ; added otherwise
-        ("BMR", ctypes.c_double),
-        ("alpha", ctypes.c_double),  # alpha of the analysis
-        ("degree", ctypes.c_int),  # degree of polynomial used only multistage
-        ("samples", ctypes.c_int),  # number of MCMC samples
-        ("burnin", ctypes.c_int),  # size of burnin
-        ("parms", ctypes.c_int),  # number of parameters in the model
-        ("prior_cols", ctypes.c_int),  # columns in the prior
-    ]
+    # _fields_ = [
+    #     ("model", ctypes.c_int),  # Model Type as listed in DichModel
+    #     ("n", ctypes.c_int),  # total number of observations obs/n
+    #     ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
+    #     ("doses", ctypes.POINTER(ctypes.c_double)),
+    #     ("n_group", ctypes.POINTER(ctypes.c_double)),  # size of the group
+    #     ("prior", ctypes.POINTER(ctypes.c_double)),  # a column order matrix parms X prior_cols
+    #     ("BMD_type", ctypes.c_int),  # 1 = extra ; added otherwise
+    #     ("BMR", ctypes.c_double),
+    #     ("alpha", ctypes.c_double),  # alpha of the analysis
+    #     ("degree", ctypes.c_int),  # degree of polynomial used only multistage
+    #     ("samples", ctypes.c_int),  # number of MCMC samples
+    #     ("burnin", ctypes.c_int),  # size of burnin
+    #     ("parms", ctypes.c_int),  # number of parameters in the model
+    #     ("prior_cols", ctypes.c_int),  # columns in the prior
+    # ]
 
-    def __init__(self, *args, **kwargs):
-        self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
-        self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
-        self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
-        self.np_prior = kwargs.pop("prior")
-        super().__init__(
-            *args,
-            Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-            **kwargs,
-        )
+    # def __init__(self, *args, **kwargs):
+    #     self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
+    #     self.np_doses = np.array(kwargs.pop("doses"), dtype=np.double)
+    #     self.np_n_group = np.array(kwargs.pop("n_group"), dtype=np.double)
+    #     self.np_prior = kwargs.pop("prior")
+    #     super().__init__(
+    #         *args,
+    #         Y=self.np_Y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #         doses=self.np_doses.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #         n_group=self.np_n_group.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #         prior=self.np_prior.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #         **kwargs,
+    #     )
 
     def __str__(self) -> str:
+        # priors still need lc'd?
         txt = dedent(
             f"""
             model: {self.model}
@@ -59,9 +77,9 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             Y: {self.Y[:self.n]}
             doses: {self.doses[:self.n]}
             n_group: {self.n_group[:self.n]}
-            prior<{self.parms},{self.prior_cols}>:
+           
             <PRIOR>
-            priors <unprocessed>: {", ".join(str(v) for v in self.np_prior.tolist())}
+            priors <unprocessed>: {", ".join(str(v) for v in self.prior.tolist())}
             BMD_type: {self.BMD_type}
             BMR: {self.BMR}
             alpha: {self.alpha}
@@ -69,37 +87,52 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             samples: {self.samples}
             burnin: {self.burnin}
             parms: {self.parms}
-            prior_cols: {self.prior_cols}
+            
             """
         )
-        txt = txt.replace("<PRIOR>", str(self.np_prior.reshape(self.prior_cols, self.parms).T))
+        #  -> item_type: Type[T]: type of the list items? 
+        # https://docs.pydantic.dev/latest/usage/types/#arguments-to-conbytes
+        txt = txt.replace("<PRIOR>", str(self.prior.reshape(self.prior_cols, self.parms).T))
         return txt
 
 
-class DichotomousModelResultStruct(ctypes.Structure):
-    _fields_ = [
-        ("model", ctypes.c_int),  # dichotomous model specification
-        ("nparms", ctypes.c_int),  # number of parameters in the model
-        ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
-        ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
-        ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
-        ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
-        ("model_df", ctypes.c_double),  # Used model degrees of freedom
-        ("total_df", ctypes.c_double),  # Total degrees of freedom
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
-        ("bmd", ctypes.c_double),  # the central estimate of the BMD
-    ]
+class DichotomousModelResultStruct:
+    model: int  # dichotomous model specification
+    nparms: int  # number of parameters in the model
+    parms: int  # parameter estimate
+    cov: int  # covariance estimate
+    max: int  # value of the likelihood/posterior at the maximum
+    dist_numE: int  # number of entries in rows for the bmd_dist
+    model_df: int  # Used model degrees of freedom
+    total_df: int  # Total degrees of freedom
+    bmd_dist: int  # bmd distribution (dist_numE x 2) matrix
+    bmd: int  # the central estimate of the BMD
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # reference same memory in struct and numpy
-        # https://stackoverflow.com/a/23330369/906385
-        self.np_parms = np.zeros(kwargs["nparms"], dtype=np.float64)
-        self.parms = np.ctypeslib.as_ctypes(self.np_parms)
-        self.np_cov = np.zeros(kwargs["nparms"] ** 2, dtype=np.float64)
-        self.cov = np.ctypeslib.as_ctypes(self.np_cov)
-        self.np_bmd_dist = np.zeros(kwargs["dist_numE"] * 2, dtype=np.float64)
-        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+    # _fields_ = [
+    #     ("model", ctypes.c_int),  # dichotomous model specification
+    #     ("nparms", ctypes.c_int),  # number of parameters in the model
+    #     ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
+    #     ("cov", ctypes.POINTER(ctypes.c_double)),  # covariance estimate
+    #     ("max", ctypes.c_double),  # value of the likelihood/posterior at the maximum
+    #     ("dist_numE", ctypes.c_int),  # number of entries in rows for the bmd_dist
+    #     ("model_df", ctypes.c_double),  # Used model degrees of freedom
+    #     ("total_df", ctypes.c_double),  # Total degrees of freedom
+    #     ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
+    #     ("bmd", ctypes.c_double),  # the central estimate of the BMD
+    # ]
+
+    # still need to override init?
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     # reference same memory in struct and numpy
+    #     # https://stackoverflow.com/a/23330369/906385
+    #     self.np_parms = np.zeros(kwargs["nparms"], dtype=np.float64)
+    #     self.parms = np.ctypeslib.as_ctypes(self.np_parms)
+    #     self.np_cov = np.zeros(kwargs["nparms"] ** 2, dtype=np.float64)
+    #     self.cov = np.ctypeslib.as_ctypes(self.np_cov)
+    #     self.np_bmd_dist = np.zeros(kwargs["dist_numE"] * 2, dtype=np.float64)
+    #     self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
 
     def __str__(self) -> str:
         return dedent(
@@ -119,7 +152,6 @@ class DichotomousModelResultStruct(ctypes.Structure):
 
 
 class DichotomousPgofResultStruct(ctypes.Structure):
-
     _fields_ = [
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("expected", ctypes.POINTER(ctypes.c_double)),
@@ -194,21 +226,35 @@ class DichotomousAodStruct(ctypes.Structure):
         )
 
 
-class BmdsResultsStruct(ctypes.Structure):
+class BmdsResultsStruct(BaseModel):
     # used for both continuous and dichotomous data
-    _fields_ = [
-        ("bmd", ctypes.c_double),
-        ("bmdl", ctypes.c_double),
-        ("bmdu", ctypes.c_double),
-        ("aic", ctypes.c_double),
-        ("BIC_equiv", ctypes.c_double),
-        ("chisq", ctypes.c_double),
-        ("bounded", ctypes.POINTER(ctypes.c_bool)),
-        ("stdErr", ctypes.POINTER(ctypes.c_double)),
-        ("lowerConf", ctypes.POINTER(ctypes.c_double)),
-        ("upperConf", ctypes.POINTER(ctypes.c_double)),
-        ("validResult", ctypes.c_bool),
-    ]
+    # zzz gonna bork up cont. ?
+    # ? subc
+    bmd: int
+    bmdl: int
+    bmdu: int
+    aic: int
+    BIC_equiv: int
+    chisq: int
+    bounded: bool
+    stdErr: float
+    lowerConf: float
+    upperConf: float
+    validResult: bool
+
+    # _fields_ = [
+    #     ("bmd", ctypes.c_double),
+    #     ("bmdl", ctypes.c_double),
+    #     ("bmdu", ctypes.c_double),
+    #     ("aic", ctypes.c_double),
+    #     ("BIC_equiv", ctypes.c_double),
+    #     ("chisq", ctypes.c_double),
+    #     ("bounded", ctypes.POINTER(ctypes.c_bool)),
+    #     ("stdErr", ctypes.POINTER(ctypes.c_double)),
+    #     ("lowerConf", ctypes.POINTER(ctypes.c_double)),
+    #     ("upperConf", ctypes.POINTER(ctypes.c_double)),
+    #     ("validResult", ctypes.c_bool),
+    # ]
 
     def __str__(self) -> str:
         return dedent(
@@ -248,11 +294,17 @@ class BmdsResultsStruct(ctypes.Structure):
 
 
 class DichotomousStructs(NamedTuple):
-    analysis: DichotomousAnalysisStruct
-    result: DichotomousModelResultStruct
-    gof: DichotomousPgofResultStruct
-    aod: DichotomousAodStruct
-    summary: BmdsResultsStruct
+    # analysis: DichotomousAnalysisStruct
+    # result: DichotomousModelResultStruct
+    # gof: DichotomousPgofResultStruct
+    # aod: DichotomousAodStruct
+    # summary: BmdsResultsStruct
+
+    analysis: bmdscore.python_dichotomous_analysis
+    result: bmdscore.python_dichotomous_model_result
+    gof: bmdscore.dichotomous_GOF
+    aod: bmdscore.dicho_AOD
+    summary: bmdscore.BMDS_results
 
     def __str__(self):
         return dedent(
@@ -332,112 +384,114 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
 
 
 class DichotomousMAResultStruct(ctypes.Structure):
-    _fields_ = [
-        ("nmodels", ctypes.c_int),
-        ("models", ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct))),
-        ("dist_numE", ctypes.c_int),
-        ("post_probs", ctypes.POINTER(ctypes.c_double)),
-        ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
-    ]
+    ...
+    # _fields_ = [
+    #     ("nmodels", ctypes.c_int),
+    #     ("models", ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct))),
+    #     ("dist_numE", ctypes.c_int),
+    #     ("post_probs", ctypes.POINTER(ctypes.c_double)),
+    #     ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
+    # ]
 
-    def __init__(self, models: list[DichotomousModelResultStruct]):
-        self.nmodels = len(models)
-        self.models = list_t_c(
-            [ctypes.pointer(model) for model in models],
-            ctypes.POINTER(DichotomousModelResultStruct),
-        )
-        self.dist_numE = 200
-        self.np_post_probs = np.zeros(self.nmodels, dtype=np.float64)
-        self.post_probs = np.ctypeslib.as_ctypes(self.np_post_probs)
-        self.np_bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
-        self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
+    # def __init__(self, models: list[DichotomousModelResultStruct]):
+    #     self.nmodels = len(models)
+    #     self.models = list_t_c(
+    #         [ctypes.pointer(model) for model in models],
+    #         ctypes.POINTER(DichotomousModelResultStruct),
+    #     )
+    #     self.dist_numE = 200
+    #     self.np_post_probs = np.zeros(self.nmodels, dtype=np.float64)
+    #     self.post_probs = np.ctypeslib.as_ctypes(self.np_post_probs)
+    #     self.np_bmd_dist = np.zeros(self.dist_numE * 2, dtype=np.float64)
+    #     self.bmd_dist = np.ctypeslib.as_ctypes(self.np_bmd_dist)
 
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            nmodels: {self.nmodels}
-            models: {self.models}
-            dist_numE: {self.dist_numE}
-            post_probs: {self.np_post_probs}
-            bmd_dist: {self.np_bmd_dist}
-            """
-        )
+    # def __str__(self) -> str:
+    #     return dedent(
+    #         f"""
+    #         nmodels: {self.nmodels}
+    #         models: {self.models}
+    #         dist_numE: {self.dist_numE}
+    #         post_probs: {self.np_post_probs}
+    #         bmd_dist: {self.np_bmd_dist}
+    #         """
+    #     )
 
 
 class MAResultsStruct(ctypes.Structure):
-    _fields_ = [
-        ("bmd_ma", ctypes.c_double),
-        ("bmdl_ma", ctypes.c_double),
-        ("bmdu_ma", ctypes.c_double),
-        ("bmd", ctypes.POINTER(ctypes.c_double)),
-        ("bmdl", ctypes.POINTER(ctypes.c_double)),
-        ("bmdu", ctypes.POINTER(ctypes.c_double)),
-        ("ebLower", ctypes.POINTER(ctypes.c_double)),
-        ("ebUpper", ctypes.POINTER(ctypes.c_double)),
-    ]
+    ...
+    # _fields_ = [
+    #     ("bmd_ma", ctypes.c_double),
+    #     ("bmdl_ma", ctypes.c_double),
+    #     ("bmdu_ma", ctypes.c_double),
+    #     ("bmd", ctypes.POINTER(ctypes.c_double)),
+    #     ("bmdl", ctypes.POINTER(ctypes.c_double)),
+    #     ("bmdu", ctypes.POINTER(ctypes.c_double)),
+    #     ("ebLower", ctypes.POINTER(ctypes.c_double)),
+    #     ("ebUpper", ctypes.POINTER(ctypes.c_double)),
+    # ]
 
-    def __str__(self) -> str:
-        return dedent(
-            f"""
-            bmd_ma: {self.bmd_ma}
-            bmdl_ma: {self.bmdl_ma}
-            bmdu_ma: {self.bmdu_ma}
-            bmd: {self.np_bmd}
-            bmdl: {self.np_bmdl}
-            bmdu: {self.np_bmdu}
-            ebLower: {self.np_ebLower}
-            ebUpper: {self.np_ebUpper}
-            """
-        )
+    # def __str__(self) -> str:
+    #     return dedent(
+    #         f"""
+    #         bmd_ma: {self.bmd_ma}
+    #         bmdl_ma: {self.bmdl_ma}
+    #         bmdu_ma: {self.bmdu_ma}
+    #         bmd: {self.np_bmd}
+    #         bmdl: {self.np_bmdl}
+    #         bmdu: {self.np_bmdu}
+    #         ebLower: {self.np_ebLower}
+    #         ebUpper: {self.np_ebUpper}
+    #         """
+    #     )
 
-    def __init__(self, n_dose_groups: int, n_models: int):
-        super().__init__()
-        self.np_bmd = np.zeros(n_models, dtype=np.float64)
-        self.np_bmdl = np.zeros(n_models, dtype=np.float64)
-        self.np_bmdu = np.zeros(n_models, dtype=np.float64)
-        self.np_ebLower = np.zeros(n_dose_groups, dtype=np.float64)
-        self.np_ebUpper = np.zeros(n_dose_groups, dtype=np.float64)
-        self.bmd = np.ctypeslib.as_ctypes(self.np_bmd)
-        self.bmdl = np.ctypeslib.as_ctypes(self.np_bmdl)
-        self.bmdu = np.ctypeslib.as_ctypes(self.np_bmdu)
-        self.ebLower = np.ctypeslib.as_ctypes(self.np_ebLower)
-        self.ebUpper = np.ctypeslib.as_ctypes(self.np_ebUpper)
+    # def __init__(self, n_dose_groups: int, n_models: int):
+    #     super().__init__()
+    #     self.np_bmd = np.zeros(n_models, dtype=np.float64)
+    #     self.np_bmdl = np.zeros(n_models, dtype=np.float64)
+    #     self.np_bmdu = np.zeros(n_models, dtype=np.float64)
+    #     self.np_ebLower = np.zeros(n_dose_groups, dtype=np.float64)
+    #     self.np_ebUpper = np.zeros(n_dose_groups, dtype=np.float64)
+    #     self.bmd = np.ctypeslib.as_ctypes(self.np_bmd)
+    #     self.bmdl = np.ctypeslib.as_ctypes(self.np_bmdl)
+    #     self.bmdu = np.ctypeslib.as_ctypes(self.np_bmdu)
+    #     self.ebLower = np.ctypeslib.as_ctypes(self.np_ebLower)
+    #     self.ebUpper = np.ctypeslib.as_ctypes(self.np_ebUpper)
 
 
 class DichotomousMAStructs(NamedTuple):
-    analysis: DichotomousMAAnalysisStruct
-    inputs: DichotomousAnalysisStruct
-    dich_result: DichotomousMAResultStruct
-    result: MAResultsStruct
+    ...
+    # analysis: DichotomousMAAnalysisStruct
+    # inputs: DichotomousAnalysisStruct
+    # dich_result: DichotomousMAResultStruct
+    # result: MAResultsStruct
 
-    @classmethod
-    def from_session(cls, dataset, models, weights) -> Self:
+    # @classmethod
+    # def from_session(cls, dataset, models, weights) -> Self:
+    #     return cls(
+    #         analysis=DichotomousMAAnalysisStruct(
+    #             [model.structs.analysis for model in models], weights
+    #         ),
+    #         inputs=models[0].structs.analysis,
+    #         dich_result=DichotomousMAResultStruct([model.structs.result for model in models]),
+    #         result=MAResultsStruct(n_dose_groups=dataset.num_dose_groups, n_models=len(models)),
+    #     )
 
-        return cls(
-            analysis=DichotomousMAAnalysisStruct(
-                [model.structs.analysis for model in models], weights
-            ),
-            inputs=models[0].structs.analysis,
-            dich_result=DichotomousMAResultStruct([model.structs.result for model in models]),
-            result=MAResultsStruct(n_dose_groups=dataset.num_dose_groups, n_models=len(models)),
-        )
+    # def __str__(self):
+    #     return dedent(
+    #         f"""
+    #         MA Analysis:
+    #         {self.analysis}
 
-    def __str__(self):
-        return dedent(
-            f"""
-            MA Analysis:
-            {self.analysis}
+    #         Analysis:
+    #         {self.inputs}
 
-            Analysis:
-            {self.inputs}
+    #         Dichotomous Result:
+    #         {self.dich_result}
 
-            Dichotomous Result:
-            {self.dich_result}
-
-            Result:
-            {self.result}
-            """
-        )
+    #         Result:
+    #         {self.result}
+    #         """
+    #     )
 
 
 # CONTINUOUS MODELS

@@ -1,9 +1,12 @@
 import ctypes
 from enum import IntEnum
-from typing import Self
+from textwrap import dedent
+from typing import NamedTuple, Self
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
+
+from bmds import bmdscore
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
@@ -141,6 +144,93 @@ class DichotomousAnalysis(BaseModel):
             gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
             summary=BmdsResultsStruct(num_params=self.num_params),
             aod=DichotomousAodStruct(),
+        )
+
+    def to_cpp(self) -> DichotomousStructs:
+        analysis = bmdscore.python_dichotomous_analysis()
+        analysis.model = self.model.id
+        analysis.n = self.dataset.num_dose_groups
+        analysis.Y = self.dataset.incidences
+        analysis.doses = self.dataset.doses
+        analysis.n_group = self.dataset.ns
+        analysis.prior = self._priors_array()
+        analysis.BMD_type = self.BMD_type
+        analysis.BMR = self.BMR
+        analysis.alpha = self.alpha
+        analysis.degree = self.degree
+        analysis.samples = self.samples
+        analysis.burnin = self.burnin
+        analysis.parms = self.num_params
+        # analysis.prior_cols = self.NUM_PRIOR_COLS
+
+        # result=DichotomousModelResultStruct(
+        #         model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
+        #     ),
+        result = bmdscore.python_dichotomous_model_result()
+        result.model = bmdscore.dich_model.d_logistic # think this is id 3
+        result.nparms = analysis.parms
+        result.dist_numE = 200
+        result.parms = np.zeros(analysis.parms)
+        result.cov = np.zeros(analysis.parms**2)
+        result.bmd_dist = np.zeros(200 * 2)
+
+        # gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
+        group_len = len(analysis.n_group)
+        gof = bmdscore.dichotomous_GOF()
+        gof.n = group_len
+        gof.expected = np.zeros(group_len)
+        gof.residual = np.zeros(group_len)
+        gof.ebLower = np.zeros(group_len)
+        gof.ebUpper = np.zeros(group_len)
+
+        # summary=BmdsResultsStruct(num_params=self.num_params),
+        summary = bmdscore.BMDS_results()
+        summary.bounded = np.zeros(analysis.parms, dtype=np.bool_)
+        summary.stdErr = np.zeros(analysis.parms)
+        summary.lowerConf = np.zeros(analysis.parms)
+        summary.upperConf = np.zeros(analysis.parms)
+
+        # aod=DichotomousAodStruct(),
+        aod = bmdscore.dicho_AOD()
+
+        # rtn NoneType
+        return CPPStructs(analysis, result, gof, summary, aod)
+
+
+class CPPStructs(NamedTuple):
+    analysis: bmdscore.python_dichotomous_analysis
+    result: bmdscore.python_dichotomous_model_result
+    gof: bmdscore.dichotomous_GOF
+    summary: bmdscore.BMDS_results
+    aod: bmdscore.dicho_AOD
+
+    def execute(self):
+        bmdscore.pythonBMDSDicho(
+            self.analysis,
+            self.result,
+            self.gof,
+            self.summary,
+            self.aod,
+        )
+
+    def __str__(self):
+        return dedent(
+            f"""
+            Analysis:
+            {self.analysis}
+
+            Result:
+            {self.result}
+
+            GoF:
+            {self.gof}
+
+            Summary:
+            {self.summary}
+
+            AoD:
+            {self.aod}
+            """
         )
 
 
@@ -375,7 +465,7 @@ class DichotomousPlotting(BaseModel):
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
 
-
+# zzz
 class DichotomousResult(BaseModel):
     bmdl: float
     bmd: float
