@@ -167,7 +167,7 @@ class DichotomousAnalysis(BaseModel):
         #         model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
         #     ),
         result = bmdscore.python_dichotomous_model_result()
-        result.model = bmdscore.dich_model.d_logistic # think this is id 3
+        result.model = bmdscore.dich_model.d_logistic  # think this is id 3
         result.nparms = analysis.parms
         result.dist_numE = 200
         result.parms = np.zeros(analysis.parms)
@@ -464,6 +464,7 @@ class DichotomousPlotting(BaseModel):
     def dict(self, **kw) -> dict:
         d = super().dict(**kw)
         return NumpyFloatArray.listify(d)
+
 
 # zzz
 class DichotomousResult(BaseModel):

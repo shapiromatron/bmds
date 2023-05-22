@@ -51,7 +51,7 @@ class BmdModelDichotomous(BmdModel):
             samples=self.settings.samples,
             burnin=self.settings.burnin,
         )
-    
+
     # zzz
     def execute(self) -> DichotomousResult:
         inputs = self._build_inputs()

@@ -6,9 +6,8 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel
 
-
-
 from bmds import bmdscore
+
 from .. import constants
 from .common import list_t_c
 
@@ -90,7 +89,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
             
             """
         )
-        #  -> item_type: Type[T]: type of the list items? 
+        #  -> item_type: Type[T]: type of the list items?
         # https://docs.pydantic.dev/latest/usage/types/#arguments-to-conbytes
         txt = txt.replace("<PRIOR>", str(self.prior.reshape(self.prior_cols, self.parms).T))
         return txt
