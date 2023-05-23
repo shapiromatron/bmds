@@ -33,7 +33,7 @@ def adjust_n(df: pd.DataFrame, k: float | None = 3, max_day: int | None = None) 
     if max_day is None:
         max_day = df.day.max()
     df.loc[:, "adj_n"] = (df.query("has_tumor==0").day / max_day) ** k
-    df.loc[:, "adj_n"] = df.loc[:, "adj_n"].fillna(1)
+    df.loc[:, "adj_n"] = df.loc[:, "adj_n"].fillna(1).clip(upper=1)
     return df
 
 

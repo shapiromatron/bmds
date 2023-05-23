@@ -47,4 +47,4 @@ def test_calculate(data_path):
         k=3,
         max_day=730,
     )
-    assert np.allclose(res.adj_proportion, [0.1395, 0.2803, 0.5660, 0.6607], atol=1e-4)
+    assert np.allclose(res.adj_proportion, [0.1404, 0.2821, 0.5673, 0.6616], atol=1e-4)
