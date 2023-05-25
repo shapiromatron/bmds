@@ -120,6 +120,7 @@ class DichotomousAnalysis(BaseModel):
         )
         return self.priors.to_c(degree=degree)
 
+    # to rm
     def to_c(self) -> DichotomousStructs:
         return DichotomousStructs(
             analysis=DichotomousAnalysisStruct(
@@ -194,10 +195,10 @@ class DichotomousAnalysis(BaseModel):
         aod = bmdscore.dicho_AOD()
 
         # rtn NoneType
-        return CPPStructs(analysis, result, gof, summary, aod)
+        return DichotomousAnalysisCPPStructs(analysis, result, gof, summary, aod)
 
 
-class CPPStructs(NamedTuple):
+class DichotomousAnalysisCPPStructs(NamedTuple):
     analysis: bmdscore.python_dichotomous_analysis
     result: bmdscore.python_dichotomous_model_result
     gof: bmdscore.dichotomous_GOF
