@@ -163,9 +163,7 @@ class BmdsSession:
 
     @classmethod
     def dll_version(cls) -> str:
-        model = cls.model_options[constants.DICHOTOMOUS][constants.M_Logistic]
-        dll = model.get_dll()
-        return get_version(dll)
+        return get_version()
 
     @classmethod
     def from_serialized(cls, data: dict) -> BmdsSession:

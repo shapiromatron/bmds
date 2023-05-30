@@ -17,8 +17,11 @@ venv/
 *.py[cod]
 .env
 *.db
-bmdscore.cp311-win_amd64.pyd
-*.ipnyb
 
 # created by bmds2.7
 log.txt
+
+# current working version - TODO - remove when released
+bmdscore.cp311-*
+bmdscore.cpython-311-*
+bmdscore.pyi

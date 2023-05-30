@@ -35,7 +35,6 @@ class BmdModelDichotomous(BmdModel):
 
         return model_settings
 
-    # zzz
     def _build_inputs(self) -> DichotomousAnalysis:
         return DichotomousAnalysis(
             model=self.bmd_model_class,
@@ -49,10 +48,8 @@ class BmdModelDichotomous(BmdModel):
             burnin=self.settings.burnin,
         )
 
-    # zzz
     def execute(self) -> DichotomousResult:
         inputs = self._build_inputs()
-        # structs = inputs.to_c()
         structs = inputs.to_cpp()
         self.structs = structs
         self.structs.execute()

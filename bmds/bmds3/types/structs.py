@@ -4,12 +4,17 @@ from typing import NamedTuple
 
 import numpy as np
 
-from bmds import bmdscore
+from ... import bmdscore
 
 
-def get_version(dll: ctypes.CDLL) -> str:
+def get_version() -> str:
     """Get the version from the bmds shared object"""
     return bmdscore.version()
+
+
+# TODO - delete after continuos model conversion
+class BmdsResultsStruct:
+    pass
 
 
 # CONTINUOUS MODELS

@@ -33,7 +33,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: PriorClass | ModelPriors | None  # if None; default used
+    priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property
     def bmr_text(self) -> str:
@@ -207,13 +207,13 @@ class DichotomousModelResult(BaseModel):
         result = model.structs.result
         summary = model.structs.summary
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = result.np_bmd_dist.reshape(2, result.dist_numE)
+        arr = np.array(result.bmd_dist).reshape(2, result.dist_numE)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
         return DichotomousModelResult(
             loglikelihood=result.max,
-            aic=summary.aic,
+            aic=summary.AIC,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
@@ -239,12 +239,12 @@ class DichotomousPgofResult(BaseModel):
     @classmethod
     def from_model(cls, model):
         gof = model.structs.gof
-        roi = residual_of_interest(model.structs.summary.bmd, model.dataset.doses, gof.residual)
+        roi = residual_of_interest(model.structs.summary.BMD, model.dataset.doses, gof.residual)
         return cls(
-            expected=gof.np_expected.tolist(),
-            residual=gof.np_residual.tolist(),
-            eb_lower=gof.np_ebLower.tolist(),
-            eb_upper=gof.np_ebUpper.tolist(),
+            expected=gof.expected,
+            residual=gof.residual,
+            eb_lower=gof.ebLower,
+            eb_upper=gof.ebUpper,
             test_statistic=gof.test_statistic,
             p_value=gof.p_value,
             roi=roi,
@@ -295,12 +295,12 @@ class DichotomousParameters(BaseModel):
         priors = cls.get_priors(model)
         return cls(
             names=param_names,
-            values=result.np_parms,
-            bounded=summary.np_bounded,
-            se=summary.np_stdErr,
-            lower_ci=summary.np_lowerConf,
-            upper_ci=summary.np_upperConf,
-            cov=result.np_cov.reshape(result.nparms, result.nparms),
+            values=result.parms,
+            bounded=summary.bounded,
+            se=summary.stdErr,
+            lower_ci=summary.lowerConf,
+            upper_ci=summary.upperConf,
+            cov=np.array(result.cov).reshape(result.nparms, result.nparms),
             prior_type=priors[0],
             prior_initial_value=priors[1],
             prior_stdev=priors[2],
@@ -315,13 +315,14 @@ class DichotomousParameters(BaseModel):
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
         data = []
+        n_models = len(self.names)
         for name, value, bounded, se, lower_ci, upper_ci in zip(
             self.names,
             self.values,
             self.bounded,
-            self.se,
-            self.lower_ci,
-            self.upper_ci,
+            self.se[:n_models],  # TODO - shouldn't need to resize these?
+            self.lower_ci[:n_models],
+            self.upper_ci[:n_models],
             strict=True,
         ):
             data.append(
@@ -408,7 +409,7 @@ class DichotomousPlotting(BaseModel):
     @classmethod
     def from_model(cls, model, params) -> Self:
         summary = model.structs.summary
-        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
+        xs = np.array([summary.BMDL, summary.BMD, summary.BMDU])
         dr_x = model.dataset.dose_linspace
         dr_y = clean_array(model.dr_curve(dr_x, params))
         critical_ys = clean_array(model.dr_curve(xs, params))
@@ -426,7 +427,6 @@ class DichotomousPlotting(BaseModel):
         return NumpyFloatArray.listify(d)
 
 
-# zzz
 class DichotomousResult(BaseModel):
     bmdl: float
     bmd: float
@@ -447,9 +447,9 @@ class DichotomousResult(BaseModel):
         deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
-            bmdl=summary.bmdl,
-            bmd=summary.bmd,
-            bmdu=summary.bmdu,
+            bmdl=summary.BMDL,
+            bmd=summary.BMD,
+            bmdu=summary.BMDU,
             has_completed=summary.validResult,
             fit=fit,
             gof=gof,
