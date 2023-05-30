@@ -1,5 +1,5 @@
 import math
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 import numpy as np
 import pandas as pd
@@ -42,7 +42,7 @@ class ContinuousSummaryDataMixin:
             self._variances = np.power(stds, 2).tolist()
         return self._variances
 
-    def anova(self) -> Optional[AnovaTests]:
+    def anova(self) -> AnovaTests | None:
         if not hasattr(self, "_anova") and not hasattr(self, "_anova_attempted"):
             # Returns either a tuple of 3 Test objects, or None if anova failed
             try:
@@ -140,7 +140,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         if not hasattr(self, "_errorbars"):
             self._errorbars = [
                 stats.t.ppf(0.975, max(n - 1, 1)) * stdev / np.sqrt(float(n))
-                for stdev, n in zip(self.stdevs, self.ns)
+                for stdev, n in zip(self.stdevs, self.ns, strict=True)
             ]
         return self._errorbars
 
@@ -148,8 +148,8 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         errorbars = self.errorbars()
         return DatasetPlottingSchema(
             mean=self.means,
-            ll=[mean - err for mean, err in zip(self.means, errorbars)],
-            ul=[mean + err for mean, err in zip(self.means, errorbars)],
+            ll=[mean - err for mean, err in zip(self.means, errorbars, strict=True)],
+            ul=[mean + err for mean, err in zip(self.means, errorbars, strict=True)],
         )
 
     def plot(self) -> Figure:
@@ -209,7 +209,9 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         metadata = self.metadata.dict()
         return [
             {**extras, **metadata, **dict(dose=dose, n=n, mean=mean, stdev=stdev)}
-            for dose, n, mean, stdev in zip(self.doses, self.ns, self.means, self.stdevs)
+            for dose, n, mean, stdev in zip(
+                self.doses, self.ns, self.means, self.stdevs, strict=True
+            )
         ]
 
 
@@ -220,8 +222,8 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     ns: list[confloat(gt=0)]
     means: list[float]
     stdevs: list[confloat(ge=0)]
-    anova: Optional[AnovaTests]
-    plotting: Optional[DatasetPlottingSchema]
+    anova: AnovaTests | None
+    plotting: DatasetPlottingSchema | None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
@@ -342,11 +344,11 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         Return the dataset representation in BMDS .(d) file.
         """
         rows = ["Dose Response"]
-        for dose, response in zip(self.individual_doses, self.responses):
+        for dose, response in zip(self.individual_doses, self.responses, strict=True):
             dose_idx = self.doses.index(dose)
             if dose_idx >= self.num_dose_groups:
                 continue
-            rows.append("%f %f" % (dose, response))
+            rows.append(f"{dose:f} {response:f}")
         return "\n".join(rows)
 
     def get_responses_by_dose(self):
@@ -414,7 +416,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         metadata = self.metadata.dict()
         return [
             {**extras, **metadata, **dict(dose=dose, response=response)}
-            for dose, response in zip(self.individual_doses, self.responses)
+            for dose, response in zip(self.individual_doses, self.responses, strict=True)
         ]
 
 
@@ -423,7 +425,7 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     metadata: DatasetMetadata
     doses: list[confloat(ge=0)]
     responses: list[float]
-    anova: Optional[AnovaTests]
+    anova: AnovaTests | None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf

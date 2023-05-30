@@ -1,5 +1,5 @@
 import math
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 import numpy as np
 from matplotlib.figure import Figure
@@ -38,7 +38,7 @@ class DichotomousDataset(DatasetBase):
         self.doses = doses
         self.ns = ns
         self.incidences = incidences
-        self.remainings = [n - p for n, p in zip(ns, incidences)]
+        self.remainings = [n - p for n, p in zip(ns, incidences, strict=True)]
         self.metadata = DatasetMetadata.parse_obj(metadata)
         self._sort_by_dose_group()
         self._validate()
@@ -122,7 +122,11 @@ class DichotomousDataset(DatasetBase):
     def plot_data(self) -> DatasetPlottingSchema:
         if not getattr(self, "_plot_data", None):
             means, lls, uls = zip(
-                *[self._calculate_plotting(i, j) for i, j in zip(self.ns, self.incidences)]
+                *[
+                    self._calculate_plotting(i, j)
+                    for i, j in zip(self.ns, self.incidences, strict=True)
+                ],
+                strict=True,
             )
             self._plot_data = DatasetPlottingSchema(
                 mean=means,
@@ -185,7 +189,7 @@ class DichotomousDataset(DatasetBase):
         """Return a list of rows; one for each item in a dataset"""
         metadata = self.metadata.dict()
         rows = []
-        for dose, n, incidence in zip(self.doses, self.ns, self.incidences):
+        for dose, n, incidence in zip(self.doses, self.ns, self.incidences, strict=True):
             rows.append({**extras, **metadata, **dict(dose=dose, n=n, incidence=incidence)})
         return rows
 
@@ -196,7 +200,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
     doses: list[confloat(ge=0)]
     ns: list[confloat(gt=0)]
     incidences: list[confloat(ge=0)]
-    plotting: Optional[DatasetPlottingSchema]
+    plotting: DatasetPlottingSchema | None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
@@ -212,7 +216,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
             raise ValueError(f"At least {cls.MIN_N} groups are required")
         if n_doses > cls.MAX_N:
             raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
-        for incidence, n in zip(values["incidences"], values["ns"]):
+        for incidence, n in zip(values["incidences"], values["ns"], strict=True):
             if incidence > n:
                 raise ValueError(f"Incidence cannot be greater than N ({incidence} > {n})")
         return values

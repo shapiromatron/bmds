@@ -1,6 +1,6 @@
 import os
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable
 
 import numpy as np
 from tqdm.auto import tqdm

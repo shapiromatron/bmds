@@ -12,10 +12,6 @@ def get_version(dll: ctypes.CDLL) -> str:
     return bmdscore.version()
 
 
-# DICHOTOMOUS MODELS
-# ------------------
-
-
 # CONTINUOUS MODELS
 # -----------------
 class ContinuousAnalysisStruct(ctypes.Structure):

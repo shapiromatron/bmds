@@ -55,7 +55,7 @@ class Polynomial_221(Continuous):
         "beta_7": DefaultParams.param_generator("Beta7"),
         "beta_6": DefaultParams.param_generator("Beta6"),
         "beta_8": DefaultParams.param_generator("Beta8"),
-        "restrict_polynomial": DefaultParams.restrict(d=0, n="Restrict polynomial"),  # noqa
+        "restrict_polynomial": DefaultParams.restrict(d=0, n="Restrict polynomial"),
         "degree_poly": DefaultParams.degree_poly(),
         "bmd_calculation": DefaultParams.bmd_calculation,
         "dose_drop": DefaultParams.dose_drop,
@@ -67,7 +67,7 @@ class Polynomial_221(Continuous):
 
     @property
     def name(self):
-        return "{}-{}".format(self.model_name, self._get_degrees())
+        return f"{self.model_name}-{self._get_degrees()}"
 
     def set_restrict_polynomial_value(self):
         return 1 if self.dataset.is_increasing else -1
@@ -89,7 +89,7 @@ class Polynomial_221(Continuous):
             [
                 self._dfile_print_header_rows(),
                 str(degpoly),
-                "{} {} 0".format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
+                f"{self.dataset._BMDS_DATASET_TYPE} {self.dataset.dataset_length} 0",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",
@@ -111,7 +111,7 @@ class Polynomial_221(Continuous):
     def get_ys(self, xs):
         ys = np.zeros(xs.size)
         for i in range(self._get_degrees() + 1):
-            param = self._get_param("beta_{}".format(i))
+            param = self._get_param(f"beta_{i}")
             ys += np.power(xs, i) * param
         return ys
 
@@ -136,7 +136,7 @@ class Linear_221(Polynomial_221):
         "rho": DefaultParams.param_generator("Rho"),
         "beta_0": DefaultParams.param_generator("Beta0"),
         "beta_1": DefaultParams.param_generator("Beta1"),
-        "restrict_polynomial": DefaultParams.restrict(d=0, n="Restrict polynomial"),  # noqa
+        "restrict_polynomial": DefaultParams.restrict(d=0, n="Restrict polynomial"),
         "degree_poly": DefaultParams.degree_poly(d=1, showName=False),
         "bmd_calculation": DefaultParams.bmd_calculation,
         "dose_drop": DefaultParams.dose_drop,
@@ -156,7 +156,7 @@ class Linear_221(Polynomial_221):
             [
                 self._dfile_print_header_rows(),
                 "1",
-                "{} {} 0".format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
+                f"{self.dataset._BMDS_DATASET_TYPE} {self.dataset.dataset_length} 0",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",
@@ -179,7 +179,7 @@ class Linear_221(Polynomial_221):
 # EXPONENTIAL M2
 class Exponential(Continuous):
     def _get_model_name(self):
-        return "{}_{}".format(self.exe, self.output_prefix.lower())
+        return f"{self.exe}_{self.output_prefix.lower()}"
 
     def get_outfile(self, dfile):
         # Exponential model output files play differently.
@@ -338,7 +338,7 @@ class Power_219(Continuous):
         "control": DefaultParams.param_generator("Control"),
         "slope": DefaultParams.param_generator("Slope"),
         "power": DefaultParams.param_generator("Power"),
-        "restrict_power": DefaultParams.restrict(d=1, n="Restrict power"),  # noqa
+        "restrict_power": DefaultParams.restrict(d=1, n="Restrict power"),
         "bmd_calculation": DefaultParams.bmd_calculation,
         "dose_drop": DefaultParams.dose_drop,
         "bmr": DefaultParams.cont_bmr,
@@ -352,7 +352,7 @@ class Power_219(Continuous):
         return "\n".join(
             [
                 self._dfile_print_header_rows(),
-                "{} {} 0".format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
+                f"{self.dataset._BMDS_DATASET_TYPE} {self.dataset.dataset_length} 0",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",
@@ -416,7 +416,7 @@ class Hill_218(Continuous):
         return "\n".join(
             [
                 self._dfile_print_header_rows(),
-                "{} {} 0".format(self.dataset._BMDS_DATASET_TYPE, self.dataset.dataset_length),
+                f"{self.dataset._BMDS_DATASET_TYPE} {self.dataset.dataset_length} 0",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",

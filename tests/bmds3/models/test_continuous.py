@@ -219,7 +219,7 @@ def test_continuous_session(cdataset2):
         model.results = model.execute()
     d = session.to_dict()
     # ensure json-serializable
-    print(json.dumps(d))
+    json.dumps(d)
 
 
 def test_increasing_lognormal(cdataset2):
@@ -255,7 +255,7 @@ def test_decreasing_lognormal():
     for model in (constants.M_ExponentialM3, constants.M_ExponentialM5):
         session.add_model(model, settings)
     session.execute()
-    for model, bmd in zip(session.models, [227, 46]):
+    for model, bmd in zip(session.models, [227, 46], strict=True):
         assert model.results.has_completed is True
         assert model.results.bmd == pytest.approx(bmd, rel=0.05)
 

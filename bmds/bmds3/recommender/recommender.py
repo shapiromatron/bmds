@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Optional, Self
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ from .constants import RuleClass
 class Rule(BaseModel):
     rule_class: RuleClass
     failure_bin: LogicBin
-    threshold: Optional[float] = None
+    threshold: float | None = None
     enabled_dichotomous: bool = True
     enabled_continuous: bool = True
     enabled_nested: bool = True
@@ -45,7 +45,7 @@ class RecommenderSettings(BaseModel):
     sufficiently_close_bmdl: float = 3
     rules: list[Rule]
 
-    _default: Optional[str] = None
+    _default: str | None = None
 
     @validator("rules")
     def rules_all_classes(cls, rules):
@@ -79,8 +79,8 @@ class RecommenderSettings(BaseModel):
 
 
 class RecommenderResults(BaseModel):
-    recommended_model_index: Optional[int]
-    recommended_model_variable: Optional[str]
+    recommended_model_index: int | None
+    recommended_model_variable: str | None
     model_bin: list[LogicBin] = []
     model_notes: list[dict[int, list[str]]] = []
 
@@ -105,7 +105,7 @@ class RecommenderResults(BaseModel):
 
 class RecommenderSchema(BaseModel):
     settings: RecommenderSettings
-    results: Optional[RecommenderResults]
+    results: RecommenderResults | None
 
     def deserialize(self) -> "Recommender":
         recommender = Recommender(self.settings)
@@ -118,13 +118,13 @@ class Recommender:
     Recommendation logic for a specified data-type.
     """
 
-    def __init__(self, settings: Optional[RecommenderSettings] = None):
+    def __init__(self, settings: RecommenderSettings | None = None):
         if settings is not None:
             settings = RecommenderSettings.parse_obj(settings)
         else:
             settings = RecommenderSettings.build_default()
         self.settings: RecommenderSettings = settings
-        self.results: Optional[RecommenderResults] = None
+        self.results: RecommenderResults | None = None
 
     def recommend(self, dataset: DatasetBase, models: list[BmdModel]):
         self.results = RecommenderResults()

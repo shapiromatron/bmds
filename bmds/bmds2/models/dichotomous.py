@@ -60,7 +60,7 @@ class Multistage_34(Dichotomous):
 
     @property
     def name(self):
-        return "{}-{}".format(self.model_name, self._get_degrees())
+        return f"{self.model_name}-{self._get_degrees()}"
 
     def _get_degrees(self):
         degree = int(self.values["degree_poly"])
@@ -72,13 +72,13 @@ class Multistage_34(Dichotomous):
         self._set_values()
         degree_poly = self._get_degrees()
 
-        params = ["beta{}".format(i) for i in range(1, degree_poly + 1)]
+        params = [f"beta{i}" for i in range(1, degree_poly + 1)]
         params.insert(0, "background")
 
         return "\n".join(
             [
                 self._dfile_print_header_rows(),
-                "{} {}".format(self.dataset.dataset_length, degree_poly),
+                f"{self.dataset.dataset_length} {degree_poly}",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",
@@ -99,7 +99,7 @@ class Multistage_34(Dichotomous):
         background = self._get_param("Background")
         ys = np.zeros(xs.size)
         for i in range(1, self._get_degrees() + 1):
-            param = self._get_param("Beta({})".format(i))
+            param = self._get_param(f"Beta({i})")
             ys += param * np.power(xs, i)
         ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
         return ys
@@ -151,7 +151,7 @@ class MultistageCancer_34(DichotomousCancer):
 
     @property
     def name(self):
-        return "{}-{}".format(self.model_name, self._get_degrees())
+        return f"{self.model_name}-{self._get_degrees()}"
 
     def _get_degrees(self):
         degree = int(self.values["degree_poly"])
@@ -163,13 +163,13 @@ class MultistageCancer_34(DichotomousCancer):
         self._set_values()
         degree_poly = self._get_degrees()
 
-        params = ["beta{}".format(i) for i in range(1, degree_poly + 1)]
+        params = [f"beta{i}" for i in range(1, degree_poly + 1)]
         params.insert(0, "background")
 
         return "\n".join(
             [
                 self._dfile_print_header_rows(),
-                "{} {}".format(self.dataset.dataset_length, degree_poly),
+                f"{self.dataset.dataset_length} {degree_poly}",
                 self._dfile_print_options(
                     "max_iterations",
                     "relative_fn_conv",
@@ -190,7 +190,7 @@ class MultistageCancer_34(DichotomousCancer):
         background = self._get_param("Background")
         ys = np.zeros(xs.size)
         for i in range(1, self._get_degrees() + 1):
-            param = self._get_param("Beta({})".format(i))
+            param = self._get_param(f"Beta({i})")
             ys += param * np.power(xs, i)
         ys = background + (1.0 - background) * (1.0 - np.exp(-1.0 * ys))
         return ys

@@ -107,14 +107,13 @@ class BMDModel(abc.ABC):
         try:
             proc = subprocess.run(
                 [exe, dfile],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS,
             )
 
             output = None
             if os.path.exists(outfile):
-                with open(outfile, "r") as f:
+                with open(outfile) as f:
                     output = f.read()
 
             self._set_job_outputs(
@@ -131,7 +130,7 @@ class BMDModel(abc.ABC):
             if os.path.exists(outfile):
                 self.tempfiles.append(outfile)
             else:
-                with open(dfile, "r") as f:
+                with open(dfile) as f:
                     txt = f.read()
                 logger.info(f"Output file not created: \n{txt}\n")
 
@@ -194,7 +193,7 @@ class BMDModel(abc.ABC):
         try:
             parser = OutputParser(outfile, self.dtype, self.model_name)
         except Exception as err:
-            logger.error("Parsing failed: \n\n{}\n\n{}\n".format(self.as_dfile(), outfile))
+            logger.error(f"Parsing failed: \n\n{self.as_dfile()}\n\n{outfile}\n")
             raise err
         return parser.output
 
@@ -229,9 +228,7 @@ class BMDModel(abc.ABC):
         """
         fig = self.dataset.plot()
         ax = fig.gca()
-        ax.set_title(
-            "{}\n{}, {}".format(self.dataset._get_dataset_name(), self.name, self.get_bmr_text())
-        )
+        ax.set_title(f"{self.dataset._get_dataset_name()}\n{self.name}, {self.get_bmr_text()}")
         if self.has_successfully_executed:
             self._set_x_range(ax)
             ax.plot(self._xs, self.get_ys(self._xs), label=self.name, **plotting.LINE_FORMAT)
@@ -349,7 +346,7 @@ class BMDModel(abc.ABC):
     def _dfile_print_header_rows(self):
         return "{}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out".format(
             self.model_name
-        )  # noqa
+        )
 
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter

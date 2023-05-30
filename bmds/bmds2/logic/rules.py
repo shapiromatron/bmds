@@ -14,8 +14,8 @@ class Rule(abc.ABC):
 
     def __unicode__(self):
         enabled = "✓" if self.enabled else "✕"
-        threshold = "" if math.isnan(self.threshold) else ", threshold={}".format(self.threshold)
-        return "{0} {1} [bin={2}{3}]".format(enabled, self.rule_name, self.binmoji, threshold)
+        threshold = "" if math.isnan(self.threshold) else f", threshold={self.threshold}"
+        return f"{enabled} {self.rule_name} [bin={self.binmoji}{threshold}]"
 
     def check(self, dataset, output):
         if self.enabled:
@@ -63,10 +63,10 @@ class NumericValueExists(Rule):
             return self.failure_bin, self.get_failure_message()
 
     def get_failure_message(self):
-        name = getattr(self, "field_name_verbose")
+        name = self.field_name_verbose
         if name is None:
             name = self.field_name
-        return "{} does not exist".format(name)
+        return f"{name} does not exist"
 
 
 class BmdExists(NumericValueExists):
@@ -111,7 +111,7 @@ class ShouldBeGreaterThan(Rule):
 
     def get_failure_message(self, val, threshold):
         name = self.field_name_verbose
-        return "{} is less than threshold ({:.3} < {})".format(name, float(val), threshold)
+        return f"{name} is less than threshold ({float(val):.3} < {threshold})"
 
 
 class GlobalFit(ShouldBeGreaterThan):
@@ -139,7 +139,7 @@ class ShouldBeLessThan(Rule, abc.ABC):
 
     def get_failure_message(self, val, threshold):
         name = self.field_name_verbose
-        return "{} is greater than threshold ({:.3} > {})".format(name, float(val), threshold)
+        return f"{name} is greater than threshold ({float(val):.3} > {threshold})"
 
 
 class BmdBmdlRatio(ShouldBeLessThan):
@@ -274,7 +274,7 @@ class CorrectVarianceModel(Rule):
                     p_value2
                 )
         else:
-            msg = "Correct variance model cannot be determined (p-value 2 = {})".format(p_value2)
+            msg = f"Correct variance model cannot be determined (p-value 2 = {p_value2})"
 
         if msg:
             return self.failure_bin, msg
@@ -305,10 +305,10 @@ class VarianceModelFit(Rule):
 
         msg = None
         if self._is_valid_number(p_value2) and constant_variance == 1 and p_value2 < 0.1:
-            msg = "Variance model poorly fits dataset (p-value 2 = {})".format(p_value2)
+            msg = f"Variance model poorly fits dataset (p-value 2 = {p_value2})"
 
         if self._is_valid_number(p_value3) and constant_variance == 0 and p_value3 < 0.1:
-            msg = "Variance model poorly fits dataset (p-value 3 = {})".format(p_value3)
+            msg = f"Variance model poorly fits dataset (p-value 3 = {p_value3})"
 
         if msg:
             return self.failure_bin, msg

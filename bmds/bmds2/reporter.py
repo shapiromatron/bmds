@@ -85,7 +85,7 @@ class Reporter:
         """
 
         self.doc.add_paragraph(session.dataset._get_dataset_name(), self.styles.header_1)
-        self.doc.add_paragraph("BMDS version: {}".format(session.version_pretty))
+        self.doc.add_paragraph(f"BMDS version: {session.version_pretty}")
 
         if input_dataset:
             self._add_dataset(session)
@@ -161,7 +161,7 @@ class Reporter:
                 tbl.cell(1, 0), "Affected / Total (%)" + response_units_text, style=hdr
             )
             for i, vals in enumerate(
-                zip(dataset.doses, dataset.incidences, dataset.ns, doses_dropped)
+                zip(dataset.doses, dataset.incidences, dataset.ns, doses_dropped, strict=True)
             ):
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
                 if vals[3]:
@@ -169,7 +169,7 @@ class Reporter:
                     footnotes.add_footnote(p, dose_dropped_footnote_text)
                 self._write_cell(
                     tbl.cell(1, i + 1),
-                    "{}/{}\n({:.1%})".format(vals[1], vals[2], vals[1] / float(vals[2])),
+                    f"{vals[1]}/{vals[2]}\n({vals[1] / float(vals[2]):.1%})",
                 )
 
             for i, col in enumerate(tbl.columns):
@@ -183,7 +183,7 @@ class Reporter:
             self._write_cell(tbl.cell(0, 1), "Responses" + response_units_text, style=hdr)
 
             for i, vals in enumerate(
-                zip(dataset.doses, dataset.get_responses_by_dose(), doses_dropped)
+                zip(dataset.doses, dataset.get_responses_by_dose(), doses_dropped, strict=True)
             ):
                 resps = ", ".join([ff(v) for v in vals[1]])
                 self._write_cell(tbl.cell(i + 1, 0), vals[0])
@@ -202,14 +202,21 @@ class Reporter:
             self._write_cell(tbl.cell(1, 0), "N", style=hdr)
             self._write_cell(tbl.cell(2, 0), "Mean ± SD" + response_units_text, style=hdr)
             for i, vals in enumerate(
-                zip(dataset.doses, dataset.ns, dataset.means, dataset.stdevs, doses_dropped)
+                zip(
+                    dataset.doses,
+                    dataset.ns,
+                    dataset.means,
+                    dataset.stdevs,
+                    doses_dropped,
+                    strict=True,
+                )
             ):
                 self._write_cell(tbl.cell(0, i + 1), vals[0])
                 if vals[4]:
                     p = tbl.cell(0, i + 1).paragraphs[0]
                     footnotes.add_footnote(p, dose_dropped_footnote_text)
                 self._write_cell(tbl.cell(1, i + 1), vals[1])
-                self._write_cell(tbl.cell(2, i + 1), "{} ± {}".format(ff(vals[2]), ff(vals[3])))
+                self._write_cell(tbl.cell(2, i + 1), f"{ff(vals[2])} ± {ff(vals[3])}")
 
             for i, col in enumerate(tbl.columns):
                 w = 0.75 if i == 0 else (self.PORTRAIT_WIDTH - 0.75) / dataset.num_dose_groups
@@ -232,7 +239,7 @@ class Reporter:
         cell.paragraphs[0].style = style
 
     _VARIANCE_FOOTNOTE_TEMPLATE = (
-        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."  # noqa
+        "{} case presented (BMDS Test 2 p-value = {}, BMDS Test 3 p-value = {})."
     )
 
     def _get_variance_footnote(self, models):
@@ -324,7 +331,7 @@ class Reporter:
 
         # set column width
         widths = [1.75, 0.8, 0.8, 0.7, 0.7, 1.75]
-        for width, col in zip(widths, tbl.columns):
+        for width, col in zip(widths, tbl.columns, strict=True):
             self._set_col_width(col, width)
 
         # write footnote
@@ -353,7 +360,7 @@ class Reporter:
                 cell.add_paragraph("  -")
             else:
                 for note in notes:
-                    cell.add_paragraph("• {}".format(note))
+                    cell.add_paragraph(f"• {note}")
 
         # write body
         for i, model_group in enumerate(model_groups):
@@ -381,7 +388,7 @@ class Reporter:
 
         # set column width
         widths = [1.75, 0.75, 4]
-        for width, col in zip(widths, tbl.columns):
+        for width, col in zip(widths, tbl.columns, strict=True):
             self._set_col_width(col, width)
 
         # write footnote
@@ -415,7 +422,7 @@ class Reporter:
 
         if len(model_group) > 1:
             names = pretty(collapse_names(model_group[1:]))
-            p.add_run(" (equivalent models include {})".format(names))
+            p.add_run(f" (equivalent models include {names})")
 
     def _model_to_docx(self, model):
         if model.has_successfully_executed:
