@@ -1,4 +1,3 @@
-import ctypes
 from enum import IntEnum
 from textwrap import dedent
 from typing import NamedTuple, Self
@@ -14,14 +13,6 @@ from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
 from .priors import ModelPriors, PriorClass, PriorType
-from .structs import (
-    BmdsResultsStruct,
-    DichotomousAnalysisStruct,
-    DichotomousAodStruct,
-    DichotomousModelResultStruct,
-    DichotomousPgofResultStruct,
-    DichotomousStructs,
-)
 
 
 class DichotomousRiskType(IntEnum):
@@ -120,34 +111,7 @@ class DichotomousAnalysis(BaseModel):
         )
         return self.priors.to_c(degree=degree)
 
-    # to rm
-    def to_c(self) -> DichotomousStructs:
-        return DichotomousStructs(
-            analysis=DichotomousAnalysisStruct(
-                model=ctypes.c_int(self.model.id),
-                n=ctypes.c_int(self.dataset.num_dose_groups),
-                Y=self.dataset.incidences,
-                doses=self.dataset.doses,
-                n_group=self.dataset.ns,
-                prior=self._priors_array(),
-                BMD_type=ctypes.c_int(self.BMD_type),
-                BMR=ctypes.c_double(self.BMR),
-                alpha=ctypes.c_double(self.alpha),
-                degree=ctypes.c_int(self.degree),
-                samples=ctypes.c_int(self.samples),
-                burnin=ctypes.c_int(self.burnin),
-                parms=ctypes.c_int(self.num_params),
-                prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
-            ),
-            result=DichotomousModelResultStruct(
-                model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
-            ),
-            gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
-            summary=BmdsResultsStruct(num_params=self.num_params),
-            aod=DichotomousAodStruct(),
-        )
-
-    def to_cpp(self) -> DichotomousStructs:
+    def to_cpp(self):
         analysis = bmdscore.python_dichotomous_analysis()
         analysis.model = self.model.id
         analysis.n = self.dataset.num_dose_groups
@@ -162,11 +126,8 @@ class DichotomousAnalysis(BaseModel):
         analysis.samples = self.samples
         analysis.burnin = self.burnin
         analysis.parms = self.num_params
-        # analysis.prior_cols = self.NUM_PRIOR_COLS
+        analysis.prior_cols = constants.NUM_PRIOR_COLS
 
-        # result=DichotomousModelResultStruct(
-        #         model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
-        #     ),
         result = bmdscore.python_dichotomous_model_result()
         result.model = bmdscore.dich_model.d_logistic  # think this is id 3
         result.nparms = analysis.parms
@@ -175,7 +136,6 @@ class DichotomousAnalysis(BaseModel):
         result.cov = np.zeros(analysis.parms**2)
         result.bmd_dist = np.zeros(200 * 2)
 
-        # gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
         group_len = len(analysis.n_group)
         gof = bmdscore.dichotomous_GOF()
         gof.n = group_len
@@ -184,14 +144,12 @@ class DichotomousAnalysis(BaseModel):
         gof.ebLower = np.zeros(group_len)
         gof.ebUpper = np.zeros(group_len)
 
-        # summary=BmdsResultsStruct(num_params=self.num_params),
         summary = bmdscore.BMDS_results()
         summary.bounded = np.zeros(analysis.parms, dtype=np.bool_)
         summary.stdErr = np.zeros(analysis.parms)
         summary.lowerConf = np.zeros(analysis.parms)
         summary.upperConf = np.zeros(analysis.parms)
 
-        # aod=DichotomousAodStruct(),
         aod = bmdscore.dicho_AOD()
 
         # rtn NoneType
