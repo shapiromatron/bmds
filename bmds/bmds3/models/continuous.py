@@ -1,5 +1,3 @@
-import ctypes
-
 import numpy as np
 
 from ...datasets import ContinuousDatasets
@@ -64,22 +62,13 @@ class BmdModelContinuous(BmdModel):
             degree=self.settings.degree,
         )
 
-    def execute(self):
+    def execute(self) -> ContinuousResult:
         inputs = self._build_inputs()
-        structs = inputs.to_c()
+        structs = inputs.to_cpp()
         self.structs = structs
 
-        # run the analysis
-        dll = self.get_dll()
-        dll.runBMDSContAnalysis(
-            ctypes.pointer(structs.analysis),
-            ctypes.pointer(structs.result),
-            ctypes.pointer(structs.summary),
-            ctypes.pointer(structs.aod),
-            ctypes.pointer(structs.gof),
-            ctypes.pointer(ctypes.c_bool(False)),
-            ctypes.pointer(ctypes.c_bool(False)),
-        )
+        self.structs.execute()
+
         self.results = ContinuousResult.from_model(self)
         return self.results
 

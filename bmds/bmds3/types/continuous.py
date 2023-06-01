@@ -1,10 +1,11 @@
-import ctypes
 from enum import IntEnum
 from typing import Self
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
+
+from bmds import bmdscore
 
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
@@ -13,14 +14,6 @@ from .. import constants
 from ..constants import ContinuousModelChoices
 from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
 from .priors import ModelPriors, PriorClass, PriorType
-from .structs import (
-    BmdsResultsStruct,
-    ContinuousAnalysisStruct,
-    ContinuousAodStruct,
-    ContinuousGofStruct,
-    ContinuousModelResultStruct,
-    ContinuousStructs,
-)
 
 
 class ContinuousRiskType(IntEnum):
@@ -149,55 +142,62 @@ class ContinuousAnalysis(BaseModel):
         degree = self.degree if self.model.id == constants.ContinuousModelIds.c_polynomial else None
         return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
-    def to_c(self) -> ContinuousStructs:
-        nparms = self.num_params
-        inputs = dict(
-            BMD_type=ctypes.c_int(self.BMD_type),
-            BMR=ctypes.c_double(self.BMR),
-            alpha=ctypes.c_double(self.alpha),
-            burnin=ctypes.c_int(self.burnin),
-            degree=ctypes.c_int(self.degree),
-            disttype=ctypes.c_int(self.disttype),
-            isIncreasing=ctypes.c_bool(self.is_increasing),
-            model=ctypes.c_int(self.model.id),
-            parms=ctypes.c_int(nparms),
-            prior=self._priors_array(),
-            prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
-            samples=ctypes.c_int(self.samples),
-            tail_prob=ctypes.c_double(self.tail_prob),
-            transform_dose=ctypes.c_int(0),
-        )
+    def to_cpp(self):
+        analysis = bmdscore.python_continuous_analysis()
+        analysis.model = bmdscore.cont_model.exp_5
+
+        detectAdvDir = self.dataset.detectAdvDir
+        analysis.isIncreasing = False  # ?
+
+        # isIncreasing needed if detectAdvDir is set to false
+        if detectAdvDir is False:
+            analysis.isIncreasing = True  # ?
+
+        analysis.n = self.dataset.num_dose_groups
+        analysis.doses = self.dataset.doses
+        analysis.BMD_type = self.BMD_type
+        analysis.BMR = self.BMR
+
+        analysis.parms = self.num_params
+        analysis.prior_cols = constants.NUM_PRIOR_COLS
+        analysis.transform_dose = 0
+        analysis.prior = self._priors_array()
+        analysis.disttype = bmdscore.distribution.normal
+        # analysis.alpha = 0.05 # ?
+
+        model_result = bmdscore.python_continuous_model_result()
+        model_result.model = analysis.model
+        model_result.dist_numE = 200
+        model_result.nparms = analysis.parms
+
+        gof = bmdscore.continuous_GOF()
+        bmds_result = bmdscore.BMDS_results()
+        aod = bmdscore.continuous_AOD()
+        aod.TOI = bmdscore.testsOfInterest()
+
+        restricted = True
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
-            inputs.update(
-                suff_stat=ctypes.c_bool(True),
-                n=self.dataset.num_dose_groups,
-                doses=self.dataset.doses,
-                n_group=self.dataset.ns,
-                Y=self.dataset.means,
-                sd=self.dataset.stdevs,
-            )
+            analysis.suff_stat = True
+            analysis.n = self.dataset.num_dose_groups
+            analysis.doses = self.dataset.doses
+            analysis.n_group = self.dataset.ns
+            analysis.Y = self.dataset.means
+            analysis.d = self.dataset.stdevs
 
         elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
-            inputs.update(
-                suff_stat=ctypes.c_bool(False),
-                n=len(self.dataset.individual_doses),
-                doses=self.dataset.individual_doses,
-                n_group=[],
-                Y=self.dataset.responses,
-                sd=[],
-            )
+            analysis.suff_stat = False
+            analysis.n = len(self.dataset.individual_doses)
+            analysis.doses = self.dataset.individual_doses
+            analysis.n_group = []
+            analysis.Y = self.dataset.responses
+            analysis.sd = []  # ?
+
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
 
-        struct = ContinuousAnalysisStruct(**inputs)
-
-        return ContinuousStructs(
-            analysis=struct,
-            result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
-            summary=BmdsResultsStruct(num_params=nparms),
-            aod=ContinuousAodStruct(),
-            gof=ContinuousGofStruct(n=struct.n),
+        return bmdscore.pythonBMDSCont(
+            analysis, model_result, bmds_result, aod, gof, detectAdvDir, restricted
         )
 
 
