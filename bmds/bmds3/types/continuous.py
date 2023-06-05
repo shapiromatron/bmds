@@ -1,5 +1,6 @@
 from enum import IntEnum
-from typing import Self
+from textwrap import dedent
+from typing import NamedTuple, Self
 
 import numpy as np
 import pandas as pd
@@ -146,7 +147,8 @@ class ContinuousAnalysis(BaseModel):
         analysis = bmdscore.python_continuous_analysis()
         analysis.model = bmdscore.cont_model.exp_5
 
-        detectAdvDir = self.dataset.detectAdvDir
+        detectAdvDir = True
+        # detectAdvDir = self.dataset.detectAdvDir
         analysis.isIncreasing = False  # ?
 
         # isIncreasing needed if detectAdvDir is set to false
@@ -163,7 +165,7 @@ class ContinuousAnalysis(BaseModel):
         analysis.transform_dose = 0
         analysis.prior = self._priors_array()
         analysis.disttype = bmdscore.distribution.normal
-        # analysis.alpha = 0.05 # ?
+        analysis.alpha = 0.05  # ?
 
         model_result = bmdscore.python_continuous_model_result()
         model_result.model = analysis.model
@@ -183,7 +185,7 @@ class ContinuousAnalysis(BaseModel):
             analysis.doses = self.dataset.doses
             analysis.n_group = self.dataset.ns
             analysis.Y = self.dataset.means
-            analysis.d = self.dataset.stdevs
+            analysis.sd = self.dataset.stdevs
 
         elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
             analysis.suff_stat = False
@@ -196,8 +198,49 @@ class ContinuousAnalysis(BaseModel):
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
 
-        return bmdscore.pythonBMDSCont(
+        return ContinuousAnalysisCPPStructs(
             analysis, model_result, bmds_result, aod, gof, detectAdvDir, restricted
+        )
+
+
+class ContinuousAnalysisCPPStructs(NamedTuple):
+    analysis: bmdscore.python_continuous_analysis
+    model_result: bmdscore.python_continuous_model_result
+    bmds_result: bmdscore.BMDS_results
+    aod: bmdscore.continuous_AOD
+    gof: bmdscore.continuous_GOF
+    detectAdvDir: bool
+    restricted: bool
+
+    def execute(self):
+        bmdscore.pythonBMDSCont(
+            self.analysis,
+            self.model_result,
+            self.bmds_result,
+            self.aod,
+            self.gof,
+            True,
+            self.restricted,
+        )
+
+    def __str__(self):
+        return dedent(
+            f"""
+            Analysis:
+            {self.analysis}
+
+            Result:
+            {self.result}
+
+            GoF:
+            {self.gof}
+
+            Summary:
+            {self.summary}
+
+            AoD:
+            {self.aod}
+            """
         )
 
 

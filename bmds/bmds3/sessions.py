@@ -9,6 +9,8 @@ import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
+from bmds import bmdscore
+
 from .. import constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
@@ -23,7 +25,6 @@ from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, B
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
 from .types import sessions as schema
-from .types.structs import get_version
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ class BmdsSession:
 
     @classmethod
     def dll_version(cls) -> str:
-        return get_version()
+        return bmdscore.version()
 
     @classmethod
     def from_serialized(cls, data: dict) -> BmdsSession:
