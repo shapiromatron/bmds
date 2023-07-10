@@ -66,9 +66,7 @@ class BmdModelContinuous(BmdModel):
         inputs = self._build_inputs()
         structs = inputs.to_cpp()
         self.structs = structs
-
         self.structs.execute()
-
         self.results = ContinuousResult.from_model(self)
         return self.results
 

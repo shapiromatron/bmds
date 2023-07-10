@@ -147,16 +147,8 @@ class ContinuousAnalysis(BaseModel):
         analysis = bmdscore.python_continuous_analysis()
         analysis.model = bmdscore.cont_model.exp_5
 
-        detectAdvDir = True
-        # detectAdvDir = self.dataset.detectAdvDir
-        analysis.isIncreasing = False  # ?
-
-        # isIncreasing needed if detectAdvDir is set to false
-        if detectAdvDir is False:
-            analysis.isIncreasing = True  # ?
-
-        analysis.n = self.dataset.num_dose_groups
-        analysis.doses = self.dataset.doses
+        analysis.n = self.dataset.num_dose_groups # redundant?
+        analysis.doses = self.dataset.doses # redundant?
         analysis.BMD_type = self.BMD_type
         analysis.BMR = self.BMR
 
@@ -167,17 +159,22 @@ class ContinuousAnalysis(BaseModel):
         analysis.disttype = bmdscore.distribution.normal
         analysis.alpha = 0.05  # ?
 
+        analysis.detectAdvDir = True
+        analysis.restricted = True
+
         model_result = bmdscore.python_continuous_model_result()
         model_result.model = analysis.model
         model_result.dist_numE = 200
         model_result.nparms = analysis.parms
 
         gof = bmdscore.continuous_GOF()
-        bmds_result = bmdscore.BMDS_results()
+        bmds_results = bmdscore.BMDS_results()
         aod = bmdscore.continuous_AOD()
         aod.TOI = bmdscore.testsOfInterest()
 
-        restricted = True
+        model_result.gof = gof
+        model_result.bmdsRes = bmds_results
+        model_result.aod = aod
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
             analysis.suff_stat = True
@@ -193,35 +190,22 @@ class ContinuousAnalysis(BaseModel):
             analysis.doses = self.dataset.individual_doses
             analysis.n_group = []
             analysis.Y = self.dataset.responses
-            analysis.sd = []  # ?
+            analysis.sd = []
 
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
 
         return ContinuousAnalysisCPPStructs(
-            analysis, model_result, bmds_result, aod, gof, detectAdvDir, restricted
+            analysis, model_result
         )
 
 
 class ContinuousAnalysisCPPStructs(NamedTuple):
     analysis: bmdscore.python_continuous_analysis
     model_result: bmdscore.python_continuous_model_result
-    bmds_result: bmdscore.BMDS_results
-    aod: bmdscore.continuous_AOD
-    gof: bmdscore.continuous_GOF
-    detectAdvDir: bool
-    restricted: bool
 
     def execute(self):
-        bmdscore.pythonBMDSCont(
-            self.analysis,
-            self.model_result,
-            self.bmds_result,
-            self.aod,
-            self.gof,
-            True,
-            self.restricted,
-        )
+        bmdscore.pythonBMDSCont(self.analysis,self.model_result)
 
     def __str__(self):
         return dedent(
@@ -230,16 +214,7 @@ class ContinuousAnalysisCPPStructs(NamedTuple):
             {self.analysis}
 
             Result:
-            {self.result}
-
-            GoF:
-            {self.gof}
-
-            Summary:
-            {self.summary}
-
-            AoD:
-            {self.aod}
+            {self.model_result}
             """
         )
 
