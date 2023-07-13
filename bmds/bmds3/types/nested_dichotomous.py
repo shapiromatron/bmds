@@ -48,7 +48,7 @@ class NestedDichotomousAnalysis(BaseModel):
         analysis = bmdscore.python_nested_analysis()
         analysis.model = bmdscore.nested_model.nlogistic
         analysis.restricted = True
-        analysis.doses = [] # dont need to still be np array right?
+        analysis.doses = []  # dont need to still be np array right?
         analysis.litterSize = []
         analysis.incidence = []
         analysis.lsc = []
@@ -68,3 +68,82 @@ class NestedDichotomousAnalysis(BaseModel):
         nested_result.reduced = bmdscore.nestedReducedData()
 
         bmdscore.pythonBMDSNested(analysis, nested_result)
+
+
+class NestedDichotomousResult(BaseModel):
+    # bmdl: float
+    bmd: float
+    # bmdu: float
+    # has_completed: bool
+    # fit: NestedDichotomousModelResult
+    # gof: NestedDichotomousPgofResult
+    # parameters: NestedDichotomousParameters
+    # deviance: NestedDichotomousAnalysisOfDeviance
+    # plotting: NestedDichotomousPlotting
+
+    @classmethod
+    def from_model(cls, model):
+        result = model.structs.result
+        summary = result.bmdsRes
+        # fit = NestedDichotomousModelResult.from_model(model)
+        # gof = NestedDichotomousPgofResult.from_model(model)
+        # parameters = NestedDichotomousParameters.from_model(model)
+        # deviance = NestedDichotomousAnalysisOfDeviance.from_model(model)
+        # plotting = NestedDichotomousPlotting.from_model(model, parameters.values)
+        return cls(
+            # bmdl=summary.BMDL,
+            bmd=summary.BMD,
+            # bmdu=summary.BMDU,
+            # has_completed=summary.validResult,
+            # fit=fit,
+            # gof=gof,
+            # parameters=parameters,
+            # deviance=deviance,
+            # plotting=plotting,
+        )
+
+    # def text(self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings) -> str:
+    #     return multi_lstrip(
+    #         f"""
+    #     Summary:
+    #     {self.tbl()}
+
+    #     Model Parameters:
+    #     {self.parameters.tbl()}
+
+    #     Goodness of Fit:
+    #     {self.gof.tbl(dataset)}
+
+    #     Analysis of Deviance:
+    #     {self.deviance.tbl()}
+    #     """
+    #     )
+
+    # def tbl(self) -> str:
+    #     data = [
+    #         ["BMD", self.bmd],
+    #         ["BMDL", self.bmdl],
+    #         ["BMDU", self.bmdu],
+    #         ["AIC", self.fit.aic],
+    #         ["Log Likelihood", self.fit.loglikelihood],
+    #         ["P-Value", self.gof.p_value],
+    #         ["Overall DOF", self.gof.df],
+    #         ["Chi²", self.fit.chisq],
+    #     ]
+    #     return pretty_table(data, "")
+
+    # def update_record(self, d: dict) -> None:
+    #     """Update data record for a tabular-friendly export"""
+    #     d.update(
+    #         bmdl=self.bmdl,
+    #         bmd=self.bmd,
+    #         bmdu=self.bmdu,
+    #         aic=self.fit.aic,
+    #         loglikelihood=self.fit.loglikelihood,
+    #         p_value=self.gof.p_value,
+    #         overall_dof=self.gof.df,
+    #         bic_equiv=self.fit.bic_equiv,
+    #         chi_squared=self.fit.chisq,
+    #         residual_of_interest=self.gof.roi,
+    #         residual_at_lowest_dose=self.gof.residual[0],
+    #     )

@@ -8,13 +8,14 @@ from ..constants import (
     NestedDichotomousModelIds,
     PriorClass,
 )
-from ..types.dichotomous import (
+from ..types.nested_dichotomous import (
     NestedDichotomousAnalysis,
     NestedDichotomousModelSettings,
     NestedDichotomousResult,
 )
-from ..types.priors import ModelPriors, get_dichotomous_prior
 from .base import BmdModel, BmdModelSchema, InputModelSettings
+
+# from ..types.priors import ModelPriors, get_dichotomous_prior
 
 
 class BmdModelNestedDichotomous(BmdModel):
@@ -31,16 +32,14 @@ class BmdModelNestedDichotomous(BmdModel):
         else:
             model_settings = NestedDichotomousModelSettings.parse_obj(settings)
 
-        # get default values, may require further model customization
-        if not isinstance(model_settings.priors, ModelPriors):
-            prior_class = (
-                model_settings.priors
-                if isinstance(model_settings.priors, PriorClass)
-                else self.get_default_prior_class()
-            )
-            model_settings.priors = get_dichotomous_prior(
-                self.bmd_model_class, prior_class=prior_class
-            )
+        # # get default values, may require further model customization
+        # if not isinstance(model_settings.priors, ModelPriors):
+        #     prior_class = (
+        #         model_settings.priors
+        #     )
+        #     model_settings.priors = get_dichotomous_prior(
+        #         self.bmd_model_class, prior_class=prior_class
+        #     )
 
         return model_settings
 
@@ -48,13 +47,13 @@ class BmdModelNestedDichotomous(BmdModel):
         return NestedDichotomousAnalysis(
             model=self.bmd_model_class,
             dataset=self.dataset,
-            priors=self.settings.priors,
+            # priors=self.settings.priors,
             BMD_type=self.settings.bmr_type,
             BMR=self.settings.bmr,
             alpha=self.settings.alpha,
-            degree=self.settings.degree,
-            samples=self.settings.samples,
-            burnin=self.settings.burnin,
+            # degree=self.settings.degree,
+            # samples=self.settings.samples,
+            # burnin=self.settings.burnin,
         )
 
     def execute(self) -> NestedDichotomousResult:
