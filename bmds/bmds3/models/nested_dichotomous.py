@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import gamma, norm
 
 from ...datasets import NestedDichotomousDataset
 from ..constants import (

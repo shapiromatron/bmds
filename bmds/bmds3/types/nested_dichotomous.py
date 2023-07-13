@@ -3,10 +3,11 @@ from textwrap import dedent
 from typing import NamedTuple, Self
 
 from pydantic import BaseModel, confloat, conint
-from ...utils import multi_lstrip, pretty_table
 
 from bmds import bmdscore
+
 from ...datasets import NestedDichotomousDataset
+from ...utils import multi_lstrip, pretty_table
 
 
 class NestedDichotomousRiskType(IntEnum):
@@ -59,10 +60,13 @@ class NestedDichotomousModelSettings(BaseModel):
         #     data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
 
         return pretty_table(data, "")
+
+
 class NestedDichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a nested dichotomous analysis.
     """
+
     # model :
     # restricted :
     # doses :
@@ -101,14 +105,8 @@ class NestedDichotomousAnalysis(BaseModel):
         nested_result.litter = bmdscore.nestedLitterData()
         nested_result.reduced = bmdscore.nestedReducedData()
 
-        zzz = NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
+        return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
 
-        print(zzz.analysis.__dir__)
-        print(dir(zzz.analysis))
-        print("+"*30)
-        print(zzz)
-
-        return zzz
 
 class NestedDichotomousAnalysisCPPStructs(NamedTuple):
     analysis: bmdscore.python_nested_analysis
@@ -127,6 +125,8 @@ class NestedDichotomousAnalysisCPPStructs(NamedTuple):
             {self.result}
             """
         )
+
+
 class NestedDichotomousResult(BaseModel):
     # model :
     # nparms :
@@ -165,7 +165,9 @@ class NestedDichotomousResult(BaseModel):
             # plotting=plotting,
         )
 
-    def text(self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings) -> str:
+    def text(
+        self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings
+    ) -> str:
         return multi_lstrip(
             f"""
         Summary:

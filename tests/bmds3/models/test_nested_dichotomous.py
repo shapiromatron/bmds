@@ -1,6 +1,3 @@
-import json
-
-import bmds
 from bmds.bmds3.models import nested_dichotomous
 
 # def test_bmds3_dichotomous_multistage(ddataset2):
@@ -49,4 +46,3 @@ def test_bmds3_nested_dichotomous_placeholder(nd_dataset):
     some_analysis.execute()
 
     assert some_analysis.structs.result.bmdsRes.BMD == 12.95166613
-
