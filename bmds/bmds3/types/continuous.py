@@ -163,9 +163,11 @@ class ContinuousAnalysis(BaseModel):
         analysis.prior = self._priors_array()
         analysis.disttype = self.disttype.value
         analysis.alpha = self.alpha
-        analysis.detectAdvDir = False
+
+        # these 3 variables are related; if setting direction; set others to False
         analysis.isIncreasing = self.is_increasing
-        analysis.restricted = True  # TODO - is this correct?
+        analysis.detectAdvDir = False
+        analysis.restricted = False
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
             analysis.suff_stat = True
