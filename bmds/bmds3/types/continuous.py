@@ -171,15 +171,15 @@ class ContinuousAnalysis(BaseModel):
             analysis.suff_stat = True
             analysis.n = self.dataset.num_dose_groups
             analysis.doses = self.dataset.doses
-            analysis.Y = self.dataset.means
             analysis.n_group = self.dataset.ns
+            analysis.Y = self.dataset.means
             analysis.sd = self.dataset.stdevs
         elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
             analysis.suff_stat = False
             analysis.n = len(self.dataset.individual_doses)
             analysis.doses = self.dataset.individual_doses
-            analysis.Y = self.dataset.responses
             analysis.n_group = []
+            analysis.Y = self.dataset.responses
             analysis.sd = []
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")

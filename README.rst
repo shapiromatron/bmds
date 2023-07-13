@@ -26,4 +26,5 @@ To generate type stubs for compiled code::
     pip install -U mypy
     cd ~/dev/bmds/bmds/
     stubgen -p bmdscore -o .
+    cd ~/dev/bmds/
     ruff . --fix
