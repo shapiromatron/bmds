@@ -1,4 +1,6 @@
 from enum import IntEnum
+from textwrap import dedent
+from typing import NamedTuple, Self
 
 from pydantic import BaseModel, confloat, conint
 
@@ -43,6 +45,20 @@ class NestedDichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a nested dichotomous analysis.
     """
+    # model :
+    # restricted :
+    # doses :
+    # litterSize :
+    # incidence :
+    # lsc :
+    # LSC_type :
+    # ILC_type :
+    # BMD_type :
+    # background :
+    # BMR :
+    # alpha :
+    # iterations :
+    # seed :
 
     def to_cpp(Self):
         analysis = bmdscore.python_nested_analysis()
@@ -67,22 +83,44 @@ class NestedDichotomousAnalysis(BaseModel):
         nested_result.litter = bmdscore.nestedLitterData()
         nested_result.reduced = bmdscore.nestedReducedData()
 
-        bmdscore.pythonBMDSNested(analysis, nested_result)
+        return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
 
+class NestedDichotomousAnalysisCPPStructs(NamedTuple):
+    analysis: bmdscore.python_dichotomous_analysis
+    result: bmdscore.python_dichotomous_model_result
 
+    def execute(self):
+        bmdscore.pythonBMDSNested(self.analysis, self.result)
+
+    def __str__(self):
+        return dedent(
+            f"""
+            Analysis:
+            {self.analysis}
+
+            Result:
+            {self.result}
+            """
+        )
 class NestedDichotomousResult(BaseModel):
-    # bmdl: float
-    bmd: float
-    # bmdu: float
-    # has_completed: bool
-    # fit: NestedDichotomousModelResult
-    # gof: NestedDichotomousPgofResult
-    # parameters: NestedDichotomousParameters
-    # deviance: NestedDichotomousAnalysisOfDeviance
-    # plotting: NestedDichotomousPlotting
+    # model :
+    # nparms :
+    # parms :
+    # cov :
+    # max :
+    # df :
+    # fixedLSC :
+    # LL :
+    # obsChiSq :
+    # combPVal :
+    # SRs :
+    # bmdsRes :
+    # litter :
+    # boot :
+    # reduced :
 
     @classmethod
-    def from_model(cls, model):
+    def from_model(cls, model) -> Self:
         result = model.structs.result
         summary = result.bmdsRes
         # fit = NestedDichotomousModelResult.from_model(model)

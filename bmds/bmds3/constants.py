@@ -203,15 +203,7 @@ _pc_restriction = {
 
 
 class NestedDichotomousModelIds(IntEnum):
-    d_hill = 1
-    d_gamma = 2
     d_logistic = 3
-    d_loglogistic = 4
-    d_logprobit = 5
-    d_multistage = 6
-    d_probit = 7
-    d_qlinear = 8
-    d_weibull = 9
 
 
 class NestedDichotomousModel(BmdModelSchema):
@@ -223,57 +215,10 @@ class NestedDichotomousModel(BmdModelSchema):
 
 
 class NestedDichotomousModelChoices(Enum):
-    d_hill = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_hill.value,
-        verbose="Hill",
-        params=("g", "v", "a", "b"),
-        model_form_str="P[dose] = g + (v - v * g) / (1 + exp(-a - b * Log(dose)))",
-    )
-    d_gamma = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_gamma.value,
-        verbose="Gamma",
-        params=("g", "a", "b"),
-        model_form_str="P[dose]= g + (1 - g) * CumGamma(b * dose, a)",
-    )
     d_logistic = NestedDichotomousModel(
         id=NestedDichotomousModelIds.d_logistic.value,
         verbose="Logistic",
         params=("a", "b"),
         model_form_str="P[dose] = 1 / [1 + exp(-a - b * dose)]",
     )
-    d_loglogistic = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_loglogistic.value,
-        verbose="LogLogistic",
-        params=("g", "a", "b"),
-        model_form_str="P[dose] = g + (1 - g)/(1 + exp(-a - b * Log(dose)))",
-    )
-    d_logprobit = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_logprobit.value,
-        verbose="LogProbit",
-        params=("g", "a", "b"),
-        model_form_str="P[dose] = g + (1 - g) * CumNorm(a + b * Log(Dose))",
-    )
-    d_multistage = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_multistage.value,
-        verbose="Multistage",
-        params=("g", "x1", "x2"),
-        model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b1 * dose^1 - b2 * dose^2 - ...))",
-    )
-    d_probit = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_probit.value,
-        verbose="Probit",
-        params=("a", "b"),
-        model_form_str="P[dose] = CumNorm(a + b * Dose)",
-    )
-    d_qlinear = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_qlinear.value,
-        verbose="Quantal Linear",
-        params=("g", "b"),
-        model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b * dose)",
-    )
-    d_weibull = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_weibull.value,
-        verbose="Weibull",
-        params=("g", "a", "b"),
-        model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b * dose^a))",
-    )
+

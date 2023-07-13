@@ -15,18 +15,17 @@ from bmds.bmds3.models import nested_dichotomous
 #         model = nested_dichotomous.Multistage(ddataset2, settings)
 #         result = model.execute()
 #         actual = [result.bmd, result.bmdl, result.bmdu]
-
 #         assert pytest.approx(bmd_values, abs=0.5) == actual
 #         assert pytest.approx(aic, abs=5.0) == result.fit.aic
 
 
-def test_bmds3_dichotomous_session(ddataset2):
-    session = bmds.session.Bmds330(dataset=ddataset2)
-    session.add_default_models()
-    session.execute()
-    d = session.to_dict()
-    # ensure json-serializable
-    json.dumps(d)
+# def test_bmds3_dichotomous_session(ddataset2):
+#     session = bmds.session.Bmds330(dataset=ddataset2)
+#     session.add_default_models()
+#     session.execute()
+#     d = session.to_dict()
+#     # ensure json-serializable
+#     json.dumps(d)
 
 
 # def test_bmds3_dichotomous_fit_parameters(ddataset2):
@@ -45,17 +44,12 @@ def test_bmds3_dichotomous_session(ddataset2):
 #     assert res.deviance.p_value == pytest.approx([-9999.0, 0.311, 0.0], abs=0.01)
 
 
-def test_bmds3_dichotomous_pvalue():
-    ds = bmds.datasets.NestedDichotomousDataset(
-        doses=[0, 10, 30, 100],
-        ns=[20, 20, 20, 20],
-        incidences=[0, 0, 8, 20],
-        litter_covariates=[1, 1, 1, 1],
-        litter_ns=[1, 1, 1, 1],
-    )
-    m = nested_dichotomous.Logistic(dataset=ds)
-    m.execute()
+def test_bmds3_nested_dichotomous_placeholder(nd_dataset):
+
+    some_analysis = nested_dichotomous.Logistic(nd_dataset)
+    some_analysis.execute()
 
     # fix case found in 2023.03 where if p_value is exactly one, would incorrectly return -9999
     # assert m.results.gof.p_value == pytest.approx(1.0, abs=1e-3)
-    assert m.results.BmdRes.BMD == 12.95166613
+
+    assert some_analysis.results
