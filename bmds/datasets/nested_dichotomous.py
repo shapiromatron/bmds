@@ -10,6 +10,10 @@ from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
 
 class NestedDichotomousDataset(DatasetBase):
+    """
+    Dataset object for nested dichotomous datasets.
+    """
+
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.NESTED_DICHOTOMOUS
