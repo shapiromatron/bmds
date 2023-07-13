@@ -3,8 +3,10 @@ from textwrap import dedent
 from typing import NamedTuple, Self
 
 from pydantic import BaseModel, confloat, conint
+from ...utils import multi_lstrip, pretty_table
 
 from bmds import bmdscore
+from ...datasets import NestedDichotomousDataset
 
 
 class NestedDichotomousRiskType(IntEnum):
@@ -86,11 +88,11 @@ class NestedDichotomousAnalysis(BaseModel):
         return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
 
 class NestedDichotomousAnalysisCPPStructs(NamedTuple):
-    analysis: bmdscore.python_dichotomous_analysis
-    result: bmdscore.python_dichotomous_model_result
+    analysis: bmdscore.python_nested_analysis
+    nested_result: bmdscore.python_nested_result
 
     def execute(self):
-        bmdscore.pythonBMDSNested(self.analysis, self.result)
+        bmdscore.pythonBMDSNested(self.analysis, self.nested_result)
 
     def __str__(self):
         return dedent(
@@ -99,7 +101,7 @@ class NestedDichotomousAnalysisCPPStructs(NamedTuple):
             {self.analysis}
 
             Result:
-            {self.result}
+            {self.nested_result}
             """
         )
 class NestedDichotomousResult(BaseModel):
@@ -140,35 +142,26 @@ class NestedDichotomousResult(BaseModel):
             # plotting=plotting,
         )
 
-    # def text(self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings) -> str:
-    #     return multi_lstrip(
-    #         f"""
-    #     Summary:
-    #     {self.tbl()}
+    def text(self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+        """
+        )
 
-    #     Model Parameters:
-    #     {self.parameters.tbl()}
-
-    #     Goodness of Fit:
-    #     {self.gof.tbl(dataset)}
-
-    #     Analysis of Deviance:
-    #     {self.deviance.tbl()}
-    #     """
-    #     )
-
-    # def tbl(self) -> str:
-    #     data = [
-    #         ["BMD", self.bmd],
-    #         ["BMDL", self.bmdl],
-    #         ["BMDU", self.bmdu],
-    #         ["AIC", self.fit.aic],
-    #         ["Log Likelihood", self.fit.loglikelihood],
-    #         ["P-Value", self.gof.p_value],
-    #         ["Overall DOF", self.gof.df],
-    #         ["Chi²", self.fit.chisq],
-    #     ]
-    #     return pretty_table(data, "")
+    def tbl(self) -> str:
+        data = [
+            ["BMD", self.bmd],
+            # ["BMDL", self.bmdl],
+            # ["BMDU", self.bmdu],
+            # ["AIC", self.fit.aic],
+            # ["Log Likelihood", self.fit.loglikelihood],
+            # ["P-Value", self.gof.p_value],
+            # ["Overall DOF", self.gof.df],
+            # ["Chi²", self.fit.chisq],
+        ]
+        return pretty_table(data, "")
 
     # def update_record(self, d: dict) -> None:
     #     """Update data record for a tabular-friendly export"""
