@@ -116,12 +116,12 @@ def test_increasing(cdataset2):
     """
     # test increasing means dataset
     for Model, bmd_values, aic in [
-        # (continuous.ExponentialM3, [53, 50, 55], 3186),
-        # (continuous.ExponentialM5, [26, 25, 28], 3072),
-        (continuous.Power, [26, 24, 30], 3070),  # TODO - fix and comment back again
-        # (continuous.Hill, [28, 25, 32], 3072),
-        # (continuous.Linear, [26, 24, 28], 3068),
-        # (continuous.Polynomial, [26, 24, 29], 3070),
+        (continuous.ExponentialM3, [53, 50, 55], 3186),
+        (continuous.ExponentialM5, [26, 25, 28], 3072),
+        (continuous.Power, [26, 24, 30], 3070),
+        (continuous.Hill, [28, 25, 32], 3072),
+        (continuous.Linear, [26, 24, 28], 3068),
+        (continuous.Polynomial, [26, 24, 29], 3070),
     ]:
         result = Model(cdataset2).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]

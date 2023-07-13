@@ -108,6 +108,15 @@ class ContinuousModelSettings(BaseModel):
         )
 
 
+MODEL_ENUM_MAP = {
+    constants.ContinuousModelIds.c_power.value: bmdscore.cont_model.power,
+    constants.ContinuousModelIds.c_hill.value: bmdscore.cont_model.hill,
+    constants.ContinuousModelIds.c_polynomial.value: bmdscore.cont_model.polynomial,
+    constants.ContinuousModelIds.c_exp_m3.value: bmdscore.cont_model.exp_3,
+    constants.ContinuousModelIds.c_exp_m5.value: bmdscore.cont_model.exp_5,
+}
+
+
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
     dataset: ContinuousDatasets
@@ -145,16 +154,17 @@ class ContinuousAnalysis(BaseModel):
 
     def to_cpp(self):
         analysis = bmdscore.python_continuous_analysis()
-        analysis.model = bmdscore.cont_model.power  # TODO - fix this?
+        analysis.model = MODEL_ENUM_MAP[self.model.id]
         analysis.BMD_type = self.BMD_type.value
         analysis.BMR = self.BMR
         analysis.parms = self.num_params
         analysis.prior_cols = constants.NUM_PRIOR_COLS
-        analysis.transform_dose = 0  # TODO - is this correct?
+        analysis.transform_dose = 0
         analysis.prior = self._priors_array()
         analysis.disttype = self.disttype.value
         analysis.alpha = self.alpha
         analysis.detectAdvDir = False
+        analysis.isIncreasing = self.is_increasing
         analysis.restricted = True  # TODO - is this correct?
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
@@ -176,7 +186,7 @@ class ContinuousAnalysis(BaseModel):
 
         result = bmdscore.python_continuous_model_result()
         result.model = analysis.model
-        result.dist_numE = 200
+        result.dist_numE = constants.N_BMD_DIST
         result.nparms = analysis.parms
         result.gof = bmdscore.continuous_GOF()
         result.bmdsRes = bmdscore.BMDS_results()
@@ -219,7 +229,7 @@ class ContinuousModelResult(BaseModel):
     def from_model(cls, model) -> Self:
         result = model.structs.result
         summary = result.bmdsRes
-        arr = np.array(result.bmd_dist).reshape(2, 200)
+        arr = np.array(result.bmd_dist, dtype=float).reshape(2, constants.N_BMD_DIST)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
@@ -280,17 +290,13 @@ class ContinuousParameters(BaseModel):
             priors[c_index:-1] = priors[c_index + 1 :]
             priors = priors[:-1].T
 
-            # reshape covariance
-            cov_n = result.initial_n - 1
-            cov = result.np_cov[: cov_n * cov_n].reshape(cov_n, cov_n)
-
-            # change slice for other variables
+            # remove final element for some params (stdErr, lowerConf, upperConf)
             slice = -1
 
         return cls(
             names=param_names,
-            values=result.parms[:slice],
-            bounded=summary.bounded[:slice],
+            values=result.parms,
+            bounded=summary.bounded,
             se=summary.stdErr[:slice],
             lower_ci=summary.lowerConf[:slice],
             upper_ci=summary.upperConf[:slice],
