@@ -42,7 +42,23 @@ class NestedDichotomousModelSettings(BaseModel):
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
+    @property
+    def confidence_level(self) -> float:
+        return 1 - self.alpha
 
+    def tbl(self, show_degree: bool = True) -> str:
+        data = [
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+        ]
+
+        # if show_degree:
+        #     data.append(["Degree", self.degree])
+
+        # if self.priors.is_bayesian:
+        #     data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
+
+        return pretty_table(data, "")
 class NestedDichotomousAnalysis(BaseModel):
     """
     Purpose - Contains all of the information for a nested dichotomous analysis.
@@ -85,14 +101,21 @@ class NestedDichotomousAnalysis(BaseModel):
         nested_result.litter = bmdscore.nestedLitterData()
         nested_result.reduced = bmdscore.nestedReducedData()
 
-        return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
+        zzz = NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
+
+        print(zzz.analysis.__dir__)
+        print(dir(zzz.analysis))
+        print("+"*30)
+        print(zzz)
+
+        return zzz
 
 class NestedDichotomousAnalysisCPPStructs(NamedTuple):
     analysis: bmdscore.python_nested_analysis
-    nested_result: bmdscore.python_nested_result
+    result: bmdscore.python_nested_result
 
     def execute(self):
-        bmdscore.pythonBMDSNested(self.analysis, self.nested_result)
+        bmdscore.pythonBMDSNested(self.analysis, self.result)
 
     def __str__(self):
         return dedent(
@@ -101,7 +124,7 @@ class NestedDichotomousAnalysisCPPStructs(NamedTuple):
             {self.analysis}
 
             Result:
-            {self.nested_result}
+            {self.result}
             """
         )
 class NestedDichotomousResult(BaseModel):

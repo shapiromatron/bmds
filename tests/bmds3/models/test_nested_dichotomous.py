@@ -45,11 +45,8 @@ from bmds.bmds3.models import nested_dichotomous
 
 
 def test_bmds3_nested_dichotomous_placeholder(nd_dataset):
-
     some_analysis = nested_dichotomous.Logistic(nd_dataset)
     some_analysis.execute()
 
-    # fix case found in 2023.03 where if p_value is exactly one, would incorrectly return -9999
-    # assert m.results.gof.p_value == pytest.approx(1.0, abs=1e-3)
+    assert some_analysis.structs.result.bmdsRes.BMD == 12.95166613
 
-    assert some_analysis.results
