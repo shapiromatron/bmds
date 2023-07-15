@@ -1,5 +1,4 @@
 from enum import IntEnum
-from textwrap import dedent
 from typing import NamedTuple, Self
 
 import numpy as np
@@ -11,7 +10,13 @@ from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
+from .common import (
+    NumpyFloatArray,
+    NumpyIntArray,
+    clean_array,
+    inspect_cpp_obj,
+    residual_of_interest,
+)
 from .priors import ModelPriors, PriorClass, PriorType
 
 
@@ -146,16 +151,11 @@ class DichotomousAnalysisCPPStructs(NamedTuple):
     def execute(self):
         bmdscore.pythonBMDSDicho(self.analysis, self.result)
 
-    def __str__(self):
-        return dedent(
-            f"""
-            Analysis:
-            {self.analysis}
-
-            Result:
-            {self.result}
-            """
-        )
+    def __str__(self) -> str:
+        lines = []
+        inspect_cpp_obj(lines, self.analysis, depth=0)
+        inspect_cpp_obj(lines, self.result, depth=0)
+        return "\n".join(lines)
 
 
 class DichotomousModelResult(BaseModel):

@@ -18,10 +18,12 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             return DichotomousModelSettings.parse_obj(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
-        model = DichotomousModelAverage(self.session.dataset, self.models, self.session.ma_weights)
-        model.execute()
+        self.structs = DichotomousModelAverage(
+            self.session.dataset, self.models, self.session.ma_weights
+        )
+        self.structs.execute()
         return DichotomousModelAverageResult.from_cpp(
-            model, [model.results for model in self.models]
+            self.structs, [model.results for model in self.models]
         )
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
