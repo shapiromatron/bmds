@@ -178,6 +178,7 @@ class Polynomial(BmdModelContinuous):
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model_settings = super().get_model_settings(dataset, settings)
+
         if model_settings.disttype == DistType.log_normal:
             raise ConfigurationException("Polynomial model cannot run with lognormal distribution")
 
@@ -239,6 +240,7 @@ class Linear(Polynomial):
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model_settings = super().get_model_settings(dataset, settings)
+
         if model_settings.disttype == DistType.log_normal:
             raise ConfigurationException("Linear model cannot run with lognormal distribution")
 
