@@ -1,5 +1,4 @@
 from enum import IntEnum
-from textwrap import dedent
 from typing import NamedTuple, Self
 
 import numpy as np
@@ -13,7 +12,13 @@ from ...datasets.continuous import ContinuousDatasets
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from ..constants import ContinuousModelChoices
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
+from .common import (
+    NumpyFloatArray,
+    NumpyIntArray,
+    clean_array,
+    inspect_cpp_obj,
+    residual_of_interest,
+)
 from .priors import ModelPriors, PriorClass, PriorType
 
 
@@ -161,6 +166,7 @@ class ContinuousAnalysis(BaseModel):
         analysis.prior_cols = constants.NUM_PRIOR_COLS
         analysis.transform_dose = 0
         analysis.prior = self._priors_array()
+        analysis.degree = self.degree
         analysis.disttype = self.disttype.value
         analysis.alpha = self.alpha
 
@@ -205,16 +211,11 @@ class ContinuousAnalysisCPPStructs(NamedTuple):
     def execute(self):
         bmdscore.pythonBMDSCont(self.analysis, self.result)
 
-    def __str__(self):
-        return dedent(
-            f"""
-            Analysis:
-            {self.analysis}
-
-            Result:
-            {self.result}
-            """
-        )
+    def __str__(self) -> str:
+        lines = []
+        inspect_cpp_obj(lines, self.analysis, depth=0)
+        inspect_cpp_obj(lines, self.result, depth=0)
+        return "\n".join(lines)
 
 
 class ContinuousModelResult(BaseModel):

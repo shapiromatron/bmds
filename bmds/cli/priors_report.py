@@ -103,7 +103,6 @@ def continuous_priors(f: StringIO):
     for settings in [
         # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.bayesian),
@@ -116,13 +115,10 @@ def continuous_priors(f: StringIO):
     for settings in [
         # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal, is_increasing=True),
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal, is_increasing=False),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.log_normal, is_increasing=True),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.log_normal, is_increasing=False),
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv, is_increasing=True),
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv, is_increasing=False),
 
@@ -136,11 +132,9 @@ def continuous_priors(f: StringIO):
     for settings in [
         # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
-        dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal),
-        dict(priors=PriorClass.frequentist_restricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.bayesian),
