@@ -7,6 +7,7 @@ from bmds import constants
 from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType, PriorClass
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousModelSettings
+from bmds.exceptions import ConfigurationException
 
 
 class TestPriorOverrides:
@@ -63,7 +64,6 @@ class TestBmdModelContinuous:
         for m in [
             continuous.Power(dataset=cdataset2),
             continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal)),
-            continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.log_normal)),
         ]:
             assert m.get_param_names() == ["g", "v", "n", "alpha"]
         m = continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal_ncv))
@@ -235,11 +235,8 @@ def test_increasing_lognormal(cdataset2):
     session = bmds.session.Bmds330(dataset=cdataset2)
     settings = dict(disttype=DistType.log_normal)
     for model in (constants.M_Hill, constants.M_Power, constants.M_Polynomial):
-        session.add_model(model, settings)
-    session.execute()
-    for model in session.models:
-        assert model.results.has_completed is False
-        assert model.results.bmd == BMDS_BLANK_VALUE
+        with pytest.raises(ConfigurationException):
+            session.add_model(model, settings)
 
 
 def test_decreasing_lognormal():
@@ -262,8 +259,5 @@ def test_decreasing_lognormal():
     session = bmds.session.Bmds330(dataset=ds)
     settings = dict(disttype=DistType.log_normal)
     for model in (constants.M_Hill, constants.M_Power, constants.M_Polynomial):
-        session.add_model(model, settings)
-    session.execute()
-    for model in session.models:
-        assert model.results.has_completed is False
-        assert model.results.bmd == BMDS_BLANK_VALUE
+        with pytest.raises(ConfigurationException):
+            session.add_model(model, settings)

@@ -1,4 +1,3 @@
-from textwrap import dedent
 from typing import Self
 
 import numpy as np
@@ -8,6 +7,7 @@ from pydantic import BaseModel
 from bmds import bmdscore
 
 from ..models.dichotomous import BmdModelDichotomous
+from .common import inspect_cpp_obj
 from .continuous import NumpyFloatArray
 
 
@@ -58,8 +58,11 @@ class DichotomousModelAverage:
     def execute(self) -> "DichotomousModelAverageResult":
         bmdscore.pythonBMDSDichoMA(self.average, self.result)
 
-    def __str__(self):
-        return dedent("TODO")
+    def __str__(self) -> str:
+        lines = []
+        inspect_cpp_obj(lines, self.analysis, depth=0)
+        inspect_cpp_obj(lines, self.result, depth=0)
+        return "\n".join(lines)
 
 
 class DichotomousModelAverageResult(ModelAverageResult):

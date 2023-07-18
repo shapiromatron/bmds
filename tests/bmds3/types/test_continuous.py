@@ -59,3 +59,14 @@ class TestContinuousParameters:
         ]:
             assert getattr(params, field).size == n_params
         assert params.cov.shape == (n_params, n_params)
+
+
+class TestContinuousAnalysisCPPStructs:
+    def test_cpp_str(self, cdataset2):
+        # ensure we can generate a string representation of the cpp structs
+        model = continuous.Power(cdataset2)
+        model.execute()
+        text = str(model.structs)
+        assert """- python_continuous_analysis""" in text
+        assert """- python_continuous_model_result""" in text
+        assert len(text.splitlines()) == 69
