@@ -1,10 +1,8 @@
-import ctypes
 from itertools import cycle
 
 from ... import plotting
 from ..types.dichotomous import DichotomousModelSettings
-from ..types.ma import DichotomousModelAverageResult
-from ..types.structs import DichotomousMAStructs
+from ..types.ma import DichotomousModelAverage, DichotomousModelAverageResult
 from .base import BmdModelAveraging, BmdModelAveragingSchema, InputModelSettings
 
 
@@ -20,22 +18,13 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             return DichotomousModelSettings.parse_obj(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
-        structs = DichotomousMAStructs.from_session(
+        self.structs = DichotomousModelAverage(
             self.session.dataset, self.models, self.session.ma_weights
         )
-        self.structs = structs
-
-        dll = self.get_dll()
-        dll.runBMDSDichoMA(
-            ctypes.pointer(structs.analysis),
-            ctypes.pointer(structs.inputs),
-            ctypes.pointer(structs.dich_result),
-            ctypes.pointer(structs.result),
+        self.structs.execute()
+        return DichotomousModelAverageResult.from_cpp(
+            self.structs, [model.results for model in self.models]
         )
-        self.results = DichotomousModelAverageResult.from_structs(
-            structs, [model.results for model in self.models]
-        )
-        return self.results
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
         model_indexes = [session.models.index(model) for model in self.models]

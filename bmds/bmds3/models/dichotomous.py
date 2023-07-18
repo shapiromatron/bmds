@@ -1,5 +1,3 @@
-import ctypes
-
 import numpy as np
 from scipy.stats import gamma, norm
 
@@ -52,16 +50,9 @@ class BmdModelDichotomous(BmdModel):
 
     def execute(self) -> DichotomousResult:
         inputs = self._build_inputs()
-        structs = inputs.to_c()
+        structs = inputs.to_cpp()
         self.structs = structs
-        dll = self.get_dll()
-        dll.runBMDSDichoAnalysis(
-            ctypes.pointer(structs.analysis),
-            ctypes.pointer(structs.result),
-            ctypes.pointer(structs.gof),
-            ctypes.pointer(structs.summary),
-            ctypes.pointer(structs.aod),
-        )
+        self.structs.execute()
         self.results = DichotomousResult.from_model(self)
         return self.results
 

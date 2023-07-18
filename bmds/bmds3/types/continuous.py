@@ -1,26 +1,25 @@
-import ctypes
 from enum import IntEnum
-from typing import Self
+from typing import NamedTuple, Self
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
+
+from bmds import bmdscore
 
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
 from ..constants import ContinuousModelChoices
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
-from .priors import ModelPriors, PriorClass, PriorType
-from .structs import (
-    BmdsResultsStruct,
-    ContinuousAnalysisStruct,
-    ContinuousAodStruct,
-    ContinuousGofStruct,
-    ContinuousModelResultStruct,
-    ContinuousStructs,
+from .common import (
+    NumpyFloatArray,
+    NumpyIntArray,
+    clean_array,
+    inspect_cpp_obj,
+    residual_of_interest,
 )
+from .priors import ModelPriors, PriorClass, PriorType
 
 
 class ContinuousRiskType(IntEnum):
@@ -114,6 +113,15 @@ class ContinuousModelSettings(BaseModel):
         )
 
 
+MODEL_ENUM_MAP = {
+    constants.ContinuousModelIds.c_power.value: bmdscore.cont_model.power,
+    constants.ContinuousModelIds.c_hill.value: bmdscore.cont_model.hill,
+    constants.ContinuousModelIds.c_polynomial.value: bmdscore.cont_model.polynomial,
+    constants.ContinuousModelIds.c_exp_m3.value: bmdscore.cont_model.exp_3,
+    constants.ContinuousModelIds.c_exp_m5.value: bmdscore.cont_model.exp_5,
+}
+
+
 class ContinuousAnalysis(BaseModel):
     model: constants.ContinuousModel
     dataset: ContinuousDatasets
@@ -149,56 +157,65 @@ class ContinuousAnalysis(BaseModel):
         degree = self.degree if self.model.id == constants.ContinuousModelIds.c_polynomial else None
         return self.priors.to_c(degree=degree, dist_type=self.disttype)
 
-    def to_c(self) -> ContinuousStructs:
-        nparms = self.num_params
-        inputs = dict(
-            BMD_type=ctypes.c_int(self.BMD_type),
-            BMR=ctypes.c_double(self.BMR),
-            alpha=ctypes.c_double(self.alpha),
-            burnin=ctypes.c_int(self.burnin),
-            degree=ctypes.c_int(self.degree),
-            disttype=ctypes.c_int(self.disttype),
-            isIncreasing=ctypes.c_bool(self.is_increasing),
-            model=ctypes.c_int(self.model.id),
-            parms=ctypes.c_int(nparms),
-            prior=self._priors_array(),
-            prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
-            samples=ctypes.c_int(self.samples),
-            tail_prob=ctypes.c_double(self.tail_prob),
-            transform_dose=ctypes.c_int(0),
-        )
+    def to_cpp(self):
+        analysis = bmdscore.python_continuous_analysis()
+        analysis.model = MODEL_ENUM_MAP[self.model.id]
+        analysis.BMD_type = self.BMD_type.value
+        analysis.BMR = self.BMR
+        analysis.parms = self.num_params
+        analysis.prior_cols = constants.NUM_PRIOR_COLS
+        analysis.transform_dose = 0
+        analysis.prior = self._priors_array()
+        analysis.degree = self.degree
+        analysis.disttype = self.disttype.value
+        analysis.alpha = self.alpha
+
+        # these 3 variables are related; if setting direction; set others to False
+        analysis.isIncreasing = self.is_increasing
+        analysis.detectAdvDir = False
+        analysis.restricted = False
 
         if self.dataset.dtype == Dtype.CONTINUOUS:
-            inputs.update(
-                suff_stat=ctypes.c_bool(True),
-                n=self.dataset.num_dose_groups,
-                doses=self.dataset.doses,
-                n_group=self.dataset.ns,
-                Y=self.dataset.means,
-                sd=self.dataset.stdevs,
-            )
-
+            analysis.suff_stat = True
+            analysis.n = self.dataset.num_dose_groups
+            analysis.doses = self.dataset.doses
+            analysis.n_group = self.dataset.ns
+            analysis.Y = self.dataset.means
+            analysis.sd = self.dataset.stdevs
         elif self.dataset.dtype == Dtype.CONTINUOUS_INDIVIDUAL:
-            inputs.update(
-                suff_stat=ctypes.c_bool(False),
-                n=len(self.dataset.individual_doses),
-                doses=self.dataset.individual_doses,
-                n_group=[],
-                Y=self.dataset.responses,
-                sd=[],
-            )
+            analysis.suff_stat = False
+            analysis.n = len(self.dataset.individual_doses)
+            analysis.doses = self.dataset.individual_doses
+            analysis.n_group = []
+            analysis.Y = self.dataset.responses
+            analysis.sd = []
         else:
             raise ValueError(f"Invalid dtype: {self.dataset.dtype}")
 
-        struct = ContinuousAnalysisStruct(**inputs)
+        result = bmdscore.python_continuous_model_result()
+        result.model = analysis.model
+        result.dist_numE = constants.N_BMD_DIST
+        result.nparms = analysis.parms
+        result.gof = bmdscore.continuous_GOF()
+        result.bmdsRes = bmdscore.BMDS_results()
+        result.aod = bmdscore.continuous_AOD()
+        result.aod.TOI = bmdscore.testsOfInterest()
 
-        return ContinuousStructs(
-            analysis=struct,
-            result=ContinuousModelResultStruct(nparms=nparms, dist_numE=constants.N_BMD_DIST),
-            summary=BmdsResultsStruct(num_params=nparms),
-            aod=ContinuousAodStruct(),
-            gof=ContinuousGofStruct(n=struct.n),
-        )
+        return ContinuousAnalysisCPPStructs(analysis, result)
+
+
+class ContinuousAnalysisCPPStructs(NamedTuple):
+    analysis: bmdscore.python_continuous_analysis
+    result: bmdscore.python_continuous_model_result
+
+    def execute(self):
+        bmdscore.pythonBMDSCont(self.analysis, self.result)
+
+    def __str__(self) -> str:
+        lines = []
+        inspect_cpp_obj(lines, self.analysis, depth=0)
+        inspect_cpp_obj(lines, self.result, depth=0)
+        return "\n".join(lines)
 
 
 class ContinuousModelResult(BaseModel):
@@ -213,16 +230,16 @@ class ContinuousModelResult(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        summary = model.structs.summary
         result = model.structs.result
-        arr = result.np_bmd_dist.reshape(2, result.dist_numE)
+        summary = result.bmdsRes
+        arr = np.array(result.bmd_dist, dtype=float).reshape(2, constants.N_BMD_DIST)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
         return ContinuousModelResult(
             dist=result.dist,
             loglikelihood=result.max,
-            aic=summary.aic,
+            aic=summary.AIC,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
@@ -257,12 +274,12 @@ class ContinuousParameters(BaseModel):
     @classmethod
     def from_model(cls, model) -> Self:
         result = model.structs.result
-        summary = model.structs.summary
+        summary = result.bmdsRes
         param_names = model.get_param_names()
         priors = cls.get_priors(model)
 
-        cov_n = result.initial_n
-        cov = result.np_cov.reshape(result.initial_n, result.initial_n)
+        cov_n = result.nparms
+        cov = np.array(result.cov).reshape(cov_n, cov_n)
         slice = None
 
         # DLL deletes the c parameter and shifts items down; correct in outputs here
@@ -276,20 +293,16 @@ class ContinuousParameters(BaseModel):
             priors[c_index:-1] = priors[c_index + 1 :]
             priors = priors[:-1].T
 
-            # reshape covariance
-            cov_n = result.initial_n - 1
-            cov = result.np_cov[: cov_n * cov_n].reshape(cov_n, cov_n)
-
-            # change slice for other variables
+            # remove final element for some params (stdErr, lowerConf, upperConf)
             slice = -1
 
         return cls(
             names=param_names,
-            values=result.np_parms[:slice],
-            bounded=summary.np_bounded[:slice],
-            se=summary.np_stdErr[:slice],
-            lower_ci=summary.np_lowerConf[:slice],
-            upper_ci=summary.np_upperConf[:slice],
+            values=result.parms,
+            bounded=summary.bounded,
+            se=summary.stdErr[:slice],
+            lower_ci=summary.lowerConf[:slice],
+            upper_ci=summary.upperConf[:slice],
             cov=cov,
             prior_type=priors[0],
             prior_initial_value=priors[1],
@@ -371,24 +384,25 @@ class ContinuousGof(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        gof = model.structs.gof
+        gof = model.structs.result.gof
+        summary = model.structs.result.bmdsRes
         # only keep indexes where the num ob obsMean + obsSD == 0;
         # needed for continuous individual datasets where individual items are collapsed into groups
-        mask = np.flatnonzero(np.vstack([gof.np_obsMean, gof.np_obsSD]).sum(axis=0))
+        mask = np.flatnonzero(np.vstack([gof.obsMean, gof.obsSD]).sum(axis=0))
         return ContinuousGof(
-            dose=gof.np_dose[mask],
-            size=gof.np_size[mask],
-            est_mean=gof.np_estMean[mask],
-            calc_mean=gof.np_calcMean[mask],
-            obs_mean=gof.np_obsMean[mask],
-            est_sd=gof.np_estSD[mask],
-            calc_sd=gof.np_calcSD[mask],
-            obs_sd=gof.np_obsSD[mask],
-            residual=gof.np_res[mask],
-            eb_lower=gof.np_ebLower[mask],
-            eb_upper=gof.np_ebUpper[mask],
+            dose=np.array(gof.dose)[mask],
+            size=np.array(gof.size)[mask],
+            est_mean=np.array(gof.estMean)[mask],
+            calc_mean=np.array(gof.calcMean)[mask],
+            obs_mean=np.array(gof.obsMean)[mask],
+            est_sd=np.array(gof.estSD)[mask],
+            calc_sd=np.array(gof.calcSD)[mask],
+            obs_sd=np.array(gof.obsSD)[mask],
+            residual=np.array(gof.res)[mask],
+            eb_lower=np.array(gof.ebLower)[mask],
+            eb_upper=np.array(gof.ebUpper)[mask],
             roi=residual_of_interest(
-                model.structs.summary.bmd, model.dataset.doses, gof.np_res[mask].tolist()
+                summary.BMD, model.dataset.doses, np.array(gof.res)[mask].tolist()
             ),
         )
 
@@ -443,12 +457,12 @@ class ContinuousDeviance(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        aod = model.structs.aod
+        aod = model.structs.result.aod
         return cls(
             names=["A1", "A2", "A3", "fitted", "reduced"],
-            loglikelihoods=aod.np_LL.tolist(),
-            num_params=aod.np_nParms.tolist(),
-            aics=aod.np_AIC.tolist(),
+            loglikelihoods=aod.LL,
+            num_params=aod.nParms,
+            aics=aod.AIC,
         )
 
     def tbl(self) -> str:
@@ -469,12 +483,12 @@ class ContinuousTests(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        tests = model.structs.aod.toi_struct
+        tests = model.structs.result.aod.TOI
         return cls(
             names=["Test 1", "Test 2", "Test 3", "Test 4"],
-            ll_ratios=tests.np_llRatio.tolist(),
-            dfs=tests.np_DF.tolist(),
-            p_values=tests.np_pVal.tolist(),
+            ll_ratios=tests.llRatio,
+            dfs=tests.DF,
+            p_values=tests.pVal,
         )
 
     def tbl(self) -> str:
@@ -496,8 +510,8 @@ class ContinuousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> Self:
-        summary = model.structs.summary
-        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
+        summary = model.structs.result.bmdsRes
+        xs = np.array([summary.BMDL, summary.BMD, summary.BMDU])
         dr_x = model.dataset.dose_linspace
         dr_y = clean_array(model.dr_curve(dr_x, params))
         critical_ys = clean_array(model.dr_curve(xs, params))
@@ -561,12 +575,12 @@ class ContinuousResult(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        summary = model.structs.summary
+        summary = model.structs.result.bmdsRes
         params = ContinuousParameters.from_model(model)
         return cls(
-            bmdl=summary.bmdl,
-            bmd=summary.bmd,
-            bmdu=summary.bmdu,
+            bmdl=summary.BMDL,
+            bmd=summary.BMD,
+            bmdu=summary.BMDU,
             has_completed=summary.validResult,
             fit=ContinuousModelResult.from_model(model),
             gof=ContinuousGof.from_model(model),

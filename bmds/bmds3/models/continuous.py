@@ -1,8 +1,7 @@
-import ctypes
-
 import numpy as np
 
 from ...datasets import ContinuousDatasets
+from ...exceptions import ConfigurationException
 from ..constants import (
     ContinuousModel,
     ContinuousModelChoices,
@@ -64,22 +63,11 @@ class BmdModelContinuous(BmdModel):
             degree=self.settings.degree,
         )
 
-    def execute(self):
+    def execute(self) -> ContinuousResult:
         inputs = self._build_inputs()
-        structs = inputs.to_c()
+        structs = inputs.to_cpp()
         self.structs = structs
-
-        # run the analysis
-        dll = self.get_dll()
-        dll.runBMDSContAnalysis(
-            ctypes.pointer(structs.analysis),
-            ctypes.pointer(structs.result),
-            ctypes.pointer(structs.summary),
-            ctypes.pointer(structs.aod),
-            ctypes.pointer(structs.gof),
-            ctypes.pointer(ctypes.c_bool(False)),
-            ctypes.pointer(ctypes.c_bool(False)),
-        )
+        self.structs.execute()
         self.results = ContinuousResult.from_model(self)
         return self.results
 
@@ -137,6 +125,9 @@ class Power(BmdModelContinuous):
     ) -> ContinuousModelSettings:
         model_settings = super().get_model_settings(dataset, settings)
 
+        if model_settings.disttype == DistType.log_normal:
+            raise ConfigurationException("Power model cannot run with lognormal distribution")
+
         if model_settings.priors.prior_class in [
             PriorClass.frequentist_unrestricted,
             PriorClass.frequentist_restricted,
@@ -165,6 +156,16 @@ class Hill(BmdModelContinuous):
         n = params[3]
         return g + v * doses**n / (k**n + doses**n)
 
+    def get_model_settings(
+        self, dataset: ContinuousDatasets, settings: InputModelSettings
+    ) -> ContinuousModelSettings:
+        model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.disttype == DistType.log_normal:
+            raise ConfigurationException("Hill model cannot run with lognormal distribution")
+
+        return model_settings
+
 
 class Polynomial(BmdModelContinuous):
     bmd_model_class = ContinuousModelChoices.c_polynomial.value
@@ -177,6 +178,9 @@ class Polynomial(BmdModelContinuous):
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.disttype == DistType.log_normal:
+            raise ConfigurationException("Polynomial model cannot run with lognormal distribution")
 
         if model_settings.degree < 1:
             model_settings.degree = self.get_default_model_degree(dataset)
@@ -236,8 +240,12 @@ class Linear(Polynomial):
         self, dataset: ContinuousDatasets, settings: InputModelSettings
     ) -> ContinuousModelSettings:
         model_settings = super().get_model_settings(dataset, settings)
+
+        if model_settings.disttype == DistType.log_normal:
+            raise ConfigurationException("Linear model cannot run with lognormal distribution")
+
         if model_settings.degree != 1:
-            raise ValueError("Linear model must have degree of 1")
+            raise ConfigurationException("Linear model must have degree of 1")
 
         return model_settings
 

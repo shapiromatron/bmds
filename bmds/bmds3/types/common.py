@@ -1,7 +1,9 @@
+import inspect
 from typing import Any
 
 import numpy as np
 
+from ... import bmdscore
 from ..constants import BMDS_BLANK_VALUE
 
 
@@ -59,3 +61,30 @@ class NumpyFloatArray(PydanticNumpyArray):
             return np.asarray(v, dtype="float")
         except TypeError:
             raise ValueError("invalid np.ndarray format")
+
+
+def inspect_cpp_obj(lines: list[str], obj: Any, depth: int):
+    """Recursively inspect a C++ object.
+
+    Append attributes to the a list of strings, which can be
+    transformed into a string representation of the object.
+
+    Args:
+        lines (list[str]): a list of strings to append to
+        obj (Any): the object to inspect
+        depth (int): current depth of recursion
+    """
+    indent = "  " * depth + "- "
+    lines.append(f"{indent}{obj.__class__.__name__}")
+    depth += 1
+    indent = "  " * depth + "- "
+    for attr, value in inspect.getmembers(obj):
+        if attr.startswith("__"):
+            continue
+        elif "bmdscore" in value.__class__.__module__:
+            if isinstance(value, bmdscore.cont_model):
+                lines.append(f"{indent}{attr}: {value}")
+            else:
+                inspect_cpp_obj(lines, value, depth)
+        else:
+            lines.append(f"{indent}{attr}: {value}")

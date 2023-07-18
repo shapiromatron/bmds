@@ -1,24 +1,23 @@
-import ctypes
 from enum import IntEnum
-from typing import Self
+from typing import NamedTuple, Self
 
 import numpy as np
 from pydantic import BaseModel, confloat, conint
+
+from bmds import bmdscore
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 from .. import constants
-from .common import NumpyFloatArray, NumpyIntArray, clean_array, residual_of_interest
-from .priors import ModelPriors, PriorClass, PriorType
-from .structs import (
-    BmdsResultsStruct,
-    DichotomousAnalysisStruct,
-    DichotomousAodStruct,
-    DichotomousModelResultStruct,
-    DichotomousPgofResultStruct,
-    DichotomousStructs,
+from .common import (
+    NumpyFloatArray,
+    NumpyIntArray,
+    clean_array,
+    inspect_cpp_obj,
+    residual_of_interest,
 )
+from .priors import ModelPriors, PriorClass, PriorType
 
 
 class DichotomousRiskType(IntEnum):
@@ -39,7 +38,7 @@ class DichotomousModelSettings(BaseModel):
     degree: conint(ge=0, le=8) = 0  # multistage only
     samples: conint(ge=10, le=1000) = 100
     burnin: conint(ge=5, le=1000) = 20
-    priors: PriorClass | ModelPriors | None  # if None; default used
+    priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property
     def bmr_text(self) -> str:
@@ -117,31 +116,46 @@ class DichotomousAnalysis(BaseModel):
         )
         return self.priors.to_c(degree=degree)
 
-    def to_c(self) -> DichotomousStructs:
-        return DichotomousStructs(
-            analysis=DichotomousAnalysisStruct(
-                model=ctypes.c_int(self.model.id),
-                n=ctypes.c_int(self.dataset.num_dose_groups),
-                Y=self.dataset.incidences,
-                doses=self.dataset.doses,
-                n_group=self.dataset.ns,
-                prior=self._priors_array(),
-                BMD_type=ctypes.c_int(self.BMD_type),
-                BMR=ctypes.c_double(self.BMR),
-                alpha=ctypes.c_double(self.alpha),
-                degree=ctypes.c_int(self.degree),
-                samples=ctypes.c_int(self.samples),
-                burnin=ctypes.c_int(self.burnin),
-                parms=ctypes.c_int(self.num_params),
-                prior_cols=ctypes.c_int(constants.NUM_PRIOR_COLS),
-            ),
-            result=DichotomousModelResultStruct(
-                model=self.model.id, nparms=self.num_params, dist_numE=constants.N_BMD_DIST
-            ),
-            gof=DichotomousPgofResultStruct(n=self.dataset.num_dose_groups),
-            summary=BmdsResultsStruct(num_params=self.num_params),
-            aod=DichotomousAodStruct(),
-        )
+    def to_cpp(self):
+        analysis = bmdscore.python_dichotomous_analysis()
+        analysis.model = self.model.id
+        analysis.n = self.dataset.num_dose_groups
+        analysis.Y = self.dataset.incidences
+        analysis.doses = self.dataset.doses
+        analysis.n_group = self.dataset.ns
+        analysis.prior = self._priors_array()
+        analysis.BMD_type = self.BMD_type
+        analysis.BMR = self.BMR
+        analysis.alpha = self.alpha
+        analysis.degree = self.degree
+        analysis.samples = self.samples
+        analysis.burnin = self.burnin
+        analysis.parms = self.num_params
+        analysis.prior_cols = constants.NUM_PRIOR_COLS
+
+        result = bmdscore.python_dichotomous_model_result()
+        result.model = analysis.model
+        result.dist_numE = 200
+        result.nparms = analysis.parms
+        result.gof = bmdscore.dichotomous_GOF()
+        result.bmdsRes = bmdscore.BMDS_results()
+        result.aod = bmdscore.dicho_AOD()
+
+        return DichotomousAnalysisCPPStructs(analysis, result)
+
+
+class DichotomousAnalysisCPPStructs(NamedTuple):
+    analysis: bmdscore.python_dichotomous_analysis
+    result: bmdscore.python_dichotomous_model_result
+
+    def execute(self):
+        bmdscore.pythonBMDSDicho(self.analysis, self.result)
+
+    def __str__(self) -> str:
+        lines = []
+        inspect_cpp_obj(lines, self.analysis, depth=0)
+        inspect_cpp_obj(lines, self.result, depth=0)
+        return "\n".join(lines)
 
 
 class DichotomousModelResult(BaseModel):
@@ -156,15 +170,15 @@ class DichotomousModelResult(BaseModel):
     @classmethod
     def from_model(cls, model) -> Self:
         result = model.structs.result
-        summary = model.structs.summary
+        summary = result.bmdsRes
         # reshape; get rid of 0 and inf; must be JSON serializable
-        arr = result.np_bmd_dist.reshape(2, result.dist_numE)
+        arr = np.array(result.bmd_dist).reshape(2, result.dist_numE)
         arr = arr[:, np.isfinite(arr[0, :])]
         arr = arr[:, arr[0, :] > 0]
 
         return DichotomousModelResult(
             loglikelihood=result.max,
-            aic=summary.aic,
+            aic=summary.AIC,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
             model_df=result.model_df,
@@ -189,13 +203,15 @@ class DichotomousPgofResult(BaseModel):
 
     @classmethod
     def from_model(cls, model):
-        gof = model.structs.gof
-        roi = residual_of_interest(model.structs.summary.bmd, model.dataset.doses, gof.residual)
+        result = model.structs.result
+        gof = result.gof
+        summary = result.bmdsRes
+        roi = residual_of_interest(summary.BMD, model.dataset.doses, gof.residual)
         return cls(
-            expected=gof.np_expected.tolist(),
-            residual=gof.np_residual.tolist(),
-            eb_lower=gof.np_ebLower.tolist(),
-            eb_upper=gof.np_ebUpper.tolist(),
+            expected=gof.expected,
+            residual=gof.residual,
+            eb_lower=gof.ebLower,
+            eb_upper=gof.ebUpper,
             test_statistic=gof.test_statistic,
             p_value=gof.p_value,
             roi=roi,
@@ -241,17 +257,17 @@ class DichotomousParameters(BaseModel):
     @classmethod
     def from_model(cls, model) -> Self:
         result = model.structs.result
-        summary = model.structs.summary
+        summary = result.bmdsRes
         param_names = model.get_param_names()
         priors = cls.get_priors(model)
         return cls(
             names=param_names,
-            values=result.np_parms,
-            bounded=summary.np_bounded,
-            se=summary.np_stdErr,
-            lower_ci=summary.np_lowerConf,
-            upper_ci=summary.np_upperConf,
-            cov=result.np_cov.reshape(result.nparms, result.nparms),
+            values=result.parms,
+            bounded=summary.bounded,
+            se=summary.stdErr,
+            lower_ci=summary.lowerConf,
+            upper_ci=summary.upperConf,
+            cov=np.array(result.cov).reshape(result.nparms, result.nparms),
             prior_type=priors[0],
             prior_initial_value=priors[1],
             prior_stdev=priors[2],
@@ -266,13 +282,14 @@ class DichotomousParameters(BaseModel):
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
         data = []
+        n_models = len(self.names)
         for name, value, bounded, se, lower_ci, upper_ci in zip(
             self.names,
             self.values,
             self.bounded,
-            self.se,
-            self.lower_ci,
-            self.upper_ci,
+            self.se[:n_models],  # TODO - shouldn't need to resize these?
+            self.lower_ci[:n_models],
+            self.upper_ci[:n_models],
             strict=True,
         ):
             data.append(
@@ -321,7 +338,7 @@ class DichotomousAnalysisOfDeviance(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        aod = model.structs.aod
+        aod = model.structs.result.aod
         return cls(
             names=["Full model", "Fitted model", "Reduced model"],
             ll=[aod.fullLL, aod.fittedLL, aod.redLL],
@@ -358,8 +375,9 @@ class DichotomousPlotting(BaseModel):
 
     @classmethod
     def from_model(cls, model, params) -> Self:
-        summary = model.structs.summary
-        xs = np.array([summary.bmdl, summary.bmd, summary.bmdu])
+        result = model.structs.result
+        summary = result.bmdsRes
+        xs = np.array([summary.BMDL, summary.BMD, summary.BMDU])
         dr_x = model.dataset.dose_linspace
         dr_y = clean_array(model.dr_curve(dr_x, params))
         critical_ys = clean_array(model.dr_curve(xs, params))
@@ -390,16 +408,17 @@ class DichotomousResult(BaseModel):
 
     @classmethod
     def from_model(cls, model) -> Self:
-        summary = model.structs.summary
+        result = model.structs.result
+        summary = result.bmdsRes
         fit = DichotomousModelResult.from_model(model)
         gof = DichotomousPgofResult.from_model(model)
         parameters = DichotomousParameters.from_model(model)
         deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
-            bmdl=summary.bmdl,
-            bmd=summary.bmd,
-            bmdu=summary.bmdu,
+            bmdl=summary.BMDL,
+            bmd=summary.BMD,
+            bmdu=summary.BMDU,
             has_completed=summary.validResult,
             fit=fit,
             gof=gof,
