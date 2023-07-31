@@ -5,7 +5,8 @@ from bmds.bmds2.sessions import BMDS_v270 as BMDS270Session
 from bmds.bmds3.sessions import BmdsSession as BMDS330Session
 from bmds.constants import Version
 
-from . import constants, db
+from . import db
+from .attributes import ScalarAttribute
 
 BmdsSession = BMDS270Session | BMDS330Session
 
@@ -30,7 +31,7 @@ class TblSession(SQLModel, table=True):
     @classmethod
     def from_bmds(cls, session: BmdsSession, attrs: list[str] = None) -> "TblSession":
         if attrs is None:
-            attrs = [attr for attr in constants.ScalarAttribute]
+            attrs = [attr for attr in ScalarAttribute]
         tbl_session = cls(
             value=session,
             bmds_version=session._bmds_version,
@@ -102,12 +103,12 @@ class TblModelResultScalar(SQLModel, table=True):
     model_id: int = Field(foreign_key="tblmodel.id")
     model: TblModel = Relationship(back_populates="scalar_results")
 
-    attribute: constants.ScalarAttribute
+    attribute: ScalarAttribute
     value: float
 
     @classmethod
     def from_model(
-        cls, model: TblModel, attrs: list[constants.ScalarAttribute]
+        cls, model: TblModel, attrs: list[ScalarAttribute]
     ) -> list["TblModelResultScalar"]:
         bmds_version = model.session.bmds_version
         objs = []

@@ -1,23 +1,18 @@
 from enum import StrEnum
 
-from bmds import constants
-from bmds.bmds2.models.base import BMDModel as BmdModel2
-from bmds.bmds3.models.base import BmdModel as BmdModel3
-
-BmdModel = BmdModel2 | BmdModel3
+from .base import BaseAttribute, BmdModel, Version
 
 
-class ScalarAttribute(StrEnum):
-    # TODO: rename to ScalarAttribute, find better pattern?
+class Attribute(BaseAttribute):
     BMD = "bmd"
     BMDL = "bmdl"
     BMDU = "bmdu"
     AIC = "aic"
 
-    def get_value(self, model: BmdModel, version: constants.Version) -> float:
-        if version == constants.BMDS270:
+    def get_value(self, model: BmdModel, version: Version) -> float:
+        if version == Version.BMDS270:
             return BMDS270Attribute(self).get_value(model)
-        if version == constants.BMDS330:
+        if version == Version.BMDS330:
             return BMDS330Attribute(self).get_value(model)
         raise ValueError(f'Invalid BMDS version "{version}".')
 
