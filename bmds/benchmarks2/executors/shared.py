@@ -35,5 +35,3 @@ def multiprocess(jobs: list, run: Callable) -> list:
             for future in futures:
                 results.append(future.result())
     return results
-
-

@@ -6,6 +6,7 @@ from .config import Config
 
 _engine = create_engine(Config.DB_URI)
 
+
 @contextmanager
 def SQLSession():
     session = Session(_engine)
@@ -13,4 +14,3 @@ def SQLSession():
         yield session
     finally:
         session.close()
-
