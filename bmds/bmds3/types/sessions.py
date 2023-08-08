@@ -15,6 +15,7 @@ class VersionSchema(BaseModel):
 
 
 class SessionSchemaBase(BaseModel):
+    id: int | str | None
     version: VersionSchema
     dataset: DatasetSchemaBase
     models: list[BmdModelSchema]

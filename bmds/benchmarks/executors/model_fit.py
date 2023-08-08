@@ -8,6 +8,7 @@ from .shared import multiprocess
 
 
 class BmdsSessionWrapper:
+    # TODO - wrapper shouldn't modify session object
     def __init__(self, bmds_version: Version, dataset, session_name: str = ""):
         if bmds_version == Version.BMDS270:
             self.session = BmdsSession2(dataset.dtype, dataset)
@@ -19,22 +20,15 @@ class BmdsSessionWrapper:
         self.session._os = platform.system()
         self.session._session_name = session_name
 
-    def default_model_names(self) -> list[str]:
-        return self.session.model_options[self.dtype].keys()
-
-    def add_model(self, model_name: str, settings=None, settings_name: str = ""):
+    def add_model(self, model_name: str, settings=dict):
+        # TODO - remove settings name; add to settings
         self.session.add_model(model_name, settings)
         # set attributes on model
         model = self.session.models[-1]
         model._model_name = model_name
-        model._settings_name = settings_name
 
     def execute_and_recommend(self) -> "BmdsSessionWrapper":
         self.session.execute_and_recommend()
-        # can't pickle ctypes
-        if self.session._bmds_version == Version.BMDS330:
-            for model in self.session.models:
-                model.structs = None
         return self
 
     def add_models(self, model_names: list[str], settings=None, settings_name: str = ""):

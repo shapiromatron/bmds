@@ -45,6 +45,7 @@ _bmr_text_map = {
 
 
 class ContinuousModelSettings(BaseModel):
+    id: int | str | None
     bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
     is_increasing: bool | None  # if None; autodetect used
     bmr: float = 1.0

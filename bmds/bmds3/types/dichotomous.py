@@ -33,6 +33,7 @@ _bmr_text_map = {
 
 
 class DichotomousModelSettings(BaseModel):
+    id: int | str | None
     bmr: confloat(gt=0) = 0.1
     alpha: confloat(gt=0, lt=1) = 0.05
     bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk

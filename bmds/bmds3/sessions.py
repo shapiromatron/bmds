@@ -36,6 +36,7 @@ class BmdsSession:
     should be able to be serialized and deserialized.
     """
 
+    id: str | int | None
     version_str: str
     version_pretty: str
     version_tuple: tuple[int, ...]
@@ -45,7 +46,9 @@ class BmdsSession:
         self,
         dataset: DatasetType,
         recommendation_settings: RecommenderSettings | None = None,
+        id: str | int | None = None,
     ):
+        self.id = id
         self.dataset = dataset
         self.models: list[BmdModel] = []
         self.ma_weights: npt.NDArray | None = None
@@ -356,6 +359,7 @@ class Bmds330(BmdsSession):
 
     def serialize(self) -> Bmds330Schema:
         schema = Bmds330Schema(
+            id=self.id,
             version=dict(
                 string=self.version_str,
                 pretty=self.version_pretty,

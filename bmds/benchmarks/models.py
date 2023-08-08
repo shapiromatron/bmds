@@ -1,23 +1,26 @@
-import pandas as pd
-from sqlmodel import Column, Field, PickleType, Relationship, SQLModel
+from datetime import datetime
 
-from ..bmds2.sessions import BMDS_v270 as BMDS270Session
+import pandas as pd
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+
+from ..bmds2.sessions import BMDS as BMDS2Session
 from ..bmds3.sessions import BmdsSession as BMDS330Session
 from ..constants import Version
 from . import db
 from .attributes import ScalarAttribute
 
-BmdsSession = BMDS270Session | BMDS330Session
+BmdsSession = BMDS2Session | BMDS330Session
 
 
 class TblSession(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    value: BmdsSession = Field(sa_column=Column(PickleType))
+    value: dict = Field(sa_column=Column(JSON), default_factory=dict)
     bmds_version: Version
     os: str
     session_name: str
     dataset_name: str
     dtype: str
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
     models: list["TblModel"] = Relationship(back_populates="session")
 
@@ -25,11 +28,11 @@ class TblSession(SQLModel, table=True):
         arbitrary_types_allowed = True
 
     @classmethod
-    def from_bmds(cls, session: BmdsSession, attrs: list[str] = None) -> "TblSession":
+    def from_bmds(cls, session: BmdsSession, attrs: list[str] | None = None) -> "TblSession":
         if attrs is None:
             attrs = [attr for attr in ScalarAttribute]
         tbl_session = cls(
-            value=session,
+            value=session.to_dict(),
             bmds_version=session._bmds_version,
             os=session._os,
             session_name=session._session_name,
@@ -41,7 +44,7 @@ class TblSession(SQLModel, table=True):
         return tbl_session
 
     @classmethod
-    def get_df(cls, objs: "TblSession", follow: bool = True):
+    def get_df(cls, objs: "TblSession", follow: bool = True) -> pd.DataFrame:
         records = [
             obj.dict(include={"id", "bmds_version", "os", "dataset_name", "dtype"}) for obj in objs
         ]
@@ -93,12 +96,9 @@ class TblModel(SQLModel, table=True):
 
 
 class TblModelResultScalar(SQLModel, table=True):
-    # TODO make a superclass for result? and add "attribute", "value", and class methods
     id: int | None = Field(default=None, primary_key=True)
-
     model_id: int = Field(foreign_key="tblmodel.id")
     model: TblModel = Relationship(back_populates="scalar_results")
-
     attribute: ScalarAttribute
     value: float
 
