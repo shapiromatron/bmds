@@ -197,7 +197,7 @@ class Plotting(BaseModel):
 
 class NestedDichotomousResult(BaseModel):
     ll: float
-    srs: list[float]  # TODO rename?
+    scaled_residuals: list[float]
     bmd: BmdResult
     bootstrap: BootstrapResult
     combined_pvalue: float
@@ -219,7 +219,7 @@ class NestedDichotomousResult(BaseModel):
         result: bmdscore.python_nested_result = model.structs.result
         return cls(
             ll=result.LL,
-            srs=result.SRs,
+            scaled_residuals=result.SRs,
             bmd=BmdResult.from_model(result.bmdsRes),
             bootstrap=BootstrapResult.from_model(result.boot),
             combined_pvalue=result.combPVal,
