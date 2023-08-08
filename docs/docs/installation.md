@@ -21,7 +21,7 @@ python -m venv venv
 source venv/bin/activate
 
 # install package in developer mode and developer tools
-pip install -r requirements_dev.txt
+python -m pip install -e ".[dev]"
 ```
 
 Tests are written using [pytest](http://doc.pytest.org/en/latest/). To run all tests:

@@ -2,7 +2,6 @@ recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
 recursive-include bmds *.csv *.docx *.json *.txt
-recursive-include bmds/benchmarks/datasets/data *.zip
 
 # comment/uncomment lines below depending on OS environment
 # By default, all files are included but we can build smaller wheels

@@ -16,7 +16,6 @@ nav:
   - Overview: index.md
   - installation.md
   - logic.md
-  - benchmarks.md
   - history.md
 markdown_extensions:
   - pymdownx.highlight:

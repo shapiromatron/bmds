@@ -1,123 +1,48 @@
-from ... import constants
-from ...bmds2.models import continuous as c2
-from ...bmds2.models import dichotomous as d2
-from ...bmds3.constants import BMDS_BLANK_VALUE
-from ...bmds3.models import continuous as c3
-from ...bmds3.models import dichotomous as d3
-from ..models import ModelResult
-from .shared import nan_to_default
+import platform
+
+from bmds.bmds2.sessions import BMDS_v270 as BmdsSession2
+from bmds.bmds3.sessions import Bmds330 as BmdsSession3
+from bmds.constants import Version
+
+from .shared import multiprocess
 
 
-def build_jobs(datasets, version: constants.Version, dtype: constants.Dtype) -> list:
-    check = (version, dtype)
-    if check == (constants.Version.BMDS270, constants.Dtype.CONTINUOUS):
-        models = (
-            c2.Power_219,
-            c2.Hill_218,
-            c2.Polynomial_221,
-            c2.Exponential_M3_111,
-            c2.Exponential_M5_111,
-        )
-    elif check == (constants.Version.BMDS270, constants.Dtype.DICHOTOMOUS):
-        models = (
-            d2.DichotomousHill_13,
-            d2.Gamma_217,
-            d2.Logistic_215,
-            d2.LogLogistic_215,
-            d2.LogProbit_34,
-            d2.Probit_34,
-            d2.Weibull_217,
-        )
-    elif check == (constants.Version.BMDS330, constants.Dtype.CONTINUOUS):
-        models = (
-            c3.Power,
-            c3.Hill,
-            c3.Polynomial,
-            c3.ExponentialM3,
-            c3.ExponentialM5,
-        )
-    elif check == (constants.Version.BMDS330, constants.Dtype.DICHOTOMOUS):
-        models = (
-            d3.DichotomousHill,
-            # d3.Gamma,
-            d3.Logistic,
-            d3.LogLogistic,
-            d3.LogProbit,
-            d3.Probit,
-            d3.Weibull,
-        )
-    else:
-        raise ValueError(f"Unknown state: {check}")
+class BmdsSessionWrapper:
+    def __init__(self, bmds_version: Version, dataset, session_name: str = ""):
+        if bmds_version == Version.BMDS270:
+            self.session = BmdsSession2(dataset.dtype, dataset)
+        elif bmds_version == Version.BMDS330:
+            self.session = BmdsSession3(dataset)
+        else:
+            raise ValueError()
+        self.session._bmds_version = bmds_version
+        self.session._os = platform.system()
+        self.session._session_name = session_name
 
-    jobs = []
-    for dataset in datasets:
-        for model in models:
-            jobs.append(model(dataset))
+    def default_model_names(self) -> list[str]:
+        return self.session.model_options[self.dtype].keys()
 
-    return jobs
+    def add_model(self, model_name: str, settings=None, settings_name: str = ""):
+        self.session.add_model(model_name, settings)
+        # set attributes on model
+        model = self.session.models[-1]
+        model._model_name = model_name
+        model._settings_name = settings_name
 
+    def execute_and_recommend(self) -> "BmdsSessionWrapper":
+        self.session.execute_and_recommend()
+        # can't pickle ctypes
+        if self.session._bmds_version == Version.BMDS330:
+            for model in self.session.models:
+                model.structs = None
+        return self
 
-def _execute_fit_270(model) -> ModelResult:
-    model.execute()
-    if not model.has_successfully_executed:
-        return ModelResult(
-            bmds_version=model.bmds_version_dir,
-            model=model.name,
-            dataset_id=model.dataset.metadata.id,
-            completed=False,
-            inputs=model.get_default(),
-            outputs=None,
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
-        )
+    def add_models(self, model_names: list[str], settings=None, settings_name: str = ""):
+        for model_name in model_names:
+            self.add_model(model_name, settings, settings_name)
 
-    return ModelResult(
-        bmds_version=model.bmds_version_dir,
-        model=model.name,
-        dataset_id=model.dataset.metadata.id,
-        completed=True,
-        inputs=model.get_default(),
-        outputs=model.output,
-        bmd=nan_to_default(model.output["BMD"]),
-        bmdl=nan_to_default(model.output["BMDL"]),
-        bmdu=nan_to_default(model.output["BMDU"]),
-        aic=nan_to_default(model.output["AIC"]),
-    )
-
-
-def _execute_fit_330(model) -> ModelResult:
-    model.execute()
-    if not model.has_results:
-        return ModelResult(
-            bmds_version=model.model_version,
-            model=model.name(),
-            dataset_id=model.dataset.metadata.id,
-            completed=False,
-            inputs=model.settings.dict(),
-            outputs=None,
-            bmd=BMDS_BLANK_VALUE,
-            bmdl=BMDS_BLANK_VALUE,
-            bmdu=BMDS_BLANK_VALUE,
-            aic=BMDS_BLANK_VALUE,
-        )
-
-    return ModelResult(
-        bmds_version=model.model_version,
-        model=model.name(),
-        dataset_id=model.dataset.metadata.id,
-        completed=True,
-        inputs=model.settings.dict(),
-        outputs=model.results.dict(),
-        bmd=model.results.bmd,
-        bmdl=model.results.bmdl,
-        bmdu=model.results.bmdu,
-        aic=model.results.fit.aic,
-    )
-
-
-executor = {
-    constants.Version.BMDS270: _execute_fit_270,
-    constants.Version.BMDS330: _execute_fit_330,
-}
+    @classmethod
+    def bulk_execute_and_recommend(
+        cls, session_wrappers: list["BmdsSessionWrapper"]
+    ) -> list["BmdsSessionWrapper"]:
+        return multiprocess(session_wrappers, cls.execute_and_recommend)

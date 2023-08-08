@@ -6,8 +6,6 @@ import numpy as np
 from tqdm.auto import tqdm
 
 from ...bmds3.constants import BMDS_BLANK_VALUE
-from ..db import transaction
-from ..models import ModelResult
 
 
 def nan_to_default(val) -> float:
@@ -25,7 +23,7 @@ def multiprocess(jobs: list, run: Callable) -> list:
     Returns:
         list: A list of results
     """
-    nprocs = max(os.cpu_count() - 1, 1)
+    nprocs = max((os.cpu_count() or 2) - 1, 1)
     results = []
     with ProcessPoolExecutor(max_workers=nprocs) as executor:
         with tqdm(jobs, leave=False) as progress:
@@ -37,10 +35,3 @@ def multiprocess(jobs: list, run: Callable) -> list:
             for future in futures:
                 results.append(future.result())
     return results
-
-
-def bulk_save_models(analysis_key: int, results: list[ModelResult]):
-    for result in results:
-        result.analysis = analysis_key
-    with transaction() as sess:
-        sess.bulk_save_objects(results)

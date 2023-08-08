@@ -1,86 +1,131 @@
-import json
+import pandas as pd
+from sqlmodel import Column, Field, PickleType, Relationship, SQLModel
 
-import numpy as np
-from sqlalchemy import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import Boolean, Float, Integer, Text, TypeDecorator
+from ..bmds2.sessions import BMDS_v270 as BMDS270Session
+from ..bmds3.sessions import BmdsSession as BMDS330Session
+from ..constants import Version
+from . import db
+from .attributes import ScalarAttribute
 
-from .. import datasets
-
-Base = declarative_base()
-
-
-class JSONEncodedDict(TypeDecorator):
-    impl = Text
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = json.dumps(value)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            value = json.loads(value)
-        return value
+BmdsSession = BMDS270Session | BMDS330Session
 
 
-class Dataset(Base):
-    __tablename__ = "datasets"
+class TblSession(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    value: BmdsSession = Field(sa_column=Column(PickleType))
+    bmds_version: Version
+    os: str
+    session_name: str
+    dataset_name: str
+    dtype: str
 
-    id = Column(Integer, primary_key=True, index=True)
+    models: list["TblModel"] = Relationship(back_populates="session")
 
-    dataset = Column(Text, index=True)
-    dataset_id = Column(Text)
-    dataset_metadata = Column(JSONEncodedDict())
+    class Config:
+        arbitrary_types_allowed = True
 
-    dtype = Column(Text)
-    doses = Column(Text)
-    ns = Column(Text)
-    incidences = Column(Text)
-    means = Column(Text)
-    stdevs = Column(Text)
+    @classmethod
+    def from_bmds(cls, session: BmdsSession, attrs: list[str] = None) -> "TblSession":
+        if attrs is None:
+            attrs = [attr for attr in ScalarAttribute]
+        tbl_session = cls(
+            value=session,
+            bmds_version=session._bmds_version,
+            os=session._os,
+            session_name=session._session_name,
+            dataset_name=session.dataset.metadata.name,
+            dtype=session.dataset.dtype,
+        )
+        for tbl_model in TblModel.from_session(tbl_session):
+            TblModelResultScalar.from_model(tbl_model, attrs)
+        return tbl_session
 
-    __table_args__ = (UniqueConstraint(dataset, dataset_id),)
+    @classmethod
+    def get_df(cls, objs: "TblSession", follow: bool = True):
+        records = [
+            obj.dict(include={"id", "bmds_version", "os", "dataset_name", "dtype"}) for obj in objs
+        ]
+        df = pd.DataFrame.from_records(records).rename(columns={"id": "session_id"})
+        return df
 
-    def to_bmds(self):
-        if self.dtype == "D":
-            return datasets.DichotomousDataset(
-                doses=np.array(self.doses.split(","), dtype=np.float64).tolist(),
-                ns=np.array(self.ns.split(","), dtype=np.float64).tolist(),
-                incidences=np.array(self.incidences.split(","), dtype=np.float64).tolist(),
-                id=self.id,
+
+class TblModel(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    session_id: int = Field(foreign_key="tblsession.id")
+    session: TblSession = Relationship(back_populates="models")
+
+    index: int
+
+    model_name: str
+    settings_name: str
+
+    scalar_results: list["TblModelResultScalar"] = Relationship(back_populates="model")
+
+    @property
+    def value(self):
+        return self.session.value.models[self.index]
+
+    @classmethod
+    def from_session(cls, session: TblSession) -> list["TblModel"]:
+        objs = []
+        for index, model in enumerate(session.value.models):
+            obj = cls(
+                session=session,
+                index=index,
+                model_name=model._model_name,
+                settings_name=model._settings_name,
             )
-        elif self.dtype == "C":
-            return datasets.ContinuousDataset(
-                doses=np.array(self.doses.split(","), dtype=np.float64).tolist(),
-                ns=np.array(self.ns.split(","), dtype=np.float64).tolist(),
-                means=np.array(self.means.split(","), dtype=np.float64).tolist(),
-                stdevs=np.array(self.stdevs.split(","), dtype=np.float64).tolist(),
-                id=self.id,
+            objs.append(obj)
+        return objs
+
+    @classmethod
+    def get_df(cls, objs: "TblModel", follow: bool = True):
+        records = [
+            obj.dict(include={"id", "session_id", "model_name", "settings_name"}) for obj in objs
+        ]
+        df = pd.DataFrame.from_records(records).rename(columns={"id": "model_id"})
+        if follow:
+            _objs = {obj.session.id: obj.session for obj in objs}.values()
+            _df = TblSession.get_df(_objs, follow=True)
+            return df.merge(_df, on="session_id")
+        return df
+
+
+class TblModelResultScalar(SQLModel, table=True):
+    # TODO make a superclass for result? and add "attribute", "value", and class methods
+    id: int | None = Field(default=None, primary_key=True)
+
+    model_id: int = Field(foreign_key="tblmodel.id")
+    model: TblModel = Relationship(back_populates="scalar_results")
+
+    attribute: ScalarAttribute
+    value: float
+
+    @classmethod
+    def from_model(
+        cls, model: TblModel, attrs: list[ScalarAttribute]
+    ) -> list["TblModelResultScalar"]:
+        bmds_version = model.session.bmds_version
+        objs = []
+        for attr in attrs:
+            obj = cls(
+                model=model,
+                attribute=attr,
+                value=attr.get_value(model.value, bmds_version),
             )
-        else:
-            raise ValueError(f"Unknown type: {self.dtype}")
+            objs.append(obj)
+        return objs
+
+    @classmethod
+    def get_df(cls, objs: "TblModelResultScalar", follow: bool = True):
+        records = [obj.dict(include={"id", "model_id", "attribute", "value"}) for obj in objs]
+        df = pd.DataFrame.from_records(records).rename(columns={"id": "model_result_scalar_id"})
+        if follow:
+            _objs = {obj.model.id: obj.model for obj in objs}.values()
+            _df = TblModel.get_df(_objs, follow=True)
+            return df.merge(_df, on="model_id")
+        return df
 
 
-class ModelResult(Base):
-    __tablename__ = "model_results"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    analysis = Column(Integer, index=True)
-    bmds_version = Column(Text, index=True)
-    model = Column(Text, index=True)
-    dataset_id = Column(Integer, ForeignKey("datasets.id"), index=True)
-
-    completed = Column(Boolean)
-    inputs = Column(JSONEncodedDict())
-    outputs = Column(JSONEncodedDict())
-    bmd = Column(Float)
-    bmdl = Column(Float)
-    bmdu = Column(Float)
-    aic = Column(Float)
-
-    dataset = relationship("Dataset", backref="model_results")
-
-    __table_args__ = (UniqueConstraint(analysis, bmds_version, model, dataset_id),)
+SQLModel.metadata.create_all(db._engine)
