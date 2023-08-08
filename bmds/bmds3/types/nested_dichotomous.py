@@ -52,37 +52,15 @@ class NestedDichotomousModelSettings(BaseModel):
             ["BMR", self.bmr_text],
             ["Confidence Level", self.confidence_level],
         ]
-
-        # if show_degree:
-        #     data.append(["Degree", self.degree])
-
-        # if self.priors.is_bayesian:
-        #     data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
-
         return pretty_table(data, "")
 
 
 class NestedDichotomousAnalysis(BaseModel):
     """
-    Purpose - Contains all of the information for a nested dichotomous analysis.
+    Contains all of the information for a nested dichotomous analysis.
     """
 
-    # model :
-    # restricted :
-    # doses :
-    # litterSize :
-    # incidence :
-    # lsc :
-    # LSC_type :
-    # ILC_type :
-    # BMD_type :
-    # background :
-    # BMR :
-    # alpha :
-    # iterations :
-    # seed :
-
-    def to_cpp(Self):
+    def to_cpp(self):
         analysis = bmdscore.python_nested_analysis()
         analysis.model = bmdscore.nested_model.nlogistic
         analysis.restricted = True
@@ -98,13 +76,7 @@ class NestedDichotomousAnalysis(BaseModel):
         analysis.alpha = 0.05
         analysis.iterations = 1000
         analysis.seed = -9999
-
         nested_result = bmdscore.python_nested_result()
-        nested_result.bmdsRes = bmdscore.BMDS_results()
-        nested_result.boot = bmdscore.nestedBootstrap()
-        nested_result.litter = bmdscore.nestedLitterData()
-        nested_result.reduced = bmdscore.nestedReducedData()
-
         return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
 
 
@@ -127,79 +99,131 @@ class NestedDichotomousAnalysisCPPStructs(NamedTuple):
         )
 
 
+class BmdResult(BaseModel):
+    aic: float
+    bic_equiv: float
+    bmd: float
+    bmdl: float
+    bmdu: float
+    bounded: list[bool]
+    chi_squared: float
+    lower_ci: list[float]
+    std_err: list[float]
+    upper_ci: list[float]
+    valid_result: bool
+
+    @classmethod
+    def from_model(cls, data: bmdscore.BMDS_results) -> Self:
+        return cls(
+            aic=data.AIC,
+            bic_equiv=data.BIC_equiv,
+            bmd=data.BMD,
+            bmdl=data.BMDL,
+            bmdu=data.BMDU,
+            bounded=data.bounded,
+            chi_squared=data.chisq,
+            lower_ci=data.lowerConf,
+            std_err=data.stdErr,
+            upper_ci=data.upperConf,
+            valid_result=data.validResult,
+        )
+
+
+class BootstrapResult(BaseModel):
+    n_runs: int
+    p_value: list[float]
+    p50: list[float]
+    p90: list[float]
+    p95: list[float]
+    p99: list[float]
+
+    @classmethod
+    def from_model(cls, data: bmdscore.nestedBootstrap) -> Self:
+        return cls(
+            n_runs=data.numRuns,
+            p_value=data.pVal,
+            p50=data.perc50,
+            p90=data.perc90,
+            p95=data.perc95,
+            p99=data.perc99,
+        )
+
+
+class ReducedResult(BaseModel):
+    dose: list[float]
+    lowerConf: list[float]
+    numRows: int
+    propAffect: list[float]
+    upperConf: list[float]
+
+    @classmethod
+    def from_model(cls, data: bmdscore.nestedReducedData) -> Self:
+        return cls(
+            dose=data.dose,
+            lowerConf=data.lowerConf,
+            numRows=data.numRows,
+            propAffect=data.propAffect,
+            upperConf=data.upperConf,
+        )
+
+
+class LitterResult(BaseModel):
+    lsc: list[float]
+    sr: list[float]
+    dose: list[float]
+    estimated_probabilities: list[float]
+    expected: list[float]
+    litter_size: list[float]
+    nrows: int
+    observed: list[int]
+
+    @classmethod
+    def from_model(cls, data: bmdscore.nestedLitterData) -> Self:
+        return cls(
+            lsc=data.LSC,
+            sr=data.SR,
+            dose=data.dose,
+            estimated_probabilities=data.estProb,
+            expected=data.expected,
+            litter_size=data.litterSize,
+            nrows=data.numRows,
+            observed=data.observed,
+        )
+
+
 class NestedDichotomousResult(BaseModel):
-    # model :
-    # nparms :
-    # parms :
-    # cov :
-    # max :
-    # df :
-    # fixedLSC :
-    # LL :
-    # obsChiSq :
-    # combPVal :
-    # SRs :
-    # bmdsRes :
-    # litter :
-    # boot :
-    # reduced :
+    ll: float
+    srs: list[float]  # TODO rename?
+    bmd: BmdResult
+    bootstrap: BootstrapResult
+    combined_pvalue: float
+    cov: list[float]
+    df: float
+    fixed_lsc: float
+    litter: LitterResult
+    max: float
+    # model: nested_model  # TODO remove?
+    nparms: int
+    obs_chi_sq: float
+    parms: list[float]
+    reduced: ReducedResult
 
     @classmethod
     def from_model(cls, model) -> Self:
-        result = model.structs.result
-        summary = result.bmdsRes
-        # fit = NestedDichotomousModelResult.from_model(model)
-        # gof = NestedDichotomousPgofResult.from_model(model)
-        # parameters = NestedDichotomousParameters.from_model(model)
-        # deviance = NestedDichotomousAnalysisOfDeviance.from_model(model)
-        # plotting = NestedDichotomousPlotting.from_model(model, parameters.values)
+        result: bmdscore.python_nested_result = model.structs.result
         return cls(
-            # bmdl=summary.BMDL,
-            bmd=summary.BMD,
-            # bmdu=summary.BMDU,
-            # has_completed=summary.validResult,
-            # fit=fit,
-            # gof=gof,
-            # parameters=parameters,
-            # deviance=deviance,
-            # plotting=plotting,
+            ll=result.LL,
+            srs=result.SRs,
+            bmd=BmdResult.from_model(result.bmdsRes),
+            bootstrap=BootstrapResult.from_model(result.boot),
+            combined_pvalue=result.combPVal,
+            cov=result.cov,
+            df=result.df,
+            fixed_lsc=result.fixedLSC,
+            litter=LitterResult.from_model(result.litter),
+            max=result.max,
+            nparms=result.nparms,
+            obs_chi_sq=result.obsChiSq,
+            parms=result.parms,
+            reduced=ReducedResult.from_model(result.reduced),
         )
-
-    def text(
-        self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings
-    ) -> str:
-        return multi_lstrip(
-            f"""
-        Summary:
-        {self.tbl()}
-        """
-        )
-
-    def tbl(self) -> str:
-        data = [
-            ["BMD", self.bmd],
-            # ["BMDL", self.bmdl],
-            # ["BMDU", self.bmdu],
-            # ["AIC", self.fit.aic],
-            # ["Log Likelihood", self.fit.loglikelihood],
-            # ["P-Value", self.gof.p_value],
-            # ["Overall DOF", self.gof.df],
-            # ["Chi²", self.fit.chisq],
-        ]
-        return pretty_table(data, "")
-
-    # def update_record(self, d: dict) -> None:
-    #     """Update data record for a tabular-friendly export"""
-    #     d.update(
-    #         bmdl=self.bmdl,
-    #         bmd=self.bmd,
-    #         bmdu=self.bmdu,
-    #         aic=self.fit.aic,
-    #         loglikelihood=self.fit.loglikelihood,
-    #         p_value=self.gof.p_value,
-    #         overall_dof=self.gof.df,
-    #         bic_equiv=self.fit.bic_equiv,
-    #         chi_squared=self.fit.chisq,
-    #         residual_of_interest=self.gof.roi,
-    #         residual_at_lowest_dose=self.gof.residual[0],
-    #     )
