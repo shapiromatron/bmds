@@ -87,18 +87,27 @@ class BmdModelNestedDichotomousSchema(BmdModelSchema):
         return model
 
 
-class Logistic(BmdModelNestedDichotomous):
+class NestedLogistic(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        a = params[0]
-        b = params[1]
-        return 1 / (1 + np.exp(-a - b * doses))
+        return np.ones(doses.size)
+
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
+
+
+class Nctr(BmdModelNestedDichotomous):
+    bmd_model_class = NestedDichotomousModelChoices.d_nctr.value
+
+    def dr_curve(self, doses, params) -> np.ndarray:
+        return np.ones(doses.size)
 
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_unrestricted
 
 
 bmd_model_map = {
-    NestedDichotomousModelIds.d_logistic.value: Logistic,
+    NestedDichotomousModelIds.d_nested_logistic.value: NestedLogistic,
+    NestedDichotomousModelIds.d_nctr.value: Nctr,
 }

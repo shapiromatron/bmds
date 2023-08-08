@@ -21,6 +21,7 @@ from .constants import PriorClass
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
+from .models import nested_dichotomous as nd3
 from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
@@ -55,7 +56,9 @@ class BmdsSession:
         self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
+    def add_default_bayesian_models(
+        self, global_settings: dict | None = None, model_average: bool = True
+    ):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -350,6 +353,10 @@ class Bmds330(BmdsSession):
             constants.M_Hill: c3.Hill,
             constants.M_ExponentialM3: c3.ExponentialM3,
             constants.M_ExponentialM5: c3.ExponentialM5,
+        },
+        constants.NESTED_DICHOTOMOUS: {
+            constants.M_NestedLogistic: nd3.NestedLogistic,
+            constants.M_Nctr: nd3.Nctr,
         },
     }
 

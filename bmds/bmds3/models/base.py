@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, NamedTuple, Self
 from pydantic import BaseModel
 
 from ... import plotting
-from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
+from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, NESTED_DICHOTOMOUS, Dtype
 from ...datasets import DatasetType
 from ...utils import multi_lstrip, package_root
 from ..constants import BmdModelSchema as BmdModelClass
@@ -215,11 +215,14 @@ class BmdModelSchema(BaseModel):
     def get_subclass(cls, dtype: Dtype) -> Self:
         from .continuous import BmdModelContinuousSchema
         from .dichotomous import BmdModelDichotomousSchema
+        from .nested_dichotomous import BmdModelNestedDichotomousSchema
 
         if dtype in DICHOTOMOUS_DTYPES:
             return BmdModelDichotomousSchema
         elif dtype in CONTINUOUS_DTYPES:
             return BmdModelContinuousSchema
+        elif dtype == NESTED_DICHOTOMOUS:
+            return BmdModelNestedDichotomousSchema
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
