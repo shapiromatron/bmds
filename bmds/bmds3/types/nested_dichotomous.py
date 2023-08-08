@@ -3,44 +3,48 @@ from textwrap import dedent
 from typing import NamedTuple, Self
 
 import numpy as np
-from pydantic import BaseModel, confloat, conint
+from pydantic import BaseModel, Field
 
-from bmds import bmdscore
-
-from ...utils import pretty_table
-from .. import constants
+from ... import bmdscore, constants
 from .common import NumpyFloatArray, clean_array
 
 
-class NestedDichotomousRiskType(IntEnum):
+class RiskType(IntEnum):
     AddedRisk = 0
     ExtraRisk = 1
 
 
-class NestedDichotomousLSCType(IntEnum):
-    OverallMean = 0
-    ControlGroupMean = 1
+class LitterSpecificCovariate(IntEnum):
+    ControlGroupMean = 0
+    OverallMean = 1
 
 
-class NestedDichotomousBackgroundType(IntEnum):
+class IntralitterCorrelation(IntEnum):
     Zero = 0
-    Estimated = 1
+    Estimate = 1
+
+
+class Background(IntEnum):
+    Zero = 0
+    Estimate = 1
 
 
 _bmr_text_map = {
-    NestedDichotomousRiskType.ExtraRisk: "{:.0%} extra risk",
-    NestedDichotomousRiskType.AddedRisk: "{:.0%} added risk",
+    RiskType.ExtraRisk: "{:.0%} extra risk",
+    RiskType.AddedRisk: "{:.0%} added risk",
 }
 
 
 class NestedDichotomousModelSettings(BaseModel):
-    bmr: confloat(gt=0) = 0.1
-    alpha: confloat(gt=0, lt=1) = 0.05
-    bmr_type: NestedDichotomousRiskType = NestedDichotomousRiskType.ExtraRisk
-    litter_specific_covariate: NestedDichotomousLSCType = NestedDichotomousLSCType.ControlGroupMean
-    background: NestedDichotomousBackgroundType = NestedDichotomousBackgroundType.Estimated
-    bootstrap_iterations: conint(gt=0) = 1
-    bootstrap_seed: conint(ge=0) = 0
+    bmr_type: RiskType = RiskType.ExtraRisk
+    bmr: float = Field(default=0.1, gt=0)
+    alpha: float = Field(default=0.05, gt=0, lt=1)
+    litter_specific_covariate: LitterSpecificCovariate = LitterSpecificCovariate.ControlGroupMean
+    intralitter_correlation: IntralitterCorrelation = IntralitterCorrelation.Estimate
+    background: Background = Background.Estimate
+    restricted: bool = True
+    bootstrap_iterations: int = Field(default=1000, gt=10, lt=10000)
+    bootstrap_seed: int = 0
 
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
@@ -49,42 +53,14 @@ class NestedDichotomousModelSettings(BaseModel):
     def confidence_level(self) -> float:
         return 1 - self.alpha
 
-    def tbl(self, show_degree: bool = True) -> str:
-        data = [
-            ["BMR", self.bmr_text],
-            ["Confidence Level", self.confidence_level],
-        ]
-        return pretty_table(data, "")
 
-
-class NestedDichotomousAnalysis(BaseModel):
-    """
-    Contains all of the information for a nested dichotomous analysis.
-    """
-
-    def to_cpp(self):
-        analysis = bmdscore.python_nested_analysis()
-        analysis.model = bmdscore.nested_model.nlogistic
-        analysis.restricted = True
-        analysis.doses = []  # dont need to still be np array right?
-        analysis.litterSize = []
-        analysis.incidence = []
-        analysis.lsc = []
-        analysis.LSC_type = 1
-        analysis.ILC_type = 1
-        analysis.BMD_type = 1
-        analysis.background = 1
-        analysis.BMR = 0.1
-        analysis.alpha = 0.05
-        analysis.iterations = 1000
-        analysis.seed = -9999
-        nested_result = bmdscore.python_nested_result()
-        return NestedDichotomousAnalysisCPPStructs(analysis, nested_result)
-
-
-class NestedDichotomousAnalysisCPPStructs(NamedTuple):
+class NestedDichotomousAnalysis(NamedTuple):
     analysis: bmdscore.python_nested_analysis
     result: bmdscore.python_nested_result
+
+    @classmethod
+    def blank(cls):
+        return cls(bmdscore.python_nested_analysis(), bmdscore.python_nested_result())
 
     def execute(self):
         bmdscore.pythonBMDSNested(self.analysis, self.result)

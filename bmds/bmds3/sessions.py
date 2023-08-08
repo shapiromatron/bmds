@@ -9,9 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
-from bmds import bmdscore
-
-from .. import constants
+from .. import bmdscore, constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from ..utils import citation

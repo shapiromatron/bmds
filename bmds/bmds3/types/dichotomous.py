@@ -4,8 +4,7 @@ from typing import NamedTuple, Self
 import numpy as np
 from pydantic import BaseModel, confloat, conint
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table

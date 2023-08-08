@@ -31,19 +31,26 @@ class BmdModelNestedDichotomous(BmdModel):
 
         return model_settings
 
-    def _build_inputs(self) -> NestedDichotomousAnalysis:
-        return NestedDichotomousAnalysis(
-            model=self.bmd_model_class,
-            dataset=self.dataset,
-            BMD_type=self.settings.bmr_type,
-            BMR=self.settings.bmr,
-            alpha=self.settings.alpha,
-        )
+    def to_cpp(self) -> NestedDichotomousAnalysis:
+        structs = NestedDichotomousAnalysis.blank()
+        structs.analysis.model = self.bmd_model_class.id
+        structs.analysis.restricted = self.settings.restricted
+        structs.analysis.doses = self.dataset.doses
+        structs.analysis.litterSize = self.dataset.litter_ns
+        structs.analysis.incidence = self.dataset.incidences
+        structs.analysis.lsc = self.dataset.litter_covariates
+        structs.analysis.LSC_type = self.settings.litter_specific_covariate.value
+        structs.analysis.ILC_type = self.settings.intralitter_correlation.value
+        structs.analysis.BMD_type = self.settings.bmr_type.value
+        structs.analysis.background = self.settings.background.value
+        structs.analysis.BMR = self.settings.bmr
+        structs.analysis.alpha = self.settings.alpha
+        structs.analysis.iterations = self.settings.bootstrap_iterations
+        structs.analysis.seed = self.settings.bootstrap_seed
+        return structs
 
     def execute(self) -> NestedDichotomousResult:
-        inputs = self._build_inputs()
-        structs = inputs.to_cpp()
-        self.structs = structs
+        self.structs = self.to_cpp()
         self.structs.execute()
         self.results = NestedDichotomousResult.from_model(self)
         return self.results

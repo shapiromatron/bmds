@@ -203,8 +203,8 @@ _pc_restriction = {
 
 
 class NestedDichotomousModelIds(IntEnum):
-    d_nested_logistic = 3
-    d_nctr = 4
+    d_nested_logistic = 1
+    d_nctr = 2
 
 
 class NestedDichotomousModel(BmdModelSchema):
@@ -215,7 +215,7 @@ class NestedDichotomousModel(BmdModelSchema):
         return len(self.params)
 
 
-class NestedDichotomousModelChoices(Enum):
+class NestedDichotomousModelChoices(Enum):  # TODO - update model forms
     d_logistic = NestedDichotomousModel(
         id=NestedDichotomousModelIds.d_nested_logistic.value,
         verbose="Nested Logistic",
