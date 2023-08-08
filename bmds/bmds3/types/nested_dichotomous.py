@@ -2,12 +2,14 @@ from enum import IntEnum
 from textwrap import dedent
 from typing import NamedTuple, Self
 
+import numpy as np
 from pydantic import BaseModel, confloat, conint
 
 from bmds import bmdscore
 
-from ...datasets import NestedDichotomousDataset
-from ...utils import multi_lstrip, pretty_table
+from ...utils import pretty_table
+from .. import constants
+from .common import NumpyFloatArray, clean_array
 
 
 class NestedDichotomousRiskType(IntEnum):
@@ -110,7 +112,6 @@ class BmdResult(BaseModel):
     lower_ci: list[float]
     std_err: list[float]
     upper_ci: list[float]
-    valid_result: bool
 
     @classmethod
     def from_model(cls, data: bmdscore.BMDS_results) -> Self:
@@ -125,7 +126,6 @@ class BmdResult(BaseModel):
             lower_ci=data.lowerConf,
             std_err=data.stdErr,
             upper_ci=data.upperConf,
-            valid_result=data.validResult,
         )
 
 
@@ -191,6 +191,34 @@ class LitterResult(BaseModel):
         )
 
 
+class Plotting(BaseModel):
+    dr_x: NumpyFloatArray
+    dr_y: NumpyFloatArray
+    bmdl_y: float
+    bmd_y: float
+    bmdu_y: float
+
+    @classmethod
+    def from_model(cls, model, params) -> Self:
+        summary = model.structs.result.bmdsRes
+        xs = np.array([summary.BMDL, summary.BMD, summary.BMDU])
+        dr_x = model.dataset.dose_linspace
+        dr_y = clean_array(model.dr_curve(dr_x, params))
+        critical_ys = clean_array(model.dr_curve(xs, params))
+        critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
+        return cls(
+            dr_x=dr_x,
+            dr_y=dr_y,
+            bmdl_y=critical_ys[0],
+            bmd_y=critical_ys[1],
+            bmdu_y=critical_ys[2],
+        )
+
+    def dict(self, **kw) -> dict:
+        d = super().dict(**kw)
+        return NumpyFloatArray.listify(d)
+
+
 class NestedDichotomousResult(BaseModel):
     ll: float
     srs: list[float]  # TODO rename?
@@ -207,6 +235,8 @@ class NestedDichotomousResult(BaseModel):
     obs_chi_sq: float
     parms: list[float]
     reduced: ReducedResult
+    plotting: Plotting
+    has_completed: bool = False
 
     @classmethod
     def from_model(cls, model) -> Self:
@@ -226,4 +256,6 @@ class NestedDichotomousResult(BaseModel):
             obs_chi_sq=result.obsChiSq,
             parms=result.parms,
             reduced=ReducedResult.from_model(result.reduced),
+            plotting=Plotting.from_model(model, result.parms),
+            has_completed=result.bmdsRes.validResult,
         )

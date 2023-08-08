@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from bmds.bmds3.models import nested_dichotomous
 from bmds.session import Bmds330
 
