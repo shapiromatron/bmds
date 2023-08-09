@@ -68,8 +68,8 @@ class NestedDichotomousModelSettings(BaseModel):
     def restriction_text(self) -> str:
         return "Restricted" if self.restricted else "Unrestricted"
 
-    def tbl(self, degree_required: bool = False) -> str:
-        data = [
+    def _tbl_rows(self) -> list:
+        return [
             ["BMR", self.bmr_text],
             ["Confidence Level", self.confidence_level],
             ["Litter Specific Covariate", camel_to_title(self.litter_specific_covariate.name)],
@@ -79,7 +79,20 @@ class NestedDichotomousModelSettings(BaseModel):
             ["Bootstrap Iterations", self.bootstrap_iterations],
             ["Bootstrap Key", self.bootstrap_seed],
         ]
-        return pretty_table(data, "")
+
+    def tbl(self, degree_required: bool = False) -> str:
+        return pretty_table(self._tbl_rows(), "")
+
+    def docx_table_data(self) -> list:
+        rows = self._tbl_rows()
+        rows.insert(0, ["Setting", "Value"])
+        return rows
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmr=self.bmr_text,
+        )
 
 
 class NestedDichotomousAnalysis(NamedTuple):
@@ -334,3 +347,11 @@ class NestedDichotomousResult(BaseModel):
     def parameters_tbl(self) -> str:
         data = list(zip(self.parameter_names, self.parameters, strict=True))
         return pretty_table(data, "")
+
+    def update_record(self, d: dict) -> None:
+        """Update data record for a tabular-friendly export"""
+        d.update(
+            bmd=self.summary.bmd,
+            bmdl=self.summary.bmdl,
+            bmdu=self.summary.bmdu,
+        )

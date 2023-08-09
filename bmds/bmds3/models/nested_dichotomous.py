@@ -1,5 +1,6 @@
 import numpy as np
 
+from ... import plotting
 from ...datasets import NestedDichotomousDataset
 from ...utils import multi_lstrip
 from ..constants import (
@@ -62,6 +63,15 @@ class BmdModelNestedDichotomous(BmdModel):
     def get_param_names(self) -> list[str]:
         names = list(self.bmd_model_class.params)
         return names
+
+    def _plot_bmr_lines(self, ax):
+        plotting.add_bmr_lines(
+            ax,
+            self.results.summary.bmd,
+            self.results.plotting.bmd_y,
+            self.results.summary.bmdl,
+            self.results.summary.bmdu,
+        )
 
     def serialize(self) -> "BmdModelNestedDichotomousSchema":
         return BmdModelNestedDichotomousSchema(

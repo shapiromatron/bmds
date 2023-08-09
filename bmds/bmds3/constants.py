@@ -225,6 +225,6 @@ class NestedDichotomousModelChoices(Enum):  # TODO - update model forms
     d_nctr = NestedDichotomousModel(
         id=NestedDichotomousModelIds.d_nctr.value,
         verbose="NCTR",
-        params=("x", "y", "z"),
+        params=("?", "?", "?", "?", "?", "?", "?", "?", "?"),
         model_form_str="P[dose] = ...",
     )

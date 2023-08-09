@@ -146,6 +146,11 @@ class BmdModel(abc.ABC):
         """
         )
 
+    def _plot_bmr_lines(self, ax):
+        plotting.add_bmr_lines(
+            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
+        )
+
     def plot(self):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
@@ -165,9 +170,7 @@ class BmdModel(abc.ABC):
             label=f"{self.name()} (BMD, BMDL, BMDU)",
             **plotting.LINE_FORMAT,
         )
-        plotting.add_bmr_lines(
-            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
-        )
+        self._plot_bmr_lines(ax)
         ax.legend(**plotting.LEGEND_OPTS)
 
         # reorder handles and labels

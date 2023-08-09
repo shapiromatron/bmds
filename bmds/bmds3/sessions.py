@@ -120,7 +120,7 @@ class BmdsSession:
     @property
     def recommendation_enabled(self):
         if self.recommender is None:
-            self.recommender = Recommender(settings=self.recommendation_settings)
+            return False
         return self.recommender.settings.enabled
 
     def recommend(self):
@@ -149,10 +149,14 @@ class BmdsSession:
 
     def execute_and_recommend(self):
         self.execute()
+        if self.recommender is None:
+            self.recommender = Recommender(settings=self.recommendation_settings)
         self.recommend()
 
     def is_bayesian(self) -> bool:
         """Determine if models are using a bayesian or frequentist approach."""
+        if self.dataset.dtype == constants.Dtype.NESTED_DICHOTOMOUS:
+            return False
         return self.models[0].settings.priors.is_bayesian
 
     def citation(self) -> dict:
@@ -298,7 +302,7 @@ class BmdsSession:
 
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
-            reporting.write_frequentist_table(report, self)
+            reporting.write_base_frequentist_table(report, self)
             if all_models:
                 report.document.add_paragraph("Individual Model Results", h2)
                 reporting.write_models(report, self, bmd_cdf_table, header_level + 2)

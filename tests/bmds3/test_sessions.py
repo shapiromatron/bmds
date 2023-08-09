@@ -5,8 +5,8 @@ import bmds
 from bmds.bmds3 import BmdsSession
 
 
-class TestBmds330:
-    def test_serialization(self, ddataset2):
+class TestSession:
+    def test_dichotomous(self, ddataset2, rewrite_data_files):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=ddataset2)
         session1.add_default_models()
@@ -40,7 +40,17 @@ class TestBmds330:
         d2 = session2.serialize().dict()
         assert d1 == d2
 
-    def test_serialization_ma(self, ddataset2, data_path, rewrite_data_files):
+        # dataframe
+        df = session1.to_df()
+
+        # docx
+        docx = session1.to_docx(session_inputs_table=True)
+
+        if rewrite_data_files:
+            df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
+
+    def test_dichotomous_ma(self, ddataset2, data_path, rewrite_data_files):
         # make sure serialize looks correct
         session1 = bmds.session.Bmds330(dataset=ddataset2)
         session1.add_default_models()
@@ -71,21 +81,25 @@ class TestBmds330:
         d2 = session2.serialize().dict()
         assert d1 == d2
 
-    def test_exports(self, ddataset2, rewrite_data_files):
-        # make sure serialize looks correct
-        session = bmds.session.Bmds330(dataset=ddataset2)
+    def test_nested_dichotomous(self, nd_dataset, rewrite_data_files):
+        session = bmds.session.Bmds330(dataset=nd_dataset)
         session.add_default_models()
-        session.execute_and_recommend()
+        session.execute()
+        # session1.execute_and_recommend() # TODO - implement recommend
+
+        d = session.to_dict()
+        session2 = session.from_serialized(d)
+        assert session.to_dict() == session2.to_dict()
 
         # dataframe
         df = session.to_df()
 
         # docx
-        docx = session.to_docx(session_inputs_table=True)
+        docx = session.to_docx(session_inputs_table=True, all_models=True)
 
         if rewrite_data_files:
-            df.to_excel(Path("~/Desktop/bmds3-dichotomous.xlsx").expanduser(), index=False)
-            docx.save(Path("~/Desktop/bmds3-dichotomous.docx").expanduser())
+            df.to_excel(Path("~/Desktop/bmds3-nd.xlsx").expanduser(), index=False)
+            docx.save(Path("~/Desktop/bmds3-nd.docx").expanduser())
 
     def test_dll_version(self, ddataset2):
         session = bmds.session.Bmds330(dataset=ddataset2)
