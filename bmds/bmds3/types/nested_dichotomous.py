@@ -6,6 +6,8 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from ... import bmdscore, constants
+from ...datasets import NestedDichotomousDataset
+from ...utils import camel_to_title, multi_lstrip, pretty_table
 from .common import NumpyFloatArray, clean_array
 
 
@@ -18,10 +20,18 @@ class LitterSpecificCovariate(IntEnum):
     ControlGroupMean = 0
     OverallMean = 1
 
+    @property
+    def text(self) -> str:
+        return "lsc+" if self.OverallMean else "lsc-"
+
 
 class IntralitterCorrelation(IntEnum):
     Zero = 0
     Estimate = 1
+
+    @property
+    def text(self) -> str:
+        return "ilc+" if self.Estimate else "ilc-"
 
 
 class Background(IntEnum):
@@ -30,8 +40,8 @@ class Background(IntEnum):
 
 
 _bmr_text_map = {
-    RiskType.ExtraRisk: "{:.0%} extra risk",
-    RiskType.AddedRisk: "{:.0%} added risk",
+    RiskType.ExtraRisk: "{:.0%} Extra Risk",
+    RiskType.AddedRisk: "{:.0%} Added Risk",
 }
 
 
@@ -46,12 +56,30 @@ class NestedDichotomousModelSettings(BaseModel):
     bootstrap_iterations: int = Field(default=1000, gt=10, lt=10000)
     bootstrap_seed: int = 0
 
+    @property
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
 
     @property
     def confidence_level(self) -> float:
         return 1 - self.alpha
+
+    @property
+    def restriction_text(self) -> str:
+        return "Restricted" if self.restricted else "Unrestricted"
+
+    def tbl(self, degree_required: bool = False) -> str:
+        data = [
+            ["BMR", self.bmr_text],
+            ["Confidence Level", self.confidence_level],
+            ["Litter Specific Covariate", camel_to_title(self.litter_specific_covariate.name)],
+            ["Intralitter Correlation", self.intralitter_correlation.name],
+            ["Background", self.background.name],
+            ["Model Restriction", self.restriction_text],
+            ["Bootstrap Iterations", self.bootstrap_iterations],
+            ["Bootstrap Key", self.bootstrap_seed],
+        ]
+        return pretty_table(data, "")
 
 
 class NestedDichotomousAnalysis(NamedTuple):
@@ -105,7 +133,7 @@ class BmdResult(BaseModel):
         )
 
 
-class BootstrapResult(BaseModel):
+class BootstrapRuns(BaseModel):
     n_runs: int
     p_value: list[float]
     p50: list[float]
@@ -124,22 +152,25 @@ class BootstrapResult(BaseModel):
             p99=data.perc99,
         )
 
+    def tbl(self) -> str:
+        col1 = "1 2 3 Combined".split()
+        data = list(zip(col1, self.p_value, self.p50, self.p90, self.p95, self.p99, strict=True))
+        return pretty_table(data, headers="Run P-Value 50th 90th 95th 99th".split())
+
 
 class ReducedResult(BaseModel):
     dose: list[float]
-    lowerConf: list[float]
-    numRows: int
-    propAffect: list[float]
-    upperConf: list[float]
+    prop_affected: list[float]
+    lower_ci: list[float]
+    upper_ci: list[float]
 
     @classmethod
     def from_model(cls, data: bmdscore.nestedReducedData) -> Self:
         return cls(
             dose=data.dose,
-            lowerConf=data.lowerConf,
-            numRows=data.numRows,
-            propAffect=data.propAffect,
-            upperConf=data.upperConf,
+            prop_affected=data.propAffect,
+            lower_ci=data.lowerConf,
+            upper_ci=data.upperConf,
         )
 
 
@@ -150,7 +181,6 @@ class LitterResult(BaseModel):
     estimated_probabilities: list[float]
     expected: list[float]
     litter_size: list[float]
-    nrows: int
     observed: list[int]
 
     @classmethod
@@ -162,9 +192,28 @@ class LitterResult(BaseModel):
             estimated_probabilities=data.estProb,
             expected=data.expected,
             litter_size=data.litterSize,
-            nrows=data.numRows,
             observed=data.observed,
         )
+
+    def tbl(self) -> str:
+        headers = (
+            "Dose|Lit. Spec. Cov.|Est. Prob.|Litter Size|Expected|Observed|Scaled Residual".split(
+                "|"
+            )
+        )
+        data = list(
+            zip(
+                self.dose,
+                self.lsc,
+                self.estimated_probabilities,
+                self.expected,
+                self.observed,
+                self.litter_size,
+                self.observed,
+                strict=True,
+            )
+        )
+        return pretty_table(data, headers)
 
 
 class Plotting(BaseModel):
@@ -198,18 +247,17 @@ class Plotting(BaseModel):
 class NestedDichotomousResult(BaseModel):
     ll: float
     scaled_residuals: list[float]
-    bmd: BmdResult
-    bootstrap: BootstrapResult
+    summary: BmdResult
+    bootstrap: BootstrapRuns
     combined_pvalue: float
     cov: list[float]
-    df: float
+    dof: float
     fixed_lsc: float
     litter: LitterResult
     max: float
-    # model: nested_model  # TODO remove?
-    nparms: int
     obs_chi_sq: float
-    parms: list[float]
+    parameter_names: list[str]
+    parameters: list[float]
     reduced: ReducedResult
     plotting: Plotting
     has_completed: bool = False
@@ -220,18 +268,69 @@ class NestedDichotomousResult(BaseModel):
         return cls(
             ll=result.LL,
             scaled_residuals=result.SRs,
-            bmd=BmdResult.from_model(result.bmdsRes),
-            bootstrap=BootstrapResult.from_model(result.boot),
+            summary=BmdResult.from_model(result.bmdsRes),
+            bootstrap=BootstrapRuns.from_model(result.boot),
             combined_pvalue=result.combPVal,
             cov=result.cov,
-            df=result.df,
+            dof=result.df,
             fixed_lsc=result.fixedLSC,
             litter=LitterResult.from_model(result.litter),
             max=result.max,
-            nparms=result.nparms,
             obs_chi_sq=result.obsChiSq,
-            parms=result.parms,
+            parameter_names=model.get_param_names(),
+            parameters=result.parms,
             reduced=ReducedResult.from_model(result.reduced),
             plotting=Plotting.from_model(model, result.parms),
             has_completed=result.bmdsRes.validResult,
         )
+
+    def text(
+        self, dataset: NestedDichotomousDataset, settings: NestedDichotomousModelSettings
+    ) -> str:
+        return multi_lstrip(
+            f"""
+        Summary:
+        {self.tbl()}
+
+        Model Parameters:
+        {self.parameters_tbl()}
+
+        Bootstrap Runs:
+        {self.bootstrap.tbl()}
+
+        Scaled Residuals:
+        {self.scaled_residuals_tbl()}
+
+        Litter Data:
+        {self.litter.tbl()}
+        """
+        )
+
+    def tbl(self) -> str:
+        data = [
+            ["BMD", self.summary.bmd],
+            ["BMDL", self.summary.bmdl],
+            ["BMDU", self.summary.bmdu],
+            ["AIC", self.summary.aic],
+            ["P-value", self.combined_pvalue],
+            ["D.O.F", self.dof],
+            ["Chi²", self.summary.chi_squared],
+            ["Log-likelihood", self.ll],
+        ]
+        return pretty_table(data, "")
+
+    def scaled_residuals_tbl(self) -> str:
+        col1 = [
+            "Minimum scaled residual for dose group nearest BMD",
+            "Minimum ABS(scaled residual) for dose group nearest BMD",
+            "Average scaled residual for dose group nearest BMD",
+            "Average ABS(scaled residual) for dose group nearest BMD",
+            "Maximum scaled residual for dose group nearest BMD",
+            "Maximum ABS(scaled residual) for dose group nearest BMD",
+        ]
+        data = list(zip(col1, self.scaled_residuals, strict=True))
+        return pretty_table(data, "")
+
+    def parameters_tbl(self) -> str:
+        data = list(zip(self.parameter_names, self.parameters, strict=True))
+        return pretty_table(data, "")

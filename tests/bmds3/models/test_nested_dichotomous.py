@@ -5,6 +5,8 @@ from bmds.session import Bmds330
 def test_execution(nd_dataset):
     analysis = nested_dichotomous.NestedLogistic(nd_dataset)
     analysis.execute()
+    text = analysis.text()
+    assert len(text) > 0
 
 
 def test_session_execution(nd_dataset):

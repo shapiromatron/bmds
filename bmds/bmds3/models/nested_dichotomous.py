@@ -1,6 +1,7 @@
 import numpy as np
 
 from ...datasets import NestedDichotomousDataset
+from ...utils import multi_lstrip
 from ..constants import (
     NestedDichotomousModel,
     NestedDichotomousModelChoices,
@@ -18,6 +19,9 @@ from .base import BmdModel, BmdModelSchema, InputModelSettings
 class BmdModelNestedDichotomous(BmdModel):
     bmd_model_class: NestedDichotomousModel
     model_version: str = "BMDS330"
+
+    def name(self) -> str:
+        return f"{super().name()} ({self.settings.litter_specific_covariate.text}{self.settings.intralitter_correlation.text})"
 
     def get_model_settings(
         self, dataset: NestedDichotomousDataset, settings: InputModelSettings
@@ -55,12 +59,6 @@ class BmdModelNestedDichotomous(BmdModel):
         self.results = NestedDichotomousResult.from_model(self)
         return self.results
 
-    def get_default_model_degree(self, dataset) -> int:
-        return 2
-
-    def get_default_prior_class(self) -> PriorClass:
-        return PriorClass.frequentist_restricted
-
     def get_param_names(self) -> list[str]:
         names = list(self.bmd_model_class.params)
         return names
@@ -73,12 +71,20 @@ class BmdModelNestedDichotomous(BmdModel):
             results=self.results,
         )
 
-    def get_gof_pvalue(self) -> float:
-        return self.results.gof.p_value
+    def get_gof_pvalue(self):
+        ...
 
-    def get_priors_list(self) -> list[list]:
-        degree = self.settings.degree if self.degree_required else None
-        return self.settings.priors.priors_list(degree=degree)
+    def get_priors_list(self):
+        ...
+
+    def model_settings_text(self) -> str:
+        input_tbl = self.settings.tbl()
+        return multi_lstrip(
+            f"""
+        Input Summary:
+        {input_tbl}
+        """
+        )
 
 
 class BmdModelNestedDichotomousSchema(BmdModelSchema):
