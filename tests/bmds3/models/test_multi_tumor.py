@@ -35,6 +35,8 @@ class TestMultitumor:
         assert len(text) > 0
 
         # check serialization
+        session2 = session.serialize().deserialize()
+        assert session.to_dict() == session2.to_dict()
 
         # dataframe
         df = session.to_df()

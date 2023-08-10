@@ -120,7 +120,7 @@ class BmdsSession:
     @property
     def recommendation_enabled(self):
         if self.recommender is None:
-            return False
+            self.recommender = Recommender(settings=self.recommendation_settings)
         return self.recommender.settings.enabled
 
     def recommend(self):
@@ -149,8 +149,6 @@ class BmdsSession:
 
     def execute_and_recommend(self):
         self.execute()
-        if self.recommender is None:
-            self.recommender = Recommender(settings=self.recommendation_settings)
         self.recommend()
 
     def is_bayesian(self) -> bool:
@@ -322,7 +320,7 @@ class BmdsSession:
 
 
 class Bmds330(BmdsSession):
-    version_str = constants.BMDS330
+    version_str = constants.BMDS330  # TODO change
     version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
     model_options = {

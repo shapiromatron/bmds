@@ -133,9 +133,7 @@ class DichotomousAnalysis(BaseModel):
         analysis.prior_cols = constants.NUM_PRIOR_COLS
         return analysis
 
-    def to_cpp(self):
-        analysis = self.to_cpp_analysis()
-
+    def to_cpp_result(self, analysis) -> bmdscore.python_dichotomous_model_result:
         result = bmdscore.python_dichotomous_model_result()
         result.model = analysis.model
         result.dist_numE = 200
@@ -143,7 +141,11 @@ class DichotomousAnalysis(BaseModel):
         result.gof = bmdscore.dichotomous_GOF()
         result.bmdsRes = bmdscore.BMDS_results()
         result.aod = bmdscore.dicho_AOD()
+        return result
 
+    def to_cpp(self):
+        analysis = self.to_cpp_analysis()
+        result = self.to_cpp_result(analysis)
         return DichotomousAnalysisCPPStructs(analysis, result)
 
 

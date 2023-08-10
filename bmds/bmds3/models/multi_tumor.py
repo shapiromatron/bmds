@@ -1,12 +1,20 @@
+from typing import Self
+
 import pandas as pd
-from pydantic import BaseModel
 
 from ... import bmdscore
-from ...datasets.dichotomous import DichotomousDataset, DichotomousDatasetSchema
+from ...constants import Version
+from ...datasets.dichotomous import DichotomousDataset
 from ...reporting.styling import Report
-from ..constants import N_BMD_DIST, NUM_PRIOR_COLS, PriorClass, PriorType
+from ...version import __version__
+from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
 from ..types.dichotomous import DichotomousModelSettings
-from ..types.multi_tumor import MultitumorAnalysis, MultitumorConfig, MultitumorResult
+from ..types.multi_tumor import (
+    MultitumorAnalysis,
+    MultitumorResult,
+    MultitumorSchema,
+    MultitumorSettings,
+)
 from ..types.priors import ModelPriors, Prior
 from ..types.sessions import VersionSchema
 from .base import InputModelSettings
@@ -26,30 +34,31 @@ def multistage_cancer_prior() -> ModelPriors:
     )
 
 
-class MultitumorSchema(BaseModel):
-    version: VersionSchema
-    id: int | str | None
-    datasets: list[DichotomousDatasetSchema]
-    settings: MultitumorConfig
-    results: MultitumorResult | None
+class MultitumorBase:
+    version_str: str
+    version_pretty: str
+    version_tuple: tuple[int, ...]
 
-
-class Multitumor:
     def __init__(
         self,
         datasets: list[DichotomousDataset],
         degrees: list[int] | None = None,
         model_settings: DichotomousModelSettings | dict | None = None,
         id: int | str | None = None,
+        results: MultitumorResult | None = None,
     ):
         if len(datasets) == 0:
             raise ValueError("Must provide at least one dataset")
         self.id = id
         self.datasets = datasets
+        for i, dataset in enumerate(datasets, start=1):
+            if dataset.metadata.id is None:
+                dataset.metadata.id = i
         self.degrees: list[int] = degrees or [0] * len(datasets)
         self.settings: DichotomousModelSettings = self.get_base_settings(model_settings)
+        self.results = results
         self.structs: tuple | None = None
-        self.results: MultitumorResult | None = None
+        self.models: list[list[MultistageCancer]] = []
 
     def get_base_settings(
         self, settings: DichotomousModelSettings | dict | None
@@ -66,6 +75,8 @@ class Multitumor:
         dataset_results = []
         ns = []
         for i, dataset in enumerate(self.datasets):
+            mc_models = []
+            self.models.append(mc_models)
             models = []
             results = []
             ns.append(dataset.num_dose_groups)
@@ -74,30 +85,15 @@ class Multitumor:
                 range(degree_i, degree_i + 1) if degree_i > 0 else range(2, dataset.num_dose_groups)
             )
             for degree in degrees_i:
-                # build inputs
                 settings = self.settings.copy(
-                    update={
-                        "degree": degree,
-                        "priors": multistage_cancer_prior(),
-                        "samples": 0,
-                        "burnin": 0,
-                    }
+                    update=dict(degree=degree, priors=multistage_cancer_prior())
                 )
                 model = MultistageCancer(dataset, settings=settings)
                 inputs = model._build_inputs()
-                analysis = inputs.to_cpp_analysis()
-                models.append(analysis)
-
-                # build outputs
-                res = bmdscore.python_dichotomous_model_result()
-                res.model = bmdscore.dich_model.d_multistage
-                res.nparms = degree + 1
-                res.dist_numE = N_BMD_DIST * 2
-                res.gof = bmdscore.dichotomous_GOF()
-                res.bmdsRes = bmdscore.BMDS_results()
-                res.aod = bmdscore.dicho_AOD()
-                results.append(res)
-
+                structs = inputs.to_cpp()
+                models.append(structs.analysis)
+                results.append(structs.result)
+                mc_models.append(model)
             dataset_models.append(models)
             dataset_results.append(results)
 
@@ -127,19 +123,45 @@ class Multitumor:
         return self.results
 
     def text(self) -> str:
-        return self.results.text()
-
-    def serialize(self) -> MultitumorSchema:
-        ...
+        return self.results.text(self.datasets, self.models)
 
     def to_dict(self):
         return self.serialize().dict()
 
-    def deserialize(self):
-        pass
+    def serialize(self) -> MultitumorSchema:
+        ...
+
+    @classmethod
+    def from_serialized(cls, data: dict) -> Self:
+        try:
+            version = data["version"]["numeric"]
+        except KeyError:
+            raise ValueError("Invalid JSON format")
+
+        if version == Version.BMDS330:
+            return Multitumor330Schema.parse_obj(data).deserialize()
+        else:
+            raise ValueError("Unknown BMDS version")
+
+    def _serialize_version(self) -> VersionSchema:
+        return VersionSchema(
+            string=self.version_str,
+            pretty=self.version_pretty,
+            numeric=self.version_tuple,
+            python=__version__,
+            dll=bmdscore.version(),
+        )
+
+    def _serialize_settings(self) -> MultitumorSettings:
+        return MultitumorSettings(
+            degrees=self.degrees,
+            bmr=self.settings.bmr,
+            bmr_type=self.settings.bmr_type,
+            alpha=self.settings.alpha,
+        )
 
     def to_df(self, extras: dict | None = None) -> pd.DataFrame:
-        return pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        return pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})  # TODO
 
     def to_docx(
         self,
@@ -151,8 +173,44 @@ class Multitumor:
             report = Report.build_default()
         report.document.add_heading("Multitumor Analysis", level=header_level)
         if citation:
-            report.document.add_heading("todo...", level=header_level + 1)
+            report.document.add_heading("TODO", level=header_level + 1)
         return report.document
+
+
+class Multitumor330(MultitumorBase):
+    version_str = Version.BMDS330.value  # TODO change
+    version_pretty = "3.3.0"
+    version_tuple = (3, 3, 0)
+
+    def serialize(self) -> MultitumorSchema:
+        return Multitumor330Schema(
+            version=self._serialize_version(),
+            datasets=[ds.serialize() for ds in self.datasets],
+            id=self.id,
+            settings=self._serialize_settings(),
+            results=self.results,
+        )
+
+
+class Multitumor330Schema(MultitumorSchema):
+    def deserialize(self) -> Multitumor330:
+        datasets = [ds.deserialize() for ds in self.datasets]
+        settings = dict(
+            bmr=self.settings.bmr,
+            bmr_type=self.settings.bmr_type,
+            alpha=self.settings.alpha,
+        )
+        return Multitumor330(
+            datasets=datasets,
+            degrees=self.settings.degrees,
+            model_settings=settings,
+            id=self.id,
+            results=self.results,
+        )
+
+
+class Multitumor(Multitumor330):
+    """Alias for the latest version."""
 
 
 class MultistageCancer(Multistage):

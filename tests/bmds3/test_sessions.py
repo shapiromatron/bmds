@@ -87,6 +87,7 @@ class TestSession:
         session.execute()
         # session1.execute_and_recommend() # TODO - implement recommend
 
+        # check serialization
         d = session.to_dict()
         session2 = session.from_serialized(d)
         assert session.to_dict() == session2.to_dict()
