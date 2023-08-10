@@ -1,92 +1,91 @@
-import numpy as np
+import json
 
-from bmds import bmdscore
-from bmds.bmds3.constants import N_BMD_DIST
+from bmds.bmds3.constants import PriorClass, PriorType
 from bmds.bmds3.models.dichotomous import Multistage
+from bmds.bmds3.models.multi_tumor import MultistageCancer, Multitumor
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings
+from bmds.bmds3.types.priors import ModelPriors, Prior
 from bmds.datasets import DichotomousDataset
 
 
-def get_multitumor_prior(degree):
-    items = [[0, -17, 0, -18, 18]] + [[0, 0.1, 0, 0, 1e4]] * degree
-    return [item for sublist in zip(*items, strict=True) for item in sublist]
-
-
-def test_execution():
-    # if degree is zero, loop for degree 2 to n-1 dose groups
-    # if degree is nonzero, only use that value
-
-    ds1 = DichotomousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        incidences=[0, 5, 30, 65, 90],
-    )
-    ds2 = DichotomousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        incidences=[5, 10, 33, 67, 93],
-    )
-    ds3 = DichotomousDataset(
-        doses=[0, 50, 100, 150, 200],
-        ns=[100, 100, 100, 100, 100],
-        incidences=[1, 68, 78, 88, 98],
-    )
-    datasets = [ds1, ds2, ds3]
-    degrees = [3, 0, 0]
-
-    n_datasets = len(datasets)
-    models = []
-    results = []
-    ns = []
-    for i, dataset in enumerate(datasets):
-        model_i = []
-        result_i = []
-        ns.append(dataset.num_dose_groups)
-        degree_i = degrees[i]
-        degrees_i = (
-            range(degree_i, degree_i + 1) if degree_i > 0 else range(2, dataset.num_dose_groups)
+class TestMultitumor:
+    def test_execute(self, rewrite_data_files, data_path):
+        ds1 = DichotomousDataset(
+            doses=[0, 50, 100, 150, 200],
+            ns=[100, 100, 100, 100, 100],
+            incidences=[0, 5, 30, 65, 90],
         )
-        for degree in degrees_i:
-            # build inputs
-            settings = DichotomousModelSettings(degree=degree)
-            d = Multistage(dataset, settings=settings)
-            inputs = d._build_inputs()
-            analysis = inputs.to_cpp_analysis()
-            analysis.degree = degree
-            analysis.prior = get_multitumor_prior(degree)
-            analysis.burnin = 0
-            analysis.samples = 0
-            model_i.append(analysis)
+        ds2 = DichotomousDataset(
+            doses=[0, 50, 100, 150, 200],
+            ns=[100, 100, 100, 100, 100],
+            incidences=[5, 10, 33, 67, 93],
+        )
+        ds3 = DichotomousDataset(
+            doses=[0, 50, 100, 150, 200],
+            ns=[100, 100, 100, 100, 100],
+            incidences=[1, 68, 78, 88, 98],
+        )
+        datasets = [ds1, ds2, ds3]
+        degrees = [3, 0, 0]
+        session = Multitumor(datasets, degrees=degrees)
+        session.execute()
 
-            # build outputs
-            res = bmdscore.python_dichotomous_model_result()
-            res.model = bmdscore.dich_model.d_multistage
-            res.nparms = degree + 1
-            res.dist_numE = N_BMD_DIST * 2
-            res.gof = bmdscore.dichotomous_GOF()
-            res.bmdsRes = bmdscore.BMDS_results()
-            res.aod = bmdscore.dicho_AOD()
-            result_i.append(res)
+        # check text report
+        text = session.text()
+        assert len(text) > 0
 
-        models.append(model_i)
-        results.append(result_i)
+        # check serialization
 
-    analysis = bmdscore.python_multitumor_analysis()
-    analysis.BMD_type = 1
-    analysis.BMR = 0.1
-    analysis.alpha = 0.05
-    analysis.degree = degrees
-    analysis.models = models
-    analysis.n = ns
-    analysis.ndatasets = n_datasets
-    analysis.nmodels = [len(model_degree) for model_degree in models]
-    # analysis.prior: list[list[float]] = ...
-    analysis.prior_cols = 5
+        # dataframe
+        df = session.to_df()
 
-    result = bmdscore.python_multitumor_result()
-    result.ndatasets = n_datasets
-    result.nmodels = [len(model_degree) for model_degree in models]
-    result.models = results
+        # docx
+        docx = session.to_docx()
 
-    bmdscore.pythonBMDSMultitumor(analysis, result)
-    assert result.BMD == 6.005009
+        if rewrite_data_files:
+            (data_path / "bmds3-mt.txt").write_text(text)
+            df.to_excel(data_path / "bmds3-mt.xlsx", index=False)
+            docx.save(data_path / "bmds3-mt.docx")
+
+
+class TestMultistageCancer:
+    def test_settings(self, ddataset2):
+        default = json.loads(
+            '{"prior_class": 1, "priors": [{"name": "g", "type": 0, "initial_value": -17.0, "stdev": 0.0, "min_value": -18.0, "max_value": 18.0}, {"name": "b1", "type": 0, "initial_value": 0.1, "stdev": 0.0, "min_value": 0.0, "max_value": 10000.0}, {"name": "b2", "type": 0, "initial_value": 0.1, "stdev": 0.0, "min_value": 0.0, "max_value": 10000.0}], "variance_priors": null}'
+        )
+
+        # default MultistageCancer use cancer prior
+        model = MultistageCancer(ddataset2)
+        assert model.settings.bmr == 0.1
+        assert model.settings.priors.dict() == default
+
+        # MultistageCancer w/ custom settings, but unspecified prior use cancer prior
+        model = MultistageCancer(ddataset2, settings=dict(bmr=0.2))
+        assert model.settings.bmr == 0.2
+        assert model.settings.priors.dict() == default
+
+        # MultistageCancer w/ DichotomousModelSettings is preserved
+        base_model = Multistage(ddataset2)
+        model = MultistageCancer(ddataset2, DichotomousModelSettings())
+        assert model.settings.bmr == 0.1
+        assert model.settings.priors.dict() != default
+        assert model.settings.priors.dict() == base_model.settings.priors.dict()
+
+        # MultistageCancer w/ custom settings is preserved
+        custom = ModelPriors(
+            prior_class=PriorClass.frequentist_restricted,
+            priors=[
+                Prior(
+                    name="g",
+                    type=PriorType.Uniform,
+                    initial_value=0,
+                    stdev=0,
+                    min_value=-1,
+                    max_value=1,
+                )
+            ],
+            variance_priors=None,
+        )
+        model = MultistageCancer(ddataset2, settings=dict(bmr=0.2, priors=custom))
+        assert model.settings.bmr == 0.2
+        assert model.settings.priors.dict() == custom.dict()
