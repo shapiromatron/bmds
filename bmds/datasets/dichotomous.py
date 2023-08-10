@@ -7,7 +7,7 @@ from pydantic import confloat, root_validator
 from scipy import stats
 
 from .. import constants, plotting
-from ..utils import str_list
+from ..utils import pretty_table, str_list
 from .base import DatasetBase, DatasetMetadata, DatasetPlottingSchema, DatasetSchemaBase
 
 
@@ -192,6 +192,10 @@ class DichotomousDataset(DatasetBase):
         for dose, n, incidence in zip(self.doses, self.ns, self.incidences, strict=True):
             rows.append({**extras, **metadata, **dict(dose=dose, n=n, incidence=incidence)})
         return rows
+
+    def tbl(self) -> str:
+        data = [args for args in zip(self.doses, self.incidences, self.ns, strict=True)]
+        return pretty_table(data, "Dose|Incidence|N".split("|"))
 
 
 class DichotomousDatasetSchema(DatasetSchemaBase):

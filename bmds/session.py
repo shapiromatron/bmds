@@ -2,6 +2,7 @@ from typing import Any
 
 from . import constants
 from .bmds2.sessions import BMDS_v270
+from .bmds3.models.multi_tumor import Multitumor, Multitumor330, MultitumorBase
 from .bmds3.sessions import Bmds330
 
 
@@ -13,6 +14,9 @@ class BMDS:
     _BMDS_VERSIONS: dict[str, Any] = {
         constants.BMDS270: BMDS_v270,
         constants.BMDS330: Bmds330,
+    }
+    _MULTITUMOR_VERSIONS: dict[str, Any] = {
+        constants.BMDS330: Multitumor330,
     }
 
     @classmethod
@@ -49,3 +53,9 @@ class BMDS:
         """
         latest = list(cls._BMDS_VERSIONS.keys())[-1]
         return cls.version(latest, *args, **kwargs)
+
+    @classmethod
+    def multitumor(cls, version: str | None = None) -> type[MultitumorBase]:
+        if version is None:
+            return Multitumor
+        return cls._MULTITUMOR_VERSIONS[version]
