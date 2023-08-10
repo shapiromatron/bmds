@@ -115,7 +115,7 @@ class DichotomousAnalysis(BaseModel):
         )
         return self.priors.to_c(degree=degree)
 
-    def to_cpp(self):
+    def to_cpp_analysis(self) -> bmdscore.python_dichotomous_analysis:
         analysis = bmdscore.python_dichotomous_analysis()
         analysis.model = self.model.id
         analysis.n = self.dataset.num_dose_groups
@@ -131,6 +131,10 @@ class DichotomousAnalysis(BaseModel):
         analysis.burnin = self.burnin
         analysis.parms = self.num_params
         analysis.prior_cols = constants.NUM_PRIOR_COLS
+        return analysis
+
+    def to_cpp(self):
+        analysis = self.to_cpp_analysis()
 
         result = bmdscore.python_dichotomous_model_result()
         result.model = analysis.model

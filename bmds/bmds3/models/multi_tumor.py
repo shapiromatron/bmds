@@ -1,20 +1,13 @@
 import numpy as np
 
 from ...datasets import NestedDichotomousDataset
-from ..constants import (
-    MultiTumorModel,
-    MultiTumorModelChoices,
-    MultiTumorModelIds,
-    PriorClass,
-)
+from ..constants import PriorClass
 from ..types.multi_tumor import (
     MultiTumorAnalysis,
     MultiTumorModelSettings,
     MultiTumorResult,
 )
 from .base import BmdModel, BmdModelSchema, InputModelSettings
-
-# from ..types.priors import ModelPriors, get_dichotomous_prior
 
 
 class BmdModelMultiTumor(BmdModel):
@@ -103,17 +96,10 @@ class BmdModelMultiTumorSchema(BmdModelSchema):
 
 
 class Logistic(BmdModelMultiTumor):
-    bmd_model_class = MultiTumorModelChoices.d_logistic.value
+    bmd_model_class = 999
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        a = params[0]
-        b = params[1]
-        return 1 / (1 + np.exp(-a - b * doses))
+        return np.linspace(0, 1, doses.size)
 
     def get_default_prior_class(self) -> PriorClass:
-        return PriorClass.frequentist_unrestricted
-
-
-bmd_model_map = {
-    MultiTumorModelIds.d_logistic.value: Logistic,
-}
+        ...

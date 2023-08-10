@@ -2,11 +2,11 @@ from enum import IntEnum
 from textwrap import dedent
 from typing import NamedTuple, Self
 
-from pydantic import BaseModel, confloat, conint
+from pydantic import BaseModel, Field, confloat, conint
 
 from bmds import bmdscore
 
-from ...datasets import MultiTumorDataset
+from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
 
 
@@ -32,13 +32,9 @@ _bmr_text_map = {
 
 
 class MultiTumorModelSettings(BaseModel):
-    bmr: confloat(gt=0) = 0.1
-    alpha: confloat(gt=0, lt=1) = 0.05
+    bmr: float = Field(default=0.1, gt=0)
     bmr_type: MultiTumorRiskType = MultiTumorRiskType.ExtraRisk
-    litter_specific_covariate: MultiTumorLSCType = MultiTumorLSCType.ControlGroupMean
-    background: MultiTumorBackgroundType = MultiTumorBackgroundType.Estimated
-    bootstrap_iterations: conint(gt=0) = 1
-    bootstrap_seed: conint(gt=0) = 0
+    alpha: float = Field(default=0.05, gt=0, lt=1)
 
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)
@@ -52,24 +48,16 @@ class MultiTumorModelSettings(BaseModel):
             ["BMR", self.bmr_text],
             ["Confidence Level", self.confidence_level],
         ]
-
-        # if show_degree:
-        #     data.append(["Degree", self.degree])
-
-        # if self.priors.is_bayesian:
-        #     data.extend((["Samples", self.samples], ["Burn-in", self.burnin]))
-
         return pretty_table(data, "")
 
 
-class MultiTumorAnalysis(BaseModel):
+class MultiTumorAnalysis2(BaseModel):
     """
     Purpose - Contains all of the information for a multi tumor dichotomous analysis.
     """
 
-
     def getMultitumorPrior(degree, prior_cols):
-        prG, prB, pr = [],[],[]
+        prG, prB, pr = [], [], []
         for i in range(prior_cols):
             pr.append(prG[i])
             for j in range(degree):
@@ -77,17 +65,16 @@ class MultiTumorAnalysis(BaseModel):
         return pr
 
     def to_cpp(Self):
-
         """_summary_
 
         Returns:
             _type_: _description_
         """
 
-        doses1,doses2,doses3 = [],[],[]
-        Y1,Y2,Y3 = [],[],[]
-        n_group1, n_group2, n_group3 = [],[],[]
-        doses, Y , n_group = [],[],[]
+        doses1, doses2, doses3 = [], [], []
+        Y1, Y2, Y3 = [], [], []
+        n_group1, n_group2, n_group3 = [], [], []
+        doses, Y, n_group = [], [], []
 
         doses.append(doses1)
         doses.append(doses2)
@@ -131,7 +118,9 @@ class MultiTumorAnalysis(BaseModel):
                 for deg in range(2, mt_analysis.n[dataset]):
                     models[dataset].append(bmdscore.python_dichotomous_analysis())
                     models[dataset][count].model = bmdscore.dich_model.d_multistage
-                    models[dataset][count].prior = self.getMultitumorPrior(deg, mt_analysis.prior_cols)
+                    models[dataset][count].prior = self.getMultitumorPrior(
+                        deg, mt_analysis.prior_cols
+                    )
                     models[dataset][count].degree = deg
                     models[dataset][count].parms = deg + 1
                     models[dataset][count].Y = Y[dataset]
@@ -156,7 +145,9 @@ class MultiTumorAnalysis(BaseModel):
             else:
                 models[dataset].append(bmdscore.python_dichotomous_analysis())
                 models[dataset][count].model = bmdscore.dich_model.d_multistage
-                models[dataset][count].prior = self.getMultitumorPrior(degree[dataset], mt_analysis.prior_cols)
+                models[dataset][count].prior = self.getMultitumorPrior(
+                    degree[dataset], mt_analysis.prior_cols
+                )
                 models[dataset][count].degree = degree[dataset]
                 models[dataset][count].parms = degree[dataset] + 1
                 models[dataset][count].Y = Y[dataset]
@@ -180,7 +171,6 @@ class MultiTumorAnalysis(BaseModel):
                 count = 1
             nmodels.append(count)
 
-
         mt_analysis.models = models
         pyRes.models = resModels
         mt_analysis.nmodels = nmodels
@@ -188,71 +178,51 @@ class MultiTumorAnalysis(BaseModel):
 
         bmdscore.pythonBMDSMultitumor(mt_analysis, pyRes)
 
-
         return MultiTumorAnalysisCPPStructs(mt_analysis, pyRes)
 
 
 class MultiTumorAnalysisCPPStructs(NamedTuple):
-    analysis: bmdscore.foo
-    result: bmdscore.foo
+    analysis: bmdscore.python_dichotomousMA_analysis
+    result: bmdscore.python_dichotomousMA_result
 
     def execute(self):
         bmdscore.pythonBMDSMultitumor(self.analysis, self.result)
 
-    def __str__(self):
-        return dedent(
-            f"""
-            Analysis:
-            {self.analysis}
 
-            Result:
-            {self.result}
-            """
-        )
+class MultitumorAnalysis(BaseModel):
+    BMD_type: int
+    BMR: float
+    alpha: float
+    degree: list[int]
+    # models: list[list[python_dichotomous_analysis]]
+    n: list[int]
+    ndatasets: int
+    nmodels: list[int]
+    prior: list[list[float]]
+    prior_cols: int
 
 
-class MultiTumorResult(BaseModel):
-  
+class MultitumorResult(BaseModel):
+    bmd: float
+    bmdl: float
+    bmdu: float
+    ll: float
+    ll_const: float
+    # models: list[list[python_dichotomous_model_result]]  # all degrees for all datasets
+    selected_model_index: list[int]
+    slope_factor: float
+    valid_result: list[bool]
+
     @classmethod
     def from_model(cls, model) -> Self:
-        result = model.structs.result
-        summary = result.bmdsRes
-        # fit = MultiTumorModelResult.from_model(model)
-        # gof = MultiTumorPgofResult.from_model(model)
-        # parameters = MultiTumorParameters.from_model(model)
-        # deviance = MultiTumorAnalysisOfDeviance.from_model(model)
-        # plotting = MultiTumorPlotting.from_model(model, parameters.values)
+        result: bmdscore.python_multitumor_result = model.structs.result
         return cls(
-            # bmdl=summary.BMDL,
-            bmd=summary.BMD,
-            # bmdu=summary.BMDU,
-            # has_completed=summary.validResult,
-            # fit=fit,
-            # gof=gof,
-            # parameters=parameters,
-            # deviance=deviance,
-            # plotting=plotting,
+            bmd=result.BMD,
+            bmdl=result.BMDL,
+            bmdu=result.BMDU,
+            ll=result.combined_LL,
+            ll_const=result.combined_LL_const,
+            selected_model_index=result.selectedModelIndex,
+            slope_factor=result.slopeFactor,
+            valid_result=result.validResult,
         )
-
-    def text(
-        self, dataset: MultiTumorDataset, settings: MultiTumorModelSettings
-    ) -> str:
-        return multi_lstrip(
-            f"""
-        Summary:
-        {self.tbl()}
-        """
-        )
-
-    def tbl(self) -> str:
-        data = [
-            ["BMD", self.bmd],
-            # ["BMDL", self.bmdl],
-            # ["BMDU", self.bmdu],
-            # ["AIC", self.fit.aic],
-            # ["Log Likelihood", self.fit.loglikelihood],
-            # ["P-Value", self.gof.p_value],
-            # ["Overall DOF", self.gof.df],
-            # ["Chi²", self.fit.chisq],
-        ]
-        return pretty_table(data, "")
