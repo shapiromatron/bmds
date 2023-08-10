@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
 from ...utils import multi_lstrip, pretty_table

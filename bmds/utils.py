@@ -1,5 +1,6 @@
 import ctypes
 import os
+import re
 import sys
 import tempfile
 from collections.abc import Iterable
@@ -102,3 +103,7 @@ def get_latest_dll_version() -> str:
     from .session import BMDS
 
     return BMDS.latest_version().dll_version()
+
+
+def camel_to_title(txt: str) -> str:
+    return re.sub(r"(?<=\w)([A-Z])", r" \1", txt)

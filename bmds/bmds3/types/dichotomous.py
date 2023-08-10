@@ -2,10 +2,9 @@ from enum import IntEnum
 from typing import NamedTuple, Self
 
 import numpy as np
-from pydantic import BaseModel, confloat, conint
+from pydantic import BaseModel, Field
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
@@ -32,12 +31,12 @@ _bmr_text_map = {
 
 
 class DichotomousModelSettings(BaseModel):
-    bmr: confloat(gt=0) = 0.1
-    alpha: confloat(gt=0, lt=1) = 0.05
+    bmr: float = Field(default=0.1, gt=0)
+    alpha: float = Field(default=0.05, gt=0, lt=1)
     bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
-    degree: conint(ge=0, le=8) = 0  # multistage only
-    samples: conint(ge=10, le=1000) = 100
-    burnin: conint(ge=5, le=1000) = 20
+    degree: int = Field(default=0, ge=0, le=8)  # multistage only
+    samples: int = Field(default=100, ge=10, le=1000)
+    burnin: int = Field(default=20, ge=5, le=1000)
     priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property

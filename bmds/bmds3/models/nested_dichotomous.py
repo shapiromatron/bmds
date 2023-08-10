@@ -1,6 +1,8 @@
 import numpy as np
 
+from ... import plotting
 from ...datasets import NestedDichotomousDataset
+from ...utils import multi_lstrip
 from ..constants import (
     NestedDichotomousModel,
     NestedDichotomousModelChoices,
@@ -14,12 +16,13 @@ from ..types.nested_dichotomous import (
 )
 from .base import BmdModel, BmdModelSchema, InputModelSettings
 
-# from ..types.priors import ModelPriors, get_dichotomous_prior
-
 
 class BmdModelNestedDichotomous(BmdModel):
     bmd_model_class: NestedDichotomousModel
     model_version: str = "BMDS330"
+
+    def name(self) -> str:
+        return f"{super().name()} ({self.settings.litter_specific_covariate.text}{self.settings.intralitter_correlation.text})"
 
     def get_model_settings(
         self, dataset: NestedDichotomousDataset, settings: InputModelSettings
@@ -31,47 +34,44 @@ class BmdModelNestedDichotomous(BmdModel):
         else:
             model_settings = NestedDichotomousModelSettings.parse_obj(settings)
 
-        # # get default values, may require further model customization
-        # if not isinstance(model_settings.priors, ModelPriors):
-        #     prior_class = (
-        #         model_settings.priors
-        #     )
-        #     model_settings.priors = get_dichotomous_prior(
-        #         self.bmd_model_class, prior_class=prior_class
-        #     )
-
         return model_settings
 
-    def _build_inputs(self) -> NestedDichotomousAnalysis:
-        return NestedDichotomousAnalysis(
-            model=self.bmd_model_class,
-            dataset=self.dataset,
-            # priors=self.settings.priors,
-            BMD_type=self.settings.bmr_type,
-            BMR=self.settings.bmr,
-            alpha=self.settings.alpha,
-            # degree=self.settings.degree,
-            # samples=self.settings.samples,
-            # burnin=self.settings.burnin,
-        )
+    def to_cpp(self) -> NestedDichotomousAnalysis:
+        structs = NestedDichotomousAnalysis.blank()
+        structs.analysis.model = self.bmd_model_class.id
+        structs.analysis.restricted = self.settings.restricted
+        structs.analysis.doses = self.dataset.doses
+        structs.analysis.litterSize = self.dataset.litter_ns
+        structs.analysis.incidence = self.dataset.incidences
+        structs.analysis.lsc = self.dataset.litter_covariates
+        structs.analysis.LSC_type = self.settings.litter_specific_covariate.value
+        structs.analysis.ILC_type = self.settings.intralitter_correlation.value
+        structs.analysis.BMD_type = self.settings.bmr_type.value
+        structs.analysis.background = self.settings.background.value
+        structs.analysis.BMR = self.settings.bmr
+        structs.analysis.alpha = self.settings.alpha
+        structs.analysis.iterations = self.settings.bootstrap_iterations
+        structs.analysis.seed = self.settings.bootstrap_seed
+        return structs
 
     def execute(self) -> NestedDichotomousResult:
-        inputs = self._build_inputs()
-        structs = inputs.to_cpp()
-        self.structs = structs
+        self.structs = self.to_cpp()
         self.structs.execute()
         self.results = NestedDichotomousResult.from_model(self)
         return self.results
 
-    def get_default_model_degree(self, dataset) -> int:
-        return 2
-
-    def get_default_prior_class(self) -> PriorClass:
-        return PriorClass.frequentist_restricted
-
     def get_param_names(self) -> list[str]:
         names = list(self.bmd_model_class.params)
         return names
+
+    def _plot_bmr_lines(self, ax):
+        plotting.add_bmr_lines(
+            ax,
+            self.results.summary.bmd,
+            self.results.plotting.bmd_y,
+            self.results.summary.bmdl,
+            self.results.summary.bmdu,
+        )
 
     def serialize(self) -> "BmdModelNestedDichotomousSchema":
         return BmdModelNestedDichotomousSchema(
@@ -81,12 +81,20 @@ class BmdModelNestedDichotomous(BmdModel):
             results=self.results,
         )
 
-    def get_gof_pvalue(self) -> float:
-        return self.results.gof.p_value
+    def get_gof_pvalue(self):
+        ...
 
-    def get_priors_list(self) -> list[list]:
-        degree = self.settings.degree if self.degree_required else None
-        return self.settings.priors.priors_list(degree=degree)
+    def get_priors_list(self):
+        ...
+
+    def model_settings_text(self) -> str:
+        input_tbl = self.settings.tbl()
+        return multi_lstrip(
+            f"""
+        Input Summary:
+        {input_tbl}
+        """
+        )
 
 
 class BmdModelNestedDichotomousSchema(BmdModelSchema):
@@ -102,18 +110,27 @@ class BmdModelNestedDichotomousSchema(BmdModelSchema):
         return model
 
 
-class Logistic(BmdModelNestedDichotomous):
+class NestedLogistic(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
-        a = params[0]
-        b = params[1]
-        return 1 / (1 + np.exp(-a - b * doses))
+        return np.linspace(0, 1, doses.size)
+
+    def get_default_prior_class(self) -> PriorClass:
+        return PriorClass.frequentist_unrestricted
+
+
+class Nctr(BmdModelNestedDichotomous):
+    bmd_model_class = NestedDichotomousModelChoices.d_nctr.value
+
+    def dr_curve(self, doses, params) -> np.ndarray:
+        return np.linspace(0, 2, doses.size)
 
     def get_default_prior_class(self) -> PriorClass:
         return PriorClass.frequentist_unrestricted
 
 
 bmd_model_map = {
-    NestedDichotomousModelIds.d_logistic.value: Logistic,
+    NestedDichotomousModelIds.d_nested_logistic.value: NestedLogistic,
+    NestedDichotomousModelIds.d_nctr.value: Nctr,
 }

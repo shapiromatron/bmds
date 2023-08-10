@@ -109,15 +109,16 @@ class NestedDichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        fig = plotting.create_empty_figure()
-        ax = fig.gca()
-        ax.set_xlabel(self.get_xlabel())
-        ax.set_ylabel(self.get_ylabel())
-        # TODO - replace in BMDS 3.4
-        ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title(self._get_dataset_name())
+        ax = self.setup_plot()
+        ys = np.array(self.incidences) / np.array(self.litter_ns)
+        ax.scatter(
+            self.doses,
+            ys,
+            label="Data",
+            **plotting.DATASET_INDIVIDUAL_FORMAT,
+        )
         ax.legend(**plotting.LEGEND_OPTS)
-        return fig
+        return ax.get_figure()
 
     def rows(self, extras: dict) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""

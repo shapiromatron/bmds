@@ -203,7 +203,8 @@ _pc_restriction = {
 
 
 class NestedDichotomousModelIds(IntEnum):
-    d_logistic = 3
+    d_nested_logistic = 1
+    d_nctr = 2
 
 
 class NestedDichotomousModel(BmdModelSchema):
@@ -214,11 +215,16 @@ class NestedDichotomousModel(BmdModelSchema):
         return len(self.params)
 
 
-class NestedDichotomousModelChoices(Enum):
+class NestedDichotomousModelChoices(Enum):  # TODO - update model forms
     d_logistic = NestedDichotomousModel(
-        id=NestedDichotomousModelIds.d_logistic.value,
-        verbose="Logistic",
-        params=("a", "b"),
-        model_form_str="P[dose] = 1 / [1 + exp(-a - b * dose)]",
+        id=NestedDichotomousModelIds.d_nested_logistic.value,
+        verbose="Nested Logistic",
+        params=("alpha", "beta", "theta1", "theta2", "rho", "phi1", "phi2", "phi3", "???"),
+        model_form_str="P[dose] = ...",
     )
-
+    d_nctr = NestedDichotomousModel(
+        id=NestedDichotomousModelIds.d_nctr.value,
+        verbose="NCTR",
+        params=("?", "?", "?", "?", "?", "?", "?", "?", "?"),
+        model_form_str="P[dose] = ...",
+    )

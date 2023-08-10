@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, NamedTuple, Self
 from pydantic import BaseModel
 
 from ... import plotting
-from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, Dtype
+from ...constants import CONTINUOUS_DTYPES, DICHOTOMOUS_DTYPES, NESTED_DICHOTOMOUS, Dtype
 from ...datasets import DatasetType
 from ...utils import multi_lstrip, package_root
 from ..constants import BmdModelSchema as BmdModelClass
@@ -146,6 +146,11 @@ class BmdModel(abc.ABC):
         """
         )
 
+    def _plot_bmr_lines(self, ax):
+        plotting.add_bmr_lines(
+            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
+        )
+
     def plot(self):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
@@ -165,9 +170,7 @@ class BmdModel(abc.ABC):
             label=f"{self.name()} (BMD, BMDL, BMDU)",
             **plotting.LINE_FORMAT,
         )
-        plotting.add_bmr_lines(
-            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
-        )
+        self._plot_bmr_lines(ax)
         ax.legend(**plotting.LEGEND_OPTS)
 
         # reorder handles and labels
@@ -215,11 +218,14 @@ class BmdModelSchema(BaseModel):
     def get_subclass(cls, dtype: Dtype) -> Self:
         from .continuous import BmdModelContinuousSchema
         from .dichotomous import BmdModelDichotomousSchema
+        from .nested_dichotomous import BmdModelNestedDichotomousSchema
 
         if dtype in DICHOTOMOUS_DTYPES:
             return BmdModelDichotomousSchema
         elif dtype in CONTINUOUS_DTYPES:
             return BmdModelContinuousSchema
+        elif dtype == NESTED_DICHOTOMOUS:
+            return BmdModelNestedDichotomousSchema
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
