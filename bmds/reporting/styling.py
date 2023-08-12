@@ -34,7 +34,14 @@ class Report(BaseModel):
     @classmethod
     def build_default(cls) -> Self:
         fn = Path(__file__).parent / "templates/base.docx"
+        # remove empty first paragraph
         doc = Document(str(fn))
+        if len(doc.paragraphs) > 0:
+            p = doc.paragraphs[0]
+            if not p.text and not p.runs:
+                el = p._element
+                el.getparent().remove(el)
+                p._p = p._element = None
         return Report(document=doc, styles=ReporterStyleGuide())
 
 

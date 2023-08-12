@@ -271,14 +271,6 @@ class BmdsSession:
         if report is None:
             report = Report.build_default()
 
-        # remove empty first paragraph, if one exists
-        if len(report.document.paragraphs) > 0:
-            p = report.document.paragraphs[0]
-            if not p.text and not p.runs:
-                el = p._element
-                el.getparent().remove(el)
-                p._p = p._element = None
-
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session Results", h1)

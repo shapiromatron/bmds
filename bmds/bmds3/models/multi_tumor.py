@@ -134,11 +134,11 @@ class MultitumorBase:
     @classmethod
     def from_serialized(cls, data: dict) -> Self:
         try:
-            version = data["version"]["numeric"]
+            version = data["version"]["string"]
         except KeyError:
             raise ValueError("Invalid JSON format")
 
-        if version == Version.BMDS330:
+        if version == Multitumor330.version_str:
             return Multitumor330Schema.parse_obj(data).deserialize()
         else:
             raise ValueError("Unknown BMDS version")
@@ -172,6 +172,7 @@ class MultitumorBase:
         if report is None:
             report = Report.build_default()
         report.document.add_heading("Multitumor Analysis", level=header_level)
+        report.document.add_paragraph("TODO")
         if citation:
             report.document.add_heading("TODO", level=header_level + 1)
         return report.document

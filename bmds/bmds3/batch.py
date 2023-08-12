@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from ..datasets import DatasetBase
 from ..reporting.styling import Report
+from .models.multi_tumor import MultitumorBase
 from .reporting import write_citation
 from .sessions import BmdsSession
 
@@ -21,7 +22,11 @@ class ExecutionResponse(NamedTuple):
     content: dict | list[dict]
 
 
-class BmdsSessionBatch:
+class BatchBase:
+    pass
+
+
+class BmdsSessionBatch(BatchBase):
     def __init__(self, sessions: list[BmdsSession] | None = None):
         if sessions is None:
             sessions = []
@@ -207,3 +212,43 @@ class BmdsSessionBatch:
             archive, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
         ) as zf:
             zf.writestr("data.json", data=self.serialize())
+
+
+class MultitumorBatch(BatchBase):
+    def __init__(self, sessions: list[MultitumorBase] | None = None):
+        if sessions is None:
+            sessions = []
+        self.sessions: list[MultitumorBase] = sessions
+        self.errors = []
+
+    def to_docx(
+        self,
+        report: Report | None = None,
+        header_level: int = 1,
+        citation: bool = True,
+        **kw,
+    ):
+        """Append each session to a single document
+
+        Args:
+            report (Report, optional): A Report object, or None to use default.
+            header_level (int, optional): Starting header level. Defaults to 1.
+            citation (bool, default True): Include citation
+
+        Returns:
+            A python docx.Document object with content added.
+        """
+        if report is None:
+            report = Report.build_default()
+
+        for session in self.sessions:
+            session.to_docx(
+                report,
+                header_level=header_level,
+                citation=False,
+            )
+
+        if citation and len(self.sessions) > 0:
+            write_citation(report, self.sessions[0], header_level=header_level)
+
+        return report.document
