@@ -84,8 +84,7 @@ class TestSession:
     def test_nested_dichotomous(self, nd_dataset, rewrite_data_files):
         session = bmds.session.Bmds330(dataset=nd_dataset)
         session.add_default_models()
-        session.execute()
-        # session1.execute_and_recommend() # TODO - implement recommend
+        session.execute_and_recommend()
 
         d = session.to_dict()
         session2 = session.from_serialized(d)

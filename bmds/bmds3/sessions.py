@@ -120,7 +120,7 @@ class BmdsSession:
     @property
     def recommendation_enabled(self):
         if self.recommender is None:
-            return False
+            self.recommender = Recommender(settings=self.recommendation_settings)
         return self.recommender.settings.enabled
 
     def recommend(self):
@@ -149,8 +149,6 @@ class BmdsSession:
 
     def execute_and_recommend(self):
         self.execute()
-        if self.recommender is None:
-            self.recommender = Recommender(settings=self.recommendation_settings)
         self.recommend()
 
     def is_bayesian(self) -> bool:
