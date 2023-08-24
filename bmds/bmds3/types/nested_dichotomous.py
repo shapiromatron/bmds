@@ -357,3 +357,25 @@ class NestedDichotomousResult(BaseModel):
             bmdl=self.summary.bmdl,
             bmdu=self.summary.bmdu,
         )
+
+    def get_parameter(self, parameter: str) -> float:
+        """Get parameter value by name"""
+        match parameter:
+            case "bmd":
+                return self.summary.bmd
+            case "bmdl":
+                return self.summary.bmdl
+            case "bmdu":
+                return self.summary.bmdu
+            case "aic":
+                return self.summary.aic
+            case "dof":
+                return self.dof
+            case "pvalue":
+                return self.combined_pvalue
+            case "roi":
+                return self.litter.roi
+            case "roi_control":
+                return self.litter.scaled_residuals[0]  # TODO - ?
+            case _:
+                raise ValueError(f"Unknown parameter: {parameter}")

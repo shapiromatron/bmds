@@ -71,32 +71,6 @@ def is_lte(value: Any, threshold: float) -> bool:
     return value <= threshold
 
 
-def get_dof(dataset, results) -> float:
-    if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-        return results.gof.df
-    elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-        return results.tests.dfs[3]
-    elif dataset.dtype == constants.NESTED_DICHOTOMOUS:
-        return results.dof
-    else:
-        raise ValueError("Unknown dtype")
-
-
-def is_nested(dataset) -> bool:
-    return dataset.dtype == constants.NESTED_DICHOTOMOUS
-
-
-def get_gof_pvalue(dataset, results) -> float:
-    if dataset.dtype in constants.DICHOTOMOUS_DTYPES:
-        return results.gof.p_value
-    elif dataset.dtype in constants.CONTINUOUS_DTYPES:
-        return results.tests.p_values[3]
-    elif dataset.dtype == constants.NESTED_DICHOTOMOUS:
-        return results.combined_pvalue
-    else:
-        raise ValueError("Unknown dtype")
-
-
 # existence checks
 # --------------------------------------------------------------------------------------------------
 class ExistenceCheck(Check):
@@ -118,9 +92,7 @@ class AicExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        if is_nested(dataset):
-            return model.results.summary.aic
-        return model.results.fit.aic
+        return model.results.get_parameter("aic")
 
 
 class BmdExists(ExistenceCheck):
@@ -128,9 +100,7 @@ class BmdExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        if is_nested(dataset):
-            return model.results.summary.bmd
-        return model.results.bmd
+        return model.results.get_parameter("bmd")
 
 
 class RoiExists(ExistenceCheck):
@@ -138,7 +108,7 @@ class RoiExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        return model.results.litter.roi if is_nested(dataset) else model.results.gof.roi
+        return model.results.get_parameter("roi")
 
 
 class BmdlExists(ExistenceCheck):
@@ -147,7 +117,7 @@ class BmdlExists(ExistenceCheck):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         # bmdl must also be non-zero
-        bmdl = model.results.summary.bmdl if is_nested(dataset) else model.results.bmdl
+        bmdl = model.results.get_parameter("bmdl")
         if bmdl == 0:
             return BMDS_BLANK_VALUE
         return bmdl
@@ -158,7 +128,7 @@ class BmduExists(ExistenceCheck):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        return model.results.summary.bmdu if is_nested(dataset) else model.results.bmdu
+        return model.results.get_parameter("bmdu")
 
 
 # greater than threshold checks
@@ -184,10 +154,10 @@ class GoodnessOfFit(ShouldBeGreaterThan):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         # only run test if DOF is > 0
-        dof = get_dof(dataset, model.results)
+        dof = model.results.get_parameter("dof")
         if dof <= constants.ZEROISH:
             return None
-        return get_gof_pvalue(dataset, model.results)
+        return model.results.get_parameter("pvalue")
 
 
 class GoodnessOfFitCancer(GoodnessOfFit):
@@ -216,7 +186,7 @@ class LargeRoi(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        roi = model.results.litter.roi if is_nested(dataset) else model.results.gof.roi
+        roi = model.results.get_parameter("roi")
         if is_valid_number(roi):
             return abs(roi)
         return None
@@ -227,8 +197,8 @@ class BmdBmdlRatio(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        bmd = model.results.summary.bmd if is_nested(dataset) else model.results.bmd
-        bmdl = model.results.summary.bmdl if is_nested(dataset) else model.results.bmdl
+        bmd = model.results.get_parameter("bmd")
+        bmdl = model.results.get_parameter("bmdl")
         if is_valid_number(bmd) and is_valid_number(bmdl) and bmdl > 0:
             return bmd / bmdl
         return None
@@ -240,7 +210,7 @@ class LowBmd(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         min_dose = min([dose for dose in dataset.doses if dose > 0])
-        bmd = model.results.summary.bmd if is_nested(dataset) else model.results.bmd
+        bmd = model.results.get_parameter("bmd")
         if is_valid_number(min_dose) and is_valid_number(bmd) and bmd > 0:
             return min_dose / float(bmd)
         return None
@@ -252,7 +222,7 @@ class LowBmdl(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         min_dose = min([d for d in dataset.doses if d > 0])
-        bmdl = model.results.summary.bmdl if is_nested(dataset) else model.results.bmdl
+        bmdl = model.results.get_parameter("bmdl")
         if is_valid_number(min_dose) and is_valid_number(bmdl) and bmdl > 0:
             return min_dose / float(bmdl)
         return None
@@ -264,7 +234,7 @@ class HighBmd(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         max_dose = max(dataset.doses)
-        bmd = model.results.summary.bmd if is_nested(dataset) else model.results.bmd
+        bmd = model.results.get_parameter("bmd")
         if is_valid_number(max_dose) and is_valid_number(bmd) and bmd > 0:
             return bmd / float(max_dose)
         return None
@@ -276,7 +246,7 @@ class HighBmdl(ShouldBeLessThan):
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
         max_dose = max(dataset.doses)
-        bmdl = model.results.summary.bmdl if is_nested(dataset) else model.results.bmdl
+        bmdl = model.results.get_parameter("bmdl")
         if is_valid_number(max_dose) and is_valid_number(bmdl) and bmdl > 0:
             return bmdl / float(max_dose)
         return None
@@ -287,12 +257,7 @@ class HighControlResidual(ShouldBeLessThan):
 
     @classmethod
     def get_value(cls, dataset, model) -> Number | None:
-        residual = (
-            model.results.litter.scaled_residuals[0]
-            if is_nested(dataset)
-            else model.results.gof.residual[0]
-        )
-        return abs(residual)
+        return abs(model.results.get_parameter("roi_control"))
 
 
 class ControlStdevFit(ShouldBeLessThan):
@@ -333,7 +298,7 @@ class VarianceType(Check):
 class NoDegreesOfFreedom(Check):
     @classmethod
     def run_check(cls, dataset, model, rule_settings) -> str | None:
-        value = get_dof(dataset, model.results)
+        value = model.results.get_parameter("dof")
         if value <= constants.ZEROISH:
             return "Zero degrees of freedom; saturated model"
 
