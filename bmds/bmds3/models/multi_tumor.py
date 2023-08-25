@@ -163,6 +163,44 @@ class MultitumorBase:
     def to_df(self, extras: dict | None = None) -> pd.DataFrame:
         return pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})  # TODO
 
+    def params_df(self, extras: dict | None) -> pd.DataFrame:
+        """Returns a pd.DataFrame of all parameters for all models executed.
+
+        Args:
+            extras (dict | None): extra columns to prepend
+        """
+        data = []
+        extras = extras or {}
+        for dataset_index, dataset_models in enumerate(self.results.models):
+            dataset = self.datasets[dataset_index]
+            for model_index, model_results in enumerate(dataset_models):
+                degree = model_results.parameters.names[-1][-1]
+                model_name = f"Multistage {degree}°"
+                data.extend(
+                    model_results.parameters.rows(
+                        extras={
+                            **extras,
+                            "dataset_id": dataset.metadata.id,
+                            "dataset_name": dataset.metadata.name,
+                            "model_index": model_index,
+                            "model_name": model_name,
+                        }
+                    )
+                )
+        return pd.DataFrame(data)
+
+    def datasets_df(self, extras: dict | None = None) -> pd.DataFrame:
+        """Returns a pd.DataFrame of all datasets within a session.
+
+        Args:
+            extras (dict | None): extra columns to prepend
+        """
+
+        data = []
+        for dataset in self.datasets:
+            data.extend(dataset.rows(extras))
+        return pd.DataFrame(data)
+
     def to_docx(
         self,
         report: Report | None = None,

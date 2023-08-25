@@ -120,17 +120,17 @@ class NestedDichotomousDataset(DatasetBase):
         ax.legend(**plotting.LEGEND_OPTS)
         return ax.get_figure()
 
-    def rows(self, extras: dict) -> list[dict]:
+    def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        metadata = self.metadata.dict()
+        extra = self.metadata.dict()
+        extra.update(extras or {})
         rows = []
         for dose, n, incidence, litter_covariate in zip(
             self.doses, self.litter_ns, self.incidences, self.litter_covariates, strict=True
         ):
             rows.append(
                 {
-                    **extras,
-                    **metadata,
+                    **extra,
                     **dict(dose=dose, n=n, incidence=incidence, litter_covariate=litter_covariate),
                 }
             )
