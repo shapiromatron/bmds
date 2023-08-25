@@ -18,6 +18,11 @@ nav:
   - logic.md
   - benchmarks.md
   - history.md
+  - dicho.md
+  - cont.md
+  - bma.md
+  - nesteddicho.md
+  - batch.md
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
