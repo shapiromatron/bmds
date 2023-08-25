@@ -605,3 +605,25 @@ class ContinuousResult(BaseModel):
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],
         )
+
+    def get_parameter(self, parameter: str) -> float:
+        """Get parameter value by name"""
+        match parameter:
+            case "bmd":
+                return self.bmd
+            case "bmdl":
+                return self.bmdl
+            case "bmdu":
+                return self.bmdu
+            case "aic":
+                return self.fit.aic
+            case "dof":
+                return self.tests.dfs[3]
+            case "pvalue":
+                return self.tests.p_values[3]
+            case "roi":
+                return self.gof.roi
+            case "roi_control":
+                return self.gof.residual[0]
+            case _:
+                raise ValueError(f"Unknown parameter: {parameter}")

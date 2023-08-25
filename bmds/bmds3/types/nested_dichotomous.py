@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from ... import bmdscore, constants
 from ...datasets import NestedDichotomousDataset
 from ...utils import camel_to_title, multi_lstrip, pretty_table
-from .common import NumpyFloatArray, clean_array
+from .common import NumpyFloatArray, clean_array, residual_of_interest
 
 
 class RiskType(IntEnum):
@@ -189,23 +189,25 @@ class ReducedResult(BaseModel):
 
 class LitterResult(BaseModel):
     lsc: list[float]
-    sr: list[float]
+    scaled_residuals: list[float]
     dose: list[float]
     estimated_probabilities: list[float]
     expected: list[float]
     litter_size: list[float]
     observed: list[int]
+    roi: float
 
     @classmethod
-    def from_model(cls, data: bmdscore.nestedLitterData) -> Self:
+    def from_model(cls, data: bmdscore.nestedLitterData, bmd: float) -> Self:
         return cls(
             lsc=data.LSC,
-            sr=data.SR,
+            scaled_residuals=data.SR,
             dose=data.dose,
             estimated_probabilities=data.estProb,
             expected=data.expected,
             litter_size=data.litterSize,
             observed=data.observed,
+            roi=residual_of_interest(bmd, data.dose, data.SR),
         )
 
     def tbl(self) -> str:
@@ -287,7 +289,7 @@ class NestedDichotomousResult(BaseModel):
             cov=result.cov,
             dof=result.df,
             fixed_lsc=result.fixedLSC,
-            litter=LitterResult.from_model(result.litter),
+            litter=LitterResult.from_model(result.litter, result.bmdsRes.BMD),
             max=result.max,
             obs_chi_sq=result.obsChiSq,
             parameter_names=model.get_param_names(),
@@ -355,3 +357,25 @@ class NestedDichotomousResult(BaseModel):
             bmdl=self.summary.bmdl,
             bmdu=self.summary.bmdu,
         )
+
+    def get_parameter(self, parameter: str) -> float:
+        """Get parameter value by name"""
+        match parameter:
+            case "bmd":
+                return self.summary.bmd
+            case "bmdl":
+                return self.summary.bmdl
+            case "bmdu":
+                return self.summary.bmdu
+            case "aic":
+                return self.summary.aic
+            case "dof":
+                return self.dof
+            case "pvalue":
+                return self.combined_pvalue
+            case "roi":
+                return self.litter.roi
+            case "roi_control":
+                return self.litter.scaled_residuals[0]  # TODO - ?
+            case _:
+                raise ValueError(f"Unknown parameter: {parameter}")
