@@ -308,7 +308,7 @@ class NestedDichotomousResult(BaseModel):
         {self.tbl()}
 
         Model Parameters:
-        {self.parameters_tbl()}
+        {self.parameter_tbl()}
 
         Bootstrap Runs:
         {self.bootstrap.tbl()}
@@ -346,9 +346,23 @@ class NestedDichotomousResult(BaseModel):
         data = list(zip(col1, self.scaled_residuals, strict=True))
         return pretty_table(data, "")
 
-    def parameters_tbl(self) -> str:
+    def parameter_tbl(self) -> str:
         data = list(zip(self.parameter_names, self.parameters, strict=True))
         return pretty_table(data, "")
+
+    def parameter_rows(self, extras: dict) -> list[dict]:
+        rows = []
+        for i in range(len(self.parameter_names)):
+            rows.append(
+                {
+                    **extras,
+                    **dict(
+                        name=self.parameter_names[i],
+                        value=self.parameters[i],
+                    ),
+                }
+            )
+        return rows
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
