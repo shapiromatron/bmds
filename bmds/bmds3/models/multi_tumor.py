@@ -34,6 +34,11 @@ def multistage_cancer_prior() -> ModelPriors:
     )
 
 
+def _model_name(result) -> str:
+    degree = result.parameters.names[-1][-1]
+    return f"Multistage {degree}°"
+
+
 class MultitumorBase:
     version_str: str
     version_pretty: str
@@ -161,7 +166,59 @@ class MultitumorBase:
         )
 
     def to_df(self, extras: dict | None = None) -> pd.DataFrame:
-        return pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})  # TODO
+        if extras is None:
+            extras = {}
+        results = self.results
+        data = []
+
+        # model average
+        ma = extras.copy()
+        ma.update(
+            dataset_index="-",
+            dataset_id="-",
+            dataset_name="-",
+            dataset_dose_name="-",
+            dataset_dose_units="-",
+            dataset_response_name="-",
+            dataset_response_units="-",
+            dataset_doses="-",
+            dataset_ns="-",
+            dataset_incidences="-",
+            model_index=-1,
+            model_name="Model average",
+            slope_factor=results.slope_factor,
+            selected="N/A",
+            bmdl=results.bmdl,
+            bmd=results.bmd,
+            bmdu=results.bmdu,
+            aic="-",
+            loglikelihood="-",
+            p_value="-",
+            overall_dof="-",
+            bic_equiv="-",
+            chi_squared="-",
+            residual_of_interest="-",
+            residual_at_lowest_dose="-",
+        )
+        data.append(ma)
+
+        # add models
+        for dataset_i, models in enumerate(results.models):
+            dataset = self.datasets[dataset_i]
+            extras.update(dataset_index=dataset_i)
+            dataset.update_record(extras)
+            # individual model rows
+            for model_i, model in enumerate(models):
+                extras.update(
+                    model_index=model_i,
+                    model_name=_model_name(model),
+                    slope_factor="-",
+                    selected=results.selected_model_indexes[dataset_i] == model_i,
+                )
+                model.update_record(extras)
+                data.append(extras.copy())
+
+        return pd.DataFrame(data=data)
 
     def params_df(self, extras: dict | None) -> pd.DataFrame:
         """Returns a pd.DataFrame of all parameters for all models executed.
@@ -173,17 +230,15 @@ class MultitumorBase:
         extras = extras or {}
         for dataset_index, dataset_models in enumerate(self.results.models):
             dataset = self.datasets[dataset_index]
-            for model_index, model_results in enumerate(dataset_models):
-                degree = model_results.parameters.names[-1][-1]
-                model_name = f"Multistage {degree}°"
+            for model_index, model_result in enumerate(dataset_models):
                 data.extend(
-                    model_results.parameters.rows(
+                    model_result.parameters.rows(
                         extras={
                             **extras,
                             "dataset_id": dataset.metadata.id,
                             "dataset_name": dataset.metadata.name,
                             "model_index": model_index,
-                            "model_name": model_name,
+                            "model_name": _model_name(model_result),
                         }
                     )
                 )

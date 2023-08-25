@@ -123,6 +123,7 @@ class DatasetBase(abc.ABC):
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(
+            dataset_id=self.metadata.id,
             dataset_name=self.metadata.name,
             dataset_dose_name=self.metadata.dose_name,
             dataset_dose_units=self.metadata.dose_units,
