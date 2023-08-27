@@ -15,6 +15,7 @@ venv/
 # files
 *.log
 *.py[cod]
+.coverage
 .env
 *.db
 
