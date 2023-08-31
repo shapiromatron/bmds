@@ -269,6 +269,9 @@ ContinuousRiskType.HybridAdded: "{} Hybrid Added"
 If you want to plot all the default continuous models that were fit to your dataset to compare models, you can use the code below and a figure will be saved in your directory. 
 
 ```python
+from bmds import plotting
+from itertools import cycle
+
 # plotting all models on one plot
 def plot(colorize: bool = False):
    
