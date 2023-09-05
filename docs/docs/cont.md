@@ -45,7 +45,7 @@ report.save("report.docx")
 
 ## Create a continuous dataset
 
-To create a continuous dataset, you need a list of doses, mean responses, standard deviations, and the total number of subjects. As shown above, you use the ```ContinuousDataset()``` function and insert your data. You can also create a plot of the dataset:
+To create a continuous dataset, you need a list of doses, mean responses, standard deviations, and the total number of subjects. As shown above, you use the ```ContinuousDataset()``` function and insert your data. You can specify the title of the dataset and the dose and response units. You can also create a plot of the dataset which will have the title that you name the dataset and the specified units. For example, here the dataset name is "Body Weight from ChemX Exposure".
 
 ```python
 import bmds
@@ -53,7 +53,9 @@ from bmds import ContinuousDataset
 from bmds.bmds3.models import continuous
 from bmds.bmds3.types.continuous import ContinuousRiskType
 
-dataset = ContinuousDataset(
+dataset = ContinuousDataset(name="Body Weight from ChemX Exposure",
+    dose_units="ppm",
+    response_units="kg",
     doses=[0, 25, 50, 75, 100],
     ns=[20, 20, 20, 20, 20],
     means=[6, 8, 13, 25, 30],
@@ -189,6 +191,46 @@ continuous.Hill(dataset)
 continuous.ExponentialM3(dataset)
 continuous.ExponentialM5(dataset)
 ```
+
+## Changing initial model parameter settings
+
+If you want to see a preview of the initial parameter settings, you can run:
+
+```python
+model = continuous.Hill(dataset)
+print(model.settings.priors.tbl())
+```
+
+For the Hill model example that was shown above, the parameters and ranges will show:
+
+```python
+╒════════╤═════════╤═══════════╤═════════╤═══════╤═══════╕
+│ name   │ type    │   initial │   stdev │   min │   max │
+╞════════╪═════════╪═══════════╪═════════╪═══════╪═══════╡
+│ g      │ Uniform │         0 │       0 │  -100 │   100 │
+│ v      │ Uniform │         0 │       0 │  -100 │   100 │
+│ k      │ Uniform │         0 │       0 │     0 │     5 │
+│ n      │ Uniform │         1 │       0 │     1 │    18 │
+│ rho    │ Uniform │         0 │       0 │   -18 │    18 │
+│ alpha  │ Uniform │         0 │       0 │   -18 │    18 │
+╘════════╧═════════╧═══════════╧═════════╧═══════╧═══════╛
+```
+
+You can also change the initial parameter settings shown above for any run of a single continuous model. For example, continuing with the Hill model example, you can set the power parameter `n` to be equal to 1. You do this by changing the initial, minimum, and maximum values of that parameter:
+
+```python
+model = continuous.Hill(dataset)
+
+n = model.settings.priors.get_prior('n')
+n.initial_value = 1
+n.min_value = 1
+n.max_value = 1
+model.execute()
+text = model.text()
+print(text)
+```
+
+You can change the range and initial value for any parameter in the model by following the same steps above.
 
 ## Run all models and select the best fit
 

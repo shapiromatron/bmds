@@ -43,7 +43,7 @@ report.save("report.docx")
 
 ## Create a dichotomous dataset
 
-To create a dichotomous dataset, you need a list of doses, incidences, and the total number of subjects. As shown above, you use the ```DichotomousDataset()``` function and insert your data. You can also create a plot of the dataset:
+To create a dichotomous dataset, you need a list of doses, incidences, and the total number of subjects. As shown above, you use the ```DichotomousDataset()``` function and insert your data. You can specify the title of the dataset and the dose units. You can also create a plot of the dataset which will have the title that you name the dataset and the specified units. For example, here the dataset name is "ChemX Nasal Lesion Incidence".
 
 ```python
 import bmds
@@ -51,7 +51,8 @@ from bmds import DichotomousDataset
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousRiskType
 
-dataset = DichotomousDataset(
+dataset = DichotomousDataset(name="ChemX Nasal Lesion Incidence",
+    dose_units="ppm",
     doses=[0, 25, 75, 125, 200],
     ns=[20, 20, 20, 20, 20],
     incidences=[0, 1, 7, 15, 19],
@@ -160,6 +161,46 @@ dichotomous.Gamma(dataset)
 dichotomous.Weibull(dataset)
 dichotomous.Hill(dataset)
 ```
+
+## Changing initial model parameter settings
+
+If you want to see a preview of the initial parameter settings, you can run:
+
+```python
+model = dichotomous.Logistic(dataset)
+print(model.settings.priors.tbl())
+```
+
+For the Logistic model example that was shown above, the parameters and ranges will show:
+
+```python
+╒════════╤═════════╤═══════════╤═════════╤═══════╤═══════╕
+│ name   │ type    │   initial │   stdev │   min │   max │
+╞════════╪═════════╪═══════════╪═════════╪═══════╪═══════╡
+│ a      │ Uniform │         0 │       0 │   -18 │    18 │
+│ b      │ Uniform │         0 │       0 │     0 │   100 │
+╘════════╧═════════╧═══════════╧═════════╧═══════╧═══════╛
+```
+
+You can also change the initial parameter settings shown above for any run of a single dichotomous model. For example, continuing with the Logistic model example, you can change the minimum and maximum range for `a` to be from -10 to 10 and `b` to be from 0 to 50. 
+
+```python
+model = dichotomous.Logistic(dataset)
+
+a = model.settings.priors.get_prior('a')
+a.initial_value = 0
+a.min_value = -10
+a.max_value = 10
+b = model.settings.priors.get_prior('b')
+b.initial_value = 0
+b.min_value = 0
+b.max_value = 50
+model.execute()
+text = model.text()
+print(text)
+```
+
+You can change the range and initial value for any parameter in the model by following the same steps above.
 
 ## Run all models and select the best fit
 
