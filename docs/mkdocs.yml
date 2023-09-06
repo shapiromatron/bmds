@@ -2,6 +2,8 @@ site_name: Python BMDS
 repo_url: https://github.com/shapiromatron/bmds
 repo_name: shapiromatron/bmds
 edit_uri: ""
+extra_css:
+  - static/css/style.css
 theme:
   name: material
   icon:
