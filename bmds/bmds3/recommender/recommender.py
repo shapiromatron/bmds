@@ -101,6 +101,7 @@ class RecommenderResults(BaseModel):
             recommendation_bin=self.bin_text(index),
             recommendation_notes="\n".join(itertools.chain(notes[0], notes[1], notes[2])),
         )
+        # TODO - refactor this; notes text is useful
 
 
 class RecommenderSchema(BaseModel):
