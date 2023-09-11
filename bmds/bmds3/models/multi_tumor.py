@@ -1,12 +1,16 @@
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
+import numpy as np
 import pandas as pd
 
-from ... import bmdscore
+from ... import bmdscore, constants
 from ...constants import Version
 from ...datasets.dichotomous import DichotomousDataset
-from ...reporting.styling import Report
+from ...reporting.footnotes import TableFootnote
+from ...reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
+from ...utils import citation
 from ...version import __version__
+from .. import reporting
 from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.multi_tumor import (
@@ -20,6 +24,77 @@ from ..types.sessions import VersionSchema
 from .base import InputModelSettings
 from .dichotomous import Multistage
 
+if TYPE_CHECKING:
+    from ..models.base import BmdModel
+    from ..sessions import BmdsSession
+def write_pvalue_header(cell, style):
+    # write _P_-Value cell; requires run for italics
+    p = cell.paragraphs[0]
+    p.style = style
+    p.add_run("P").italic = True
+    p.add_run("-Value")
+
+def write_frequentist_table(report: Report, session):
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    footnotes = TableFootnote()
+    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
+
+    write_cell(tbl.cell(0, 0), "Model", style=hdr)
+    write_cell(tbl.cell(0, 1), "BMDL", style=hdr)
+    write_cell(tbl.cell(0, 2), "BMD", style=hdr)
+    write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
+    write_pvalue_header(tbl.cell(0, 4), style=hdr)
+    write_cell(tbl.cell(0, 5), "AIC", style=hdr)
+    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
+
+    # write body
+    recommended_index = None
+        # (
+        #     session.recommender.results.recommended_model_index
+        #     if session.has_recommended_model
+        #     else None
+        # )
+    selected_index = session.model_index
+    recommendations = session.recommender.results if session.recommendation_enabled else None
+    for idx, model in enumerate(session.models):
+        row = idx + 1
+        write_cell(tbl.cell(row, 0), model.name(), body)
+        if recommended_index == idx:
+            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
+        if selected_index == idx:
+            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], session.selected.notes)
+        write_cell(tbl.cell(row, 1), model.results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model.results.bmd, body)
+        write_cell(tbl.cell(row, 3), model.results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model.get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 5), model.results.fit.aic, body)
+        write_cell(tbl.cell(row, 6), model.results.gof.roi, body)
+        write_cell(tbl.cell(row, 7), model.results.gof.residual[0], body)
+
+        cell = tbl.cell(row, 8)
+        if recommendations:
+            p = cell.paragraphs[0]
+            p.style = body
+            run = p.add_run(recommendations.bin_text(idx) + "\n")
+            run.bold = True
+            p.add_run(recommendations.notes_text(idx))
+        else:
+            write_cell(tbl.cell(row, 8), "-", body)
+
+    # set column width
+    widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
+    widths = widths / (widths.sum() / styles.portrait_width)
+    for width, col in zip(widths, tbl.columns, strict=True):
+        set_column_width(col, width)
+
+    # write footnote
+    if len(footnotes) > 0:
+        footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 def multistage_cancer_prior() -> ModelPriors:
     # fmt: off
@@ -256,18 +331,64 @@ class MultitumorBase:
             data.extend(dataset.rows(extras))
         return pd.DataFrame(data)
 
+   
+
     def to_docx(
         self,
-        report: Report | None = None,
+        report: Report = None,
         header_level: int = 1,
-        citation: bool = True,
+        dataset_format_long: bool = True,
+        all_models: bool = False,
+        bmd_cdf_table: bool = False,
+        session_inputs_table: bool = False,
     ):
+        """Return a Document object with the session executed
+
+        Args:
+            report (Report, optional): A Report dataclass, or None to use default.
+            header_level (int, optional): Starting header level. Defaults to 1.
+            citation (bool, default True): Include citation
+            dataset_format_long (bool, default True): long or wide dataset table format
+            all_models (bool, default False):  Show all models, not just selected
+            bmd_cdf_table (bool, default False): Export BMD CDF table
+            session_inputs_table (bool, default False): Write an inputs table for a session,
+                assuming a single model's input settings are representative of all models in a
+                session, which may not always be true
+
+        Returns:
+            A python docx.Document object with content added.
+        """
         if report is None:
             report = Report.build_default()
-        report.document.add_heading("Multitumor Analysis", level=header_level)
-        report.document.add_paragraph("TODO")
-        if citation:
-            report.document.add_heading("TODO", level=header_level + 1)
+
+        h1 = report.styles.get_header_style(header_level)
+        h2 = report.styles.get_header_style(header_level + 1)
+        report.document.add_paragraph("Session Results", h1)
+        for dataset in self.datasets:
+            report.document.add_paragraph("Input Dataset", h2)
+            reporting.write_dataset_table(report, dataset, dataset_format_long)
+
+        report.document.add_paragraph("Input Settings", h2)
+        # reporting.write_inputs_table(report, self)
+
+
+        # report.document.add_paragraph("Frequentist Summary", h2)
+        # write_frequentist_table(report, self)
+        # if all_models:
+        #     report.document.add_paragraph("Individual Model Results", h2)
+        #     reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+        # else:
+        #     report.document.add_paragraph("Selected Model", h2)
+        #     if self.selected.model:
+        #         reporting.write_model(
+        #             report, self.selected.model, bmd_cdf_table, header_level + 2
+        #         )
+        #     else:
+        #         report.document.add_paragraph("No model was selected as a best-fitting model.")
+
+        # if citation:
+            # reporting.write_citation(report, self.datasets[0], header_level + 1)
+
         return report.document
 
 
