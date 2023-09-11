@@ -96,6 +96,32 @@ def write_frequentist_table(report: Report, session):
     if len(footnotes) > 0:
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
+def write_inputs_table(report: Report, session):
+    """Add an input summary table to the document.
+
+    Assumes that all settings are consistent across models in a session; finds the model
+    with the maximum multistage/polynomial degree to write inputs.
+
+    Args:
+        report (Report): A report object
+        session (BmdsSession): the current model session
+
+    Raises:
+        ValueError: if no models are available in the session
+    """
+    if len(session.models) == 0:
+        raise ValueError("No models available")
+
+    styles = report.styles
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+
+    rows = session.models[0][0].settings.docx_table_data()
+    tbl = report.document.add_table(len(rows), 2, style=styles.table)
+    for idx, (key, value) in enumerate(rows):
+        write_cell(tbl.cell(idx, 0), key, style=hdr)
+        write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
+
 def multistage_cancer_prior() -> ModelPriors:
     # fmt: off
     priors = [
@@ -331,11 +357,10 @@ class MultitumorBase:
             data.extend(dataset.rows(extras))
         return pd.DataFrame(data)
 
-   
 
     def to_docx(
         self,
-        report: Report = None,
+        report: Report | None = None,
         header_level: int = 1,
         dataset_format_long: bool = True,
         all_models: bool = False,
@@ -369,7 +394,7 @@ class MultitumorBase:
             reporting.write_dataset_table(report, dataset, dataset_format_long)
 
         report.document.add_paragraph("Input Settings", h2)
-        # reporting.write_inputs_table(report, self)
+        write_inputs_table(report, self)
 
 
         # report.document.add_paragraph("Frequentist Summary", h2)
