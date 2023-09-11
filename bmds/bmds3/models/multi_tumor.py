@@ -1,14 +1,13 @@
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 import numpy as np
 import pandas as pd
 
-from ... import bmdscore, constants
+from ... import bmdscore
 from ...constants import Version
 from ...datasets.dichotomous import DichotomousDataset
 from ...reporting.footnotes import TableFootnote
 from ...reporting.styling import Report, add_mpl_figure, set_column_width, write_cell
-from ...utils import citation
 from ...version import __version__
 from .. import reporting
 from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
@@ -24,9 +23,7 @@ from ..types.sessions import VersionSchema
 from .base import InputModelSettings
 from .dichotomous import Multistage
 
-if TYPE_CHECKING:
-    from ..models.base import BmdModel
-    from ..sessions import BmdsSession
+
 def write_pvalue_header(cell, style):
     # write _P_-Value cell; requires run for italics
     p = cell.paragraphs[0]
@@ -34,7 +31,9 @@ def write_pvalue_header(cell, style):
     p.add_run("P").italic = True
     p.add_run("-Value")
 
+
 def write_frequentist_table(report: Report, session):
+    """Add frequentist table to document."""
     styles = report.styles
     hdr = report.styles.tbl_header
     body = report.styles.tbl_body
@@ -54,27 +53,27 @@ def write_frequentist_table(report: Report, session):
 
     # write body
     recommended_index = None
-        # (
-        #     session.recommender.results.recommended_model_index
-        #     if session.has_recommended_model
-        #     else None
-        # )
-    selected_index = session.model_index
-    recommendations = session.recommender.results if session.recommendation_enabled else None
+    # (
+    #     session.recommender.results.recommended_model_index
+    #     if session.has_recommended_model
+    #     else None
+    # )
+    selected_index = 0
+    recommendations = None
     for idx, model in enumerate(session.models):
         row = idx + 1
-        write_cell(tbl.cell(row, 0), model.name(), body)
-        if recommended_index == idx:
-            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
-        if selected_index == idx:
-            footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], session.selected.notes)
-        write_cell(tbl.cell(row, 1), model.results.bmdl, body)
-        write_cell(tbl.cell(row, 2), model.results.bmd, body)
-        write_cell(tbl.cell(row, 3), model.results.bmdu, body)
-        write_cell(tbl.cell(row, 4), model.get_gof_pvalue(), body)
-        write_cell(tbl.cell(row, 5), model.results.fit.aic, body)
-        write_cell(tbl.cell(row, 6), model.results.gof.roi, body)
-        write_cell(tbl.cell(row, 7), model.results.gof.residual[0], body)
+        write_cell(tbl.cell(row, 0), "Model Name", body)
+        # if recommended_index == idx:
+        #     footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
+        # if selected_index == idx:
+        #     footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], session.selected.notes)
+        write_cell(tbl.cell(row, 1), model[0].results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model[0].results.bmd, body)
+        write_cell(tbl.cell(row, 3), model[0].results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model[0].get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 5), model[0].results.fit.aic, body)
+        write_cell(tbl.cell(row, 6), model[0].results.gof.roi, body)
+        write_cell(tbl.cell(row, 7), model[0].results.gof.residual[0], body)
 
         cell = tbl.cell(row, 8)
         if recommendations:
@@ -96,19 +95,9 @@ def write_frequentist_table(report: Report, session):
     if len(footnotes) > 0:
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
+
 def write_inputs_table(report: Report, session):
-    """Add an input summary table to the document.
-
-    Assumes that all settings are consistent across models in a session; finds the model
-    with the maximum multistage/polynomial degree to write inputs.
-
-    Args:
-        report (Report): A report object
-        session (BmdsSession): the current model session
-
-    Raises:
-        ValueError: if no models are available in the session
-    """
+    """Add an input summary table to the document."""
     if len(session.models) == 0:
         raise ValueError("No models available")
 
@@ -121,6 +110,7 @@ def write_inputs_table(report: Report, session):
     for idx, (key, value) in enumerate(rows):
         write_cell(tbl.cell(idx, 0), key, style=hdr)
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
+
 
 def multistage_cancer_prior() -> ModelPriors:
     # fmt: off
@@ -357,7 +347,6 @@ class MultitumorBase:
             data.extend(dataset.rows(extras))
         return pd.DataFrame(data)
 
-
     def to_docx(
         self,
         report: Report | None = None,
@@ -396,9 +385,8 @@ class MultitumorBase:
         report.document.add_paragraph("Input Settings", h2)
         write_inputs_table(report, self)
 
-
-        # report.document.add_paragraph("Frequentist Summary", h2)
-        # write_frequentist_table(report, self)
+        report.document.add_paragraph("Frequentist Summary", h2)
+        write_frequentist_table(report, self)
         # if all_models:
         #     report.document.add_paragraph("Individual Model Results", h2)
         #     reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
@@ -412,7 +400,7 @@ class MultitumorBase:
         #         report.document.add_paragraph("No model was selected as a best-fitting model.")
 
         # if citation:
-            # reporting.write_citation(report, self.datasets[0], header_level + 1)
+        # reporting.write_citation(report, self.datasets[0], header_level + 1)
 
         return report.document
 
