@@ -391,5 +391,7 @@ class NestedDichotomousResult(BaseModel):
                 return self.litter.roi
             case "roi_control":
                 return self.litter.scaled_residuals[0]  # TODO - ?
+            case "n_params":
+                return len(self.parameters)
             case _:
                 raise ValueError(f"Unknown parameter: {parameter}")

@@ -176,45 +176,30 @@ class Recommender:
             return
 
         # determine which approach to use for best-fitting model
-        is_nested = dataset.dtype == NESTED_DICHOTOMOUS
-        bmd_ratio = self._get_bmdl_ratio(is_nested, model_subset)
+        bmd_ratio = self._get_bmdl_ratio(model_subset)
         field = "aic" if bmd_ratio <= self.settings.sufficiently_close_bmdl else "bmdl"
         self.results.recommended_model_variable = field
 
         # get and set recommended model
-        model_subset = self._get_recommended_models(is_nested, model_subset, field)
-        model = self._get_parsimonious_model(is_nested, model_subset)
+        model_subset = self._get_recommended_models(model_subset, field)
+        model = self._get_parsimonious_model(model_subset)
         self.results.recommended_model_index = models.index(model)
 
-    def _get_bmdl_ratio(self, is_nested: bool, models: list[BmdModel]) -> float:
+    def _get_bmdl_ratio(self, models: list[BmdModel]) -> float:
         """Return BMDL ratio in list of models."""
-        bmdls = (
-            [model.results.summary.bmdl for model in models]
-            if is_nested
-            else [model.results.bmdl for model in models]
-        )
+        bmdls = [model.results.get_parameter("bmdl") for model in models]
         bmdls = [bmdl for bmdl in bmdls if bmdl > 0]
         return max(bmdls) / min(bmdls)
 
-    def _get_recommended_models(
-        self, is_nested: bool, models: list[BmdModel], field: str
-    ) -> list[BmdModel]:
+    def _get_recommended_models(self, models: list[BmdModel], field: str) -> list[BmdModel]:
         """
         Returns a list of models which have the minimum target field value
         for a given field name (AIC or BMDL).
         """
         if field == "aic":
-            values = (
-                [model.results.summary.aic for model in models]
-                if is_nested
-                else [model.results.fit.aic for model in models]
-            )
+            values = [model.results.get_parameter("aic") for model in models]
         elif field == "bmdl":
-            values = (
-                [model.results.summary.bmdl for model in models]
-                if is_nested
-                else [model.results.bmdl for model in models]
-            )
+            values = [model.results.get_parameter("bmdl") for model in models]
         else:
             raise ValueError(f"Unknown target field: {field}")
 
@@ -222,16 +207,13 @@ class Recommender:
         matches = np.where(values == values.min())[0].tolist()
         return [models[i] for i in matches]
 
-    def _get_parsimonious_model(self, is_nested: bool, models: list[BmdModel]) -> BmdModel:
+    def _get_parsimonious_model(self, models: list[BmdModel]) -> BmdModel:
         """
         Return the most parsimonious model of all available models. The most
         parsimonious model is defined as the model with the fewest number of
         parameters.
         """
-        if is_nested:
-            params = [len(model.results.parameters) for model in models]
-        else:
-            params = [len(model.results.parameters.values) for model in models]
+        params = [model.results.get_parameter("n_params") for model in models]
         idx = params.index(min(params))
         return models[idx]
 

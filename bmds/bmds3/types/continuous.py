@@ -625,5 +625,7 @@ class ContinuousResult(BaseModel):
                 return self.gof.roi
             case "roi_control":
                 return self.gof.residual[0]
+            case "n_params":
+                return len(self.parameters.values)
             case _:
                 raise ValueError(f"Unknown parameter: {parameter}")
