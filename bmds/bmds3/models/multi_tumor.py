@@ -62,7 +62,7 @@ def write_frequentist_table(report: Report, session):
     recommendations = None
     for idx, model in enumerate(session.models):
         row = idx + 1
-        write_cell(tbl.cell(row, 0), "Model Name", body)
+        write_cell(tbl.cell(row, 0), model[0].name(), body)
         # if recommended_index == idx:
         #     footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
         # if selected_index == idx:
@@ -110,6 +110,21 @@ def write_inputs_table(report: Report, session):
     for idx, (key, value) in enumerate(rows):
         write_cell(tbl.cell(idx, 0), key, style=hdr)
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
+
+def write_models(report: Report, session, bmd_cdf_table: bool, header_level: int):
+    for model in session.models:
+        write_model(report, model, bmd_cdf_table, header_level)
+
+
+def write_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
+    styles = report.styles
+    header_style = styles.get_header_style(header_level)
+    report.document.add_paragraph(model[0].name(), header_style)
+    # if model.has_results:
+    report.document.add_paragraph(add_mpl_figure(report.document, model[0].plot(), 6))
+        # if bmd_cdf_table:
+        #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+    report.document.add_paragraph(model[0].text(), styles.fixed_width)
 
 
 def multistage_cancer_prior() -> ModelPriors:
@@ -388,8 +403,8 @@ class MultitumorBase:
         report.document.add_paragraph("Frequentist Summary", h2)
         write_frequentist_table(report, self)
         # if all_models:
-        #     report.document.add_paragraph("Individual Model Results", h2)
-        #     reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
+        report.document.add_paragraph("Individual Model Results", h2)
+        write_models(report, self, bmd_cdf_table, header_level + 2)
         # else:
         #     report.document.add_paragraph("Selected Model", h2)
         #     if self.selected.model:
