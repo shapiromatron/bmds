@@ -2,7 +2,6 @@ import math
 from typing import ClassVar
 
 import numpy as np
-from pydantic import root_validator
 
 from .. import constants, plotting
 from ..utils import str_list
@@ -141,7 +140,7 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
         )
         return ds
 
-    @root_validator(skip_on_failure=True)
+    # @root_validator(skip_on_failure=True)
     @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])

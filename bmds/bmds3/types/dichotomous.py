@@ -1,9 +1,9 @@
 import ctypes
 from enum import IntEnum
-from typing import Self
+from typing import Annotated, Self
 
 import numpy as np
-from pydantic import Field, ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
@@ -19,7 +19,6 @@ from .structs import (
     DichotomousPgofResultStruct,
     DichotomousStructs,
 )
-from typing_extensions import Annotated
 
 
 class DichotomousRiskType(IntEnum):
@@ -79,7 +78,7 @@ class DichotomousModelSettings(BaseModel):
             bmr=self.bmr_text,
             confidence_level=self.confidence_level,
             degree=self.degree,
-            model_class=self.priors.prior_class.name,
+            bmds_model_class=self.priors.prior_class.name,
         )
 
 
@@ -148,7 +147,7 @@ class DichotomousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    model_df: float
+    bmds_model_df: float
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -166,7 +165,7 @@ class DichotomousModelResult(BaseModel):
             aic=summary.aic,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
-            model_df=result.model_df,
+            bmds_model_df=result.bmds_model_df,
             total_df=result.total_df,
             bmd_dist=arr,
         )

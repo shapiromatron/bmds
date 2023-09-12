@@ -49,12 +49,12 @@ class BmdsSession:
         self.dataset = dataset
         self.models: list[BmdModel] = []
         self.ma_weights: npt.NDArray | None = None
-        self.model_average: BmdModelAveraging | None = None
+        self.bmds_model_average: BmdModelAveraging | None = None
         self.recommendation_settings: RecommenderSettings | None = recommendation_settings
         self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
+    def add_default_bayesian_models(self, global_settings: dict = None, bmds_model_average: bool = True):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -63,7 +63,7 @@ class BmdsSession:
                 model_settings.update(degree=2)
             self.add_model(name, settings=model_settings)
 
-        if model_average and self.dataset.dtype is constants.Dtype.DICHOTOMOUS:
+        if bmds_model_average and self.dataset.dtype is constants.Dtype.DICHOTOMOUS:
             self.add_model_averaging()
 
     def add_default_models(self, global_settings=None):
@@ -104,7 +104,7 @@ class BmdsSession:
         if weights or self.ma_weights is None:
             self.set_ma_weights(weights)
         instance = ma.BmdModelAveragingDichotomous(session=self, models=copy(self.models))
-        self.model_average = instance
+        self.bmds_model_average = instance
 
     def execute(self):
         # execute individual models
@@ -112,8 +112,8 @@ class BmdsSession:
             model.execute_job()
 
         # execute model average
-        if self.model_average is not None:
-            self.model_average.execute_job()
+        if self.bmds_model_average is not None:
+            self.bmds_model_average.execute_job()
 
     @property
     def recommendation_enabled(self):
@@ -179,9 +179,9 @@ class BmdsSession:
         model_base_class = BmdModelSchema.get_subclass(dtype)
         data["dataset"] = dataset
         data["models"] = [model_base_class.parse_obj(model_) for model_ in data["models"]]
-        ma = data.get("model_average")
+        ma = data.get("bmds_model_average")
         if ma:
-            data["model_average"] = BmdModelAveragingSchema.get_subclass(dtype).parse_obj(ma)
+            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).parse_obj(ma)
         if tuple(version) == Bmds330.version_tuple:
             return Bmds330Schema.parse_obj(data).deserialize()
         else:
@@ -221,21 +221,21 @@ class BmdsSession:
                 self.recommender.results.update_record(d, model_index)
                 self.selected.update_record(d, model_index)
 
-            if self.model_average:
-                self.model_average.results.update_record_weights(d, model_index)
+            if self.bmds_model_average:
+                self.bmds_model_average.results.update_record_weights(d, model_index)
 
             models.append(d)
 
         # add model average row
-        if self.model_average:
+        if self.bmds_model_average:
             d = dict(
                 **extras,
                 **dataset_dict,
                 model_index=100,
                 model_name="Model average",
             )
-            self.model_average.settings.update_record(d)
-            self.model_average.results.update_record(d)
+            self.bmds_model_average.settings.update_record(d)
+            self.bmds_model_average.results.update_record(d)
             models.append(d)
 
         return pd.DataFrame(models)
@@ -290,7 +290,7 @@ class BmdsSession:
         if self.is_bayesian():
             report.document.add_paragraph("Bayesian Summary", h2)
             reporting.write_bayesian_table(report, self)
-            if self.model_average:
+            if self.bmds_model_average:
                 reporting.plot_bma(report, self)
             if all_models:
                 report.document.add_paragraph("Individual Model Results", h2)
@@ -367,8 +367,8 @@ class Bmds330(BmdsSession):
             models=[model.serialize() for model in self.models],
             selected=self.selected.serialize(),
         )
-        if self.model_average is not None:
-            schema.model_average = self.model_average.serialize(self)
+        if self.bmds_model_average is not None:
+            schema.bmds_model_average = self.bmds_model_average.serialize(self)
 
         if self.recommender is not None:
             schema.recommender = self.recommender.serialize()
@@ -381,8 +381,8 @@ class Bmds330Schema(schema.SessionSchemaBase):
         session = Bmds330(dataset=self.dataset.deserialize())
         session.models = [model.deserialize(session.dataset) for model in self.models]
         session.selected = self.selected.deserialize(session)
-        if self.model_average is not None:
-            session.model_average = self.model_average.deserialize(session)
+        if self.bmds_model_average is not None:
+            session.bmds_model_average = self.bmds_model_average.deserialize(session)
         if self.recommender is not None:
             session.recommendation_settings = self.recommender.settings
             session.recommender = self.recommender.deserialize()

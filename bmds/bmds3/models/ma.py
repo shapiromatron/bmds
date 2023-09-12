@@ -38,9 +38,9 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         return self.results
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
-        model_indexes = [session.models.index(model) for model in self.models]
+        bmds_model_indexes = [session.models.index(model) for model in self.models]
         return BmdModelAveragingDichotomousSchema(
-            settings=self.settings, model_indexes=model_indexes, results=self.results
+            settings=self.settings, bmds_model_indexes=bmds_model_indexes, results=self.results
         )
 
     def plot(self, colorize: bool = False):
@@ -101,10 +101,10 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
     settings: DichotomousModelSettings
     results: DichotomousModelAverageResult
-    model_indexes: list[int]
+    bmds_model_indexes: list[int]
 
     def deserialize(self, session) -> BmdModelAveragingDichotomous:
-        models = [session.models[idx] for idx in self.model_indexes]
+        models = [session.models[idx] for idx in self.bmds_model_indexes]
         ma = BmdModelAveragingDichotomous(session=session, models=models, settings=self.settings)
         ma.results = self.results
         return ma

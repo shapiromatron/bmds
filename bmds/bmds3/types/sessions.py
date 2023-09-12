@@ -18,6 +18,6 @@ class SessionSchemaBase(BaseModel):
     version: VersionSchema
     dataset: DatasetSchemaBase
     models: list[BmdModelSchema]
-    model_average: BmdModelAveragingSchema | None = None
+    bmds_model_average: BmdModelAveragingSchema | None = None
     recommender: RecommenderSchema | None = None
     selected: SelectedModelSchema

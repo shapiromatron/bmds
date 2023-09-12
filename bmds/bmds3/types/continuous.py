@@ -4,7 +4,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
@@ -110,7 +110,7 @@ class ContinuousModelSettings(BaseModel):
             confidence_level=self.confidence_level,
             tail_probability=self.tail_prob,
             degree=self.degree,
-            model_class=self.priors.prior_class.name,
+            bmds_model_class=self.priors.prior_class.name,
         )
 
 
@@ -205,7 +205,7 @@ class ContinuousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    model_df: float
+    bmds_model_df: float
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -223,7 +223,7 @@ class ContinuousModelResult(BaseModel):
             aic=summary.aic,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
-            model_df=result.model_df,
+            bmds_model_df=result.bmds_model_df,
             total_df=result.total_df,
             bmd_dist=arr,
         )

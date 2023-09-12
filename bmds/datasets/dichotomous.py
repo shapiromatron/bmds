@@ -3,7 +3,7 @@ from typing import Annotated, ClassVar
 
 import numpy as np
 from matplotlib.figure import Figure
-from pydantic import Field, root_validator
+from pydantic import Field
 from scipy import stats
 
 from .. import constants, plotting
@@ -205,7 +205,7 @@ class DichotomousDatasetSchema(DatasetSchemaBase):
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    @root_validator(skip_on_failure=True)
+    # @root_validator(skip_on_failure=True)
     @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])

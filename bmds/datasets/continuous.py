@@ -4,7 +4,7 @@ from typing import Annotated, ClassVar
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from pydantic import Field, root_validator
+from pydantic import Field
 from scipy import stats
 
 from .. import constants, plotting
@@ -228,7 +228,7 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    @root_validator(skip_on_failure=True)
+    # @model_validator(skip_on_failure=True)
     @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])
@@ -431,7 +431,7 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    @root_validator(skip_on_failure=True)
+    # @model_validator(skip_on_failure=True)
     @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])

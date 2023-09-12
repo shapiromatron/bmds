@@ -92,7 +92,7 @@ class BmdModelContinuous(BmdModel):
     def serialize(self) -> "BmdModelContinuousSchema":
         return BmdModelContinuousSchema(
             name=self.name(),
-            model_class=self.bmd_model_class,
+            bmds_model_class=self.bmd_model_class,
             settings=self.settings,
             results=self.results,
         )
@@ -118,7 +118,7 @@ class BmdModelContinuous(BmdModel):
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str
-    model_class: ContinuousModel
+    bmds_model_class: ContinuousModel
     settings: ContinuousModelSettings
     results: ContinuousResult | None = None
 
@@ -301,7 +301,7 @@ def get_model_class(data: BmdModelContinuousSchema) -> type[BmdModelContinuous]:
     Linear/Polynomial because they have the same model class enum in C++, but different
     python classes. Thus we specify by the degree as well.
     """
-    if data.model_class.id == ContinuousModelIds.c_polynomial.value:
+    if data.bmds_model_class.id == ContinuousModelIds.c_polynomial.value:
         return Linear if data.settings.degree == 1 else Polynomial
     else:
-        return _bmd_model_map[data.model_class.id]
+        return _bmd_model_map[data.bmds_model_class.id]

@@ -20,9 +20,9 @@ class TestBmds330:
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
         # -> models (with results)
         assert len(d["models"]) == 10
-        assert list(d["models"][0].keys()) == ["name", "model_class", "settings", "results"]
+        assert list(d["models"][0].keys()) == ["name", "bmds_model_class", "settings", "results"]
         # -> models average
-        assert d["model_average"] is None
+        assert d["bmds_model_average"] is None
         # -> models recommendation
         assert d["recommender"]["settings"]["enabled"] is True
         assert d["recommender"]["results"]["recommended_model_variable"] == "aic"
@@ -55,9 +55,9 @@ class TestBmds330:
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
         assert d["dataset"]["doses"] == [0.0, 50.0, 100.0, 150.0, 200.0]
         assert len(d["models"]) == 10
-        assert list(d["models"][0].keys()) == ["name", "model_class", "settings", "results"]
-        assert d["model_average"]["model_indexes"] == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        assert "bmd" in d["model_average"]["results"]
+        assert list(d["models"][0].keys()) == ["name", "bmds_model_class", "settings", "results"]
+        assert d["bmds_model_average"]["bmds_model_indexes"] == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert "bmd" in d["bmds_model_average"]["results"]
 
         # ensure we can convert back to a session
         session2 = BmdsSession.from_serialized(json.loads(json.dumps(d)))
