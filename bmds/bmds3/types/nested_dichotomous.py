@@ -1,6 +1,7 @@
 from enum import IntEnum
 
-from pydantic import BaseModel, confloat, conint
+from pydantic import Field, BaseModel
+from typing_extensions import Annotated
 
 
 class NestedDichotomousRiskType(IntEnum):
@@ -25,13 +26,13 @@ _bmr_text_map = {
 
 
 class NestedDichotomousModelSettings(BaseModel):
-    bmr: confloat(gt=0) = 0.1
-    alpha: confloat(gt=0, lt=1) = 0.05
+    bmr: Annotated[float, Field(gt=0)] = 0.1
+    alpha: Annotated[float, Field(gt=0, lt=1)] = 0.05
     bmr_type: NestedDichotomousRiskType = NestedDichotomousRiskType.ExtraRisk
     litter_specific_covariate: NestedDichotomousLSCType = NestedDichotomousLSCType.ControlGroupMean
     background: NestedDichotomousBackgroundType = NestedDichotomousBackgroundType.Estimated
-    bootstrap_iterations: conint(gt=0) = 1
-    bootstrap_seed: conint(gt=0) = 0
+    bootstrap_iterations: Annotated[int, Field(gt=0)] = 1
+    bootstrap_seed: Annotated[int, Field(gt=0)] = 0
 
     def bmr_text(self) -> str:
         return _bmr_text_map[self.bmr_type].format(self.bmr)

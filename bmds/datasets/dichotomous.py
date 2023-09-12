@@ -1,9 +1,9 @@
 import math
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 import numpy as np
 from matplotlib.figure import Figure
-from pydantic import confloat, root_validator
+from pydantic import Field, root_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -197,15 +197,16 @@ class DichotomousDataset(DatasetBase):
 class DichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: list[confloat(ge=0)]
-    ns: list[confloat(gt=0)]
-    incidences: list[confloat(ge=0)]
-    plotting: DatasetPlottingSchema | None
+    doses: list[Annotated[float, Field(ge=0)]]
+    ns: list[Annotated[float, Field(gt=0)]]
+    incidences: list[Annotated[float, Field(ge=0)]]
+    plotting: DatasetPlottingSchema | None = None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
     @root_validator(skip_on_failure=True)
+    @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])
         n_ns = len(values["ns"])

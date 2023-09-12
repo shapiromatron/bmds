@@ -1,10 +1,10 @@
 import math
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from pydantic import confloat, root_validator
+from pydantic import Field, root_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -218,17 +218,18 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: list[confloat(ge=0)]
-    ns: list[confloat(gt=0)]
+    doses: list[Annotated[float, Field(ge=0)]]
+    ns: list[Annotated[float, Field(gt=0)]]
     means: list[float]
-    stdevs: list[confloat(ge=0)]
-    anova: AnovaTests | None
-    plotting: DatasetPlottingSchema | None
+    stdevs: list[Annotated[float, Field(ge=0)]]
+    anova: AnovaTests | None = None
+    plotting: DatasetPlottingSchema | None = None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
     @root_validator(skip_on_failure=True)
+    @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])
         n_ns = len(values["ns"])
@@ -423,14 +424,15 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: list[confloat(ge=0)]
+    doses: list[Annotated[float, Field(ge=0)]]
     responses: list[float]
-    anova: AnovaTests | None
+    anova: AnovaTests | None = None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
     @root_validator(skip_on_failure=True)
+    @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])
         n_responses = len(values["responses"])

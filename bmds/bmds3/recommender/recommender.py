@@ -4,7 +4,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, validator
+from pydantic import field_validator, BaseModel
 
 from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, LogicBin
 from ...datasets import DatasetBase
@@ -47,7 +47,8 @@ class RecommenderSettings(BaseModel):
 
     _default: str | None = None
 
-    @validator("rules")
+    @field_validator("rules")
+    @classmethod
     def rules_all_classes(cls, rules):
         rule_classes = set(rule.rule_class for rule in rules)
         all_rule_classes = set(RuleClass.__members__)
@@ -79,8 +80,8 @@ class RecommenderSettings(BaseModel):
 
 
 class RecommenderResults(BaseModel):
-    recommended_model_index: int | None
-    recommended_model_variable: str | None
+    recommended_model_index: int | None = None
+    recommended_model_variable: str | None = None
     model_bin: list[LogicBin] = []
     model_notes: list[dict[int, list[str]]] = []
 
@@ -105,7 +106,7 @@ class RecommenderResults(BaseModel):
 
 class RecommenderSchema(BaseModel):
     settings: RecommenderSettings
-    results: RecommenderResults | None
+    results: RecommenderResults | None = None
 
     def deserialize(self) -> "Recommender":
         recommender = Recommender(self.settings)

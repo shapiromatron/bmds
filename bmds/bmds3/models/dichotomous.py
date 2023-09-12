@@ -95,7 +95,7 @@ class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
     model_class: DichotomousModel
     settings: DichotomousModelSettings
-    results: DichotomousResult | None
+    results: DichotomousResult | None = None
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
         Model = bmd_model_map[self.model_class.id]

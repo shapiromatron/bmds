@@ -142,6 +142,7 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
         return ds
 
     @root_validator(skip_on_failure=True)
+    @classmethod
     def num_groups(cls, values):
         n_doses = len(values["doses"])
         n_litter_ns = len(values["litter_ns"])

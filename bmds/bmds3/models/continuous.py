@@ -120,7 +120,7 @@ class BmdModelContinuousSchema(BmdModelSchema):
     name: str
     model_class: ContinuousModel
     settings: ContinuousModelSettings
-    results: ContinuousResult | None
+    results: ContinuousResult | None = None
 
     def deserialize(self, dataset: ContinuousDatasets) -> BmdModelContinuous:
         Model = get_model_class(self)

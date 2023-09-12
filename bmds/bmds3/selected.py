@@ -1,10 +1,11 @@
-from pydantic import BaseModel, conint
+from pydantic import Field, BaseModel
 
 from .models.base import BmdModel
+from typing_extensions import Annotated
 
 
 class SelectedModelSchema(BaseModel):
-    model_index: conint(ge=0) | None = None
+    model_index: Annotated[int, Field(ge=0)] | None = None
     notes: str = ""
 
     def deserialize(self, session) -> "SelectedModel":

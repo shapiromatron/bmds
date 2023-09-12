@@ -25,7 +25,7 @@ class Prior(BaseModel):
 class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: list[Prior]  # priors for main model
-    variance_priors: list[Prior] | None  # priors for variance model (continuous-only)
+    variance_priors: list[Prior] | None = None  # priors for variance model (continuous-only)
 
     def __str__(self) -> str:
         return self.tbl()
