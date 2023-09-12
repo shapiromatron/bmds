@@ -11,6 +11,7 @@ from ...reporting.styling import Report, add_mpl_figure, set_column_width, write
 from ...version import __version__
 from .. import reporting
 from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
+from ..reporting import write_pvalue_header
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.multi_tumor import (
     MultitumorAnalysis,
@@ -22,14 +23,6 @@ from ..types.priors import ModelPriors, Prior
 from ..types.sessions import VersionSchema
 from .base import InputModelSettings
 from .dichotomous import Multistage
-
-
-def write_pvalue_header(cell, style):
-    # write _P_-Value cell; requires run for italics
-    p = cell.paragraphs[0]
-    p.style = style
-    p.add_run("P").italic = True
-    p.add_run("-Value")
 
 
 def write_frequentist_table(report: Report, session):
@@ -111,6 +104,7 @@ def write_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 0), key, style=hdr)
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
+
 def write_models(report: Report, session, bmd_cdf_table: bool, header_level: int):
     for model in session.models:
         write_model(report, model, bmd_cdf_table, header_level)
@@ -122,8 +116,8 @@ def write_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
     report.document.add_paragraph(model[0].name(), header_style)
     # if model.has_results:
     report.document.add_paragraph(add_mpl_figure(report.document, model[0].plot(), 6))
-        # if bmd_cdf_table:
-        #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+    # if bmd_cdf_table:
+    #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
     report.document.add_paragraph(model[0].text(), styles.fixed_width)
 
 
