@@ -2,8 +2,9 @@
 mkdocs-material==9.0.6
 
 # tests
-pytest==7.2.1
+pytest==7.4.0
 pytest-mpl==0.16.1
+coverage==7.3.0
 
 # lint and formatting tools
 black==23.3.0
