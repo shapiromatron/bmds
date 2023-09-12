@@ -134,13 +134,13 @@ class BmdsSession:
     def has_recommended_model(self) -> bool:
         return (
             self.recommendation_enabled
-            and self.recommender.results.recommended_model_index is not None
+            and self.recommender.results.recommended_bmds_model_index is not None
         )
 
     def accept_recommendation(self):
         """Select the recommended model, if one exists."""
         if self.has_recommended_model:
-            index = self.recommender.results.recommended_model_index
+            index = self.recommender.results.recommended_bmds_model_index
             self.select(self.models[index], "Selected as best-fitting model")
         else:
             self.select(None, "No model was selected as a best-fitting model")
@@ -175,15 +175,15 @@ class BmdsSession:
         except KeyError:
             raise ValueError("Invalid JSON format")
 
-        dataset = DatasetSchemaBase.get_subclass(dtype).parse_obj(data["dataset"])
+        dataset = DatasetSchemaBase.get_subclass(dtype).model_validate(data["dataset"])
         model_base_class = BmdModelSchema.get_subclass(dtype)
         data["dataset"] = dataset
-        data["models"] = [model_base_class.parse_obj(model_) for model_ in data["models"]]
+        data["models"] = [model_base_class.model_validate(model_) for model_ in data["models"]]
         ma = data.get("bmds_model_average")
         if ma:
-            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).parse_obj(ma)
+            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).model_validate(ma)
         if tuple(version) == Bmds330.version_tuple:
-            return Bmds330Schema.parse_obj(data).deserialize()
+            return Bmds330Schema.model_validate(data).deserialize()
         else:
             raise ValueError("Unknown BMDS version")
 
@@ -208,21 +208,21 @@ class BmdsSession:
 
         # add a row for each model
         models = []
-        for model_index, model in enumerate(self.models):
+        for bmds_model_index, model in enumerate(self.models):
             d: dict[str, Any] = {
                 **extras,
                 **dataset_dict,
-                **dict(model_index=model_index, model_name=model.name()),
+                **dict(bmds_model_index=bmds_model_index, model_name=model.name()),
             }
             model.settings.update_record(d)
             model.results.update_record(d)
 
             if self.recommendation_enabled and self.recommender.results is not None:
-                self.recommender.results.update_record(d, model_index)
-                self.selected.update_record(d, model_index)
+                self.recommender.results.update_record(d, bmds_model_index)
+                self.selected.update_record(d, bmds_model_index)
 
             if self.bmds_model_average:
-                self.bmds_model_average.results.update_record_weights(d, model_index)
+                self.bmds_model_average.results.update_record_weights(d, bmds_model_index)
 
             models.append(d)
 
@@ -231,7 +231,7 @@ class BmdsSession:
             d = dict(
                 **extras,
                 **dataset_dict,
-                model_index=100,
+                bmds_model_index=100,
                 model_name="Model average",
             )
             self.bmds_model_average.settings.update_record(d)

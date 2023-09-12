@@ -39,7 +39,7 @@ class DichotomousDataset(DatasetBase):
         self.ns = ns
         self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences, strict=True)]
-        self.metadata = DatasetMetadata.parse_obj(metadata)
+        self.metadata = DatasetMetadata.model_validate(metadata)
         self._sort_by_dose_group()
         self._validate()
 

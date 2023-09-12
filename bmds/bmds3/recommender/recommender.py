@@ -62,7 +62,7 @@ class RecommenderSettings(BaseModel):
         if cls._default is None:
             path = Path(__file__).parent / "default.json"
             cls._default = path.read_text()
-        return cls.parse_raw(cls._default)
+        return cls.model_validate_json(cls._default)
 
     def to_df(self) -> pd.DataFrame:
         df = pd.DataFrame(
@@ -121,7 +121,7 @@ class Recommender:
 
     def __init__(self, settings: RecommenderSettings | None = None):
         if settings is not None:
-            settings = RecommenderSettings.parse_obj(settings)
+            settings = RecommenderSettings.model_validate(settings)
         else:
             settings = RecommenderSettings.build_default()
         self.settings: RecommenderSettings = settings

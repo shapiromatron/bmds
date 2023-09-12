@@ -100,7 +100,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
         self.ns = ns
         self.means = means
         self.stdevs = stdevs
-        self.metadata = DatasetMetadata.parse_obj(metadata)
+        self.metadata = DatasetMetadata.model_validate(metadata)
         self._sort_by_dose_group()
         self._validate()
 
@@ -295,7 +295,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
         data = self._prepare_summary_data(doses, responses)
         for key, value in data.items():
             setattr(self, key, value)
-        self.metadata = DatasetMetadata.parse_obj(metadata)
+        self.metadata = DatasetMetadata.model_validate(metadata)
         self._validate()
 
     def _prepare_summary_data(self, individual_doses, responses):

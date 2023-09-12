@@ -22,7 +22,7 @@ class BmdModelDichotomous(BmdModel):
         elif isinstance(settings, DichotomousModelSettings):
             model_settings = settings
         else:
-            model_settings = DichotomousModelSettings.parse_obj(settings)
+            model_settings = DichotomousModelSettings.model_validate(settings)
 
         # get default values, may require further model customization
         if not isinstance(model_settings.priors, ModelPriors):

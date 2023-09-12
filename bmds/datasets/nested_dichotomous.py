@@ -27,7 +27,7 @@ class NestedDichotomousDataset(DatasetBase):
         self.litter_ns = litter_ns
         self.incidences = incidences
         self.litter_covariates = litter_covariates
-        self.metadata = DatasetMetadata.parse_obj(metadata)
+        self.metadata = DatasetMetadata.model_validate(metadata)
         self._sort_by_dose_group()
         self._validate()
 

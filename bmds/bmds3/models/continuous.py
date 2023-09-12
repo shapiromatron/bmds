@@ -29,7 +29,7 @@ class BmdModelContinuous(BmdModel):
         elif isinstance(settings, ContinuousModelSettings):
             model_settings = settings
         else:
-            model_settings = ContinuousModelSettings.parse_obj(settings)
+            model_settings = ContinuousModelSettings.model_validate(settings)
 
         # only estimate direction if unspecified in settings
         if model_settings.is_increasing is None:

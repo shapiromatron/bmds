@@ -17,7 +17,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         elif isinstance(settings, DichotomousModelSettings):
             return settings
         else:
-            return DichotomousModelSettings.parse_obj(settings)
+            return DichotomousModelSettings.model_validate(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
         structs = DichotomousMAStructs.from_session(
