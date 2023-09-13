@@ -312,7 +312,7 @@ class BmdsSession:
 
 
 class Bmds330(BmdsSession):
-    version_str = constants.BMDS330  # TODO change
+    version_str = constants.BMDS330  # TODO - change
     version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
     model_options = {

@@ -114,9 +114,11 @@ class NestedLogistic(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_logistic.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO - change
         return np.linspace(0, 1, doses.size)
 
     def get_default_prior_class(self) -> PriorClass:
+        # TODO - change
         return PriorClass.frequentist_unrestricted
 
 
@@ -124,9 +126,11 @@ class Nctr(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_nctr.value
 
     def dr_curve(self, doses, params) -> np.ndarray:
+        # TODO - change
         return np.linspace(0, 2, doses.size)
 
     def get_default_prior_class(self) -> PriorClass:
+        # TODO - change
         return PriorClass.frequentist_unrestricted
 
 

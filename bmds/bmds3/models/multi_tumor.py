@@ -105,7 +105,7 @@ def write_docx_model(report: Report, model, bmd_cdf_table: bool, header_level: i
     report.document.add_paragraph(model.name(), header_style)
     if model.has_results:
         report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-        # if bmd_cdf_table: # TODO - add?
+        # if bmd_cdf_table: # TODO - change - add?
         #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
 
@@ -382,7 +382,7 @@ class MultitumorBase:
         Returns:
             A python docx.Document object with content added, session_inputs_table
         """
-        # TODO - implement bmd_cdf_table, all_models, etc?
+        # TODO - change - implement bmd_cdf_table, all_models, etc?
         if report is None:
             report = Report.build_default()
 
@@ -405,7 +405,7 @@ class MultitumorBase:
                 write_docx_model(report, model, bmd_cdf_table, header_level)
 
         if citation:
-            report.document.add_paragraph("TODO - write citation", h2)
+            report.document.add_paragraph("# TODO - change", h2)
 
         return report.document
 

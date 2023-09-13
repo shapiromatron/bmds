@@ -215,7 +215,7 @@ class NestedDichotomousModel(BmdModelSchema):
         return len(self.params)
 
 
-class NestedDichotomousModelChoices(Enum):  # TODO - update model forms
+class NestedDichotomousModelChoices(Enum):  # TODO - change - update params, model_form_str
     d_logistic = NestedDichotomousModel(
         id=NestedDichotomousModelIds.d_nested_logistic.value,
         verbose="Nested Logistic",

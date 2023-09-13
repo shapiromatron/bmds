@@ -45,7 +45,7 @@ class DichotomousModelSettings(BaseModel):
 
     @property
     def confidence_level(self) -> float:
-        return 1 - self.alpha
+        return 1.0 - self.alpha
 
     def tbl(self, show_degree: bool = True) -> str:
         data = [
@@ -292,7 +292,7 @@ class DichotomousParameters(BaseModel):
             self.names,
             self.values,
             self.bounded,
-            self.se[:n_models],  # TODO - shouldn't need to resize these?
+            self.se[:n_models],  # TODO - change
             self.lower_ci[:n_models],
             self.upper_ci[:n_models],
             strict=True,

@@ -64,7 +64,7 @@ class ContinuousModelSettings(BaseModel):
 
     @property
     def confidence_level(self) -> float:
-        return 1 - self.alpha
+        return 1.0 - self.alpha
 
     @property
     def distribution(self) -> str:

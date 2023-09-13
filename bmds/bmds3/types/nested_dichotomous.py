@@ -62,7 +62,7 @@ class NestedDichotomousModelSettings(BaseModel):
 
     @property
     def confidence_level(self) -> float:
-        return 1 - self.alpha
+        return 1.0 - self.alpha
 
     @property
     def restriction_text(self) -> str:
@@ -390,7 +390,7 @@ class NestedDichotomousResult(BaseModel):
             case "roi":
                 return self.litter.roi
             case "roi_control":
-                return self.litter.scaled_residuals[0]  # TODO - ?
+                return self.litter.scaled_residuals[0]  # TODO - change
             case "n_params":
                 return len(self.parameters)
             case _:
