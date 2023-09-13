@@ -175,24 +175,35 @@ class MultitumorBase:
         else:
             return DichotomousModelSettings.parse_obj(settings)
 
+    def _build_model_settings(self) -> list[list[DichotomousModelSettings]]:
+        # Build individual model settings based from inputs
+        settings = []
+        for i, dataset in enumerate(self.datasets):
+            ds_settings = []
+            degree_i = self.degrees[i]
+            degrees_i = (
+                range(degree_i, degree_i + 1) if degree_i > 0 else range(1, dataset.num_dose_groups)
+            )
+            for degree in degrees_i:
+                model_settings = self.settings.copy(
+                    update=dict(degree=degree, priors=multistage_cancer_prior())
+                )
+                ds_settings.append(model_settings)
+            settings.append(ds_settings)
+        return settings
+
     def to_cpp(self) -> MultitumorAnalysis:
+        all_settings = self._build_model_settings()
         dataset_models = []
         dataset_results = []
         ns = []
-        for i, dataset in enumerate(self.datasets):
+        for dataset, dataset_settings in zip(self.datasets, all_settings, strict=True):
             mc_models = []
             self.models.append(mc_models)
             models = []
             results = []
             ns.append(dataset.num_dose_groups)
-            degree_i = self.degrees[i]
-            degrees_i = (
-                range(degree_i, degree_i + 1) if degree_i > 0 else range(2, dataset.num_dose_groups)
-            )
-            for degree in degrees_i:
-                settings = self.settings.copy(
-                    update=dict(degree=degree, priors=multistage_cancer_prior())
-                )
+            for settings in dataset_settings:
                 model = MultistageCancer(dataset, settings=settings)
                 inputs = model._build_inputs()
                 structs = inputs.to_cpp()
@@ -437,13 +448,24 @@ class Multitumor330Schema(MultitumorSchema):
             bmr_type=self.settings.bmr_type,
             alpha=self.settings.alpha,
         )
-        return Multitumor330(
+        mt = Multitumor330(
             datasets=datasets,
             degrees=self.settings.degrees,
             model_settings=settings,
             id=self.id,
             results=self.results,
         )
+        # hydrate models
+        for dataset, ds_settings, ds_results in zip(
+            mt.datasets, mt.results.settings, mt.results.models, strict=True
+        ):
+            models = []
+            for settings, results in zip(ds_settings, ds_results, strict=True):
+                model = MultistageCancer(dataset=dataset, settings=settings)
+                model.results = results
+                models.append(model)
+            mt.models.append(models)
+        return mt
 
 
 class Multitumor(Multitumor330):

@@ -5,7 +5,12 @@ from pydantic import BaseModel, Field
 from ... import bmdscore
 from ...datasets.dichotomous import DichotomousDatasetSchema
 from ...utils import multi_lstrip, pretty_table
-from .dichotomous import DichotomousAnalysisCPPStructs, DichotomousResult, DichotomousRiskType
+from .dichotomous import (
+    DichotomousAnalysisCPPStructs,
+    DichotomousModelSettings,
+    DichotomousResult,
+    DichotomousRiskType,
+)
 from .sessions import VersionSchema
 
 
@@ -31,6 +36,7 @@ class MultitumorResult(BaseModel):
     ll: float
     ll_constant: float
     models: list[list[DichotomousResult]]  # all degrees for all datasets
+    settings: list[list[DichotomousModelSettings]]
     selected_model_indexes: list[int]
     slope_factor: float
     valid_result: list[bool]
@@ -39,9 +45,12 @@ class MultitumorResult(BaseModel):
     def from_model(cls, model) -> Self:
         result: bmdscore.python_multitumor_result = model.structs.result
         i_models = []
+        i_settings = []
         for i, models in enumerate(model.models):
             j_models = []
+            j_settings = []
             i_models.append(j_models)
+            i_settings.append(j_settings)
             for j, m in enumerate(models):
                 m.structs = DichotomousAnalysisCPPStructs(
                     analysis=model.structs.analysis.models[i][j],
@@ -49,6 +58,7 @@ class MultitumorResult(BaseModel):
                 )
                 m.results = DichotomousResult.from_model(m)
                 j_models.append(m.results)
+                j_settings.append(m.settings)
         return cls(
             bmd=result.BMD,
             bmdl=result.BMDL,
@@ -56,6 +66,7 @@ class MultitumorResult(BaseModel):
             ll=result.combined_LL,
             ll_constant=result.combined_LL_const,
             models=i_models,
+            settings=i_settings,
             selected_model_indexes=result.selectedModelIndex,
             slope_factor=result.slopeFactor,
             valid_result=result.validResult,
