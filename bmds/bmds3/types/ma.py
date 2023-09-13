@@ -4,8 +4,7 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ..models.dichotomous import BmdModelDichotomous
 from .common import inspect_cpp_obj
 from .continuous import NumpyFloatArray

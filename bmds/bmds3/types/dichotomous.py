@@ -2,10 +2,9 @@ from enum import IntEnum
 from typing import NamedTuple, Self
 
 import numpy as np
-from pydantic import BaseModel, confloat, conint
+from pydantic import BaseModel, Field
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ...constants import BOOL_ICON
 from ...datasets import DichotomousDataset
 from ...utils import multi_lstrip, pretty_table
@@ -32,12 +31,12 @@ _bmr_text_map = {
 
 
 class DichotomousModelSettings(BaseModel):
-    bmr: confloat(gt=0) = 0.1
-    alpha: confloat(gt=0, lt=1) = 0.05
+    bmr: float = Field(default=0.1, gt=0)
+    alpha: float = Field(default=0.05, gt=0, lt=1)
     bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
-    degree: conint(ge=0, le=8) = 0  # multistage only
-    samples: conint(ge=10, le=1000) = 100
-    burnin: conint(ge=5, le=1000) = 20
+    degree: int = Field(default=0, ge=0, le=8)  # multistage only
+    samples: int = Field(default=100, ge=10, le=1000)
+    burnin: int = Field(default=20, ge=5, le=1000)
     priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property
@@ -46,7 +45,7 @@ class DichotomousModelSettings(BaseModel):
 
     @property
     def confidence_level(self) -> float:
-        return 1 - self.alpha
+        return 1.0 - self.alpha
 
     def tbl(self, show_degree: bool = True) -> str:
         data = [
@@ -116,7 +115,7 @@ class DichotomousAnalysis(BaseModel):
         )
         return self.priors.to_c(degree=degree)
 
-    def to_cpp(self):
+    def to_cpp_analysis(self) -> bmdscore.python_dichotomous_analysis:
         analysis = bmdscore.python_dichotomous_analysis()
         analysis.model = self.model.id
         analysis.n = self.dataset.num_dose_groups
@@ -132,7 +131,9 @@ class DichotomousAnalysis(BaseModel):
         analysis.burnin = self.burnin
         analysis.parms = self.num_params
         analysis.prior_cols = constants.NUM_PRIOR_COLS
+        return analysis
 
+    def to_cpp_result(self, analysis) -> bmdscore.python_dichotomous_model_result:
         result = bmdscore.python_dichotomous_model_result()
         result.model = analysis.model
         result.dist_numE = 200
@@ -140,7 +141,11 @@ class DichotomousAnalysis(BaseModel):
         result.gof = bmdscore.dichotomous_GOF()
         result.bmdsRes = bmdscore.BMDS_results()
         result.aod = bmdscore.dicho_AOD()
+        return result
 
+    def to_cpp(self):
+        analysis = self.to_cpp_analysis()
+        result = self.to_cpp_result(analysis)
         return DichotomousAnalysisCPPStructs(analysis, result)
 
 
@@ -287,7 +292,7 @@ class DichotomousParameters(BaseModel):
             self.names,
             self.values,
             self.bounded,
-            self.se[:n_models],  # TODO - shouldn't need to resize these?
+            self.se[:n_models],  # TODO - change
             self.lower_ci[:n_models],
             self.upper_ci[:n_models],
             strict=True,
@@ -472,3 +477,27 @@ class DichotomousResult(BaseModel):
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],
         )
+
+    def get_parameter(self, parameter: str) -> float:
+        """Get parameter value by name"""
+        match parameter:
+            case "bmd":
+                return self.bmd
+            case "bmdl":
+                return self.bmdl
+            case "bmdu":
+                return self.bmdu
+            case "aic":
+                return self.fit.aic
+            case "dof":
+                return self.gof.df
+            case "pvalue":
+                return self.gof.p_value
+            case "roi":
+                return self.gof.roi
+            case "roi_control":
+                return self.gof.residual[0]
+            case "n_params":
+                return len(self.parameters.values)
+            case _:
+                raise ValueError(f"Unknown parameter: {parameter}")

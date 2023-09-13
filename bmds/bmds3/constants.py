@@ -200,3 +200,31 @@ _pc_restriction = {
     PriorClass.frequentist_unrestricted: "Unrestricted",
     PriorClass.frequentist_restricted: "Restricted",
 }
+
+
+class NestedDichotomousModelIds(IntEnum):
+    d_nested_logistic = 1
+    d_nctr = 2
+
+
+class NestedDichotomousModel(BmdModelSchema):
+    params: tuple[str, ...]
+
+    @property
+    def num_params(self):
+        return len(self.params)
+
+
+class NestedDichotomousModelChoices(Enum):  # TODO - change - update params, model_form_str
+    d_logistic = NestedDichotomousModel(
+        id=NestedDichotomousModelIds.d_nested_logistic.value,
+        verbose="Nested Logistic",
+        params=("alpha", "beta", "theta1", "theta2", "rho", "phi1", "phi2", "phi3", "???"),
+        model_form_str="P[dose] = ...",
+    )
+    d_nctr = NestedDichotomousModel(
+        id=NestedDichotomousModelIds.d_nctr.value,
+        verbose="NCTR",
+        params=("?", "?", "?", "?", "?", "?", "?", "?", "?"),
+        model_form_str="P[dose] = ...",
+    )

@@ -1,9 +1,22 @@
+from dataclasses import dataclass
 from unittest import mock
 
 from bmds.bmds3.constants import BMDS_BLANK_VALUE, DistType
 from bmds.bmds3.recommender import checks
 from bmds.bmds3.recommender.recommender import Rule, RuleClass
 from bmds.constants import Dtype, LogicBin
+
+
+@dataclass
+class ResultMock:
+    pvalue: float
+    dof: float
+
+    def get_parameter(self, el: str):
+        if el == "pvalue":
+            return self.pvalue
+        elif el == "dof":
+            return self.dof
 
 
 class TestChecks:
@@ -13,14 +26,14 @@ class TestChecks:
 
         # good values
         for value in [-1, 0, 1]:
-            model.results.fit.aic = value
+            model.results.get_parameter.return_value = value
             resp = checks.AicExists.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [None, BMDS_BLANK_VALUE]:
-            model.results.fit.aic = value
+            model.results.get_parameter.return_value = value
             resp = checks.AicExists.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "AIC does not exist"
@@ -31,14 +44,14 @@ class TestChecks:
 
         # good values
         for value in [1e-8, 10]:
-            model.results.fit.aic = value
+            model.results.get_parameter.return_value = value
             resp = checks.BmdlExists.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # special bad case for bmdl
         for value in [None, 0, BMDS_BLANK_VALUE]:
-            model.results.bmdl = value
+            model.results.get_parameter.return_value = value
             resp = checks.BmdlExists.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
 
@@ -48,16 +61,14 @@ class TestChecks:
 
         # good values
         for value in [BMDS_BLANK_VALUE, None, 0.1, 0.11]:
-            model.results.gof.p_value = value
-            model.results.gof.df = 1  # we need this additional for RuleClass.gof
+            model.results = ResultMock(value, 1)
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [0.09]:
-            model.results.gof.p_value = value
-            model.results.gof.df = 1  # we need this additional for RuleClass.gof
+            model.results = ResultMock(value, 1)
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Goodness of fit p-value less than 0.1"
@@ -70,14 +81,14 @@ class TestChecks:
 
         # good values
         for value in [-2, 0, 2]:
-            model.results.gof.roi = value
+            model.results.get_parameter.return_value = value
             resp = checks.LargeRoi.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [-2.1, 2.1]:
-            model.results.gof.roi = value
+            model.results.get_parameter.return_value = value
             resp = checks.LargeRoi.check(dataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Abs(Residual of interest) greater than 2.0"
@@ -98,16 +109,14 @@ class TestChecks:
             (0.11, 0),
             (0.01, 0),
         ]:
-            model.results.gof.p_value = p_value
-            model.results.gof.df = df
+            model.results = ResultMock(p_value, df)
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for p_value, df in [(0.01, 1)]:
-            model.results.gof.p_value = p_value
-            model.results.gof.df = df
+            model.results = ResultMock(p_value, df)
             resp = checks.GoodnessOfFit.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Goodness of fit p-value less than 0.1"
@@ -161,14 +170,14 @@ class TestChecks:
 
         # good values
         for value in [0.1, 1]:
-            model.results.gof.df = value
+            model.results.get_parameter.return_value = value
             resp = checks.NoDegreesOfFreedom.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.NO_CHANGE
             assert resp.message == ""
 
         # bad values
         for value in [0]:
-            model.results.gof.df = value
+            model.results.get_parameter.return_value = value
             resp = checks.NoDegreesOfFreedom.check(ddataset, model, settings)
             assert resp.logic_bin == LogicBin.FAILURE
             assert resp.message == "Zero degrees of freedom; saturated model"

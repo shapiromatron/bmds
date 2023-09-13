@@ -22,7 +22,7 @@ venv/
 # created by bmds2.7
 log.txt
 
-# current working version - TODO - remove when released
+# current working version - # TODO - change remove when released
 bmdscore.cp311-*
 bmdscore.cpython-311-*
 bmdscore.pyi

@@ -10,6 +10,10 @@ from .base import DatasetBase, DatasetMetadata, DatasetSchemaBase
 
 
 class NestedDichotomousDataset(DatasetBase):
+    """
+    Dataset object for nested dichotomous datasets.
+    """
+
     _BMDS_DATASET_TYPE = 1  # group data
     MINIMUM_DOSE_GROUPS = 3
     dtype = constants.Dtype.NESTED_DICHOTOMOUS
@@ -105,19 +109,32 @@ class NestedDichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        fig = plotting.create_empty_figure()
-        ax = fig.gca()
-        ax.set_xlabel(self.get_xlabel())
-        ax.set_ylabel(self.get_ylabel())
-        # TODO - replace in BMDS 3.4
-        ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title(self._get_dataset_name())
+        ax = self.setup_plot()
+        ys = np.array(self.incidences) / np.array(self.litter_ns)
+        ax.scatter(
+            self.doses,
+            ys,
+            label="Data",
+            **plotting.DATASET_INDIVIDUAL_FORMAT,
+        )
         ax.legend(**plotting.LEGEND_OPTS)
-        return fig
+        return ax.get_figure()
 
-    def rows(self, extras: dict) -> list[dict]:
+    def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        raise NotImplementedError("TODO")
+        extra = self.metadata.dict()
+        extra.update(extras or {})
+        rows = []
+        for dose, n, incidence, litter_covariate in zip(
+            self.doses, self.litter_ns, self.incidences, self.litter_covariates, strict=True
+        ):
+            rows.append(
+                {
+                    **extra,
+                    **dict(dose=dose, n=n, incidence=incidence, litter_covariate=litter_covariate),
+                }
+            )
+        return rows
 
 
 class NestedDichotomousDatasetSchema(DatasetSchemaBase):

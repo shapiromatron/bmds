@@ -1,4 +1,4 @@
-.PHONY: dev docs docs-serve lint format test test-mpl test-mpl-regenerate clean dist release loc
+.PHONY: dev docs docs-serve lint format test test-mpl test-mpl-regenerate coverage clean dist release loc
 .DEFAULT_GOAL := help
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -49,6 +49,11 @@ test-mpl: ## Run all tests; compare matplotlib figures
 
 test-mpl-regenerate: ## Regenerate matplotlib figures in tests
 	py.test --mpl-generate-path=tests/data/mpl
+
+coverage: ## Run test coverage
+	coverage run -m pytest
+	coverage html -d coverage_report
+	$(BROWSER) coverage_report/index.html
 
 clean: ## Remove all build, test and Python artifacts
 	# remove build artifacts

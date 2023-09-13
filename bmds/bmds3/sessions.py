@@ -9,9 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 from simple_settings import settings
 
-from bmds import bmdscore
-
-from .. import constants
+from .. import bmdscore, constants
 from ..datasets import DatasetSchemaBase, DatasetType
 from ..reporting.styling import Report
 from ..utils import citation
@@ -21,6 +19,7 @@ from .constants import PriorClass
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
+from .models import nested_dichotomous as nd3
 from .models.base import BmdModel, BmdModelAveraging, BmdModelAveragingSchema, BmdModelSchema
 from .recommender import Recommender, RecommenderSettings
 from .selected import SelectedModel
@@ -55,7 +54,9 @@ class BmdsSession:
         self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
+    def add_default_bayesian_models(
+        self, global_settings: dict | None = None, model_average: bool = True
+    ):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -152,6 +153,8 @@ class BmdsSession:
 
     def is_bayesian(self) -> bool:
         """Determine if models are using a bayesian or frequentist approach."""
+        if self.dataset.dtype == constants.Dtype.NESTED_DICHOTOMOUS:
+            return False
         return self.models[0].settings.priors.is_bayesian
 
     def citation(self) -> dict:
@@ -268,14 +271,6 @@ class BmdsSession:
         if report is None:
             report = Report.build_default()
 
-        # remove empty first paragraph, if one exists
-        if len(report.document.paragraphs) > 0:
-            p = report.document.paragraphs[0]
-            if not p.text and not p.runs:
-                el = p._element
-                el.getparent().remove(el)
-                p._p = p._element = None
-
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Session Results", h1)
@@ -297,7 +292,7 @@ class BmdsSession:
 
         else:
             report.document.add_paragraph("Frequentist Summary", h2)
-            reporting.write_frequentist_table(report, self)
+            reporting.write_base_frequentist_table(report, self)
             if all_models:
                 report.document.add_paragraph("Individual Model Results", h2)
                 reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
@@ -317,7 +312,7 @@ class BmdsSession:
 
 
 class Bmds330(BmdsSession):
-    version_str = constants.BMDS330
+    version_str = constants.BMDS330  # TODO - change
     version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
     model_options = {
@@ -350,6 +345,10 @@ class Bmds330(BmdsSession):
             constants.M_Hill: c3.Hill,
             constants.M_ExponentialM3: c3.ExponentialM3,
             constants.M_ExponentialM5: c3.ExponentialM5,
+        },
+        constants.NESTED_DICHOTOMOUS: {
+            constants.M_NestedLogistic: nd3.NestedLogistic,
+            constants.M_Nctr: nd3.Nctr,
         },
     }
 

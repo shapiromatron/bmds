@@ -79,8 +79,8 @@ class RecommenderSettings(BaseModel):
 
 
 class RecommenderResults(BaseModel):
-    recommended_model_index: int | None
-    recommended_model_variable: str | None
+    recommended_model_index: int | None = None
+    recommended_model_variable: str | None = None
     model_bin: list[LogicBin] = []
     model_notes: list[dict[int, list[str]]] = []
 
@@ -177,11 +177,7 @@ class Recommender:
 
         # determine which approach to use for best-fitting model
         bmd_ratio = self._get_bmdl_ratio(model_subset)
-        if bmd_ratio <= self.settings.sufficiently_close_bmdl:
-            field = "aic"
-        else:
-            field = "bmdl"
-
+        field = "aic" if bmd_ratio <= self.settings.sufficiently_close_bmdl else "bmdl"
         self.results.recommended_model_variable = field
 
         # get and set recommended model
@@ -191,7 +187,8 @@ class Recommender:
 
     def _get_bmdl_ratio(self, models: list[BmdModel]) -> float:
         """Return BMDL ratio in list of models."""
-        bmdls = [model.results.bmdl for model in models if model.results.bmdl > 0]
+        bmdls = [model.results.get_parameter("bmdl") for model in models]
+        bmdls = [bmdl for bmdl in bmdls if bmdl > 0]
         return max(bmdls) / min(bmdls)
 
     def _get_recommended_models(self, models: list[BmdModel], field: str) -> list[BmdModel]:
@@ -200,9 +197,9 @@ class Recommender:
         for a given field name (AIC or BMDL).
         """
         if field == "aic":
-            values = np.array([getattr(model.results.fit, field) for model in models])
+            values = np.array([model.results.get_parameter("aic") for model in models])
         elif field == "bmdl":
-            values = np.array([getattr(model.results, field) for model in models])
+            values = np.array([model.results.get_parameter("bmdl") for model in models])
         else:
             raise ValueError(f"Unknown target field: {field}")
 
@@ -215,7 +212,7 @@ class Recommender:
         parsimonious model is defined as the model with the fewest number of
         parameters.
         """
-        params = [len(model.results.parameters.values) for model in models]
+        params = [model.results.get_parameter("n_params") for model in models]
         idx = params.index(min(params))
         return models[idx]
 

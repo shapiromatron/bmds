@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
-from bmds import bmdscore
-
+from ... import bmdscore
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
 from ...utils import multi_lstrip, pretty_table
@@ -65,7 +64,7 @@ class ContinuousModelSettings(BaseModel):
 
     @property
     def confidence_level(self) -> float:
-        return 1 - self.alpha
+        return 1.0 - self.alpha
 
     @property
     def distribution(self) -> str:
@@ -606,3 +605,27 @@ class ContinuousResult(BaseModel):
             residual_of_interest=self.gof.roi,
             residual_at_lowest_dose=self.gof.residual[0],
         )
+
+    def get_parameter(self, parameter: str) -> float:
+        """Get parameter value by name"""
+        match parameter:
+            case "bmd":
+                return self.bmd
+            case "bmdl":
+                return self.bmdl
+            case "bmdu":
+                return self.bmdu
+            case "aic":
+                return self.fit.aic
+            case "dof":
+                return self.tests.dfs[3]
+            case "pvalue":
+                return self.tests.p_values[3]
+            case "roi":
+                return self.gof.roi
+            case "roi_control":
+                return self.gof.residual[0]
+            case "n_params":
+                return len(self.parameters.values)
+            case _:
+                raise ValueError(f"Unknown parameter: {parameter}")

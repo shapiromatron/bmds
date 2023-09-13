@@ -204,11 +204,12 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             dataset_means=str_list(self.means),
         )
 
-    def rows(self, extras: dict) -> list[dict]:
+    def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        metadata = self.metadata.dict()
+        extra = self.metadata.dict()
+        extra.update(extras or {})
         return [
-            {**extras, **metadata, **dict(dose=dose, n=n, mean=mean, stdev=stdev)}
+            {**extra, **dict(dose=dose, n=n, mean=mean, stdev=stdev)}
             for dose, n, mean, stdev in zip(
                 self.doses, self.ns, self.means, self.stdevs, strict=True
             )
@@ -411,11 +412,12 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
             dataset_means=str_list(self.means),
         )
 
-    def rows(self, extras: dict) -> list[dict]:
+    def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        metadata = self.metadata.dict()
+        extra = self.metadata.dict()
+        extra.update(extras or {})
         return [
-            {**extras, **metadata, **dict(dose=dose, response=response)}
+            {**extra, **dict(dose=dose, response=response)}
             for dose, response in zip(self.individual_doses, self.responses, strict=True)
         ]
 
