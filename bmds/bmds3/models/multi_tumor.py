@@ -25,14 +25,18 @@ from .base import InputModelSettings
 from .dichotomous import Multistage
 
 
-def write_frequentist_table(report: Report, session):
+def write_docx_frequentist_table(report: Report, session):
     """Add frequentist table to document."""
     styles = report.styles
     hdr = report.styles.tbl_header
     body = report.styles.tbl_body
 
+    avg_row = len(session.datasets) > 1
+
     footnotes = TableFootnote()
-    tbl = report.document.add_table(len(session.models) + 1, 9, style=styles.table)
+    tbl = report.document.add_table(
+        len(session.models) + 1 + (1 if avg_row else 0), 9, style=styles.table
+    )
 
     write_cell(tbl.cell(0, 0), "Model", style=hdr)
     write_cell(tbl.cell(0, 1), "BMDL", style=hdr)
@@ -44,39 +48,29 @@ def write_frequentist_table(report: Report, session):
     write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
     write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
 
-    # write body
-    recommended_index = None
-    # (
-    #     session.recommender.results.recommended_model_index
-    #     if session.has_recommended_model
-    #     else None
-    # )
-    selected_index = 0
-    recommendations = None
-    for idx, model in enumerate(session.models):
-        row = idx + 1
-        write_cell(tbl.cell(row, 0), model[0].name(), body)
-        # if recommended_index == idx:
-        #     footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], "Recommended best-fitting model")
-        # if selected_index == idx:
-        #     footnotes.add_footnote(tbl.cell(row, 0).paragraphs[0], session.selected.notes)
-        write_cell(tbl.cell(row, 1), model[0].results.bmdl, body)
-        write_cell(tbl.cell(row, 2), model[0].results.bmd, body)
-        write_cell(tbl.cell(row, 3), model[0].results.bmdu, body)
-        write_cell(tbl.cell(row, 4), model[0].get_gof_pvalue(), body)
-        write_cell(tbl.cell(row, 5), model[0].results.fit.aic, body)
-        write_cell(tbl.cell(row, 6), model[0].results.gof.roi, body)
-        write_cell(tbl.cell(row, 7), model[0].results.gof.residual[0], body)
+    if avg_row:
+        write_cell(tbl.cell(1, 0), "Average", body)
+        write_cell(tbl.cell(1, 1), session.results.bmdl, body)
+        write_cell(tbl.cell(1, 2), session.results.bmd, body)
+        write_cell(tbl.cell(1, 3), session.results.bmdu, body)
+        write_cell(tbl.cell(1, 4), "-", body)
+        write_cell(tbl.cell(1, 5), "-", body)
+        write_cell(tbl.cell(1, 6), "-", body)
+        write_cell(tbl.cell(1, 7), "-", body)
+        write_cell(tbl.cell(1, 8), "-", body)
 
-        cell = tbl.cell(row, 8)
-        if recommendations:
-            p = cell.paragraphs[0]
-            p.style = body
-            run = p.add_run(recommendations.bin_text(idx) + "\n")
-            run.bold = True
-            p.add_run(recommendations.notes_text(idx))
-        else:
-            write_cell(tbl.cell(row, 8), "-", body)
+    for ds_idx, model in enumerate(session.models):
+        row = ds_idx + 1 + (1 if avg_row else 0)
+        idx = session.results.selected_model_indexes[ds_idx]
+        write_cell(tbl.cell(row, 0), model[idx].name(), body)
+        write_cell(tbl.cell(row, 1), model[idx].results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model[idx].results.bmd, body)
+        write_cell(tbl.cell(row, 3), model[idx].results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model[idx].get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 5), model[idx].results.fit.aic, body)
+        write_cell(tbl.cell(row, 6), model[idx].results.gof.roi, body)
+        write_cell(tbl.cell(row, 7), model[idx].results.gof.residual[0], body)
+        write_cell(tbl.cell(row, 8), "-", body)
 
     # set column width
     widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
@@ -89,7 +83,7 @@ def write_frequentist_table(report: Report, session):
         footnotes.add_footnote_text(report.document, styles.tbl_footnote)
 
 
-def write_inputs_table(report: Report, session):
+def write_docx_inputs_table(report: Report, session):
     """Add an input summary table to the document."""
     if len(session.models) == 0:
         raise ValueError("No models available")
@@ -105,20 +99,15 @@ def write_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
-def write_models(report: Report, session, bmd_cdf_table: bool, header_level: int):
-    for model in session.models:
-        write_model(report, model, bmd_cdf_table, header_level)
-
-
-def write_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
+def write_docx_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
-    report.document.add_paragraph(model[0].name(), header_style)
-    # if model.has_results:
-    report.document.add_paragraph(add_mpl_figure(report.document, model[0].plot(), 6))
-    # if bmd_cdf_table:
-    #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
-    report.document.add_paragraph(model[0].text(), styles.fixed_width)
+    report.document.add_paragraph(model.name(), header_style)
+    if model.has_results:
+        report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
+        # if bmd_cdf_table: # TODO - add?
+        #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+        report.document.add_paragraph(model.text(), styles.fixed_width)
 
 
 def multistage_cancer_prior() -> ModelPriors:
@@ -371,6 +360,7 @@ class MultitumorBase:
         self,
         report: Report | None = None,
         header_level: int = 1,
+        citation: bool = False,
         dataset_format_long: bool = True,
         all_models: bool = False,
         bmd_cdf_table: bool = False,
@@ -390,8 +380,9 @@ class MultitumorBase:
                 session, which may not always be true
 
         Returns:
-            A python docx.Document object with content added.
+            A python docx.Document object with content added, session_inputs_table
         """
+        # TODO - implement bmd_cdf_table, all_models, etc?
         if report is None:
             report = Report.build_default()
 
@@ -403,24 +394,18 @@ class MultitumorBase:
             reporting.write_dataset_table(report, dataset, dataset_format_long)
 
         report.document.add_paragraph("Input Settings", h2)
-        write_inputs_table(report, self)
+        write_docx_inputs_table(report, self)
 
         report.document.add_paragraph("Frequentist Summary", h2)
-        write_frequentist_table(report, self)
-        # if all_models:
+        write_docx_frequentist_table(report, self)
         report.document.add_paragraph("Individual Model Results", h2)
-        write_models(report, self, bmd_cdf_table, header_level + 2)
-        # else:
-        #     report.document.add_paragraph("Selected Model", h2)
-        #     if self.selected.model:
-        #         reporting.write_model(
-        #             report, self.selected.model, bmd_cdf_table, header_level + 2
-        #         )
-        #     else:
-        #         report.document.add_paragraph("No model was selected as a best-fitting model.")
 
-        # if citation:
-        # reporting.write_citation(report, self.datasets[0], header_level + 1)
+        for dataset_models in self.models:
+            for model in dataset_models:
+                write_docx_model(report, model, bmd_cdf_table, header_level)
+
+        if citation:
+            report.document.add_paragraph("TODO - write citation", h2)
 
         return report.document
 
