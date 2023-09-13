@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, validator
 
-from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, NESTED_DICHOTOMOUS, LogicBin
+from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, LogicBin
 from ...datasets import DatasetBase
 from ..models.base import BmdModel
 from .checks import RULE_MAP, CheckResponse
@@ -79,8 +79,8 @@ class RecommenderSettings(BaseModel):
 
 
 class RecommenderResults(BaseModel):
-    recommended_model_index: int | None
-    recommended_model_variable: str | None
+    recommended_model_index: int | None = None
+    recommended_model_variable: str | None = None
     model_bin: list[LogicBin] = []
     model_notes: list[dict[int, list[str]]] = []
 
@@ -197,13 +197,12 @@ class Recommender:
         for a given field name (AIC or BMDL).
         """
         if field == "aic":
-            values = [model.results.get_parameter("aic") for model in models]
+            values = np.array([model.results.get_parameter("aic") for model in models])
         elif field == "bmdl":
-            values = [model.results.get_parameter("bmdl") for model in models]
+            values = np.array([model.results.get_parameter("bmdl") for model in models])
         else:
             raise ValueError(f"Unknown target field: {field}")
 
-        values = np.array(values)
         matches = np.where(values == values.min())[0].tolist()
         return [models[i] for i in matches]
 
