@@ -94,7 +94,7 @@ class BmdModelDichotomous(BmdModel):
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
-    bmds_model_class: DichotomousModel = Field(...,alias="model_class")
+    bmds_model_class: DichotomousModel = Field(..., alias="model_class")
     settings: DichotomousModelSettings
     results: DichotomousResult | None = None
 

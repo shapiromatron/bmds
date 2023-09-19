@@ -119,7 +119,7 @@ class BmdModelContinuous(BmdModel):
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str
-    bmds_model_class: ContinuousModel = Field(...,alias="model_class")
+    bmds_model_class: ContinuousModel = Field(..., alias="model_class")
     settings: ContinuousModelSettings
     results: ContinuousResult | None = None
 

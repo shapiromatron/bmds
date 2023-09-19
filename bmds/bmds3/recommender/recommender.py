@@ -82,7 +82,9 @@ class RecommenderSettings(BaseModel):
 class RecommenderResults(BaseModel):
     recommended_model_index: int | None = None
     recommended_model_variable: str | None = None
-    bmds_model_bin: list[LogicBin] = Field(default=[], alias="model_bin") #list[LogicBin] = [] # ???
+    bmds_model_bin: list[LogicBin] = Field(
+        default=[], alias="model_bin"
+    )  # list[LogicBin] = [] # ???
 
     bmds_model_notes: list[dict[int, list[str]]] = []
 
