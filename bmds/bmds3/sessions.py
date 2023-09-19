@@ -190,7 +190,7 @@ class BmdsSession:
     # reporting
     # ---------
     def to_dict(self):
-        return self.serialize().dict()
+        return self.serialize().model_dump(by_alias=True)
 
     def to_df(self, extras: dict | None = None) -> pd.DataFrame:
         """Export an executed session to a pandas dataframe
