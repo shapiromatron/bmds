@@ -4,7 +4,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, LogicBin
 from ...datasets import DatasetBase
@@ -82,13 +82,14 @@ class RecommenderSettings(BaseModel):
 class RecommenderResults(BaseModel):
     recommended_model_index: int | None = None
     recommended_model_variable: str | None = None
-    bmds_model_bin: list[LogicBin] = []
+    bmds_model_bin: list[LogicBin] = Field(...,alias="model_bin") #list[LogicBin] = [] # ???
+
     bmds_model_notes: list[dict[int, list[str]]] = []
 
     def bin_text(self, index: int) -> str:
         if self.recommended_model_index == index:
             return f"Recommended - Lowest {self.recommended_model_variable.upper()}"
-        return BIN_TEXT_BMDS3[self.bmds_model_bin[index]]
+        return BIN_TEXT_BMDS3[self.model_bin[index]]
 
     def notes_text(self, index: int) -> str:
         notes = self.bmds_model_notes[index].values()
@@ -134,7 +135,7 @@ class Recommender:
             return
 
         # apply rules to each model
-        bmds_model_bins = []
+        model_bins = []
         bmds_model_notes = []
         for model in models:
             # set defaults
@@ -156,17 +157,17 @@ class Recommender:
                 current_bin = LogicBin.FAILURE
                 notes[LogicBin.FAILURE].append("Did not successfully execute.")
 
-            bmds_model_bins.append(current_bin)
+            model_bins.append(current_bin)
             bmds_model_notes.append(notes)
 
-        self.results.bmds_model_bin = bmds_model_bins
+        self.results.model_bin = model_bins
         self.results.bmds_model_notes = bmds_model_notes
 
         # get only models in highest bin-category
         valid_model_indicies = []
-        for idx, bmds_model_bin in enumerate(bmds_model_bins):
-            if (self.settings.recommend_viable and bmds_model_bin == LogicBin.NO_CHANGE) or (
-                self.settings.recommend_questionable and bmds_model_bin == LogicBin.WARNING
+        for idx, model_bin in enumerate(model_bins):
+            if (self.settings.recommend_viable and model_bin == LogicBin.NO_CHANGE) or (
+                self.settings.recommend_questionable and model_bin == LogicBin.WARNING
             ):
                 valid_model_indicies.append(idx)
 

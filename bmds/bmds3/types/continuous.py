@@ -110,7 +110,7 @@ class ContinuousModelSettings(BaseModel):
             confidence_level=self.confidence_level,
             tail_probability=self.tail_prob,
             degree=self.degree,
-            bmds_model_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 

@@ -1,6 +1,7 @@
 import ctypes
 
 import numpy as np
+from pydantic import Field
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
@@ -78,7 +79,7 @@ class BmdModelDichotomous(BmdModel):
     def serialize(self) -> "BmdModelDichotomousSchema":
         return BmdModelDichotomousSchema(
             name=self.name(),
-            bmds_model_class=self.bmd_model_class,
+            model_class=self.bmd_model_class,
             settings=self.settings,
             results=self.results,
         )
@@ -93,12 +94,12 @@ class BmdModelDichotomous(BmdModel):
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
-    bmds_model_class: DichotomousModel
+    bmds_model_class: DichotomousModel = Field(...,alias="model_class")
     settings: DichotomousModelSettings
     results: DichotomousResult | None = None
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
-        Model = bmd_model_map[self.bmds_model_class.id]
+        Model = bmd_model_map[self.model_class.id]
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
         return model

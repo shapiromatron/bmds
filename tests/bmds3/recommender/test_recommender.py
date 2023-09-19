@@ -35,7 +35,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.bmds_model_bin == [0, 0]
+        assert session.recommender.results.model_bin == [0, 0]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index == 1
@@ -49,7 +49,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.bmds_model_bin == [1, 1]
+        assert session.recommender.results.model_bin == [1, 1]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index is None

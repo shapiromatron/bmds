@@ -78,7 +78,7 @@ class DichotomousModelSettings(BaseModel):
             bmr=self.bmr_text,
             confidence_level=self.confidence_level,
             degree=self.degree,
-            bmds_model_class=self.priors.prior_class.name,
+            model_class=self.priors.prior_class.name,
         )
 
 
