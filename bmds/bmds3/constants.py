@@ -142,8 +142,8 @@ class ContinuousModelChoices(Enum):
 
 
 class DistType(IntEnum):
-    normal = 1
-    normal_ncv = 2
+    normal = 1  # f(i) = a * x(i)
+    normal_ncv = 2  # f(i) = a * x(i) ^ p
     log_normal = 3
 
     @property

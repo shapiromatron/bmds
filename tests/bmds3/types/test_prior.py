@@ -23,6 +23,18 @@ def mock_prior():
 
 
 class TestModelPriors:
+    def test_get_prior(self, mock_prior):
+        assert mock_prior.get_prior("a").name == "a"
+        assert mock_prior.get_prior("d").name == "d"
+        with pytest.raises(ValueError):
+            mock_prior.get_prior("z")
+
+    def test_update(self, mock_prior):
+        a = mock_prior.get_prior("a")
+        assert a.initial_value == 1
+        mock_prior.update("a", initial_value=2)
+        assert a.initial_value == 2
+
     def test_to_c(self, mock_prior):
         # fmt: off
         assert np.allclose(

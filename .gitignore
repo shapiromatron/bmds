@@ -21,3 +21,6 @@ venv/
 
 # created by bmds2.7
 log.txt
+
+# should only available in next brach
+bmdscore*
