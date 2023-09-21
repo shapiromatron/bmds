@@ -59,14 +59,14 @@ class TestBaseDatasetFunctionality:
             extra=[1, 2, 3],
         )
         assert ds.metadata.extra == [1, 2, 3]
-        assert ds.metadata.dict()["extra"] == [1, 2, 3]
+        assert ds.metadata.model_dump()["extra"] == [1, 2, 3]
 
 
 class TestSchema:
     def test_dichotomous(self, ddataset):
         # check that cycling through serialization returns the same
-        v1 = ddataset.serialize().dict()
-        v2 = bmds.DichotomousDatasetSchema.model_validate(v1).deserialize().serialize().dict()
+        v1 = ddataset.serialize().model_dump()
+        v2 = bmds.DichotomousDatasetSchema.model_validate(v1).deserialize().serialize().model_dump()
         assert v1 == v2
 
         data = deepcopy(v1)
@@ -89,8 +89,8 @@ class TestSchema:
 
     def test_continuous(self, cdataset):
         # check that cycling through serialization returns the same
-        v1 = cdataset.serialize().dict()
-        v2 = bmds.ContinuousDatasetSchema.model_validate(v1).deserialize().serialize().dict()
+        v1 = cdataset.serialize().model_dump()
+        v2 = bmds.ContinuousDatasetSchema.model_validate(v1).deserialize().serialize().model_dump()
         assert v1 == v2
 
         data = deepcopy(v1)
@@ -111,8 +111,13 @@ class TestSchema:
 
     def test_ci_continuous(self, cidataset):
         # check that cycling through serialization returns the same
-        v1 = cidataset.serialize().dict()
-        v2 = bmds.ContinuousIndividualDatasetSchema.model_validate(v1).deserialize().serialize().dict()
+        v1 = cidataset.serialize().model_dump()
+        v2 = (
+            bmds.ContinuousIndividualDatasetSchema.model_validate(v1)
+            .deserialize()
+            .serialize()
+            .model_dump()
+        )
         assert v1 == v2
 
         data = deepcopy(v1)

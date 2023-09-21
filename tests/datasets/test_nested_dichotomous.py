@@ -75,7 +75,7 @@ class TestNestedDichotomousDataset:
 
         # make sure serialize looks correct
         # fmt: off
-        assert ds1.serialize().dict() == {
+        assert ds1.serialize().model_dump() == {
             "dtype": "ND",
             "metadata": {
                 "id": 123,
@@ -114,14 +114,19 @@ class TestNestedDichotomousDataset:
         assert isinstance(ds2, bmds.NestedDichotomousDataset)
 
         # check serialization equality
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestNestedDichotomousSchema:
     def test_schema(self, nd_dataset):
         # check that cycling through serialization returns the same
-        v1 = nd_dataset.serialize().dict()
-        v2 = bmds.NestedDichotomousDatasetSchema.model_validate(v1).deserialize().serialize().dict()
+        v1 = nd_dataset.serialize().model_dump()
+        v2 = (
+            bmds.NestedDichotomousDatasetSchema.model_validate(v1)
+            .deserialize()
+            .serialize()
+            .model_dump()
+        )
         assert v1 == v2
 
         data = deepcopy(v1)

@@ -170,8 +170,8 @@ class DichotomousModelResult(BaseModel):
             bmd_dist=arr,
         )
 
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
+    def model_dump(self, **kw) -> dict:
+        d = super().model_dump(**kw)
         return NumpyFloatArray.listify(d)
 
 
@@ -257,8 +257,8 @@ class DichotomousParameters(BaseModel):
             prior_max_value=priors[4],
         )
 
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
+    def model_dump(self, **kw) -> dict:
+        d = super().model_dump(**kw)
         return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
@@ -370,8 +370,8 @@ class DichotomousPlotting(BaseModel):
             bmdu_y=critical_ys[2],
         )
 
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
+    def model_dump(self, **kw) -> dict:
+        d = super().model_dump(**kw)
         return NumpyFloatArray.listify(d)
 
 

@@ -4,7 +4,7 @@ from typing import TypeVar
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .. import plotting
 from ..constants import ZEROISH, Dtype
@@ -76,7 +76,7 @@ class DatasetBase(abc.ABC):
         return len(set(self.doses))
 
     def to_dict(self):
-        return self.serialize().dict()
+        return self.serialize().model_dump()
 
     @property
     def dose_linspace(self) -> np.ndarray:

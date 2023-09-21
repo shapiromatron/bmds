@@ -54,7 +54,9 @@ class BmdsSession:
         self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: dict = None, bmds_model_average: bool = True):
+    def add_default_bayesian_models(
+        self, global_settings: dict = None, bmds_model_average: bool = True
+    ):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -134,13 +136,13 @@ class BmdsSession:
     def has_recommended_model(self) -> bool:
         return (
             self.recommendation_enabled
-            and self.recommender.results.recommended_bmds_model_index is not None
+            and self.recommender.results.recommended_model_index is not None
         )
 
     def accept_recommendation(self):
         """Select the recommended model, if one exists."""
         if self.has_recommended_model:
-            index = self.recommender.results.recommended_bmds_model_index
+            index = self.recommender.results.recommended_model_index
             self.select(self.models[index], "Selected as best-fitting model")
         else:
             self.select(None, "No model was selected as a best-fitting model")
@@ -181,7 +183,9 @@ class BmdsSession:
         data["models"] = [model_base_class.model_validate(model_) for model_ in data["models"]]
         ma = data.get("bmds_model_average")
         if ma:
-            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).model_validate(ma)
+            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).model_validate(
+                ma
+            )
         if tuple(version) == Bmds330.version_tuple:
             return Bmds330Schema.model_validate(data).deserialize()
         else:

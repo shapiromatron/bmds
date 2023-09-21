@@ -97,7 +97,7 @@ class TestDichotomousDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
+        assert serialized.model_dump(exclude={"plotting"}) == {
             "dtype": "D",
             "metadata": {
                 "id": 123,
@@ -118,7 +118,7 @@ class TestDichotomousDataset:
         assert not isinstance(ds2, bmds.DichotomousCancerDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestDichotomousCancerDataset:
@@ -147,7 +147,7 @@ class TestDichotomousCancerDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
+        assert serialized.model_dump(exclude={"plotting"}) == {
             "dtype": "DC",
             "metadata": {
                 "id": 123,
@@ -168,14 +168,14 @@ class TestDichotomousCancerDataset:
         assert isinstance(ds2, bmds.DichotomousCancerDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestDichotomousDatasetSchema:
     def test_schema(self, ddataset):
         # check that cycling through serialization returns the same
-        v1 = ddataset.serialize().dict()
-        v2 = bmds.DichotomousDatasetSchema.model_validate(v1).deserialize().serialize().dict()
+        v1 = ddataset.serialize().model_dump()
+        v2 = bmds.DichotomousDatasetSchema.model_validate(v1).deserialize().serialize().model_dump()
         assert v1 == v2
 
         data = deepcopy(v1)

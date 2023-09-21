@@ -4,11 +4,11 @@ from .models.base import BmdModel
 
 
 class SelectedModelSchema(BaseModel):
-    bmds_model_index: int | None = Field(default=None, alias="model_index")  # | None = None # ???
+    bmds_model_index: int | None = Field(default=None, alias="model_index")
     notes: str = ""
 
     def deserialize(self, session) -> "SelectedModel":
-        return SelectedModel(session, model_index=self.model_index, notes=self.notes)
+        return SelectedModel(session, model_index=self.bmds_model_index, notes=self.notes)
 
 
 class SelectedModel:

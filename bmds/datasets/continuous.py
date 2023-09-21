@@ -4,7 +4,7 @@ from typing import Annotated, ClassVar
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from pydantic import Field
+from pydantic import Field, model_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -206,7 +206,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def rows(self, extras: dict) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        metadata = self.metadata.dict()
+        metadata = self.metadata.model_dump()
         return [
             {**extras, **metadata, **dict(dose=dose, n=n, mean=mean, stdev=stdev)}
             for dose, n, mean, stdev in zip(
@@ -228,20 +228,19 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    # @model_validator(skip_on_failure=True)
-    @classmethod
-    def num_groups(cls, values):
-        n_doses = len(values["doses"])
-        n_ns = len(values["ns"])
-        n_means = len(values["means"])
-        n_stdevs = len(values["stdevs"])
+    @model_validator(mode="after")
+    def num_groups(self):
+        n_doses = len(self.doses)
+        n_ns = len(self.ns)
+        n_means = len(self.means)
+        n_stdevs = len(self.stdevs)
         if len(set([n_doses, n_ns, n_means, n_stdevs])) > 1:
             raise ValueError("Length of doses, ns, means, and stdevs are not the same")
-        if n_doses < cls.MIN_N:
-            raise ValueError(f"At least {cls.MIN_N} groups are required")
-        if n_doses > cls.MAX_N:
-            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
-        return values
+        if n_doses < self.MIN_N:
+            raise ValueError(f"At least {self.MIN_N} groups are required")
+        if n_doses > self.MAX_N:
+            raise ValueError(f"A maximum of {self.MAX_N} groups are allowed")
+        return self
 
     def deserialize(self) -> ContinuousDataset:
         ds = ContinuousDataset(
@@ -249,7 +248,7 @@ class ContinuousDatasetSchema(DatasetSchemaBase):
             ns=self.ns,
             means=self.means,
             stdevs=self.stdevs,
-            **self.metadata.dict(),
+            **self.metadata.model_dump(),
         )
         ds._anova = self.anova
         return ds
@@ -414,7 +413,7 @@ class ContinuousIndividualDataset(ContinuousSummaryDataMixin, DatasetBase):
 
     def rows(self, extras: dict) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        metadata = self.metadata.dict()
+        metadata = self.metadata.model_dump()
         return [
             {**extras, **metadata, **dict(dose=dose, response=response)}
             for dose, response in zip(self.individual_doses, self.responses, strict=True)
@@ -431,26 +430,25 @@ class ContinuousIndividualDatasetSchema(DatasetSchemaBase):
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    # @model_validator(skip_on_failure=True)
-    @classmethod
-    def num_groups(cls, values):
-        n_doses = len(values["doses"])
-        n_responses = len(values["responses"])
+    @model_validator(mode="after")
+    def num_groups(self):
+        n_doses = len(self.doses)
+        n_responses = len(self.responses)
         if len(set([n_doses, n_responses])) > 1:
             raise ValueError("Length of doses and responses are not the same")
-        if n_doses < cls.MIN_N:
-            raise ValueError(f"At least {cls.MIN_N} groups are required")
-        if n_doses > cls.MAX_N:
-            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
+        if n_doses < self.MIN_N:
+            raise ValueError(f"At least {self.MIN_N} groups are required")
+        if n_doses > self.MAX_N:
+            raise ValueError(f"A maximum of {self.MAX_N} groups are allowed")
         # may throw ValueErrors; caught in validator
-        ContinuousIndividualDataset(doses=values["doses"], responses=values["responses"])
-        return values
+        ContinuousIndividualDataset(doses=self.doses, responses=self.responses)
+        return self
 
     def deserialize(self) -> ContinuousIndividualDataset:
         ds = ContinuousIndividualDataset(
             doses=self.doses,
             responses=self.responses,
-            **self.metadata.dict(),
+            **self.metadata.model_dump(),
         )
         ds._anova = self.anova
         return ds

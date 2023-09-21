@@ -1,4 +1,5 @@
 import itertools
+from functools import cache
 from pathlib import Path
 from typing import Self
 
@@ -38,14 +39,18 @@ class Rule(BaseModel):
         ]
 
 
+@cache
+def default_rules_text():
+    path = Path(__file__).parent / "default.json"
+    return path.read_text()
+
+
 class RecommenderSettings(BaseModel):
     enabled: bool = True
     recommend_questionable: bool = False
     recommend_viable: bool = True
     sufficiently_close_bmdl: float = 3
     rules: list[Rule]
-
-    _default: str | None = None
 
     @field_validator("rules")
     @classmethod
@@ -59,10 +64,7 @@ class RecommenderSettings(BaseModel):
 
     @classmethod
     def build_default(cls) -> Self:
-        if cls._default is None:
-            path = Path(__file__).parent / "default.json"
-            cls._default = path.read_text()
-        return cls.model_validate_json(cls._default)
+        return cls.model_validate_json(default_rules_text())
 
     def to_df(self) -> pd.DataFrame:
         df = pd.DataFrame(
@@ -82,16 +84,13 @@ class RecommenderSettings(BaseModel):
 class RecommenderResults(BaseModel):
     recommended_model_index: int | None = None
     recommended_model_variable: str | None = None
-    bmds_model_bin: list[LogicBin] = Field(
-        default=[], alias="model_bin"
-    )  # list[LogicBin] = [] # ???
-
+    bmds_model_bin: list[LogicBin] = Field(default=[], alias="model_bin")
     bmds_model_notes: list[dict[int, list[str]]] = []
 
     def bin_text(self, index: int) -> str:
         if self.recommended_model_index == index:
             return f"Recommended - Lowest {self.recommended_model_variable.upper()}"
-        return BIN_TEXT_BMDS3[self.model_bin[index]]
+        return BIN_TEXT_BMDS3[self.bmds_model_bin[index]]
 
     def notes_text(self, index: int) -> str:
         notes = self.bmds_model_notes[index].values()
@@ -161,7 +160,7 @@ class Recommender:
             model_bins.append(current_bin)
             bmds_model_notes.append(notes)
 
-        self.results.model_bin = model_bins
+        self.results.bmds_model_bin = model_bins
         self.results.bmds_model_notes = bmds_model_notes
 
         # get only models in highest bin-category

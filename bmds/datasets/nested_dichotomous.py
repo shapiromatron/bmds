@@ -2,6 +2,7 @@ import math
 from typing import ClassVar
 
 import numpy as np
+from pydantic import model_validator
 
 from .. import constants, plotting
 from ..utils import str_list
@@ -136,24 +137,23 @@ class NestedDichotomousDatasetSchema(DatasetSchemaBase):
             litter_ns=self.litter_ns,
             incidences=self.incidences,
             litter_covariates=self.litter_covariates,
-            **self.metadata.dict(),
+            **self.metadata.model_dump(),
         )
         return ds
 
-    # @root_validator(skip_on_failure=True)
-    @classmethod
-    def num_groups(cls, values):
-        n_doses = len(values["doses"])
-        n_litter_ns = len(values["litter_ns"])
-        n_incidences = len(values["incidences"])
-        n_litter_covariates = len(values["litter_covariates"])
+    @model_validator(mode="after")
+    def check_num_groups(self):
+        n_doses = len(self.doses)
+        n_litter_ns = len(self.litter_ns)
+        n_incidences = len(self.incidences)
+        n_litter_covariates = len(self.litter_covariates)
         if len(set([n_doses, n_litter_ns, n_incidences, n_litter_covariates])) > 1:
             raise ValueError("Length of dose, litter, incidence, and covariate are not the same")
-        if n_doses < cls.MIN_N:
-            raise ValueError(f"At least {cls.MIN_N} groups are required")
-        if n_doses > cls.MAX_N:
-            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
-        for incidence, n in zip(values["incidences"], values["litter_ns"], strict=True):
+        if n_doses < self.MIN_N:
+            raise ValueError(f"At least {self.MIN_N} groups are required")
+        if n_doses > self.MAX_N:
+            raise ValueError(f"A maximum of {self.MAX_N} groups are allowed")
+        for incidence, n in zip(self.incidences, self.litter_ns, strict=True):
             if incidence > n:
                 raise ValueError(f"Incidence cannot be greater than N ({incidence} > {n})")
-        return values
+        return self

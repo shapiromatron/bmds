@@ -55,8 +55,8 @@ class DichotomousModelAverageResult(ModelAverageResult):
             dr_y=dr_y,
         )
 
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
+    def model_dump(self, **kw) -> dict:
+        d = super().model_dump(**kw)
         return NumpyFloatArray.listify(d)
 
     def update_record(self, d: dict) -> None:

@@ -19,7 +19,7 @@ class TestBmdsSelector:
         assert session.selected.no_model_selected is False
 
         # accept recommendation when model recommended
-        session.recommender.results.recommended_bmds_model_index = None
+        session.recommender.results.recommended_model_index = None
         session.accept_recommendation()
         assert session.selected.model is None
         assert session.selected.notes == "No model was selected as a best-fitting model"
@@ -28,10 +28,14 @@ class TestBmdsSelector:
         session.select(session.models[0], "best fitting")
         assert session.selected.model is session.models[0]
         assert session.selected.no_model_selected is False
-        assert session.selected.serialize().dict() == dict(bmds_model_index=0, notes="best fitting")
+        assert session.selected.serialize().model_dump() == dict(
+            bmds_model_index=0, notes="best fitting"
+        )
 
         # show examples when a model is not selected
         session.select(None, "none")
         assert session.selected.model is None
         assert session.selected.no_model_selected is True
-        assert session.selected.serialize().dict() == dict(bmds_model_index=None, notes="none")
+        assert session.selected.serialize().model_dump() == dict(
+            bmds_model_index=None, notes="none"
+        )
