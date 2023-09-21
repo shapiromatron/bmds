@@ -52,6 +52,17 @@ class ModelPriors(BaseModel):
                 return p
         raise ValueError(f"No parameter named {name}")
 
+    def update(self, name: str, **kw):
+        """Update a prior inplace.
+
+        Args:
+            name (str): the prior name
+            **kw: fields to update
+        """
+        prior = self.get_prior(name)
+        for k, v in kw.items():
+            setattr(prior, k, v)
+
     def priors_list(
         self, degree: int | None = None, dist_type: DistType | None = None
     ) -> list[list]:
