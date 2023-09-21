@@ -95,13 +95,11 @@ class RecommenderResults(BaseModel):
 
     def update_record(self, d: dict, index: int) -> None:
         """Update data record for a tabular-friendly export"""
-        notes = self.model_notes[index]
         d.update(
             recommended=(index == self.recommended_model_index),
             recommendation_bin=self.bin_text(index),
-            recommendation_notes="\n".join(itertools.chain(notes[0], notes[1], notes[2])),
+            recommendation_notes=self.notes_text(index),
         )
-        # TODO - refactor this; notes text is useful
 
 
 class RecommenderSchema(BaseModel):
