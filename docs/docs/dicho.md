@@ -248,6 +248,28 @@ report.save("report.docx")
 
 The reports and the plot will be saved in your directory. 
 
+## Run subset of models and select best fit
+
+You can select a set of models and find the best fit, rather than using all of the default dichotomous models. For example, to model average on the Logistic, Probit, Quantal Linear, and Weibull models, you can:
+
+```python
+session1 = bmds.BMDS.latest_version(dataset=dataset)
+session1.add_model(bmds.constants.M_Weibull)
+session1.add_model(bmds.constants.M_Logistic)
+session1.add_model(bmds.constants.M_Probit)
+session1.add_model(bmds.constants.M_QuantalLinear)
+
+session1.execute()
+session1.recommend()
+
+model_index = session1.recommender.results.recommended_model_index
+if model_index:
+    model = session1.models[model_index]
+    print(model.text())
+    mplot = model.plot()
+    mplot.savefig("recommended-model-plot-subset.png")
+```
+
 ## Changing the input settings
 
 The default settings for a dichotomous run use a BMR of 10% Extra Risk and a 95% confidence interval. If you fit just one model to your dataset, you can change these settings by:
