@@ -28,7 +28,7 @@ class TestContinuousParameters:
         returned output effectively drops the c array and shifts all other values down one.
         We check that the input and output values are shifted as required.
         """
-        model = continuous.ExponentialM3(cdataset)
+        model = continuous.ExponentialM3(cdataset, settings=dict(disttype=DistType.normal))
         res = model.execute()
         # param names for prior are as expected
         assert model.get_param_names() == ["a", "b", "c", "d", "log-alpha"]

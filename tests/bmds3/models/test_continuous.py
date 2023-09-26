@@ -14,14 +14,14 @@ class TestPriorOverrides:
     def test_poly(self, cdataset2, negative_cdataset):
         for settings, priors in [
             # fmt: off
-            ({"is_increasing": True}, (0, 1e6)),
-            ({"is_increasing": False}, (-1e6, 0)),
-            ({"is_increasing": True, "disttype": DistType.normal_ncv}, (0, 18)),
-            ({"is_increasing": False, "disttype": DistType.normal_ncv}, (-18, 0)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-1e6, 1e6)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-1e6, 1e6)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": True, "disttype": DistType.normal_ncv}, (-18, 18)),
-            ({"priors": PriorClass.frequentist_unrestricted, "is_increasing": False, "disttype": DistType.normal_ncv}, (-18, 18)),
+            ({"disttype": DistType.normal, "is_increasing": True}, (0, 1e6)),
+            ({"disttype": DistType.normal, "is_increasing": False}, (-1e6, 0)),
+            ({"disttype": DistType.normal_ncv, "is_increasing": True}, (0, 18)),
+            ({"disttype": DistType.normal_ncv, "is_increasing": False}, (-18, 0)),
+            ({"disttype": DistType.normal, "priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-1e6, 1e6)),
+            ({"disttype": DistType.normal, "priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-1e6, 1e6)),
+            ({"disttype": DistType.normal_ncv, "priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-18, 18)),
+            ({"disttype": DistType.normal_ncv, "priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-18, 18)),
             # fmt: on
         ]:
             model = continuous.Polynomial(cdataset2, settings)
@@ -49,7 +49,7 @@ class TestPriorOverrides:
 
     def test_power(self, cdataset2):
         for settings, priors in [
-            ({}, [0.1, -100, 100]),
+            ({"disttype": DistType.normal}, [0.1, -100, 100]),
             ({"disttype": DistType.normal_ncv}, [1, -10000, 10000]),
         ]:
             model = continuous.Power(cdataset2, settings)
@@ -62,7 +62,6 @@ class TestBmdModelContinuous:
     def test_get_param_names(self, cdataset2):
         # test normal model case
         for m in [
-            continuous.Power(dataset=cdataset2),
             continuous.Power(dataset=cdataset2, settings=dict(disttype=DistType.normal)),
         ]:
             assert m.get_param_names() == ["g", "v", "n", "alpha"]
@@ -70,11 +69,13 @@ class TestBmdModelContinuous:
         assert m.get_param_names() == ["g", "v", "n", "rho", "alpha"]
 
         # test polynomial
-        model = continuous.Linear(dataset=cdataset2)
+        model = continuous.Linear(dataset=cdataset2, settings=dict(disttype=DistType.normal))
         assert model.get_param_names() == ["g", "b1", "alpha"]
-        model = continuous.Polynomial(dataset=cdataset2)
+        model = continuous.Polynomial(dataset=cdataset2, settings=dict(disttype=DistType.normal))
         assert model.get_param_names() == ["g", "b1", "b2", "alpha"]
-        model = continuous.Polynomial(dataset=cdataset2, settings=dict(degree=3))
+        model = continuous.Polynomial(
+            dataset=cdataset2, settings=dict(degree=3, disttype=DistType.normal)
+        )
         assert model.get_param_names() == ["g", "b1", "b2", "b3", "alpha"]
         model = continuous.Polynomial(
             dataset=cdataset2, settings=dict(degree=3, disttype=DistType.normal_ncv)
@@ -109,6 +110,25 @@ class TestBmdModelContinuous:
         model.execute()
         return model.plot()
 
+    def test_automated_disttype_selection(self, cdataset, cidataset):
+        # check that automated selection is correct for < 0.05
+        model = continuous.Power(cdataset, settings=None)
+        assert model.settings.disttype == DistType.normal_ncv
+        assert model.dataset.anova().dict()["test2"]["TEST"] < 0.05
+
+        # but we can override if we want
+        model = continuous.Power(cdataset, settings=dict(disttype=DistType.normal))
+        assert model.settings.disttype == DistType.normal
+
+        # check that automated selection is correct for > 0.05
+        model = continuous.Power(cidataset, settings=None)
+        assert model.dataset.anova().dict()["test2"]["TEST"] > 0.05
+        assert model.settings.disttype == DistType.normal
+
+        # but we can override if we want
+        model = continuous.Power(cdataset, settings=dict(disttype=DistType.normal_ncv))
+        assert model.settings.disttype == DistType.normal_ncv
+
 
 def test_increasing(cdataset2):
     """
@@ -123,7 +143,7 @@ def test_increasing(cdataset2):
         (continuous.Linear, [26, 24, 28], 3068),
         (continuous.Polynomial, [26, 24, 29], 3070),
     ]:
-        result = Model(cdataset2).execute()
+        result = Model(cdataset2, settings=dict(disttype=DistType.normal)).execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
         # res = f"(continuous.{Model.__name__}, {np.round(actual, 0).astype(int).tolist()}, {round(result.fit.aic)}),"
@@ -142,7 +162,7 @@ def test_decreasing(negative_cdataset):
         (continuous.Linear, [35, 33, 38], 3117),
         (continuous.Polynomial, [52, 47, 60], 3077),
     ]:
-        model = Model(negative_cdataset)
+        model = Model(negative_cdataset, settings=dict(disttype=DistType.normal))
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         # for regenerating values
@@ -159,7 +179,7 @@ def test_bmds3_continuous_float_counts(cdataset2):
     for Model, bmd_values, aic in [
         (continuous.Power, [25.9, 24.3, 29.8], 3067),
     ]:
-        model = Model(cdataset2)
+        model = Model(cdataset2, settings=dict(disttype=DistType.normal))
         result = model.execute()
         actual = [result.bmd, result.bmdl, result.bmdu]
         assert pytest.approx(bmd_values, rel=0.05) == actual

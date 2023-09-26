@@ -30,9 +30,13 @@ class BmdModelContinuous(BmdModel):
         else:
             model_settings = ContinuousModelSettings.parse_obj(settings)
 
-        # only estimate direction if unspecified in settings
+        # only estimate direction if unspecified
         if model_settings.is_increasing is None:
             model_settings.is_increasing = dataset.is_increasing
+
+        # set preferred variance model if unspecified
+        if settings is None or isinstance(settings, dict) and "disttype" not in settings:
+            model_settings.disttype = self.set_constant_variance_value()
 
         # get default values, may require further model customization
         if not isinstance(model_settings.priors, ModelPriors):
@@ -46,6 +50,13 @@ class BmdModelContinuous(BmdModel):
             )
 
         return model_settings
+
+    def set_constant_variance_value(self) -> DistType:
+        # set modeled variance if p-test 2 < 0.05 or not calculated, otherwise constant
+        anova = self.dataset.anova()
+        return (
+            DistType.normal_ncv if (anova is None or anova.test2.TEST < 0.05) else DistType.normal
+        )
 
     def _build_inputs(self) -> ContinuousAnalysis:
         return ContinuousAnalysis(
