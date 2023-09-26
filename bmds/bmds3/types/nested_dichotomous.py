@@ -17,12 +17,13 @@ class RiskType(IntEnum):
 
 
 class LitterSpecificCovariate(IntEnum):
-    ControlGroupMean = 0
-    OverallMean = 1
+    Unused = 0
+    ControlGroupMean = 1
+    OverallMean = 2
 
     @property
     def text(self) -> str:
-        return "lsc+" if self.OverallMean else "lsc-"
+        return "lsc-" if self == self.Unused else "lsc+"
 
 
 class IntralitterCorrelation(IntEnum):
@@ -31,7 +32,7 @@ class IntralitterCorrelation(IntEnum):
 
     @property
     def text(self) -> str:
-        return "ilc+" if self.Estimate else "ilc-"
+        return "ilc+" if self == self.Estimate else "ilc-"
 
 
 class Background(IntEnum):
@@ -49,7 +50,7 @@ class NestedDichotomousModelSettings(BaseModel):
     bmr_type: RiskType = RiskType.ExtraRisk
     bmr: float = Field(default=0.1, gt=0)
     alpha: float = Field(default=0.05, gt=0, lt=1)
-    litter_specific_covariate: LitterSpecificCovariate = LitterSpecificCovariate.ControlGroupMean
+    litter_specific_covariate: LitterSpecificCovariate = LitterSpecificCovariate.OverallMean
     intralitter_correlation: IntralitterCorrelation = IntralitterCorrelation.Estimate
     background: Background = Background.Estimate
     restricted: bool = True
@@ -239,12 +240,12 @@ class Plotting(BaseModel):
     bmdu_y: float
 
     @classmethod
-    def from_model(cls, model, params) -> Self:
+    def from_model(cls, model, params: dict, fixed_lsc: float) -> Self:
         summary = model.structs.result.bmdsRes
         xs = np.array([summary.BMDL, summary.BMD, summary.BMDU])
         dr_x = model.dataset.dose_linspace
-        dr_y = clean_array(model.dr_curve(dr_x, params))
-        critical_ys = clean_array(model.dr_curve(xs, params))
+        dr_y = clean_array(model.dr_curve(dr_x, params, fixed_lsc))
+        critical_ys = clean_array(model.dr_curve(xs, params, fixed_lsc))
         critical_ys[critical_ys <= 0] = constants.BMDS_BLANK_VALUE
         return cls(
             dr_x=dr_x,
@@ -280,6 +281,9 @@ class NestedDichotomousResult(BaseModel):
     @classmethod
     def from_model(cls, model) -> Self:
         result: bmdscore.python_nested_result = model.structs.result
+        params_d = {
+            name: value for name, value in zip(model.get_param_names(), result.parms, strict=True)
+        }
         return cls(
             ll=result.LL,
             scaled_residuals=result.SRs,
@@ -292,10 +296,10 @@ class NestedDichotomousResult(BaseModel):
             litter=LitterResult.from_model(result.litter, result.bmdsRes.BMD),
             max=result.max,
             obs_chi_sq=result.obsChiSq,
-            parameter_names=model.get_param_names(),
-            parameters=result.parms,
+            parameter_names=list(params_d.keys()),
+            parameters=list(params_d.values()),
             reduced=ReducedResult.from_model(result.reduced),
-            plotting=Plotting.from_model(model, result.parms),
+            plotting=Plotting.from_model(model, params_d, result.fixedLSC),
             has_completed=result.bmdsRes.validResult,
         )
 

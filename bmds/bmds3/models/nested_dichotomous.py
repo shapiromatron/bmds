@@ -1,6 +1,7 @@
 import numpy as np
 
 from ... import plotting
+from ...constants import ZEROISH
 from ...datasets import NestedDichotomousDataset
 from ...utils import multi_lstrip
 from ..constants import (
@@ -60,10 +61,6 @@ class BmdModelNestedDichotomous(BmdModel):
         self.results = NestedDichotomousResult.from_model(self)
         return self.results
 
-    def get_param_names(self) -> list[str]:
-        names = list(self.bmd_model_class.params)
-        return names
-
     def _plot_bmr_lines(self, ax):
         plotting.add_bmr_lines(
             ax,
@@ -113,9 +110,25 @@ class BmdModelNestedDichotomousSchema(BmdModelSchema):
 class NestedLogistic(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_logistic.value
 
-    def dr_curve(self, doses, params) -> np.ndarray:
-        # TODO - change
-        return np.linspace(0, 1, doses.size)
+    def get_param_names(self) -> list[str]:
+        return ["alpha", "beta", "theta1", "theta2", "rho"] + [
+            f"phi{i}" for i in range(1, self.dataset.num_dose_groups + 1)
+        ]
+
+    def dr_curve(self, doses: np.ndarray, params: dict, fixed_lsc: float) -> np.ndarray:
+        alpha = params["alpha"]
+        beta = params["beta"]
+        theta1 = params["theta1"]
+        theta2 = params["theta2"]
+        rho = params["rho"]
+        d = doses.copy()
+        d[d < ZEROISH] = ZEROISH
+        return (
+            alpha
+            + theta1 * fixed_lsc
+            + (1 - alpha - theta1 * fixed_lsc)
+            / (1 + np.exp(-1 * beta - theta2 * fixed_lsc - rho * np.log(d)))
+        )
 
     def get_default_prior_class(self) -> PriorClass:
         # TODO - change
@@ -124,6 +137,10 @@ class NestedLogistic(BmdModelNestedDichotomous):
 
 class Nctr(BmdModelNestedDichotomous):
     bmd_model_class = NestedDichotomousModelChoices.d_nctr.value
+
+    def execute(self) -> NestedDichotomousResult:
+        # TODO - change
+        raise NotImplementedError()
 
     def dr_curve(self, doses, params) -> np.ndarray:
         # TODO - change
