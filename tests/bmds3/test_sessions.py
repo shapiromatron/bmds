@@ -81,8 +81,8 @@ class TestSession:
         d2 = session2.serialize().dict()
         assert d1 == d2
 
-    def test_nested_dichotomous(self, nd_dataset, rewrite_data_files):
-        session = bmds.session.Bmds330(dataset=nd_dataset)
+    def test_nested_dichotomous(self, nd_dataset4, rewrite_data_files):
+        session = bmds.session.Bmds330(dataset=nd_dataset4)
         session.add_default_models()
         session.execute_and_recommend()
 

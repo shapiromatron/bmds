@@ -82,6 +82,9 @@ class BmdsSession:
                     )
                     poly_model_settings["degree"] = i
                     self.add_model(name, settings=poly_model_settings)
+            elif name == constants.M_Nctr:
+                # TODO - change
+                pass
             else:
                 self.add_model(name, settings=model_settings)
 

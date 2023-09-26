@@ -7,6 +7,4 @@ recursive-include bmds/benchmarks/datasets/data *.zip
 # comment/uncomment lines below depending on OS environment
 # By default, all files are included but we can build smaller wheels
 # to only include those which are required when generating the OS-specific wheels
-recursive-include bmds/bin *.so
-recursive-include bmds/bin *.dylib
-recursive-include bmds/bin *.exe *.dll
+recursive-include bmds *.so *.pyd *.dylib *.exe *.dll
