@@ -18,8 +18,8 @@ class RiskType(IntEnum):
 
 class LitterSpecificCovariate(IntEnum):
     Unused = 0
-    ControlGroupMean = 1
-    OverallMean = 2
+    OverallMean = 1
+    ControlGroupMean = 2
 
     @property
     def text(self) -> str:
