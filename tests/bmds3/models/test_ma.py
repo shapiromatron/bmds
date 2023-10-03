@@ -18,7 +18,7 @@ class TestDichotomousMa:
 
         # check bmd values exist and are valid
         res = session.model_average.results
-        assert np.allclose([0, 0, 0], [res.bmdl, res.bmd, res.bmdu])  # TODO - fix w/ patch?
+        assert np.allclose([57.1, 65.9, 75.0], [res.bmdl, res.bmd, res.bmdu], atol=5)
 
     def test_prior_weights(self, ddataset2):
         # default; equal weights

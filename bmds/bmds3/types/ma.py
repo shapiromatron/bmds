@@ -56,6 +56,8 @@ class DichotomousModelAverage:
 
     def execute(self) -> "DichotomousModelAverageResult":
         bmdscore.pythonBMDSDichoMA(self.average, self.result)
+        # bmdsRes is copied in bmdscore.pythonBMDSDichoMA; replace python pointer with copy
+        self.bmdsRes = self.result.bmdsRes
 
     def __str__(self) -> str:
         lines = []
