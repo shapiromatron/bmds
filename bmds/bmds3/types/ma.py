@@ -52,7 +52,7 @@ class DichotomousModelAverage:
         self.analysis = analysis
         self.average = average
         self.result = result
-        self.bmdsRes = bmdsRes
+        self.bmdsRes = result.bmdsRes  # use this version; copied on assignment above
 
     def execute(self) -> "DichotomousModelAverageResult":
         bmdscore.pythonBMDSDichoMA(self.average, self.result)
