@@ -23,6 +23,7 @@ nav:
   - bma.md
   - nesteddicho.md
   - batch.md
+  - excel.md
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
