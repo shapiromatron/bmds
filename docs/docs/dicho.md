@@ -51,7 +51,8 @@ from bmds import DichotomousDataset
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousRiskType
 
-dataset = DichotomousDataset(name="ChemX Nasal Lesion Incidence",
+dataset = DichotomousDataset(
+    name="ChemX Nasal Lesion Incidence",
     dose_units="ppm",
     doses=[0, 25, 75, 125, 200],
     ns=[20, 20, 20, 20, 20],
@@ -70,15 +71,20 @@ The saved plot will look like this:
 If you want to fit only one model to your dataset, you can fit the specific model to the dataset and print the results such as the BMD, BMDL, BMDU, p-value, AIC, etc. Say you want to fit the Logistic model, you can run the code below and print the results:
 
 ```python
+from bmds.bmds3.models import Logistic
+
 model = dichotomous.Logistic(dataset)
 model.execute()
 text = model.text()
 print(text)
+
+mplot = model.plot()
+mplot.savefig("logistic-plot.png")
 ```
 
 Which will show:
 ```python
-      Logistic      
+      Logistic
 ════════════════════
 
 Input Summary:
@@ -177,24 +183,24 @@ For the Logistic model example that was shown above, the parameters and ranges w
 ╒════════╤═════════╤═══════════╤═════════╤═══════╤═══════╕
 │ name   │ type    │   initial │   stdev │   min │   max │
 ╞════════╪═════════╪═══════════╪═════════╪═══════╪═══════╡
-│ a      │ Uniform │         0 │       0 │   -18 │    18 │
-│ b      │ Uniform │         0 │       0 │     0 │   100 │
+│ a      │ Uniform │         0 │       0 │   -10 │    10 │
+│ b      │ Uniform │         0 │       0 │     0 │    50 │
 ╘════════╧═════════╧═══════════╧═════════╧═══════╧═══════╛
 ```
 
-You can also change the initial parameter settings shown above for any run of a single dichotomous model. For example, continuing with the Logistic model example, you can change the minimum and maximum range for `a` to be from -10 to 10 and `b` to be from 0 to 50. 
+You can also change the initial parameter settings shown above for any run of a single dichotomous model. For example, continuing with the Logistic model example, you can change the minimum and maximum range for `a` to be from -10 to 10 and `b` to be from 0 to 50.
 
 ```python
 model = dichotomous.Logistic(dataset)
 
 a = model.settings.priors.get_prior('a')
-a.initial_value = 0
 a.min_value = -10
 a.max_value = 10
 b = model.settings.priors.get_prior('b')
-b.initial_value = 0
 b.min_value = 0
 b.max_value = 50
+print(model.settings.priors.tbl())
+
 model.execute()
 text = model.text()
 print(text)
@@ -244,9 +250,9 @@ df.to_excel("report.xlsx")
 # save to a word report
 report = session.to_docx()
 report.save("report.docx")
-``` 
+```
 
-The reports and the plot will be saved in your directory. 
+The reports and the plot will be saved in your directory.
 
 ## Run subset of models and select best fit
 
@@ -275,7 +281,19 @@ if model_index:
 The default settings for a dichotomous run use a BMR of 10% Extra Risk and a 95% confidence interval. If you fit just one model to your dataset, you can change these settings by:
 
 ```python
-model = dichotomous.Logistic(dataset, settings = {"bmr": 0.15, "bmr_type": DichotomousRiskType.AddedRisk, "alpha": 0.1})
+model = dichotomous.Logistic(dataset, settings={
+    "bmr": 0.15,
+    "bmr_type": DichotomousRiskType.AddedRisk
+})
+print(model.settings.tbl())
+```
+
+```python
+╒═══════════════════╤══════════════════════════╕
+│ BMR               │ 15% Added Risk           │
+│ Confidence Level  │ 0.95                     │
+│ Modeling approach │ Frequentist unrestricted │
+╘═══════════════════╧══════════════════════════╛
 ```
 
 If you run all the default models and select the best fit, you can change these settings by:
@@ -288,7 +306,7 @@ This would run the dichotomous models for a BMR of 15% Added Risk at a 90% confi
 
 ## How to plot all dichotomous models on one plot
 
-If you want to plot all the default dichotomous models that were fit to your dataset to compare models, you can use the code below and a figure will be saved in your directory. 
+If you want to plot all the default dichotomous models that were fit to your dataset to compare models, you can use the code below and a figure will be saved in your directory.
 
 ```python
 from bmds import plotting
@@ -296,7 +314,7 @@ from itertools import cycle
 
 # plotting all models on one plot
 def plot(colorize: bool = False):
-   
+
     dataset = session.dataset
     results = session.execute()
     fig = dataset.plot()

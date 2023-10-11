@@ -1,4 +1,4 @@
-# Run a Continuous Dataset 
+# Run a Continuous Dataset
 
 ## Quickstart
 
@@ -6,33 +6,22 @@ To run a continuous dataset:
 
 ```python
 import bmds
-from bmds import ContinuousDataset
-from bmds.bmds3.constants import DistType, PriorClass
-from bmds.bmds3.types.continuous import ContinuousRiskType
+from bmds.bmds3.sessions import Bmds330
 
 # create a continuous dataset
-dataset = ContinuousDataset(
+dataset = bmds.ContinuousDataset(
     doses=[0, 25, 50, 75, 100],
     ns=[20, 20, 20, 20, 20],
     means=[6, 8, 13, 25, 30],
     stdevs=[4, 4.3, 3.8, 4.4, 3.7]
 )
 
-session = bmds.BMDS.latest_version(dataset=dataset)
-
+# create a session
+session = Bmds330(dataset=dataset)
 session.add_default_models()
 
-# execute the session
-session.execute()
-
-# recommend a best-fitting model
-session.recommend()
-
-
-model_index = session.recommender.results.recommended_model_index
-if model_index:
-    model = session.models[model_index]
-    print(model.text())
+# execute the session; recommend best-fitting model
+session.execute_and_recommend()
 
 # save excel report
 df = session.to_df()
@@ -82,7 +71,7 @@ print(text)
 
 Which will show:
 ```python
-        Hill        
+        Hill
 ════════════════════
 
 Input Summary:
@@ -178,7 +167,7 @@ mplot.savefig("hill-plot.png")
 ```
 
 And you will have a saved plot in your directory that looks like:
-![image info](hill-plot.png) 
+![image info](hill-plot.png)
 
 The individual models that you can fit are shown below. Note that the degrees of the Polynomial model can be increased to a maximum of the lesser of n-1 or 8 (as specified in the BMDS User Guide).
 
@@ -275,9 +264,9 @@ df.to_excel("report.xlsx")
 # save to a word report
 report = session.to_docx()
 report.save("report.docx")
-``` 
+```
 
-The reports and the plot will be saved in your directory. 
+The reports and the plot will be saved in your directory.
 
 ## Run subset of models and select best fit
 
@@ -316,7 +305,7 @@ Here, we changed the settings to assume normally distributed and non-constant va
 You can also change ```"bmr_type"``` several other ways. The options for ```"bmr_type"``` are:
 
 ```python
-ContinuousRiskType.AbsoluteDeviation: "{} Absolute Deviation" 
+ContinuousRiskType.AbsoluteDeviation: "{} Absolute Deviation"
 ContinuousRiskType.StandardDeviation: "{} Standard Deviation" #default
 ContinuousRiskType.RelativeDeviation: "{:.0%} Relative Deviation"
 ContinuousRiskType.PointEstimate: "{} Point Estimation"
@@ -324,10 +313,10 @@ ContinuousRiskType.Extra: "{} Extra"
 ContinuousRiskType.HybridExtra: "{} Hybrid Extra"
 ContinuousRiskType.HybridAdded: "{} Hybrid Added"
 ```
- 
+
 ## How to plot all continuous models on one plot
 
-If you want to plot all the default continuous models that were fit to your dataset to compare models, you can use the code below and a figure will be saved in your directory. 
+If you want to plot all the default continuous models that were fit to your dataset to compare models, you can use the code below and a figure will be saved in your directory.
 
 ```python
 from bmds import plotting
@@ -335,7 +324,7 @@ from itertools import cycle
 
 # plotting all models on one plot
 def plot(colorize: bool = False):
-   
+
     dataset = session.dataset
     results = session.execute()
     fig = dataset.plot()
