@@ -72,7 +72,7 @@ dist: clean ## Builds python wheels
 
 release: dist ## Package and upload a release
 	twine upload dist/*
-	git tag -a "$(shell python setup.py --version)" -m ""
+	git tag -a "$(python setup.py --version)" -m ""
 	git push --tags
 
 loc: ## Generate lines of code report
