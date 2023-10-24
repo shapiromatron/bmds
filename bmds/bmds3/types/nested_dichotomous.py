@@ -317,6 +317,9 @@ class NestedDichotomousResult(BaseModel):
         Bootstrap Runs:
         {self.bootstrap.tbl()}
 
+        Bootstrap Results:
+        {self.bootstrapResults()}
+
         Scaled Residuals:
         {self.scaled_residuals_tbl()}
 
@@ -335,6 +338,17 @@ class NestedDichotomousResult(BaseModel):
             ["D.O.F", self.dof],
             ["Chi²", self.summary.chi_squared],
             ["Log-likelihood", self.ll],
+        ]
+        return pretty_table(data, "")
+
+    def bootstrapResults(self) -> str:
+        data=[
+            ["# Iterations","?"],
+            ["Bootstrap Seed","-"],
+            ["Log-likelihood","-"],
+            ["Chi²","-"],
+            ["Combined P-Value","-"],
+
         ]
         return pretty_table(data, "")
 
