@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, ClassVar
 
 from . import constants
 from .bmds2.sessions import BMDS_v270
@@ -11,11 +11,11 @@ class BMDS:
     A single dataset, related models, outputs, and model recommendations.
     """
 
-    _BMDS_VERSIONS: dict[str, Any] = {
+    _BMDS_VERSIONS: ClassVar[dict[str, Any]] = {
         constants.BMDS270: BMDS_v270,
         constants.BMDS330: Bmds330,
     }
-    _MULTITUMOR_VERSIONS: dict[str, Any] = {
+    _MULTITUMOR_VERSIONS: ClassVar[dict[str, Any]] = {
         constants.BMDS330: Multitumor330,
     }
 

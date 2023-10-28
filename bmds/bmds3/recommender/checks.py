@@ -1,5 +1,5 @@
 import math
-from typing import Any, Self
+from typing import Any, ClassVar, Self
 
 from pydantic import BaseModel
 
@@ -20,7 +20,7 @@ class CheckResponse(BaseModel):
 
 
 class Check:
-    _enabled_attribute = {
+    _enabled_attribute: ClassVar[dict] = {
         constants.Dtype.DICHOTOMOUS: "enabled_dichotomous",
         constants.Dtype.DICHOTOMOUS_CANCER: "enabled_dichotomous",
         constants.Dtype.CONTINUOUS: "enabled_continuous",

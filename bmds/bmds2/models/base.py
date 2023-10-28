@@ -5,6 +5,7 @@ import subprocess
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 from simple_settings import settings
@@ -106,7 +107,7 @@ class BMDModel(abc.ABC):
 
         try:
             proc = subprocess.run(
-                [exe, dfile],
+                [exe, dfile],  # noqa: S603
                 capture_output=True,
                 timeout=settings.BMDS_MODEL_TIMEOUT_SECONDS,
             )
@@ -344,9 +345,7 @@ class BMDModel(abc.ABC):
             return val
 
     def _dfile_print_header_rows(self):
-        return "{}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out".format(
-            self.model_name
-        )
+        return f"{self.model_name}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out"
 
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter
@@ -488,55 +487,55 @@ class DefaultParams:
      - n = name (optional)
     """
 
-    bmdl_curve_calculation = {
+    bmdl_curve_calculation: ClassVar = {
         "c": constants.FC_OTHER,
         "t": constants.FT_BOOL,
         "d": 0,
         "n": "BMDL curve calculation",
     }
-    append_or_overwrite = {"c": constants.FC_OTHER, "t": constants.FT_BOOL, "d": 0}
-    smooth_option = {"c": constants.FC_OTHER, "t": constants.FT_BOOL, "d": 0}
-    bmd_calculation = {
+    append_or_overwrite: ClassVar = {"c": constants.FC_OTHER, "t": constants.FT_BOOL, "d": 0}
+    smooth_option: ClassVar = {"c": constants.FC_OTHER, "t": constants.FT_BOOL, "d": 0}
+    bmd_calculation: ClassVar = {
         "c": constants.FC_OTHER,
         "t": constants.FT_BOOL,
         "d": 1,
         "n": "BMD calculation",
     }
-    dose_drop = {
+    dose_drop: ClassVar = {
         "c": constants.FC_OTHER,
         "t": constants.FT_DROPDOSE,
         "d": 0,
         "n": "Doses to drop",
     }
-    constant_variance = {
+    constant_variance: ClassVar = {
         "c": constants.FC_OTHER,
         "t": constants.FT_BOOL,
         "d": 1,
         "n": "Constant variance",
     }
-    max_iterations = {
+    max_iterations: ClassVar = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_INTEGER,
         "d": 500,
         "n": "Iteration",
     }
-    relative_fn_conv = {
+    relative_fn_conv: ClassVar = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
         "d": 1.0e-08,
         "n": "Relative function",
     }
-    parameter_conv = {
+    parameter_conv: ClassVar = {
         "c": constants.FC_OPTIMIZER,
         "t": constants.FT_DECIMAL,
         "d": 1.0e-08,
         "n": "Parameter",
     }
-    confidence_level = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0.95}
-    dich_bmr = {"c": constants.FC_BMR, "t": constants.FT_INTEGER, "d": 0.1}
-    dich_bmr_type = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0}
-    cont_bmr = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 1.0}
-    cont_bmr_type = {"c": constants.FC_BMR, "t": constants.FT_INTEGER, "d": 1}
+    confidence_level: ClassVar = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0.95}
+    dich_bmr: ClassVar = {"c": constants.FC_BMR, "t": constants.FT_INTEGER, "d": 0.1}
+    dich_bmr_type: ClassVar = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 0}
+    cont_bmr: ClassVar = {"c": constants.FC_BMR, "t": constants.FT_DECIMAL, "d": 1.0}
+    cont_bmr_type: ClassVar = {"c": constants.FC_BMR, "t": constants.FT_INTEGER, "d": 1}
 
     @staticmethod
     def degree_poly(d=2, showName=True):
