@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import ClassVar
 
 import numpy as np
 from scipy.stats import gamma, norm
@@ -33,7 +34,7 @@ class Multistage_34(Dichotomous):
     model_name = constants.M_Multistage
     exe = "multistage"
     exe_plot = "10multista"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -124,7 +125,7 @@ class MultistageCancer_34(DichotomousCancer):
     model_name = constants.M_MultistageCancer
     exe = "cancer"
     exe_plot = "10cancer"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -205,7 +206,7 @@ class Weibull_217(Dichotomous):
     model_name = constants.M_Weibull
     exe = "weibull"
     exe_plot = "10weibull"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -263,7 +264,7 @@ class LogProbit_34(Dichotomous):
     model_name = constants.M_LogProbit
     exe = "probit"
     exe_plot = "10probit"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -322,7 +323,7 @@ class Probit_34(Dichotomous):
     model_name = constants.M_Probit
     exe = "probit"
     exe_plot = "10probit"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -380,7 +381,7 @@ class Gamma_217(Dichotomous):
     model_name = constants.M_Gamma
     exe = "gamma"
     exe_plot = "10gammhit"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -437,7 +438,7 @@ class LogLogistic_215(Dichotomous):
     model_name = constants.M_LogLogistic
     exe = "logist"
     exe_plot = "10logist"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "log_transform": DefaultParams.log_transform(d=1),
         "restrict_slope": DefaultParams.restrict(d=1),
@@ -498,7 +499,7 @@ class Logistic_215(Dichotomous):
     model_name = constants.M_Logistic
     exe = "logist"
     exe_plot = "10logist"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "log_transform": DefaultParams.log_transform(d=0),
         "restrict_slope": DefaultParams.restrict(d=0),
@@ -556,7 +557,7 @@ class DichotomousHill_13(Dichotomous):
     exe_plot = "10DichoHill"
     version = 1.3
     date = "02/28/2013"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "restrict_power": DefaultParams.log_transform(d=1),
         "append_or_overwrite": DefaultParams.append_or_overwrite,

@@ -1,4 +1,5 @@
 import os
+from typing import ClassVar
 
 import numpy as np
 
@@ -37,7 +38,7 @@ class Polynomial_221(Continuous):
     date = "03/14/2017"
     exe = "poly"
     exe_plot = "00poly"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -125,7 +126,7 @@ class Linear_221(Polynomial_221):
     exe_plot = "00poly"
     version = 2.21
     date = "03/14/2017"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -239,7 +240,7 @@ class Exponential_M2_111(Exponential):
     exe = "exponential"
     exe_plot = "Expo_CPlot"
     exp_run_settings = "{} {} {} 1000 11 0 1"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -325,7 +326,7 @@ class Power_219(Continuous):
     model_name = constants.M_Power
     exe = "power"
     exe_plot = "00power"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
@@ -388,7 +389,7 @@ class Hill_218(Continuous):
     model_name = constants.M_Hill
     exe = "hill"
     exe_plot = "00Hill"
-    defaults = {
+    defaults: ClassVar = {
         "bmdl_curve_calculation": DefaultParams.bmdl_curve_calculation,
         "append_or_overwrite": DefaultParams.append_or_overwrite,
         "smooth_option": DefaultParams.smooth_option,
