@@ -344,9 +344,7 @@ class BMDModel(abc.ABC):
             return val
 
     def _dfile_print_header_rows(self):
-        return "{}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out".format(
-            self.model_name
-        )
+        return f"{self.model_name}\nBMDS_Model_Run\n/temp/bmd/datafile.dax\n/temp/bmd/output.out"
 
     def _dfile_print_parameters(self, *params):
         # Print parameters in the specified order. Expects a tuple of parameter
