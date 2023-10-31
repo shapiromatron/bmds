@@ -100,7 +100,36 @@ def write_docx_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
-def write_docx_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
+def create_summary_figure(report: Report, session):
+    fig = plotting.create_empty_figure()
+    ax = fig.axes[0]
+    selected_models = [
+        session.models[i][idx] for i, idx in enumerate(session.results.selected_model_indexes)
+    ]
+    color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)
+    for idx, model in enumerate(selected_models):
+        color = next(color_cycle)
+        dataset = model.dataset
+        if idx == 0:
+            ax.set_xlabel(dataset.get_xlabel())
+            ax.set_ylabel(dataset.get_ylabel())
+            ax.set_title("Model Average")
+        ax.scatter(
+            dataset.doses,
+            dataset.plot_data().mean,
+            c="none",
+            edgecolors=color,
+            s=70,
+            linewidth=2,
+        )
+        ax.plot(
+            model.results.plotting.dr_x,
+            model.results.plotting.dr_y,
+            label=f"{dataset._get_dataset_name()}; {model.name()}",
+            c=color,
+        )
+        ax.legend(**plotting.LEGEND_OPTS)
+    return fig
 
 
 def write_docx_model(report: Report, model, header_level: int = 1, bmd_cdf_table: bool = False):
@@ -404,6 +433,9 @@ class MultitumorBase:
 
         report.document.add_paragraph("Frequentist Summary", h2)
         write_docx_frequentist_table(report, self)
+        report.document.add_paragraph(
+            add_mpl_figure(report.document, create_summary_figure(report, self), 6)
+        )
         report.document.add_paragraph("Individual Model Results", h2)
 
         for selected_idx, dataset_models in zip(
