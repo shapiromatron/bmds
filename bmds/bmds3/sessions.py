@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import numpy.typing as npt
@@ -54,7 +54,9 @@ class BmdsSession:
         self.recommender: Recommender | None = None
         self.selected: SelectedModel = SelectedModel(self)
 
-    def add_default_bayesian_models(self, global_settings: dict = None, model_average: bool = True):
+    def add_default_bayesian_models(
+        self, global_settings: dict | None = None, model_average: bool = True
+    ):
         global_settings = deepcopy(global_settings) if global_settings else {}
         global_settings["priors"] = PriorClass.bayesian
         for name in self.model_options[self.dataset.dtype].keys():
@@ -321,7 +323,7 @@ class Bmds330(BmdsSession):
     version_str = constants.BMDS330
     version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
-    model_options = {
+    model_options: ClassVar = {
         constants.DICHOTOMOUS: {
             constants.M_Logistic: d3.Logistic,
             constants.M_LogLogistic: d3.LogLogistic,
