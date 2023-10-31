@@ -12,8 +12,8 @@ from bmds.exceptions import ConfigurationException
 
 class TestPriorOverrides:
     def test_poly(self, cdataset2, negative_cdataset):
+        # fmt: off
         for settings, priors in [
-            # fmt: off
             ({"disttype": DistType.normal, "is_increasing": True}, (0, 1e6)),
             ({"disttype": DistType.normal, "is_increasing": False}, (-1e6, 0)),
             ({"disttype": DistType.normal_ncv, "is_increasing": True}, (0, 18)),
@@ -22,8 +22,7 @@ class TestPriorOverrides:
             ({"disttype": DistType.normal, "priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-1e6, 1e6)),
             ({"disttype": DistType.normal_ncv, "priors": PriorClass.frequentist_unrestricted, "is_increasing": True}, (-18, 18)),
             ({"disttype": DistType.normal_ncv, "priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-18, 18)),
-            # fmt: on
-        ]:
+        ]:  # fmt: on
             model = continuous.Polynomial(cdataset2, settings)
             beta1 = model.settings.priors.get_prior("beta1")
             assert beta1.min_value == priors[0], settings

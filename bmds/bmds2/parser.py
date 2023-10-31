@@ -1,4 +1,5 @@
 import re
+from typing import ClassVar
 
 from .. import constants
 
@@ -22,7 +23,7 @@ class OutputParser:
     re_num = r"[/+/-]?[0-9]+[/.]*[0-9]*[Ee+-]*[0-9]*"
 
     # line-skips by dataset type
-    NUM_LINE_SKIPS_PARAMS = {
+    NUM_LINE_SKIPS_PARAMS: ClassVar = {
         constants.CONTINUOUS: 1,
         constants.CONTINUOUS_INDIVIDUAL: 1,
         constants.DICHOTOMOUS: 1,
@@ -30,14 +31,14 @@ class OutputParser:
         EXPONENTIAL: 4,
     }
 
-    NUM_LINE_SKIPS_FIT = {
+    NUM_LINE_SKIPS_FIT: ClassVar = {
         constants.CONTINUOUS: 3,
         constants.CONTINUOUS_INDIVIDUAL: 3,
         constants.DICHOTOMOUS: 2,
         constants.DICHOTOMOUS_CANCER: 2,
     }
 
-    NUM_LINE_SKIPS_AIC = {
+    NUM_LINE_SKIPS_AIC: ClassVar = {
         constants.CONTINUOUS: 1,
         constants.CONTINUOUS_INDIVIDUAL: 1,
         EXPONENTIAL: 2,

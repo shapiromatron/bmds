@@ -3,6 +3,7 @@ import os
 import platform
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
+from typing import ClassVar
 
 import pandas as pd
 from simple_settings import settings
@@ -22,9 +23,9 @@ class BMDS:
     version_str: str = ""
     version_pretty: str = ""
     version_tuple: tuple[int, ...] = ()
-    model_options: dict[str, dict] = {}
+    model_options: ClassVar[dict[str, dict]] = {}
 
-    bmr_options = {
+    bmr_options: ClassVar = {
         constants.DICHOTOMOUS: constants.DICHOTOMOUS_BMRS,
         constants.DICHOTOMOUS_CANCER: constants.DICHOTOMOUS_BMRS,
         constants.CONTINUOUS: constants.CONTINUOUS_BMRS,
@@ -327,7 +328,7 @@ class BMDS_v270(BMDS):
     version_str = constants.BMDS270
     version_pretty = "2.7.0"
     version_tuple = (2, 7, 0)
-    model_options = {
+    model_options: ClassVar = {
         constants.DICHOTOMOUS: {
             constants.M_Logistic: models.Logistic_215,
             constants.M_LogLogistic: models.LogLogistic_215,
