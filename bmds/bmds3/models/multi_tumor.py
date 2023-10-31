@@ -1,9 +1,10 @@
+from itertools import cycle
 from typing import Self
 
 import numpy as np
 import pandas as pd
 
-from ... import bmdscore
+from ... import bmdscore, plotting
 from ...constants import Version
 from ...datasets.dichotomous import DichotomousDataset
 from ...reporting.footnotes import TableFootnote
@@ -11,7 +12,7 @@ from ...reporting.styling import Report, add_mpl_figure, set_column_width, write
 from ...version import __version__
 from .. import reporting
 from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
-from ..reporting import write_pvalue_header
+from ..reporting import write_bmd_cdf_table, write_pvalue_header
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.multi_tumor import (
     MultitumorAnalysis,
@@ -100,14 +101,20 @@ def write_docx_inputs_table(report: Report, session):
 
 
 def write_docx_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
+
+
+def write_docx_model(report: Report, model, header_level: int = 1, bmd_cdf_table: bool = False):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
     report.document.add_paragraph(model.name(), header_style)
     if model.has_results:
         report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-        # if bmd_cdf_table: # TODO - change - add?
-        #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+        if bmd_cdf_table:
+            report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
+        if bmd_cdf_table:
+            report.document.add_paragraph("CDF:", styles.tbl_body)
+            write_bmd_cdf_table(report, model)
 
 
 def multistage_cancer_prior() -> ModelPriors:
