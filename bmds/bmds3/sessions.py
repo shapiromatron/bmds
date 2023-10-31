@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy, deepcopy
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import numpy.typing as npt
@@ -318,7 +318,7 @@ class Bmds330(BmdsSession):
     version_str = constants.BMDS330  # TODO - change
     version_pretty = "3.3.0"
     version_tuple = (3, 3, 0)
-    model_options = {
+    model_options: ClassVar = {
         constants.DICHOTOMOUS: {
             constants.M_Logistic: d3.Logistic,
             constants.M_LogLogistic: d3.LogLogistic,
