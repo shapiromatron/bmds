@@ -389,7 +389,6 @@ class MultitumorBase:
         Returns:
             A python docx.Document object with content added, session_inputs_table
         """
-        # TODO - change - implement bmd_cdf_table, all_models, etc?
         if report is None:
             report = Report.build_default()
 
@@ -407,9 +406,14 @@ class MultitumorBase:
         write_docx_frequentist_table(report, self)
         report.document.add_paragraph("Individual Model Results", h2)
 
-        for dataset_models in self.models:
-            for model in dataset_models:
-                write_docx_model(report, model, bmd_cdf_table, header_level)
+        for selected_idx, dataset_models in zip(
+            self.results.selected_model_indexes, self.models, strict=True
+        ):
+            for idx, model in enumerate(dataset_models):
+                if all_models or selected_idx == idx:
+                    write_docx_model(
+                        report, model, header_level=header_level + 2, bmd_cdf_table=bmd_cdf_table
+                    )
 
         if citation:
             report.document.add_paragraph("# TODO - change", h2)
