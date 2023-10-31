@@ -342,9 +342,6 @@ class NestedDichotomousResult(BaseModel):
         return pretty_table(data, "")
 
     def bootstrap_results(self) -> str:
-        import pdb
-
-        pdb.set_trace()
         data = [
             ["# Iterations", "?"],
             ["Bootstrap Seed", "-"],
