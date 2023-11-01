@@ -117,7 +117,7 @@ def create_summary_figure(report: Report, session):
         ax.scatter(
             dataset.doses,
             dataset.plot_data().mean,
-            c="none",
+            c="white",
             edgecolors=color,
             s=70,
             linewidth=2,
