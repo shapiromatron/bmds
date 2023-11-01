@@ -36,10 +36,10 @@ docs-serve: ## Generate documentation
 	cd docs; mkdocs serve -a localhost:8050
 
 lint: ## Check formatting issues
-	@black . --check && ruff .
+	@ruff format . --check && ruff .
 
 format: ## Fix formatting issues where possible
-	@black . && ruff . --fix --show-fixes
+	@ruff format . && ruff . --fix --show-fixes
 
 test: ## Run all tests, except matplotlib figures
 	py.test
@@ -72,7 +72,7 @@ dist: clean ## Builds python wheels
 
 release: dist ## Package and upload a release
 	twine upload dist/*
-	git tag -a "$(shell python setup.py --version)" -m ""
+	git tag -a "$(python setup.py --version)" -m ""
 	git push --tags
 
 loc: ## Generate lines of code report

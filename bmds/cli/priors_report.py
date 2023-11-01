@@ -19,7 +19,7 @@ def write_break(f: StringIO):
 
 
 def write_settings(f: StringIO, model: dichotomous.BmdModel, settings: dict):
-    f.write("\n".join(f"* {k}: {repr(v)}" for k, v in settings.items()) + "\n\n")
+    f.write("\n".join(f"* {k}: {v!r}" for k, v in settings.items()) + "\n\n")
     f.write(str(model.settings.priors) + "\n\n")
 
 
@@ -100,21 +100,20 @@ def continuous_priors(f: StringIO):
     write_break(f)
 
     write_model(f, continuous.Linear)
+    # fmt: off
     for settings in [
-        # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.bayesian),
-        # fmt: on
-    ]:
+    ]:  # fmt: on
         print_c_model(continuous.Linear, settings)
     write_break(f)
 
     write_model(f, continuous.Polynomial)
+    # fmt: off
     for settings in [
-        # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
@@ -127,14 +126,13 @@ def continuous_priors(f: StringIO):
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv, is_increasing=False),
 
         dict(priors=PriorClass.bayesian),
-        # fmt: on
-    ]:
+    ]:  # fmt: on
         print_c_model(continuous.Polynomial, settings)
     write_break(f)
 
     write_model(f, continuous.Power)
+    # fmt: off
     for settings in [
-        # fmt: off
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.log_normal),
         dict(priors=PriorClass.frequentist_unrestricted, disttype=DistType.normal_ncv),
@@ -144,8 +142,7 @@ def continuous_priors(f: StringIO):
         dict(priors=PriorClass.frequentist_restricted, disttype=DistType.normal_ncv),
 
         dict(priors=PriorClass.bayesian),
-        # fmt: on
-    ]:
+    ]:  # fmt: on
         print_c_model(continuous.Power, settings)
     write_break(f)
 

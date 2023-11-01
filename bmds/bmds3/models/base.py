@@ -4,7 +4,7 @@ import abc
 import ctypes
 import logging
 import platform
-from typing import TYPE_CHECKING, NamedTuple, Self
+from typing import TYPE_CHECKING, ClassVar, NamedTuple, Self
 
 from pydantic import BaseModel
 
@@ -30,7 +30,7 @@ class BmdsLibraryManager:
     def __init__(self):
         raise RuntimeError("Use as a static-class")
 
-    _dll_cache: dict[str, ctypes.CDLL] = {}
+    _dll_cache: ClassVar[dict[str, ctypes.CDLL]] = {}
 
     @classmethod
     def get_dll(cls, bmds_version: str, base_name: str) -> ctypes.CDLL:
