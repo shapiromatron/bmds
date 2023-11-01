@@ -19,7 +19,7 @@ def get_version(dll: ctypes.CDLL) -> str:
 # DICHOTOMOUS MODELS
 # ------------------
 class DichotomousAnalysisStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("model", ctypes.c_int),  # Model Type as listed in DichModel
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("Y", ctypes.POINTER(ctypes.c_double)),  # observed +
@@ -34,7 +34,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
         ("burnin", ctypes.c_int),  # size of burnin
         ("parms", ctypes.c_int),  # number of parameters in the model
         ("prior_cols", ctypes.c_int),  # columns in the prior
-    ]
+    )
 
     def __init__(self, *args, **kwargs):
         self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
@@ -76,7 +76,7 @@ class DichotomousAnalysisStruct(ctypes.Structure):
 
 
 class DichotomousModelResultStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("model", ctypes.c_int),  # dichotomous model specification
         ("nparms", ctypes.c_int),  # number of parameters in the model
         ("parms", ctypes.POINTER(ctypes.c_double)),  # parameter estimate
@@ -87,7 +87,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
         ("bmd", ctypes.c_double),  # the central estimate of the BMD
-    ]
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,7 +118,7 @@ class DichotomousModelResultStruct(ctypes.Structure):
 
 
 class DichotomousPgofResultStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("n", ctypes.c_int),  # total number of observations obs/n
         ("expected", ctypes.POINTER(ctypes.c_double)),
         ("residual", ctypes.POINTER(ctypes.c_double)),
@@ -127,7 +127,7 @@ class DichotomousPgofResultStruct(ctypes.Structure):
         ("df", ctypes.c_double),
         ("ebLower", ctypes.POINTER(ctypes.c_double)),
         ("ebUpper", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __str__(self) -> str:
         return dedent(
@@ -158,7 +158,7 @@ class DichotomousPgofResultStruct(ctypes.Structure):
 class DichotomousAodStruct(ctypes.Structure):
     # Dichotomous Analysis of Deviance Struct
 
-    _fields_ = [
+    _fields_ = (
         ("fullLL", ctypes.c_double),
         ("nFull", ctypes.c_int),
         ("redLL", ctypes.c_double),
@@ -171,7 +171,7 @@ class DichotomousAodStruct(ctypes.Structure):
         ("dfRed", ctypes.c_int),
         ("pvFit", ctypes.c_double),
         ("pvRed", ctypes.c_double),
-    ]
+    )
 
     def __str__(self) -> str:
         return dedent(
@@ -194,7 +194,7 @@ class DichotomousAodStruct(ctypes.Structure):
 
 class BmdsResultsStruct(ctypes.Structure):
     # used for both continuous and dichotomous data
-    _fields_ = [
+    _fields_ = (
         ("bmd", ctypes.c_double),
         ("bmdl", ctypes.c_double),
         ("bmdu", ctypes.c_double),
@@ -206,7 +206,7 @@ class BmdsResultsStruct(ctypes.Structure):
         ("lowerConf", ctypes.POINTER(ctypes.c_double)),
         ("upperConf", ctypes.POINTER(ctypes.c_double)),
         ("validResult", ctypes.c_bool),
-    ]
+    )
 
     def __str__(self) -> str:
         return dedent(
@@ -276,7 +276,7 @@ class DichotomousStructs(NamedTuple):
 # DICHOTOMOUS MODEL AVERAGING
 # ---------------------------
 class DichotomousMAAnalysisStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("nmodels", ctypes.c_int),
         ("priors", ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
         ("nparms", ctypes.POINTER(ctypes.c_int)),
@@ -284,7 +284,7 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
         ("prior_cols", ctypes.POINTER(ctypes.c_int)),
         ("models", ctypes.POINTER(ctypes.c_int)),
         ("modelPriors", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __init__(self, models: list[DichotomousAnalysisStruct], model_weights: npt.NDArray):
         self.np_nparms = np.array([model.parms for model in models], dtype=np.int32)
@@ -330,13 +330,13 @@ class DichotomousMAAnalysisStruct(ctypes.Structure):
 
 
 class DichotomousMAResultStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("nmodels", ctypes.c_int),
         ("models", ctypes.POINTER(ctypes.POINTER(DichotomousModelResultStruct))),
         ("dist_numE", ctypes.c_int),
         ("post_probs", ctypes.POINTER(ctypes.c_double)),
         ("bmd_dist", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __init__(self, models: list[DichotomousModelResultStruct]):
         self.nmodels = len(models)
@@ -363,7 +363,7 @@ class DichotomousMAResultStruct(ctypes.Structure):
 
 
 class MAResultsStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("bmd_ma", ctypes.c_double),
         ("bmdl_ma", ctypes.c_double),
         ("bmdu_ma", ctypes.c_double),
@@ -372,7 +372,7 @@ class MAResultsStruct(ctypes.Structure):
         ("bmdu", ctypes.POINTER(ctypes.c_double)),
         ("ebLower", ctypes.POINTER(ctypes.c_double)),
         ("ebUpper", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __str__(self) -> str:
         return dedent(
@@ -440,7 +440,7 @@ class DichotomousMAStructs(NamedTuple):
 # CONTINUOUS MODELS
 # -----------------
 class ContinuousAnalysisStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("model", ctypes.c_int),
         ("n", ctypes.c_int),
         ("suff_stat", ctypes.c_bool),  # true if continuous summary, false if individual data
@@ -461,7 +461,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
         ("parms", ctypes.c_int),  # number of parameters
         ("prior_cols", ctypes.c_int),
         ("transform_dose", ctypes.c_int),
-    ]
+    )
 
     def __init__(self, *args, **kwargs):
         self.np_Y = np.array(kwargs.pop("Y"), dtype=np.double)
@@ -511,7 +511,7 @@ class ContinuousAnalysisStruct(ctypes.Structure):
 
 
 class ContinuousModelResultStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("model", ctypes.c_int),  # continuous model specification
         ("dist", ctypes.c_int),  # distribution type
         ("nparms", ctypes.c_int),  # number of parameters in the model
@@ -523,7 +523,7 @@ class ContinuousModelResultStruct(ctypes.Structure):
         ("total_df", ctypes.c_double),  # Total degrees of freedom
         ("bmd", ctypes.c_double),  # The bmd at the maximum
         ("bmd_dist", ctypes.POINTER(ctypes.c_double)),  # bmd distribution (dist_numE x 2) matrix
-    ]
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -558,7 +558,7 @@ class ContinuousModelResultStruct(ctypes.Structure):
 
 
 class ContinuousGofStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("dose", ctypes.POINTER(ctypes.c_double)),
         ("size", ctypes.POINTER(ctypes.c_double)),
         ("estMean", ctypes.POINTER(ctypes.c_double)),
@@ -571,7 +571,7 @@ class ContinuousGofStruct(ctypes.Structure):
         ("n", ctypes.c_int),
         ("ebLower", ctypes.POINTER(ctypes.c_double)),
         ("ebUpper", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __str__(self) -> str:
         return dedent(
@@ -618,11 +618,11 @@ class ContinuousGofStruct(ctypes.Structure):
 
 
 class ContinuousToiStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("llRatio", ctypes.POINTER(ctypes.c_double)),
         ("DF", ctypes.POINTER(ctypes.c_double)),
         ("pVal", ctypes.POINTER(ctypes.c_double)),
-    ]
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -635,13 +635,13 @@ class ContinuousToiStruct(ctypes.Structure):
 
 
 class ContinuousAodStruct(ctypes.Structure):
-    _fields_ = [
+    _fields_ = (
         ("LL", ctypes.POINTER(ctypes.c_double)),
         ("nParms", ctypes.POINTER(ctypes.c_int)),
         ("AIC", ctypes.POINTER(ctypes.c_double)),
         ("addConst", ctypes.c_double),
         ("TOI", ctypes.POINTER(ContinuousToiStruct)),
-    ]
+    )
 
     def __str__(self) -> str:
         toi = self.TOI[0]
