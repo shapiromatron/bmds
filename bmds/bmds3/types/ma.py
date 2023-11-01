@@ -55,10 +55,6 @@ class DichotomousModelAverageResult(ModelAverageResult):
             dr_y=dr_y,
         )
 
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
-
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
         d.update(

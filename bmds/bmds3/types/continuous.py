@@ -228,10 +228,6 @@ class ContinuousModelResult(BaseModel):
             bmd_dist=arr,
         )
 
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
-
 
 class ContinuousParameters(BaseModel):
     names: list[str]
@@ -295,10 +291,6 @@ class ContinuousParameters(BaseModel):
             prior_min_value=priors[3],
             prior_max_value=priors[4],
         )
-
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
@@ -389,10 +381,6 @@ class ContinuousGof(BaseModel):
                 model.structs.summary.bmd, model.dataset.doses, gof.np_res[mask].tolist()
             ),
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self, disttype: constants.DistType) -> str:
         mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
@@ -507,10 +495,6 @@ class ContinuousPlotting(BaseModel):
             bmd_y=critical_ys[1],
             bmdu_y=critical_ys[2],
         )
-
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class ContinuousResult(BaseModel):

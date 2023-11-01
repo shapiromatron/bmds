@@ -1,7 +1,7 @@
 from enum import IntEnum
+from typing import Annotated
 
-from pydantic import Field, BaseModel
-from typing_extensions import Annotated
+from pydantic import BaseModel, Field
 
 
 class NestedDichotomousRiskType(IntEnum):

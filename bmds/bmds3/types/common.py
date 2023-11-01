@@ -1,6 +1,8 @@
 from typing import Any
 
 import numpy as np
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema, core_schema
 
 from ..constants import BMDS_BLANK_VALUE
 
@@ -27,29 +29,19 @@ class PydanticNumpyArray(np.ndarray):
     # pydantic friendly numpy arrays
 
     @classmethod
-    # def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler
-    # ) -> CoreSchema:
-    #     # one or more validators may be yielded which will be called in the
-    #     # order to validate the input, each validator will receive as an input
-    #     # the value returned from the previous validator
-    #     # yield cls.validate
-    #     return core_schema.no_info_after_validator_function(cls, handler(str))
-    def __get_validators__(cls):
-        yield cls.validate
-
-
-    @classmethod
-    def listify(cls, dict_: dict):
-        # convert numpy arrays to lists which can be json serialized
-        for key, value in dict_.items():
-            if isinstance(value, np.ndarray):
-                dict_[key] = value.tolist()
-        return dict_
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            handler("list"),
+            serialization=core_schema.plain_serializer_function_ser_schema(lambda x: x.tolist()),
+        )
 
 
 class NumpyIntArray(PydanticNumpyArray):
     @classmethod
-    def validate(cls, v, info):
+    def validate(cls, v):
         try:
             return np.asarray(v, dtype="int")
         except TypeError:
@@ -59,7 +51,7 @@ class NumpyIntArray(PydanticNumpyArray):
 class NumpyFloatArray(PydanticNumpyArray):
     # Numpy arrays, agumented
     @classmethod
-    def validate(cls, v, info):
+    def validate(cls, v):
         try:
             return np.asarray(v, dtype="float")
         except TypeError:

@@ -170,10 +170,6 @@ class DichotomousModelResult(BaseModel):
             bmd_dist=arr,
         )
 
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
-
 
 class DichotomousPgofResult(BaseModel):
     expected: list[float]
@@ -256,10 +252,6 @@ class DichotomousParameters(BaseModel):
             prior_min_value=priors[3],
             prior_max_value=priors[4],
         )
-
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
@@ -369,10 +361,6 @@ class DichotomousPlotting(BaseModel):
             bmd_y=critical_ys[1],
             bmdu_y=critical_ys[2],
         )
-
-    def model_dump(self, **kw) -> dict:
-        d = super().model_dump(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class DichotomousResult(BaseModel):
