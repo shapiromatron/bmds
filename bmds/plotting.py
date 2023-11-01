@@ -46,16 +46,10 @@ def close_figure(fig):
     plt.close(fig)
 
 
-def add_bmr_lines(ax, bmd: float, bmd_y: float, bmdl: float, bmdu: float):
+def add_bmr_lines(ax, bmd: float, bmd_y: float, bmdl: float, bmdu: float, **kw):
     if bmd <= 0:
         return
-
+    styles = {**BMD_LINE_FORMAT, **kw}
     lower = 0 if bmdl < 0 else bmd - bmdl
     upper = 0 if bmdu < 0 else bmdu - bmd
-
-    ax.errorbar(
-        bmd,
-        bmd_y,
-        xerr=[[lower], [upper]],
-        **BMD_LINE_FORMAT,
-    )
+    ax.errorbar(bmd, bmd_y, xerr=[[lower], [upper]], **styles)

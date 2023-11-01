@@ -103,6 +103,8 @@ def write_docx_inputs_table(report: Report, session):
 def create_summary_figure(report: Report, session):
     fig = plotting.create_empty_figure()
     ax = fig.axes[0]
+
+    # add individual model fits
     selected_models = [
         session.models[i][idx] for i, idx in enumerate(session.results.selected_model_indexes)
     ]
@@ -128,7 +130,29 @@ def create_summary_figure(report: Report, session):
             label=f"{dataset._get_dataset_name()}; {model.name()}",
             c=color,
         )
-        ax.legend(**plotting.LEGEND_OPTS)
+
+    # add slope factor line and bmd interval
+    if session.results.bmdl and session.results.slope_factor:
+        bmd_y = session.results.bmdl * session.results.slope_factor
+        plotting.add_bmr_lines(
+            ax,
+            session.results.bmd,
+            bmd_y,
+            session.results.bmdl,
+            session.results.bmdu,
+            c="k",
+            ecolor=plotting.to_rgba("k", 0.7),
+        )
+        ax.plot(
+            [0, session.results.bmdl],
+            [0, bmd_y],
+            color="k",
+            linestyle="dashed",
+            label="Cancer Slope Factor",
+        )
+
+    ax.legend(**plotting.LEGEND_OPTS)
+
     return fig
 
 
