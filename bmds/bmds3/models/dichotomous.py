@@ -94,12 +94,12 @@ class BmdModelDichotomous(BmdModel):
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
-    bmds_model_class: DichotomousModel = Field(..., alias="model_class")
+    bmds_model_class: DichotomousModel = Field(alias="model_class")
     settings: DichotomousModelSettings
     results: DichotomousResult | None = None
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
-        Model = bmd_model_map[self.model_class.id]
+        Model = bmd_model_map[self.bmds_model_class.id]
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
         return model

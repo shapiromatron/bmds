@@ -4,7 +4,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
@@ -205,7 +205,7 @@ class ContinuousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    bmds_model_df: float
+    bmds_model_df: float = Field(alias="model_df")
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -223,7 +223,7 @@ class ContinuousModelResult(BaseModel):
             aic=summary.aic,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
-            bmds_model_df=result.bmds_model_df,
+            model_df=result.model_df,
             total_df=result.total_df,
             bmd_dist=arr,
         )

@@ -147,7 +147,7 @@ class DichotomousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    bmds_model_df: float
+    bmds_model_df: float = Field(alias="model_df")
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -165,7 +165,7 @@ class DichotomousModelResult(BaseModel):
             aic=summary.aic,
             bic_equiv=summary.BIC_equiv,
             chisq=summary.chisq,
-            bmds_model_df=result.bmds_model_df,
+            model_df=result.model_df,
             total_df=result.total_df,
             bmd_dist=arr,
         )

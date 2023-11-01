@@ -85,7 +85,7 @@ class RecommenderResults(BaseModel):
     recommended_model_index: int | None = None
     recommended_model_variable: str | None = None
     bmds_model_bin: list[LogicBin] = Field(default=[], alias="model_bin")
-    bmds_model_notes: list[dict[int, list[str]]] = []
+    bmds_model_notes: list[dict[int, list[str]]] = Field(default=[], alias="model_notes")
 
     def bin_text(self, index: int) -> str:
         if self.recommended_model_index == index:
@@ -136,7 +136,7 @@ class Recommender:
 
         # apply rules to each model
         model_bins = []
-        bmds_model_notes = []
+        model_notes = []
         for model in models:
             # set defaults
             current_bin = LogicBin.NO_CHANGE
@@ -158,10 +158,10 @@ class Recommender:
                 notes[LogicBin.FAILURE].append("Did not successfully execute.")
 
             model_bins.append(current_bin)
-            bmds_model_notes.append(notes)
+            model_notes.append(notes)
 
         self.results.bmds_model_bin = model_bins
-        self.results.bmds_model_notes = bmds_model_notes
+        self.results.bmds_model_notes = model_notes
 
         # get only models in highest bin-category
         valid_model_indicies = []

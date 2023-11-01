@@ -1,6 +1,8 @@
 import ctypes
 from itertools import cycle
 
+from pydantic import Field
+
 from ... import plotting
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
@@ -38,9 +40,9 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         return self.results
 
     def serialize(self, session) -> "BmdModelAveragingDichotomousSchema":
-        bmds_model_indexes = [session.models.index(model) for model in self.models]
+        model_indexes = [session.models.index(model) for model in self.models]
         return BmdModelAveragingDichotomousSchema(
-            settings=self.settings, bmds_model_indexes=bmds_model_indexes, results=self.results
+            settings=self.settings, model_indexes=model_indexes, results=self.results
         )
 
     def plot(self, colorize: bool = False):
@@ -101,7 +103,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
     settings: DichotomousModelSettings
     results: DichotomousModelAverageResult
-    bmds_model_indexes: list[int]
+    bmds_model_indexes: list[int] = Field(alias="model_indexes")
 
     def deserialize(self, session) -> BmdModelAveragingDichotomous:
         models = [session.models[idx] for idx in self.bmds_model_indexes]

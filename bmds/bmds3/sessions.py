@@ -181,11 +181,9 @@ class BmdsSession:
         model_base_class = BmdModelSchema.get_subclass(dtype)
         data["dataset"] = dataset
         data["models"] = [model_base_class.model_validate(model_) for model_ in data["models"]]
-        ma = data.get("bmds_model_average")
+        ma = data.get("model_average")
         if ma:
-            data["bmds_model_average"] = BmdModelAveragingSchema.get_subclass(dtype).model_validate(
-                ma
-            )
+            data["model_average"] = BmdModelAveragingSchema.get_subclass(dtype).model_validate(ma)
         if tuple(version) == Bmds330.version_tuple:
             return Bmds330Schema.model_validate(data).deserialize()
         else:

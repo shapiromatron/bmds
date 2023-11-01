@@ -10,7 +10,7 @@ NUM_PRIOR_COLS = 5
 class BmdModelSchema(BaseModel):
     id: int
     verbose: str
-    bmds_model_form_str: str = Field(..., alias="model_form_str")
+    bmds_model_form_str: str = Field(alias="model_form_str")
 
 
 class DichotomousModel(BmdModelSchema):

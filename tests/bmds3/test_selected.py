@@ -28,14 +28,14 @@ class TestBmdsSelector:
         session.select(session.models[0], "best fitting")
         assert session.selected.model is session.models[0]
         assert session.selected.no_model_selected is False
-        assert session.selected.serialize().model_dump() == dict(
-            bmds_model_index=0, notes="best fitting"
+        assert session.selected.serialize().model_dump(by_alias=True) == dict(
+            model_index=0, notes="best fitting"
         )
 
         # show examples when a model is not selected
         session.select(None, "none")
         assert session.selected.model is None
         assert session.selected.no_model_selected is True
-        assert session.selected.serialize().model_dump() == dict(
-            bmds_model_index=None, notes="none"
+        assert session.selected.serialize().model_dump(by_alias=True) == dict(
+            model_index=None, notes="none"
         )
