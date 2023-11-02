@@ -36,8 +36,8 @@ class TestSession:
         assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
-        d1 = session1.serialize().dict()
-        d2 = session2.serialize().dict()
+        d1 = session1.serialize().model_dump()
+        d2 = session2.serialize().model_dump()
         assert d1 == d2
 
         # dataframe
@@ -77,8 +77,8 @@ class TestSession:
         assert session2.models[0].has_results is True
 
         # make sure we get the same result back after deserializing
-        d1 = session1.serialize().dict()
-        d2 = session2.serialize().dict()
+        d1 = session1.serialize().model_dump()
+        d2 = session2.serialize().model_dump()
         assert d1 == d2
 
     def test_nested_dichotomous(self, nd_dataset4, rewrite_data_files):

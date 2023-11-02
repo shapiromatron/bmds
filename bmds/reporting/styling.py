@@ -28,7 +28,7 @@ class ReporterStyleGuide(BaseModel):
 
 
 class Report(BaseModel):
-    document: Any
+    document: Any = None
     styles: ReporterStyleGuide
 
     @classmethod

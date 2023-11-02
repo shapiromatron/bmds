@@ -179,7 +179,7 @@ class TestContinuousSummaryDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
+        assert serialized.model_dump(exclude={"plotting"}) == {
             "dtype": "C",
             "metadata": {
                 "id": 123,
@@ -202,7 +202,7 @@ class TestContinuousSummaryDataset:
         assert not isinstance(ds2, bmds.ContinuousIndividualDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestContinuousIndividualDataset:
@@ -301,7 +301,7 @@ class TestContinuousIndividualDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"anova"}) == {
+        assert serialized.model_dump(exclude={"anova"}) == {
             "dtype": "CI",
             "metadata": {
                 "id": 123,
@@ -321,14 +321,14 @@ class TestContinuousIndividualDataset:
         assert isinstance(ds2, bmds.ContinuousIndividualDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestContinuousDatasetSchema:
     def test_schema(self, cdataset):
         # check that cycling through serialization returns the same
-        v1 = cdataset.serialize().dict()
-        v2 = bmds.ContinuousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        v1 = cdataset.serialize().model_dump()
+        v2 = bmds.ContinuousDatasetSchema.model_validate(v1).deserialize().serialize().model_dump()
         assert v1 == v2
 
         data = deepcopy(v1)
@@ -337,24 +337,29 @@ class TestContinuousDatasetSchema:
             ValidationError,
             match="Length of doses, ns, means, and stdevs are not the same",
         ):
-            bmds.ContinuousDatasetSchema.parse_obj(data)
+            bmds.ContinuousDatasetSchema.model_validate(data)
 
         data = deepcopy(v1)
         data.update(ns=[1, 2])
         with pytest.raises(ValidationError, match="Length"):
-            bmds.ContinuousDatasetSchema.parse_obj(data)
+            bmds.ContinuousDatasetSchema.model_validate(data)
 
         data = deepcopy(v1)
         data.update(doses=[0, 10], ns=[20, 20], means=[0, 0], stdevs=[1, 1])
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
-            bmds.ContinuousDatasetSchema.parse_obj(data)
+            bmds.ContinuousDatasetSchema.model_validate(data)
 
 
 class TestContinuousIndividualDatasetSchema:
     def test_schema(self, cidataset):
         # check that cycling through serialization returns the same
-        v1 = cidataset.serialize().dict()
-        v2 = bmds.ContinuousIndividualDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        v1 = cidataset.serialize().model_dump()
+        v2 = (
+            bmds.ContinuousIndividualDatasetSchema.model_validate(v1)
+            .deserialize()
+            .serialize()
+            .model_dump()
+        )
         assert v1 == v2
 
         data = deepcopy(v1)
@@ -363,14 +368,14 @@ class TestContinuousIndividualDatasetSchema:
             ValidationError,
             match="Length of doses and responses are not the same",
         ):
-            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+            bmds.ContinuousIndividualDatasetSchema.model_validate(data)
 
         data = deepcopy(v1)
         data["doses"] = [1, 2]
         with pytest.raises(ValidationError, match="Length of doses and responses are not the same"):
-            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+            bmds.ContinuousIndividualDatasetSchema.model_validate(data)
 
         data = deepcopy(v1)
         data.update(doses=[0, 10], responses=[20, 20])
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
-            bmds.ContinuousIndividualDatasetSchema.parse_obj(data)
+            bmds.ContinuousIndividualDatasetSchema.model_validate(data)

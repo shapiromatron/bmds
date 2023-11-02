@@ -206,7 +206,7 @@ class BmdModel(abc.ABC):
         ...
 
     def to_dict(self) -> dict:
-        return self.serialize().dict()
+        return self.serialize().model_dump()
 
     @abc.abstractmethod
     def get_gof_pvalue(self) -> float:

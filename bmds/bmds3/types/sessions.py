@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, SerializeAsAny
 
 from ...datasets.base import DatasetSchemaBase
 from ..models.base import BmdModelAveragingSchema, BmdModelSchema
@@ -16,8 +16,10 @@ class VersionSchema(BaseModel):
 
 class SessionSchemaBase(BaseModel):
     version: VersionSchema
-    dataset: DatasetSchemaBase
-    models: list[BmdModelSchema]
-    model_average: BmdModelAveragingSchema | None
-    recommender: RecommenderSchema | None
+    dataset: SerializeAsAny[DatasetSchemaBase]
+    models: list[SerializeAsAny[BmdModelSchema]]
+    bmds_model_average: SerializeAsAny[BmdModelAveragingSchema] | None = Field(
+        default=None, alias="model_average"
+    )
+    recommender: RecommenderSchema | None = None
     selected: SelectedModelSchema

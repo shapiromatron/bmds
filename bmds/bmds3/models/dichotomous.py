@@ -1,4 +1,5 @@
 import numpy as np
+from pydantic import Field
 from scipy.stats import gamma, norm
 
 from ...datasets import DichotomousDataset
@@ -20,7 +21,7 @@ class BmdModelDichotomous(BmdModel):
         elif isinstance(settings, DichotomousModelSettings):
             model_settings = settings
         else:
-            model_settings = DichotomousModelSettings.parse_obj(settings)
+            model_settings = DichotomousModelSettings.model_validate(settings)
 
         # get default values, may require further model customization
         if not isinstance(model_settings.priors, ModelPriors):
@@ -84,12 +85,12 @@ class BmdModelDichotomous(BmdModel):
 
 class BmdModelDichotomousSchema(BmdModelSchema):
     name: str
-    model_class: DichotomousModel
+    bmds_model_class: DichotomousModel = Field(alias="model_class")
     settings: DichotomousModelSettings
-    results: DichotomousResult | None
+    results: DichotomousResult | None = None
 
     def deserialize(self, dataset: DichotomousDataset) -> BmdModelDichotomous:
-        Model = bmd_model_map[self.model_class.id]
+        Model = bmd_model_map[self.bmds_model_class.id]
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
         return model
