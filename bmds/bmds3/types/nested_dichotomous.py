@@ -255,10 +255,6 @@ class Plotting(BaseModel):
             bmdu_y=critical_ys[2],
         )
 
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
-
 
 class NestedDichotomousResult(BaseModel):
     ll: float

@@ -122,7 +122,7 @@ class NestedDichotomousDataset(DatasetBase):
 
     def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        extra = self.metadata.dict()
+        extra = self.metadata.model_dump()
         extra.update(extras or {})
         rows = []
         for dose, n, incidence, litter_covariate in zip(

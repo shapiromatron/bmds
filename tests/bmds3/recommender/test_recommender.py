@@ -15,9 +15,9 @@ class TestRecommenderSettings:
         # assert that the entire rule list must be present
         settings = RecommenderSettings.build_default()
         settings.rules.pop()
-        settings2 = settings.json()
+        settings2 = settings.model_dump()
         with pytest.raises(ValidationError) as err:
-            RecommenderSettings.parse_raw(settings2)
+            RecommenderSettings.model_validate(settings2)
         assert "Rule list must be complete" in str(err)
 
 
