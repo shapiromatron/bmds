@@ -113,7 +113,7 @@ class TestBmdModelContinuous:
         # check that automated selection is correct for < 0.05
         model = continuous.Power(cdataset, settings=None)
         assert model.settings.disttype == DistType.normal_ncv
-        assert model.dataset.anova().dict()["test2"]["TEST"] < 0.05
+        assert model.dataset.anova().model_dump()["test2"]["TEST"] < 0.05
 
         # but we can override if we want
         model = continuous.Power(cdataset, settings=dict(disttype=DistType.normal))
@@ -121,7 +121,7 @@ class TestBmdModelContinuous:
 
         # check that automated selection is correct for > 0.05
         model = continuous.Power(cidataset, settings=None)
-        assert model.dataset.anova().dict()["test2"]["TEST"] > 0.05
+        assert model.dataset.anova().model_dump()["test2"]["TEST"] > 0.05
         assert model.settings.disttype == DistType.normal
 
         # but we can override if we want

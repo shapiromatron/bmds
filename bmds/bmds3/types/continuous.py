@@ -4,7 +4,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from ...constants import BOOL_ICON, Dtype
 from ...datasets.continuous import ContinuousDatasets
@@ -46,7 +46,7 @@ _bmr_text_map = {
 
 class ContinuousModelSettings(BaseModel):
     bmr_type: ContinuousRiskType = ContinuousRiskType.StandardDeviation
-    is_increasing: bool | None  # if None; autodetect used
+    is_increasing: bool | None = None  # if None; autodetect used
     bmr: float = 1.0
     tail_prob: float = 0.01
     disttype: constants.DistType = constants.DistType.normal
@@ -54,7 +54,7 @@ class ContinuousModelSettings(BaseModel):
     samples: int = 0
     degree: int = 0  # polynomial only
     burnin: int = 20
-    priors: PriorClass | ModelPriors | None  # if None; default used
+    priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property
     def bmr_text(self) -> str:
@@ -127,9 +127,7 @@ class ContinuousAnalysis(BaseModel):
     samples: int
     burnin: int
     degree: int
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def num_params(self) -> int:
@@ -207,7 +205,7 @@ class ContinuousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    model_df: float
+    bmds_model_df: float = Field(alias="model_df")
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -229,10 +227,6 @@ class ContinuousModelResult(BaseModel):
             total_df=result.total_df,
             bmd_dist=arr,
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class ContinuousParameters(BaseModel):
@@ -297,10 +291,6 @@ class ContinuousParameters(BaseModel):
             prior_min_value=priors[3],
             prior_max_value=priors[4],
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
@@ -391,10 +381,6 @@ class ContinuousGof(BaseModel):
                 model.structs.summary.bmd, model.dataset.doses, gof.np_res[mask].tolist()
             ),
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self, disttype: constants.DistType) -> str:
         mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
@@ -509,10 +495,6 @@ class ContinuousPlotting(BaseModel):
             bmd_y=critical_ys[1],
             bmdu_y=critical_ys[2],
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class ContinuousResult(BaseModel):

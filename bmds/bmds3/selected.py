@@ -1,14 +1,14 @@
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, Field
 
 from .models.base import BmdModel
 
 
 class SelectedModelSchema(BaseModel):
-    model_index: conint(ge=0) | None = None
+    bmds_model_index: int | None = Field(default=None, alias="model_index")
     notes: str = ""
 
     def deserialize(self, session) -> "SelectedModel":
-        return SelectedModel(session, model_index=self.model_index, notes=self.notes)
+        return SelectedModel(session, model_index=self.bmds_model_index, notes=self.notes)
 
 
 class SelectedModel:

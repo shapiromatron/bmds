@@ -1,6 +1,8 @@
 import ctypes
 from itertools import cycle
 
+from pydantic import Field
+
 from ... import plotting
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.ma import DichotomousModelAverageResult
@@ -17,7 +19,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
         elif isinstance(settings, DichotomousModelSettings):
             return settings
         else:
-            return DichotomousModelSettings.parse_obj(settings)
+            return DichotomousModelSettings.model_validate(settings)
 
     def execute(self) -> DichotomousModelAverageResult:
         structs = DichotomousMAStructs.from_session(
@@ -101,10 +103,10 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
 class BmdModelAveragingDichotomousSchema(BmdModelAveragingSchema):
     settings: DichotomousModelSettings
     results: DichotomousModelAverageResult
-    model_indexes: list[int]
+    bmds_model_indexes: list[int] = Field(alias="model_indexes")
 
     def deserialize(self, session) -> BmdModelAveragingDichotomous:
-        models = [session.models[idx] for idx in self.model_indexes]
+        models = [session.models[idx] for idx in self.bmds_model_indexes]
         ma = BmdModelAveragingDichotomous(session=session, models=models, settings=self.settings)
         ma.results = self.results
         return ma
