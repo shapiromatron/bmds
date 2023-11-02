@@ -458,6 +458,7 @@ class DichotomousResult(BaseModel):
             bmdl=self.bmdl,
             bmd=self.bmd,
             bmdu=self.bmdu,
+            slope_factor=self.slope_factor,
             aic=self.fit.aic,
             loglikelihood=self.fit.loglikelihood,
             p_value=self.gof.p_value,

@@ -44,6 +44,7 @@ class TestMultitumor:
 
         # dataframe
         df = session.to_df()
+        assert "slope_factor" in df.columns
 
         # docx
         docx = session.to_docx()
