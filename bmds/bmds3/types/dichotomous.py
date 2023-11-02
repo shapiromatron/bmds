@@ -387,10 +387,11 @@ class DichotomousPlotting(BaseModel):
 
 
 class DichotomousResult(BaseModel):
+    has_completed: bool
     bmdl: float
     bmd: float
     bmdu: float
-    has_completed: bool
+    slope_factor: float | None = None
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
     parameters: DichotomousParameters
@@ -407,10 +408,11 @@ class DichotomousResult(BaseModel):
         deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
+            has_completed=summary.validResult,
             bmdl=summary.BMDL,
             bmd=summary.BMD,
             bmdu=summary.BMDU,
-            has_completed=summary.validResult,
+            slope_factor=summary.slopeFactor,
             fit=fit,
             gof=gof,
             parameters=parameters,

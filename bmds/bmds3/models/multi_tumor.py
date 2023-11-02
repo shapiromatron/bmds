@@ -211,8 +211,7 @@ class MultitumorBase:
         analysis.n = ns
         analysis.ndatasets = len(self.datasets)
         analysis.nmodels = [len(models) for models in dataset_models]
-        analysis.prior = []
-        analysis.prior_cols = NUM_PRIOR_COLS
+        analysis.prior_cols = NUM_PRIOR_COLS  # TODO - delete this from struct too?
 
         result = bmdscore.python_multitumor_result()
         result.ndatasets = len(self.datasets)
