@@ -311,7 +311,7 @@ class MultitumorBase:
                 extras.update(
                     model_index=model_i,
                     model_name=_model_name(model),
-                    slope_factor="-",
+                    slope_factor=model.slope_factor,
                     selected=results.selected_model_indexes[dataset_i] == model_i,
                 )
                 model.update_record(extras)
