@@ -286,7 +286,7 @@ class BmdModelAveraging(abc.ABC):
         ...
 
     def to_dict(self) -> dict:
-        return self.serialize.dict()
+        return self.serialize.model_dump()
 
 
 class BmdModelAveragingSchema(BaseModel):
