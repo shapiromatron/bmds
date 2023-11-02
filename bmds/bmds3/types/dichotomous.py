@@ -448,6 +448,8 @@ class DichotomousResult(BaseModel):
             ["Overall DOF", self.gof.df],
             ["Chi²", self.fit.chisq],
         ]
+        if self.slope_factor and self.slope_factor > 0:
+            data.insert(3, ["Slope Factor", self.slope_factor])
         return pretty_table(data, "")
 
     def update_record(self, d: dict) -> None:

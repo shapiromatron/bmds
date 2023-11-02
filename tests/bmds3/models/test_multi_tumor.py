@@ -38,6 +38,10 @@ class TestMultitumor:
         session2 = session.serialize().deserialize()
         assert session.to_dict() == session2.to_dict()
 
+        # check that individual models has slope factor and shown in text output
+        assert session.models[0][0].results.slope_factor > 0
+        assert "Slope Factor" in session.models[0][0].text()
+
         # dataframe
         df = session.to_df()
 
