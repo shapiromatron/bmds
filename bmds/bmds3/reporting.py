@@ -361,8 +361,8 @@ def write_nd_frequentist_table(report: Report, session: BmdsSession):
 
 
 def plot_bma(report: Report, session: BmdsSession):
-    if session.bmds_model_average.has_results:
-        fig = session.bmds_model_average.plot()
+    if session.model_average.has_results:
+        fig = session.model_average.plot()
         report.document.add_paragraph(add_mpl_figure(report.document, fig, 6))
 
 
@@ -385,7 +385,7 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
-    ma = session.bmds_model_average
+    ma = session.model_average
     for idx, model in enumerate(session.models, start=1):
         write_cell(tbl.cell(idx, 0), model.name(), body)
         write_cell(tbl.cell(idx, 1), ma.results.priors[idx - 1] if ma else "-", body)
