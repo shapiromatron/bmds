@@ -97,7 +97,7 @@ class TestDichotomousDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
+        assert serialized.model_dump(exclude={"plotting"}) == {
             "dtype": "D",
             "metadata": {
                 "id": 123,
@@ -118,7 +118,7 @@ class TestDichotomousDataset:
         assert not isinstance(ds2, bmds.DichotomousCancerDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestDichotomousCancerDataset:
@@ -147,7 +147,7 @@ class TestDichotomousCancerDataset:
 
         # make sure serialize looks correct
         serialized = ds1.serialize()
-        assert serialized.dict(exclude={"plotting"}) == {
+        assert serialized.model_dump(exclude={"plotting"}) == {
             "dtype": "DC",
             "metadata": {
                 "id": 123,
@@ -168,20 +168,20 @@ class TestDichotomousCancerDataset:
         assert isinstance(ds2, bmds.DichotomousCancerDataset)
 
         # make sure we get the same result back after deserializing
-        assert ds1.serialize().dict() == ds2.serialize().dict()
+        assert ds1.serialize().model_dump() == ds2.serialize().model_dump()
 
 
 class TestDichotomousDatasetSchema:
     def test_schema(self, ddataset):
         # check that cycling through serialization returns the same
-        v1 = ddataset.serialize().dict()
-        v2 = bmds.DichotomousDatasetSchema.parse_obj(v1).deserialize().serialize().dict()
+        v1 = ddataset.serialize().model_dump()
+        v2 = bmds.DichotomousDatasetSchema.model_validate(v1).deserialize().serialize().model_dump()
         assert v1 == v2
 
         data = deepcopy(v1)
         data["ns"] = [1, 2]
         with pytest.raises(ValidationError, match="Length"):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
+            bmds.DichotomousDatasetSchema.model_validate(data)
 
         data = deepcopy(v1)
         data["doses"] = data["doses"][:-1]
@@ -189,23 +189,23 @@ class TestDichotomousDatasetSchema:
             ValidationError,
             match="Length of doses, ns, and incidences are not the same",
         ):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
+            bmds.DichotomousDatasetSchema.model_validate(data)
 
         # check incidence > n
         data = deepcopy(v1)
         data.update(incidences=[75, 49, 50, 49], ns=[5, 1, 3, 14])
         with pytest.raises(ValidationError, match="Incidence cannot be greater than N"):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
+            bmds.DichotomousDatasetSchema.model_validate(data)
 
         # min groups (dichotomous)
         data = deepcopy(v1)
         data.update(doses=[1, 2], ns=[1, 2], incidences=[1, 2])
-        bmds.DichotomousCancerDatasetSchema.parse_obj(data)
+        bmds.DichotomousCancerDatasetSchema.model_validate(data)
         with pytest.raises(ValidationError, match="At least 3 groups are required"):
-            bmds.DichotomousDatasetSchema.parse_obj(data)
+            bmds.DichotomousDatasetSchema.model_validate(data)
 
         # min groups (cancer dichotomous)
         data = deepcopy(v1)
         data.update(doses=[1], ns=[1], incidences=[1])
         with pytest.raises(ValidationError, match="At least 2 groups are required"):
-            bmds.DichotomousCancerDatasetSchema.parse_obj(data)
+            bmds.DichotomousCancerDatasetSchema.model_validate(data)

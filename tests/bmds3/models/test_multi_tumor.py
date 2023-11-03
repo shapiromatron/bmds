@@ -59,19 +59,19 @@ class TestMultistageCancer:
         # default MultistageCancer use cancer prior
         model = MultistageCancer(ddataset2)
         assert model.settings.bmr == 0.1
-        assert model.settings.priors.dict() == default
+        assert model.settings.priors.model_dump() == default
 
         # MultistageCancer w/ custom settings, but unspecified prior use cancer prior
         model = MultistageCancer(ddataset2, settings=dict(bmr=0.2))
         assert model.settings.bmr == 0.2
-        assert model.settings.priors.dict() == default
+        assert model.settings.priors.model_dump() == default
 
         # MultistageCancer w/ DichotomousModelSettings is preserved
         base_model = Multistage(ddataset2)
         model = MultistageCancer(ddataset2, DichotomousModelSettings())
         assert model.settings.bmr == 0.1
-        assert model.settings.priors.dict() != default
-        assert model.settings.priors.dict() == base_model.settings.priors.dict()
+        assert model.settings.priors.model_dump() != default
+        assert model.settings.priors.model_dump() == base_model.settings.priors.model_dump()
 
         # MultistageCancer w/ custom settings is preserved
         custom = ModelPriors(
@@ -90,4 +90,4 @@ class TestMultistageCancer:
         )
         model = MultistageCancer(ddataset2, settings=dict(bmr=0.2, priors=custom))
         assert model.settings.bmr == 0.2
-        assert model.settings.priors.dict() == custom.dict()
+        assert model.settings.priors.model_dump() == custom.model_dump()

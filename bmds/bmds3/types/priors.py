@@ -19,13 +19,13 @@ class Prior(BaseModel):
     max_value: float
 
     def numeric_list(self) -> list[float]:
-        return list(self.dict(exclude={"name"}).values())
+        return list(self.model_dump(exclude={"name"}).values())
 
 
 class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: list[Prior]  # priors for main model
-    variance_priors: list[Prior] | None  # priors for variance model (continuous-only)
+    variance_priors: list[Prior] | None = None  # priors for variance model (continuous-only)
 
     def __str__(self) -> str:
         return self.tbl()
@@ -139,14 +139,14 @@ def get_dichotomous_prior(model: DichotomousModel, prior_class: PriorClass) -> M
     if len(_model_priors) == 0:
         _load_model_priors()
     key = f"{Dtype.DICHOTOMOUS.value}-{model.id}-{prior_class}"
-    return _model_priors[key].copy(deep=True)
+    return _model_priors[key].model_copy(deep=True)
 
 
 def get_continuous_prior(model: ContinuousModel, prior_class: PriorClass) -> ModelPriors:
     if len(_model_priors) == 0:
         _load_model_priors()
     key = f"{Dtype.CONTINUOUS.value}-{model.id}-{prior_class}"
-    return _model_priors[key].copy(deep=True)
+    return _model_priors[key].model_copy(deep=True)
 
 
 def priors_tbl(params: list[str], priors: list[list], is_bayesian: bool) -> str:

@@ -162,7 +162,7 @@ class MultitumorBase:
         elif isinstance(settings, DichotomousModelSettings):
             return settings
         else:
-            return DichotomousModelSettings.parse_obj(settings)
+            return DichotomousModelSettings.model_validate(settings)
 
     def _build_model_settings(self) -> list[list[DichotomousModelSettings]]:
         # Build individual model settings based from inputs
@@ -174,7 +174,7 @@ class MultitumorBase:
                 range(degree_i, degree_i + 1) if degree_i > 0 else range(1, dataset.num_dose_groups)
             )
             for degree in degrees_i:
-                model_settings = self.settings.copy(
+                model_settings = self.settings.model_copy(
                     update=dict(degree=degree, priors=multistage_cancer_prior())
                 )
                 ds_settings.append(model_settings)
@@ -231,7 +231,7 @@ class MultitumorBase:
         return self.results.text(self.datasets, self.models)
 
     def to_dict(self):
-        return self.serialize().dict()
+        return self.serialize().model_dump(by_alias=True)
 
     def serialize(self) -> MultitumorSchema:
         ...
@@ -244,7 +244,7 @@ class MultitumorBase:
             raise ValueError("Invalid JSON format")
 
         if version == Multitumor330.version_str:
-            return Multitumor330Schema.parse_obj(data).deserialize()
+            return Multitumor330Schema.model_validate(data).deserialize()
         else:
             raise ValueError("Unknown BMDS version")
 

@@ -15,9 +15,9 @@ class TestRecommenderSettings:
         # assert that the entire rule list must be present
         settings = RecommenderSettings.build_default()
         settings.rules.pop()
-        settings2 = settings.json()
+        settings2 = settings.model_dump()
         with pytest.raises(ValidationError) as err:
-            RecommenderSettings.parse_raw(settings2)
+            RecommenderSettings.model_validate(settings2)
         assert "Rule list must be complete" in str(err)
 
 
@@ -35,7 +35,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.model_bin == [0, 0]
+        assert session.recommender.results.bmds_model_bin == [0, 0]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index == 1
@@ -49,7 +49,7 @@ class TestSessionRecommender:
         session.execute_and_recommend()
 
         # get model bins
-        assert session.recommender.results.model_bin == [1, 1]
+        assert session.recommender.results.bmds_model_bin == [1, 1]
 
         # model recommended and selection is accurate
         assert session.recommender.results.recommended_model_index is None

@@ -1,4 +1,5 @@
 import numpy as np
+from pydantic import Field
 
 from ...datasets import ContinuousDatasets
 from ...exceptions import ConfigurationException
@@ -28,7 +29,7 @@ class BmdModelContinuous(BmdModel):
         elif isinstance(settings, ContinuousModelSettings):
             model_settings = settings
         else:
-            model_settings = ContinuousModelSettings.parse_obj(settings)
+            model_settings = ContinuousModelSettings.model_validate(settings)
 
         # only estimate direction if unspecified
         if model_settings.is_increasing is None:
@@ -117,9 +118,9 @@ class BmdModelContinuous(BmdModel):
 
 class BmdModelContinuousSchema(BmdModelSchema):
     name: str
-    model_class: ContinuousModel
+    bmds_model_class: ContinuousModel = Field(alias="model_class")
     settings: ContinuousModelSettings
-    results: ContinuousResult | None
+    results: ContinuousResult | None = None
 
     def deserialize(self, dataset: ContinuousDatasets) -> BmdModelContinuous:
         Model = get_model_class(self)
@@ -320,7 +321,7 @@ def get_model_class(data: BmdModelContinuousSchema) -> type[BmdModelContinuous]:
     Linear/Polynomial because they have the same model class enum in C++, but different
     python classes. Thus we specify by the degree as well.
     """
-    if data.model_class.id == ContinuousModelIds.c_polynomial.value:
+    if data.bmds_model_class.id == ContinuousModelIds.c_polynomial.value:
         return Linear if data.settings.degree == 1 else Polynomial
     else:
-        return _bmd_model_map[data.model_class.id]
+        return _bmd_model_map[data.bmds_model_class.id]
