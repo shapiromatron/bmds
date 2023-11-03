@@ -230,7 +230,7 @@ class MultitumorBase:
         return self.results.text(self.datasets, self.models)
 
     def to_dict(self):
-        return self.serialize().model_dump()
+        return self.serialize().model_dump(by_alias=True)
 
     def serialize(self) -> MultitumorSchema:
         ...
