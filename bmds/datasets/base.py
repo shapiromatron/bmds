@@ -4,22 +4,20 @@ from typing import TypeVar
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .. import plotting
 from ..constants import ZEROISH, Dtype
 
 
 class DatasetMetadata(BaseModel):
-    id: int | None
+    id: int | None = None
     name: str = ""
     dose_units: str = ""
     response_units: str = ""
     dose_name: str = ""
     response_name: str = ""
-
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
     def get_name(self):
         if self.name:
@@ -78,7 +76,7 @@ class DatasetBase(abc.ABC):
         return len(set(self.doses))
 
     def to_dict(self):
-        return self.serialize().dict()
+        return self.serialize().model_dump()
 
     @property
     def dose_linspace(self) -> np.ndarray:
@@ -165,6 +163,6 @@ class DatasetSchemaBase(BaseModel, abc.ABC):
 
 
 class DatasetPlottingSchema(BaseModel):
-    mean: list[float] | None
+    mean: list[float] | None = None
     ll: list[float]
     ul: list[float]

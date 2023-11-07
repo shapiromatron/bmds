@@ -1,9 +1,9 @@
 import math
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 import numpy as np
 from matplotlib.figure import Figure
-from pydantic import confloat, root_validator
+from pydantic import Field, model_validator
 from scipy import stats
 
 from .. import constants, plotting
@@ -39,7 +39,7 @@ class DichotomousDataset(DatasetBase):
         self.ns = ns
         self.incidences = incidences
         self.remainings = [n - p for n, p in zip(ns, incidences, strict=True)]
-        self.metadata = DatasetMetadata.parse_obj(metadata)
+        self.metadata = DatasetMetadata.model_validate(metadata)
         self._sort_by_dose_group()
         self._validate()
 
@@ -187,7 +187,7 @@ class DichotomousDataset(DatasetBase):
 
     def rows(self, extras: dict | None = None) -> list[dict]:
         """Return a list of rows; one for each item in a dataset"""
-        extra = self.metadata.dict()
+        extra = self.metadata.model_dump()
         extra.update(extras or {})
         rows = []
         for dose, n, incidence in zip(self.doses, self.ns, self.incidences, strict=True):
@@ -202,33 +202,33 @@ class DichotomousDataset(DatasetBase):
 class DichotomousDatasetSchema(DatasetSchemaBase):
     dtype: constants.Dtype
     metadata: DatasetMetadata
-    doses: list[confloat(ge=0)]
-    ns: list[confloat(gt=0)]
-    incidences: list[confloat(ge=0)]
-    plotting: DatasetPlottingSchema | None
+    doses: list[Annotated[float, Field(ge=0)]]
+    ns: list[Annotated[float, Field(gt=0)]]
+    incidences: list[Annotated[float, Field(ge=0)]]
+    plotting: DatasetPlottingSchema | None = None
 
     MIN_N: ClassVar = 3
     MAX_N: ClassVar = math.inf
 
-    @root_validator(skip_on_failure=True)
-    def num_groups(cls, values):
-        n_doses = len(values["doses"])
-        n_ns = len(values["ns"])
-        n_incidences = len(values["incidences"])
+    @model_validator(mode="after")
+    def check_num_groups(self):
+        n_doses = len(self.doses)
+        n_ns = len(self.ns)
+        n_incidences = len(self.incidences)
         if len(set([n_doses, n_ns, n_incidences])) > 1:
             raise ValueError("Length of doses, ns, and incidences are not the same")
-        if n_doses < cls.MIN_N:
-            raise ValueError(f"At least {cls.MIN_N} groups are required")
-        if n_doses > cls.MAX_N:
-            raise ValueError(f"A maximum of {cls.MAX_N} groups are allowed")
-        for incidence, n in zip(values["incidences"], values["ns"], strict=True):
+        if n_doses < self.MIN_N:
+            raise ValueError(f"At least {self.MIN_N} groups are required")
+        if n_doses > self.MAX_N:
+            raise ValueError(f"A maximum of {self.MAX_N} groups are allowed")
+        for incidence, n in zip(self.incidences, self.ns, strict=True):
             if incidence > n:
                 raise ValueError(f"Incidence cannot be greater than N ({incidence} > {n})")
-        return values
+        return self
 
     def deserialize(self) -> DichotomousDataset:
         ds = DichotomousDataset(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.model_dump()
         )
         ds._plot_data = self.plotting
         return ds
@@ -283,7 +283,7 @@ class DichotomousCancerDatasetSchema(DichotomousDatasetSchema):
 
     def deserialize(self) -> DichotomousCancerDataset:
         ds = DichotomousCancerDataset(
-            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.dict()
+            doses=self.doses, ns=self.ns, incidences=self.incidences, **self.metadata.model_dump()
         )
         ds._plot_data = self.plotting
         return ds

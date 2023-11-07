@@ -1,10 +1,11 @@
 import itertools
+from functools import cache
 from pathlib import Path
 from typing import Self
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ...constants import BIN_ICON, BIN_TEXT, BIN_TEXT_BMDS3, LogicBin
 from ...datasets import DatasetBase
@@ -38,6 +39,12 @@ class Rule(BaseModel):
         ]
 
 
+@cache
+def default_rules_text():
+    path = Path(__file__).parent / "default.json"
+    return path.read_text()
+
+
 class RecommenderSettings(BaseModel):
     enabled: bool = True
     recommend_questionable: bool = False
@@ -45,9 +52,8 @@ class RecommenderSettings(BaseModel):
     sufficiently_close_bmdl: float = 3
     rules: list[Rule]
 
-    _default: str | None = None
-
-    @validator("rules")
+    @field_validator("rules")
+    @classmethod
     def rules_all_classes(cls, rules):
         rule_classes = set(rule.rule_class for rule in rules)
         all_rule_classes = set(RuleClass.__members__)
@@ -58,10 +64,7 @@ class RecommenderSettings(BaseModel):
 
     @classmethod
     def build_default(cls) -> Self:
-        if cls._default is None:
-            path = Path(__file__).parent / "default.json"
-            cls._default = path.read_text()
-        return cls.parse_raw(cls._default)
+        return cls.model_validate_json(default_rules_text())
 
     def to_df(self) -> pd.DataFrame:
         df = pd.DataFrame(
@@ -81,16 +84,16 @@ class RecommenderSettings(BaseModel):
 class RecommenderResults(BaseModel):
     recommended_model_index: int | None = None
     recommended_model_variable: str | None = None
-    model_bin: list[LogicBin] = []
-    model_notes: list[dict[int, list[str]]] = []
+    bmds_model_bin: list[LogicBin] = Field(default=[], alias="model_bin")
+    bmds_model_notes: list[dict[int, list[str]]] = Field(default=[], alias="model_notes")
 
     def bin_text(self, index: int) -> str:
         if self.recommended_model_index == index:
             return f"Recommended - Lowest {self.recommended_model_variable.upper()}"
-        return BIN_TEXT_BMDS3[self.model_bin[index]]
+        return BIN_TEXT_BMDS3[self.bmds_model_bin[index]]
 
     def notes_text(self, index: int) -> str:
-        notes = self.model_notes[index].values()
+        notes = self.bmds_model_notes[index].values()
         return "\n".join(sorted([text for text in itertools.chain(*notes)], reverse=True))
 
     def update_record(self, d: dict, index: int) -> None:
@@ -104,7 +107,7 @@ class RecommenderResults(BaseModel):
 
 class RecommenderSchema(BaseModel):
     settings: RecommenderSettings
-    results: RecommenderResults | None
+    results: RecommenderResults | None = None
 
     def deserialize(self) -> "Recommender":
         recommender = Recommender(self.settings)
@@ -119,7 +122,7 @@ class Recommender:
 
     def __init__(self, settings: RecommenderSettings | None = None):
         if settings is not None:
-            settings = RecommenderSettings.parse_obj(settings)
+            settings = RecommenderSettings.model_validate(settings)
         else:
             settings = RecommenderSettings.build_default()
         self.settings: RecommenderSettings = settings
@@ -157,8 +160,8 @@ class Recommender:
             model_bins.append(current_bin)
             model_notes.append(notes)
 
-        self.results.model_bin = model_bins
-        self.results.model_notes = model_notes
+        self.results.bmds_model_bin = model_bins
+        self.results.bmds_model_notes = model_notes
 
         # get only models in highest bin-category
         valid_model_indicies = []

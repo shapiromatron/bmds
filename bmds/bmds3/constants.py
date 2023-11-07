@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 BMDS_BLANK_VALUE = -9999
 N_BMD_DIST = 100
@@ -10,7 +10,7 @@ NUM_PRIOR_COLS = 5
 class BmdModelSchema(BaseModel):
     id: int
     verbose: str
-    model_form_str: str
+    bmds_model_form_str: str = Field(alias="model_form_str")
 
 
 class DichotomousModel(BmdModelSchema):

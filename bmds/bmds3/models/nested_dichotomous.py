@@ -1,4 +1,5 @@
 import numpy as np
+from pydantic import Field
 
 from ... import plotting
 from ...constants import ZEROISH
@@ -33,7 +34,7 @@ class BmdModelNestedDichotomous(BmdModel):
         elif isinstance(settings, NestedDichotomousModelSettings):
             model_settings = settings
         else:
-            model_settings = NestedDichotomousModelSettings.parse_obj(settings)
+            model_settings = NestedDichotomousModelSettings.model_validate(settings)
 
         return model_settings
 
@@ -96,12 +97,12 @@ class BmdModelNestedDichotomous(BmdModel):
 
 class BmdModelNestedDichotomousSchema(BmdModelSchema):
     name: str
-    model_class: NestedDichotomousModel
+    bmd_model_class: NestedDichotomousModel = Field(alias="model_class")
     settings: NestedDichotomousModelSettings
     results: NestedDichotomousResult | None
 
     def deserialize(self, dataset: NestedDichotomousDataset) -> BmdModelNestedDichotomous:
-        Model = bmd_model_map[self.model_class.id]
+        Model = bmd_model_map[self.bmd_model_class.id]
         model = Model(dataset=dataset, settings=self.settings)
         model.results = self.results
         return model

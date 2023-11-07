@@ -1,5 +1,17 @@
 # History
 
+## Version 23.3
+
+* Require Pydantic < 2
+* Update default continuous model variance model to try to set correct model based on dataset
+    * Previously it would only use constant variance; now non-constant variance can be selected
+* Add new `update` helper method to quickly modify parameter settings
+* For polyk adjustment, set N ceiling to 1 for each animal
+* Minor documentation updates
+* Update build tooling and linting (ruff instead of flake8)
+
+Released on 2023-10-21.
+
 ## Version 23.2
 
 * Updated BMDS core for 3.3 (2023.03 → 2023.03.01)

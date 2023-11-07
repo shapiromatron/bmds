@@ -1,8 +1,8 @@
 from enum import IntEnum
-from typing import NamedTuple, Self
+from typing import Annotated, NamedTuple, Self
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from ... import bmdscore
 from ...constants import BOOL_ICON
@@ -31,12 +31,12 @@ _bmr_text_map = {
 
 
 class DichotomousModelSettings(BaseModel):
-    bmr: float = Field(default=0.1, gt=0)
-    alpha: float = Field(default=0.05, gt=0, lt=1)
+    bmr: Annotated[float, Field(gt=0)] = 0.1
+    alpha: Annotated[float, Field(gt=0, lt=1)] = 0.05
     bmr_type: DichotomousRiskType = DichotomousRiskType.ExtraRisk
-    degree: int = Field(default=0, ge=0, le=8)  # multistage only
-    samples: int = Field(default=100, ge=10, le=1000)
-    burnin: int = Field(default=20, ge=5, le=1000)
+    degree: Annotated[int, Field(ge=0, le=8)] = 0  # multistage only
+    samples: Annotated[int, Field(ge=10, le=1000)] = 100
+    burnin: Annotated[int, Field(ge=5, le=1000)] = 20
     priors: PriorClass | ModelPriors | None = None  # if None; default used
 
     @property
@@ -97,9 +97,7 @@ class DichotomousAnalysis(BaseModel):
     degree: int
     samples: int
     burnin: int
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def num_params(self) -> int:
@@ -168,7 +166,7 @@ class DichotomousModelResult(BaseModel):
     aic: float
     bic_equiv: float
     chisq: float
-    model_df: float
+    bmds_model_df: float = Field(alias="model_df")
     total_df: float
     bmd_dist: NumpyFloatArray
 
@@ -190,10 +188,6 @@ class DichotomousModelResult(BaseModel):
             total_df=result.total_df,
             bmd_dist=arr,
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class DichotomousPgofResult(BaseModel):
@@ -279,10 +273,6 @@ class DichotomousParameters(BaseModel):
             prior_min_value=priors[3],
             prior_max_value=priors[4],
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
     def tbl(self) -> str:
         headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
@@ -394,10 +384,6 @@ class DichotomousPlotting(BaseModel):
             bmd_y=critical_ys[1],
             bmdu_y=critical_ys[2],
         )
-
-    def dict(self, **kw) -> dict:
-        d = super().dict(**kw)
-        return NumpyFloatArray.listify(d)
 
 
 class DichotomousResult(BaseModel):
