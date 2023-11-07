@@ -42,6 +42,7 @@ class TestSession:
 
         # dataframe
         df = session1.to_df()
+        assert "slope_factor" not in df.columns
 
         # docx
         docx = session1.to_docx(session_inputs_table=True)

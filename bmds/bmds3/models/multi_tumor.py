@@ -271,7 +271,6 @@ class MultitumorBase:
         analysis.n = ns
         analysis.ndatasets = len(self.datasets)
         analysis.nmodels = [len(models) for models in dataset_models]
-        analysis.prior = []
         analysis.prior_cols = NUM_PRIOR_COLS
 
         result = bmdscore.python_multitumor_result()
@@ -325,7 +324,16 @@ class MultitumorBase:
             alpha=self.settings.alpha,
         )
 
-    def to_df(self, extras: dict | None = None) -> pd.DataFrame:
+    def to_df(self, extras: dict | None = None, clean: bool = True) -> pd.DataFrame:
+        """Export an executed session to a pandas dataframe.
+
+        Args:
+            extras (dict, optional): Extra items to add to row.
+            clean (bool, default True): Remove empty columns.
+
+        Returns:
+            pd.DataFrame: A pandas dataframe
+        """
         if extras is None:
             extras = {}
         results = self.results
@@ -334,31 +342,31 @@ class MultitumorBase:
         # model average
         ma = extras.copy()
         ma.update(
-            dataset_index="-",
-            dataset_id="-",
-            dataset_name="-",
-            dataset_dose_name="-",
-            dataset_dose_units="-",
-            dataset_response_name="-",
-            dataset_response_units="-",
-            dataset_doses="-",
-            dataset_ns="-",
-            dataset_incidences="-",
-            model_index=-1,
+            dataset_index=np.nan,
+            dataset_id=np.nan,
+            dataset_name=np.nan,
+            dataset_dose_name=np.nan,
+            dataset_dose_units=np.nan,
+            dataset_response_name=np.nan,
+            dataset_response_units=np.nan,
+            dataset_doses=np.nan,
+            dataset_ns=np.nan,
+            dataset_incidences=np.nan,
+            model_index=np.nan,
             model_name="Model average",
             slope_factor=results.slope_factor,
-            selected="N/A",
+            selected=np.nan,
             bmdl=results.bmdl,
             bmd=results.bmd,
             bmdu=results.bmdu,
-            aic="-",
-            loglikelihood="-",
-            p_value="-",
-            overall_dof="-",
-            bic_equiv="-",
-            chi_squared="-",
-            residual_of_interest="-",
-            residual_at_lowest_dose="-",
+            aic=np.nan,
+            loglikelihood=np.nan,
+            p_value=np.nan,
+            overall_dof=np.nan,
+            bic_equiv=np.nan,
+            chi_squared=np.nan,
+            residual_of_interest=np.nan,
+            residual_at_lowest_dose=np.nan,
         )
         data.append(ma)
 
@@ -372,13 +380,15 @@ class MultitumorBase:
                 extras.update(
                     model_index=model_i,
                     model_name=_model_name(model),
-                    slope_factor="-",
                     selected=results.selected_model_indexes[dataset_i] == model_i,
                 )
                 model.update_record(extras)
                 data.append(extras.copy())
 
-        return pd.DataFrame(data=data)
+        df = pd.DataFrame(data=data)
+        if clean:
+            df = df.dropna(axis=1, how="all").fillna("")
+        return df
 
     def params_df(self, extras: dict | None) -> pd.DataFrame:
         """Returns a pd.DataFrame of all parameters for all models executed.

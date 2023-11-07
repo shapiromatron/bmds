@@ -171,6 +171,14 @@ class BmdModel(abc.ABC):
             **plotting.LINE_FORMAT,
         )
         self._plot_bmr_lines(ax)
+        slope_factor = getattr(self.results, "slope_factor", None)
+        if slope_factor and slope_factor > 0:
+            ax.plot(
+                [0, self.results.bmdl],
+                [0, self.results.plotting.bmd_y],
+                label="Slope Factor",
+                **{**plotting.LINE_FORMAT, "linestyle": (0, (2, 1, 1, 1)), "c": "#ef7215"},
+            )
         ax.legend(**plotting.LEGEND_OPTS)
 
         # reorder handles and labels
