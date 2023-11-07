@@ -211,7 +211,7 @@ class MultitumorBase:
         analysis.n = ns
         analysis.ndatasets = len(self.datasets)
         analysis.nmodels = [len(models) for models in dataset_models]
-        analysis.prior_cols = NUM_PRIOR_COLS  # TODO - delete this from struct too?
+        analysis.prior_cols = NUM_PRIOR_COLS
 
         result = bmdscore.python_multitumor_result()
         result.ndatasets = len(self.datasets)
@@ -468,7 +468,6 @@ class Multitumor(Multitumor330):
 
 
 class MultistageCancer(Multistage):
-    # TODO - update bmdscore so post-execution a slope factor can be calculated
     def get_model_settings(
         self, dataset: DichotomousDataset, settings: InputModelSettings
     ) -> DichotomousModelSettings:
