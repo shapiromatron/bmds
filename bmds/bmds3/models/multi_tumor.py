@@ -60,18 +60,19 @@ def write_docx_frequentist_table(report: Report, session):
         write_cell(tbl.cell(1, 7), "-", body)
         write_cell(tbl.cell(1, 8), "-", body)
 
-    for ds_idx, model in enumerate(session.models):
+    for ds_idx, ds_models in enumerate(session.models):
         row = ds_idx + 1 + (1 if avg_row else 0)
         idx = session.results.selected_model_indexes[ds_idx]
-        write_cell(tbl.cell(row, 0), model[idx].name(), body)
-        write_cell(tbl.cell(row, 1), model[idx].results.bmdl, body)
-        write_cell(tbl.cell(row, 2), model[idx].results.bmd, body)
-        write_cell(tbl.cell(row, 3), model[idx].results.bmdu, body)
-        write_cell(tbl.cell(row, 4), "-", body)
-        write_cell(tbl.cell(row, 5), model[idx].get_gof_pvalue(), body)
-        write_cell(tbl.cell(row, 6), model[idx].results.fit.aic, body)
-        write_cell(tbl.cell(row, 7), model[idx].results.gof.roi, body)
-        write_cell(tbl.cell(row, 8), model[idx].results.gof.residual[0], body)
+        model = ds_models[idx]
+        write_cell(tbl.cell(row, 0), model.name(), body)
+        write_cell(tbl.cell(row, 1), model.results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model.results.bmd, body)
+        write_cell(tbl.cell(row, 3), model.results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model.results.slope_factor, body)
+        write_cell(tbl.cell(row, 5), model.get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 6), model.results.fit.aic, body)
+        write_cell(tbl.cell(row, 7), model.results.gof.roi, body)
+        write_cell(tbl.cell(row, 8), model.results.gof.residual[0], body)
 
     # set column width
     widths = np.array([2, 1, 1, 1, 1, 1, 1, 1.5, 1.5])
