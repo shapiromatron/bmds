@@ -1,9 +1,10 @@
+from itertools import cycle
 from typing import Self
 
 import numpy as np
 import pandas as pd
 
-from ... import bmdscore
+from ... import bmdscore, plotting
 from ...constants import Version
 from ...datasets.dichotomous import DichotomousDataset
 from ...reporting.footnotes import TableFootnote
@@ -11,7 +12,7 @@ from ...reporting.styling import Report, add_mpl_figure, set_column_width, write
 from ...version import __version__
 from .. import reporting
 from ..constants import NUM_PRIOR_COLS, PriorClass, PriorType
-from ..reporting import write_pvalue_header
+from ..reporting import write_bmd_cdf_table, write_pvalue_header
 from ..types.dichotomous import DichotomousModelSettings
 from ..types.multi_tumor import (
     MultitumorAnalysis,
@@ -38,42 +39,43 @@ def write_docx_frequentist_table(report: Report, session):
         len(session.models) + 1 + (1 if avg_row else 0), 9, style=styles.table
     )
 
-    write_cell(tbl.cell(0, 0), "Model", style=hdr)
+    write_cell(tbl.cell(0, 0), "Model Average", style=hdr)
     write_cell(tbl.cell(0, 1), "BMDL", style=hdr)
     write_cell(tbl.cell(0, 2), "BMD", style=hdr)
     write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
-    write_pvalue_header(tbl.cell(0, 4), style=hdr)
-    write_cell(tbl.cell(0, 5), "AIC", style=hdr)
-    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
-    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
-    write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
+    write_cell(tbl.cell(0, 4), "CSF", style=hdr)
+    write_pvalue_header(tbl.cell(0, 5), style=hdr)
+    write_cell(tbl.cell(0, 6), "AIC", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
+    write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
     if avg_row:
         write_cell(tbl.cell(1, 0), "Average", body)
         write_cell(tbl.cell(1, 1), session.results.bmdl, body)
         write_cell(tbl.cell(1, 2), session.results.bmd, body)
         write_cell(tbl.cell(1, 3), session.results.bmdu, body)
-        write_cell(tbl.cell(1, 4), "-", body)
+        write_cell(tbl.cell(1, 4), session.results.slope_factor, body)
         write_cell(tbl.cell(1, 5), "-", body)
         write_cell(tbl.cell(1, 6), "-", body)
         write_cell(tbl.cell(1, 7), "-", body)
         write_cell(tbl.cell(1, 8), "-", body)
 
-    for ds_idx, model in enumerate(session.models):
+    for ds_idx, ds_models in enumerate(session.models):
         row = ds_idx + 1 + (1 if avg_row else 0)
         idx = session.results.selected_model_indexes[ds_idx]
-        write_cell(tbl.cell(row, 0), model[idx].name(), body)
-        write_cell(tbl.cell(row, 1), model[idx].results.bmdl, body)
-        write_cell(tbl.cell(row, 2), model[idx].results.bmd, body)
-        write_cell(tbl.cell(row, 3), model[idx].results.bmdu, body)
-        write_cell(tbl.cell(row, 4), model[idx].get_gof_pvalue(), body)
-        write_cell(tbl.cell(row, 5), model[idx].results.fit.aic, body)
-        write_cell(tbl.cell(row, 6), model[idx].results.gof.roi, body)
-        write_cell(tbl.cell(row, 7), model[idx].results.gof.residual[0], body)
-        write_cell(tbl.cell(row, 8), "-", body)
+        model = ds_models[idx]
+        write_cell(tbl.cell(row, 0), model.name(), body)
+        write_cell(tbl.cell(row, 1), model.results.bmdl, body)
+        write_cell(tbl.cell(row, 2), model.results.bmd, body)
+        write_cell(tbl.cell(row, 3), model.results.bmdu, body)
+        write_cell(tbl.cell(row, 4), model.results.slope_factor, body)
+        write_cell(tbl.cell(row, 5), model.get_gof_pvalue(), body)
+        write_cell(tbl.cell(row, 6), model.results.fit.aic, body)
+        write_cell(tbl.cell(row, 7), model.results.gof.roi, body)
+        write_cell(tbl.cell(row, 8), model.results.gof.residual[0], body)
 
     # set column width
-    widths = np.array([1.75, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 1.75])
+    widths = np.array([2, 1, 1, 1, 1, 1, 1, 1.5, 1.5])
     widths = widths / (widths.sum() / styles.portrait_width)
     for width, col in zip(widths, tbl.columns, strict=True):
         set_column_width(col, width)
@@ -99,15 +101,74 @@ def write_docx_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
-def write_docx_model(report: Report, model, bmd_cdf_table: bool, header_level: int):
+def create_summary_figure(report: Report, session):
+    fig = plotting.create_empty_figure()
+    ax = fig.axes[0]
+
+    # add individual model fits
+    selected_models = [
+        session.models[i][idx] for i, idx in enumerate(session.results.selected_model_indexes)
+    ]
+    color_cycle = cycle(plotting.INDIVIDUAL_MODEL_COLORS)
+    for idx, model in enumerate(selected_models):
+        color = next(color_cycle)
+        dataset = model.dataset
+        if idx == 0:
+            ax.set_xlabel(dataset.get_xlabel())
+            ax.set_ylabel(dataset.get_ylabel())
+            ax.set_title("Model Average")
+        ax.scatter(
+            dataset.doses,
+            dataset.plot_data().mean,
+            c="white",
+            edgecolors=color,
+            s=70,
+            linewidth=2,
+        )
+        ax.plot(
+            model.results.plotting.dr_x,
+            model.results.plotting.dr_y,
+            label=f"{dataset._get_dataset_name()}; {model.name()}",
+            c=color,
+        )
+
+    # add slope factor line and bmd interval
+    if session.results.bmdl and session.results.slope_factor:
+        bmd_y = session.results.bmdl * session.results.slope_factor
+        plotting.add_bmr_lines(
+            ax,
+            session.results.bmd,
+            bmd_y,
+            session.results.bmdl,
+            session.results.bmdu,
+            c="k",
+            ecolor=plotting.to_rgba("k", 0.7),
+        )
+        ax.plot(
+            [0, session.results.bmdl],
+            [0, bmd_y],
+            color="k",
+            linestyle="dashed",
+            label="Cancer Slope Factor",
+        )
+
+    ax.legend(**plotting.LEGEND_OPTS)
+
+    return fig
+
+
+def write_docx_model(report: Report, model, header_level: int = 1, bmd_cdf_table: bool = False):
     styles = report.styles
     header_style = styles.get_header_style(header_level)
     report.document.add_paragraph(model.name(), header_style)
     if model.has_results:
         report.document.add_paragraph(add_mpl_figure(report.document, model.plot(), 6))
-        # if bmd_cdf_table: # TODO - change - add?
-        #     report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
+        if bmd_cdf_table:
+            report.document.add_paragraph(add_mpl_figure(report.document, model.cdf_plot(), 6))
         report.document.add_paragraph(model.text(), styles.fixed_width)
+        if bmd_cdf_table:
+            report.document.add_paragraph("CDF:", styles.tbl_body)
+            write_bmd_cdf_table(report, model)
 
 
 def multistage_cancer_prior() -> ModelPriors:
@@ -392,7 +453,6 @@ class MultitumorBase:
         Returns:
             A python docx.Document object with content added, session_inputs_table
         """
-        # TODO - change - implement bmd_cdf_table, all_models, etc?
         if report is None:
             report = Report.build_default()
 
@@ -408,11 +468,19 @@ class MultitumorBase:
 
         report.document.add_paragraph("Frequentist Summary", h2)
         write_docx_frequentist_table(report, self)
+        report.document.add_paragraph(
+            add_mpl_figure(report.document, create_summary_figure(report, self), 6)
+        )
         report.document.add_paragraph("Individual Model Results", h2)
 
-        for dataset_models in self.models:
-            for model in dataset_models:
-                write_docx_model(report, model, bmd_cdf_table, header_level)
+        for selected_idx, dataset_models in zip(
+            self.results.selected_model_indexes, self.models, strict=True
+        ):
+            for idx, model in enumerate(dataset_models):
+                if all_models or selected_idx == idx:
+                    write_docx_model(
+                        report, model, header_level=header_level + 2, bmd_cdf_table=bmd_cdf_table
+                    )
 
         if citation:
             report.document.add_paragraph("# TODO - change", h2)
