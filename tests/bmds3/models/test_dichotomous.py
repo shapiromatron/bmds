@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import bmds
-from bmds.bmds3.constants import PriorClass
+from bmds.bmds3.constants import BMDS_BLANK_VALUE, PriorClass
 from bmds.bmds3.models import dichotomous
 from bmds.bmds3.types.dichotomous import DichotomousModelSettings, DichotomousRiskType
 
@@ -121,6 +121,10 @@ def test_bmds3_dichotomous_multistage(ddataset2):
         # print(f"({degree}, {np.round(actual, 3).tolist()}, {round(result.fit.aic, 1)})")
         assert pytest.approx(bmd_values, abs=0.5) == actual
         assert pytest.approx(aic, abs=5.0) == result.fit.aic
+
+        # check that slope factor is None and not shown in text output
+        assert model.results.slope_factor == BMDS_BLANK_VALUE
+        assert "Slope Factor" not in model.text()
 
 
 def test_bmds3_dichotomous_session(ddataset2):

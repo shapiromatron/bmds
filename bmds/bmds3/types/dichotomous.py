@@ -387,10 +387,11 @@ class DichotomousPlotting(BaseModel):
 
 
 class DichotomousResult(BaseModel):
+    has_completed: bool
     bmdl: float
     bmd: float
     bmdu: float
-    has_completed: bool
+    slope_factor: float | None = None
     fit: DichotomousModelResult
     gof: DichotomousPgofResult
     parameters: DichotomousParameters
@@ -407,10 +408,11 @@ class DichotomousResult(BaseModel):
         deviance = DichotomousAnalysisOfDeviance.from_model(model)
         plotting = DichotomousPlotting.from_model(model, parameters.values)
         return cls(
+            has_completed=summary.validResult,
             bmdl=summary.BMDL,
             bmd=summary.BMD,
             bmdu=summary.BMDU,
-            has_completed=summary.validResult,
+            slope_factor=summary.slopeFactor,
             fit=fit,
             gof=gof,
             parameters=parameters,
@@ -446,6 +448,8 @@ class DichotomousResult(BaseModel):
             ["Overall DOF", self.gof.df],
             ["Chi²", self.fit.chisq],
         ]
+        if self.slope_factor and self.slope_factor > 0:
+            data.insert(3, ["Slope Factor", self.slope_factor])
         return pretty_table(data, "")
 
     def update_record(self, d: dict) -> None:
@@ -454,6 +458,7 @@ class DichotomousResult(BaseModel):
             bmdl=self.bmdl,
             bmd=self.bmd,
             bmdu=self.bmdu,
+            slope_factor=self.slope_factor,
             aic=self.fit.aic,
             loglikelihood=self.fit.loglikelihood,
             p_value=self.gof.p_value,

@@ -15,7 +15,7 @@ from ..reporting.styling import Report
 from ..utils import citation
 from ..version import __version__
 from . import reporting
-from .constants import PriorClass
+from .constants import BMDS_BLANK_VALUE, PriorClass
 from .models import continuous as c3
 from .models import dichotomous as d3
 from .models import ma
@@ -197,11 +197,12 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().model_dump(by_alias=True)
 
-    def to_df(self, extras: dict | None = None) -> pd.DataFrame:
-        """Export an executed session to a pandas dataframe
+    def to_df(self, extras: dict | None = None, clean: bool = True) -> pd.DataFrame:
+        """Export an executed session to a pandas dataframe.
 
         Args:
-            extras (dict, optional): _description_. Defaults to None.
+            extras (dict, optional): Extra items to add to row.
+            clean (bool, default True): Remove empty columns.
 
         Returns:
             pd.DataFrame: A pandas dataframe
@@ -243,7 +244,12 @@ class BmdsSession:
             self.model_average.results.update_record(d)
             models.append(d)
 
-        return pd.DataFrame(models)
+        df = pd.DataFrame(data=models)
+        if "slope_factor" in df.columns and np.allclose(df.slope_factor, BMDS_BLANK_VALUE):
+            df.drop(columns=["slope_factor"], inplace=True)
+        if clean:
+            df = df.dropna(axis=1, how="all").fillna("")
+        return df
 
     def to_docx(
         self,
