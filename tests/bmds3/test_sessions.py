@@ -60,7 +60,9 @@ class TestSession:
         d = session1.to_dict()
 
         if rewrite_data_files:
-            (data_path / "dichotomous-session.json").write_text(session1.serialize().json())
+            (data_path / "dichotomous-session.json").write_text(
+                session1.serialize().model_dump_json()
+            )
 
         # spot check a few keys
         assert d["version"]["numeric"] == bmds.session.Bmds330.version_tuple
