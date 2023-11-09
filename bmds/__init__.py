@@ -1,8 +1,3 @@
-"""bmds
-    Python BMDS library
-
-isort:skip_file
-"""
 import os
 
 os.environ.setdefault("SIMPLE_SETTINGS", "bmds.settings")

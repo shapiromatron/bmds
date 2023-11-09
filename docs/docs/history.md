@@ -1,5 +1,12 @@
 # History
 
+## Version 23.4
+
+* Require Pydantic > 2
+* [dev] Use ruff for both linting and formatting; remove black
+
+Released on 2023-11-09.
+
 ## Version 23.3
 
 * Require Pydantic < 2
