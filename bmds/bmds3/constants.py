@@ -67,7 +67,7 @@ class DichotomousModelChoices(Enum):
     d_multistage = DichotomousModel(
         id=DichotomousModelIds.d_multistage.value,
         verbose="Multistage",
-        params=("g", "x1", "x2"),
+        params=("g", "b1", "bN"),
         model_form_str="P[dose] = g + (1 - g) * (1 - exp(-b1 * dose^1 - b2 * dose^2 - ...))",
     )
     d_probit = DichotomousModel(
@@ -121,7 +121,7 @@ class ContinuousModelChoices(Enum):
     c_polynomial = ContinuousModel(
         id=ContinuousModelIds.c_polynomial.value,
         verbose="Polynomial",
-        params=("g", "b1", "b2"),
+        params=("g", "b1", "bN"),
         variance_params=("rho", "alpha"),
         model_form_str="P[dose] = g + b1*dose + b2*dose^2 + b3*dose^3...",
     )

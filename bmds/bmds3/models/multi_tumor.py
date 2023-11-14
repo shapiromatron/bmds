@@ -176,7 +176,7 @@ def multistage_cancer_prior() -> ModelPriors:
     priors = [
         Prior(name="g",  type=PriorType.Uniform, initial_value=-17, stdev=0, min_value=-18, max_value=18),
         Prior(name="b1", type=PriorType.Uniform, initial_value=0.1, stdev=0, min_value=0, max_value=1e4),
-        Prior(name="b2", type=PriorType.Uniform, initial_value=0.1, stdev=0, min_value=0, max_value=1e4),
+        Prior(name="bN", type=PriorType.Uniform, initial_value=0.1, stdev=0, min_value=0, max_value=1e4),
     ]
     # fmt: on
     return ModelPriors(

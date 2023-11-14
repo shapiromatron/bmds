@@ -204,7 +204,7 @@ class Polynomial(BmdModelContinuous):
         if is_freq:
             g = model_settings.priors.get_prior("g")
             b1 = model_settings.priors.get_prior("b1")
-            b2 = model_settings.priors.get_prior("b2")
+            bN = model_settings.priors.get_prior("bN")
             is_cv = model_settings.disttype in [DistType.normal, DistType.log_normal]
             # update mins
             g.min_value = -1e6 if is_cv else 0
@@ -216,7 +216,7 @@ class Polynomial(BmdModelContinuous):
             if model_settings.priors.prior_class is PriorClass.frequentist_restricted:
                 attr = "min_value" if model_settings.is_increasing else "max_value"
                 setattr(b1, attr, 0)
-                setattr(b2, attr, 0)
+                setattr(bN, attr, 0)
 
         return model_settings
 
