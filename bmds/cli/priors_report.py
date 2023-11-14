@@ -20,7 +20,7 @@ def write_break(f: StringIO):
 
 def write_settings(f: StringIO, model: dichotomous.BmdModel, settings: dict):
     f.write("\n".join(f"* {k}: {v!r}" for k, v in settings.items()) + "\n\n")
-    f.write(str(model.settings.priors) + "\n\n")
+    f.write(model.settings.priors.report_tbl() + "\n\n")
 
 
 def dichotomous_priors(f: StringIO):

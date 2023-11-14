@@ -27,10 +27,14 @@ class ModelPriors(BaseModel):
     priors: list[Prior]  # priors for main model
     variance_priors: list[Prior] | None = None  # priors for variance model (continuous-only)
 
-    def __str__(self) -> str:
-        return self.tbl()
+    def report_tbl(self) -> str:
+        """Generate a table of priors given this configuration.
 
-    def tbl(self) -> str:
+        Note that this doesn't include any beta overrides, expansion of polynomial terms,
+        or adjustments based on the continuous variance configurations. To get the priors
+        used in a specific model, use the model `priors_tbl` method. This method is primarily
+        used to investigate default model configurations, without additional settings applied.
+        """
         headers = "name|type|initial|stdev|min|max".split("|")
         rows = [
             (p.name, p.type.name, p.initial_value, p.stdev, p.min_value, p.max_value)
