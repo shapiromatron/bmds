@@ -1,3 +1,4 @@
+import re
 from itertools import chain
 from pathlib import Path
 
@@ -26,6 +27,7 @@ class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: list[Prior]  # priors for main model
     variance_priors: list[Prior] | None = None  # priors for variance model (continuous-only)
+    beta_overrides: dict[int, dict] | None = None  # beta term overrides
 
     def report_tbl(self) -> str:
         """Generate a table of priors given this configuration.
@@ -63,6 +65,17 @@ class ModelPriors(BaseModel):
             name (str): the prior name
             **kw: fields to update
         """
+
+        # If the term being adjusted is a beta term from a polynomial model; save in the beta
+        # overrides instead of altering directly (the polynomial prior expansion is a special case)
+        match = re.search(r"^b([2-9])$", name)
+        if match:
+            if self.beta_overrides is None:
+                self.beta_overrides = {}
+            self.beta_overrides[int(match[1])] = kw
+            return
+
+        # otherwise set revisions directly
         prior = self.get_prior(name)
         for k, v in kw.items():
             setattr(prior, k, v)
@@ -72,30 +85,30 @@ class ModelPriors(BaseModel):
     ) -> list[list]:
         priors = []
         for prior in self.priors:
-            priors.append(prior.numeric_list())
+            priors.append(prior.model_copy())
 
-        # for multistage/polynomial, this assumes that the 3rd
-        # prior parameter is betaN ensure that this is always the case
-
-        # remove degreeN; 1st order multistage/polynomial
-        if degree and degree == 1:
+        if degree:
             priors.pop(2)
 
-        # copy degreeN; > 2rd order poly
-        if degree and degree > 2:
-            for i in range(2, degree):
-                priors.append(priors[2])
+        # copy degree N; > 2nd order poly
+        if degree and degree >= 2:
+            overrides = self.beta_overrides or {}
+            for i in range(2, degree + 1):
+                prior = self.priors[2].model_copy()
+                for key, value in overrides.get(i, {}).items():
+                    setattr(prior, key, value)
+                priors.append(prior)
 
         # add constant variance parameter
         if dist_type and dist_type in {DistType.normal, DistType.log_normal}:
-            priors.append(self.variance_priors[1].numeric_list())
+            priors.append(self.variance_priors[1].model_copy())
 
         # add non-constant variance parameter
         if dist_type and dist_type is DistType.normal_ncv:
             for variance_prior in self.variance_priors:
-                priors.append(variance_prior.numeric_list())
+                priors.append(variance_prior)
 
-        return priors
+        return [prior.numeric_list() for prior in priors]
 
     def to_c(self, degree: int | None = None, dist_type: DistType | None = None) -> np.ndarray:
         priors = self.priors_list(degree, dist_type)
