@@ -27,7 +27,7 @@ class ModelPriors(BaseModel):
     prior_class: PriorClass  # if this is a predefined model class
     priors: list[Prior]  # priors for main model
     variance_priors: list[Prior] | None = None  # priors for variance model (continuous-only)
-    beta_overrides: dict[int, dict] | None = None  # beta term overrides
+    beta_overrides: dict[str, dict] | None = None  # beta term overrides
 
     def report_tbl(self) -> str:
         """Generate a table of priors given this configuration.
@@ -68,11 +68,11 @@ class ModelPriors(BaseModel):
 
         # If the term being adjusted is a beta term from a polynomial model; save in the beta
         # overrides instead of altering directly (the polynomial prior expansion is a special case)
-        match = re.search(r"^b([2-9])$", name)
+        match = re.search(r"^b[2-9]$", name)
         if match:
             if self.beta_overrides is None:
                 self.beta_overrides = {}
-            self.beta_overrides[int(match[1])] = kw
+            self.beta_overrides[match[0]] = kw
             return
 
         # otherwise set revisions directly
@@ -95,7 +95,7 @@ class ModelPriors(BaseModel):
             overrides = self.beta_overrides or {}
             for i in range(2, degree + 1):
                 prior = self.priors[2].model_copy()
-                for key, value in overrides.get(i, {}).items():
+                for key, value in overrides.get(f"b{i}", {}).items():
                     setattr(prior, key, value)
                 priors.append(prior)
 

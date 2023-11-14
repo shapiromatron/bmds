@@ -176,3 +176,7 @@ class TestModelPriors:
         """
         )
         assert m.priors_tbl() == expected.strip()
+
+        # assert that full JSON validation and parsing works as expected
+        initial = m.settings.priors.model_dump_json()
+        assert ModelPriors.model_validate_json(initial).model_dump_json() == initial
