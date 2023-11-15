@@ -131,18 +131,21 @@ class BmdModel(abc.ABC):
 
         return "\n\n".join([title, settings, results]) + "\n"
 
-    def model_settings_text(self) -> str:
-        input_tbl = self.settings.tbl(self.degree_required)
-        prior_tbl = priors_tbl(
+    def priors_tbl(self) -> str:
+        """Show prior or parameter boundary testing."""
+        return priors_tbl(
             self.get_param_names(), self.get_priors_list(), self.settings.priors.is_bayesian
         )
+
+    def model_settings_text(self) -> str:
+        input_tbl = self.settings.tbl(self.degree_required)
         return multi_lstrip(
             f"""
         Input Summary:
         {input_tbl}
 
         Parameter Settings:
-        {prior_tbl}
+        {self.settings.tbl(self.settings)}
         """
         )
 

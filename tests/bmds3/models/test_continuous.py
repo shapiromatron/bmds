@@ -24,9 +24,9 @@ class TestPriorOverrides:
             ({"disttype": DistType.normal_ncv, "priors": PriorClass.frequentist_unrestricted, "is_increasing": False}, (-18, 18)),
         ]:  # fmt: on
             model = continuous.Polynomial(cdataset2, settings)
-            beta1 = model.settings.priors.get_prior("beta1")
-            assert beta1.min_value == priors[0], settings
-            assert beta1.max_value == priors[1], settings
+            b1 = model.settings.priors.get_prior("b1")
+            assert b1.min_value == priors[0], settings
+            assert b1.max_value == priors[1], settings
 
     def test_exp3(self, cdataset2):
         for settings, priors in [
