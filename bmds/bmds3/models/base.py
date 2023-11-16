@@ -95,7 +95,7 @@ class BmdModel(abc.ABC):
 
     def name(self) -> str:
         # return name of model; may be setting-specific
-        return self.bmd_model_class.verbose
+        return self.settings.name or self.bmd_model_class.verbose
 
     @classmethod
     def get_dll(cls) -> ctypes.CDLL:

@@ -53,6 +53,7 @@ class ContinuousModelSettings(BaseModel):
     degree: int = 0  # polynomial only
     burnin: int = 20
     priors: PriorClass | ModelPriors | None = None  # if None; default used
+    name: str = ""  # override model name
 
     @property
     def bmr_text(self) -> str:
