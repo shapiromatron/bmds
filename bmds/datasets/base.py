@@ -52,7 +52,7 @@ class DatasetBase(abc.ABC):
         """
         Return a matplotlib Axes of the dose-response dataset.
         """
-        fig = plotting.create_empty_figure()
+        fig = plotting.create_empty_figure()  # TODO - pass figsize here
         ax = fig.gca()
         ax.set_xlabel(self.get_xlabel())
         ax.set_ylabel(self.get_ylabel())

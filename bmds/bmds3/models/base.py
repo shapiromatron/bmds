@@ -153,7 +153,7 @@ class BmdModel(abc.ABC):
             ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
         )
 
-    def plot(self):
+    def plot(self, figsize: tuple[float, float] | None = None):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
         """
@@ -189,6 +189,9 @@ class BmdModel(abc.ABC):
         ax.legend(
             [handles[idx] for idx in order], [labels[idx] for idx in order], **plotting.LEGEND_OPTS
         )
+
+        if figsize:
+            fig.set_size_inches(figsize)
 
         return fig
 
