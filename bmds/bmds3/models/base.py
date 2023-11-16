@@ -138,14 +138,13 @@ class BmdModel(abc.ABC):
         )
 
     def model_settings_text(self) -> str:
-        input_tbl = self.settings.tbl(self.degree_required)
         return multi_lstrip(
             f"""
         Input Summary:
-        {input_tbl}
+        {self.settings.tbl(self.degree_required)}
 
         Parameter Settings:
-        {self.settings.tbl(self.settings)}
+        {self.priors_tbl()}
         """
         )
 
