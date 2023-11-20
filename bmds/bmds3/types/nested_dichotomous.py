@@ -72,7 +72,6 @@ class NestedDichotomousModelSettings(BaseModel):
     def _tbl_rows(self) -> list:
         return [
             ["BMR", self.bmr_text],
-            ["Confidence Level", self.confidence_level],
             ["Litter Specific Covariate", camel_to_title(self.litter_specific_covariate.name)],
             ["Intralitter Correlation", self.intralitter_correlation.name],
             ["Background", self.background.name],

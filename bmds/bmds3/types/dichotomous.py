@@ -50,7 +50,6 @@ class DichotomousModelSettings(BaseModel):
     def tbl(self, show_degree: bool = True) -> str:
         data = [
             ["BMR", self.bmr_text],
-            ["Confidence Level", self.confidence_level],
             ["Modeling approach", self.priors.prior_class.name],
         ]
 
@@ -66,7 +65,6 @@ class DichotomousModelSettings(BaseModel):
         return [
             ["Setting", "Value"],
             ["BMR", self.bmr_text],
-            ["Confidence Level", self.confidence_level],
             ["Maximum Multistage Degree", self.degree],
         ]
 
