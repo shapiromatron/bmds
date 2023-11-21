@@ -11,9 +11,6 @@ BMDS Python interface
         :target: https://bmds.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://zenodo.org/badge/61229626.svg
-   :target: https://zenodo.org/badge/latestdoi/61229626
-
 This Python package is designed to run the `USEPA BMDS`_ software from a python
 interface. It requires Python3.11+.
 
