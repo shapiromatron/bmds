@@ -45,7 +45,13 @@ class BmdsSession:
         self,
         dataset: DatasetType,
         recommendation_settings: RecommenderSettings | None = None,
+        id: int | None = None,
+        name: str = "",
+        description: str = "",
     ):
+        self.id = id
+        self.name = name
+        self.description = description
         self.dataset = dataset
         self.models: list[BmdModel] = []
         self.ma_weights: npt.NDArray | None = None
@@ -363,6 +369,9 @@ class Bmds330(BmdsSession):
 
     def serialize(self) -> Bmds330Schema:
         schema = Bmds330Schema(
+            id=self.id,
+            name=self.name,
+            description=self.description,
             version=dict(
                 string=self.version_str,
                 pretty=self.version_pretty,
@@ -385,7 +394,12 @@ class Bmds330(BmdsSession):
 
 class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
-        session = Bmds330(dataset=self.dataset.deserialize())
+        session = Bmds330(
+            dataset=self.dataset.deserialize(),
+            id=self.id,
+            name=self.name,
+            description=self.description,
+        )
         session.models = [model.deserialize(session.dataset) for model in self.models]
         session.selected = self.selected.deserialize(session)
         if self.bmds_model_average is not None:
