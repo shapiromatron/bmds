@@ -149,6 +149,26 @@ result = model.execute()
 print(model.text())
 ```
 
+Users can also change the parameter prior types from the default listed in the BMDS User Guide. In PyBMDS, parameters can be given a Normal, Log-Normal, or Uniform distribution. These can be changed by:
+
+```python
+model = dichotomous.Weibull(dataset=bmds_dataset, settings={"priors": PriorClass.bayesian, "samples": 1000, "burnin": 500})
+g = session.settings.priors.get_prior('g')
+g.type = PriorType.Uniform
+g.min_value=0
+g.max_value=1
+```
+
+Or:
+```python
+g = session.settings.priors.get_prior('g')
+g.type = PriorType.Lognormal
+g.min_value=0
+g.max_value=1
+g.initial_value=0
+g.stdev=1.5
+```
+
 ## Model average on a subset of models
 
 You can select a set of models to model average on, rather than using all of the default dichotomous models. For example, to model average on the Logistic, Probit, and Weibull models, you can:
