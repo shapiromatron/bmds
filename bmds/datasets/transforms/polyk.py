@@ -6,6 +6,7 @@ for carcinogenicity in small samples. Biometrics. 1988 Jun;44(2):417-31.
 PMID: 3390507. DOI: 10.2307/2531856
 """
 
+from io import BytesIO
 from itertools import cycle
 
 import matplotlib.ticker as mtick
@@ -190,3 +191,10 @@ class Adjustment:
             add_mpl_figure(report.document, self.tumor_incidence_figure(), 6)
         )
         return report.document
+
+    def to_excel(self) -> BytesIO:
+        f = BytesIO()
+        with pd.ExcelWriter(f) as writer:
+            for name, df in [("adjusted", self.adjusted_data), ("summary", self.summary)]:
+                df.to_excel(writer, sheet_name=name, index=False)
+        return f
