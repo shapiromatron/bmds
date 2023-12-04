@@ -66,6 +66,6 @@ class TestAdjustment:
 
         # docx
         docx = tool.to_docx()
-        if True:
+        if rewrite_data_files:
             (data_path / "bmds3-polyk.xlsx").write_bytes(xlsx.getvalue())
             docx.save(data_path / "bmds3-polyk.docx")
