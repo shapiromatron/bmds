@@ -6,7 +6,13 @@ for carcinogenicity in small samples. Biometrics. 1988 Jun;44(2):417-31.
 PMID: 3390507. DOI: 10.2307/2531856
 """
 
+from itertools import cycle
+
+import matplotlib.ticker as mtick
 import pandas as pd
+
+from ... import plotting
+from ...reporting.styling import Report, add_mpl_figure
 
 
 def adjust_n(df: pd.DataFrame, k: float | None = 3, max_day: int | None = None) -> pd.DataFrame:
@@ -90,3 +96,97 @@ def calculate(
     df2 = adjust_n(df, k, max_day)
     df3 = summary_stats(df2)
     return df2, df3
+
+
+class Adjustment:
+    def __init__(
+        self,
+        doses: list[float],
+        day: list[int],
+        has_tumor: list[int],
+        k: float | None = 3,
+        max_day: int | None = None,
+    ) -> None:
+        self.input_data = pd.DataFrame(dict(dose=doses, day=day, has_tumor=has_tumor))
+        self.adjusted_data = adjust_n(self.input_data, k, max_day)
+        self.summary = summary_stats(self.adjusted_data)
+
+    def summary_figure(self, units: str = ""):
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(f"Dose ({units})" if units else "Dose")
+        ax.set_ylabel("Proportion (%)")
+        ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title("Adjusted Proportion vs Original Proportion")
+        ax.plot(
+            self.summary.dose,
+            self.summary.proportion,
+            "o-",
+            color="blue",
+            label="Original Proportion",
+            markersize=8,
+            markeredgewidth=1,
+            markeredgecolor="white",
+        )
+        ax.plot(
+            self.summary.dose,
+            self.summary.adj_proportion,
+            "^-",
+            color="red",
+            label="Adjusted Proportion",
+            markersize=8,
+            markeredgewidth=1,
+            markeredgecolor="white",
+        )
+        ax.legend(**plotting.LEGEND_OPTS)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(1))
+        return fig
+
+    def tumor_incidence_figure(self, xunits: str = "", yunits: str = ""):
+        markers = "o^svDP"
+        df = self.input_data.copy()
+        df.loc[:, "cummulative_tumor"] = df.groupby("dose").has_tumor.cumsum()
+
+        marker = cycle(markers)
+
+        fig = plotting.create_empty_figure()
+        ax = fig.gca()
+        ax.set_xlabel(f"Study duration ({xunits})" if xunits else "Study duration")
+        ax.set_ylabel("Cumulative tumor incidence")
+        ax.margins(plotting.PLOT_MARGINS)
+        ax.set_title("Tumor incidence over study duration")
+
+        if yunits:
+            yunits = f" {yunits}"
+
+        for value, d in df.groupby("dose"):
+            ax.plot(
+                d.day,
+                d.cummulative_tumor,
+                f"{next(marker)}-",
+                label=str(value) + yunits,
+                markersize=8,
+                markeredgewidth=1,
+                markeredgecolor="white",
+            )
+
+        ax.legend(**plotting.LEGEND_OPTS)
+        return fig
+
+    def to_docx(
+        self,
+        report: Report | None = None,
+        header_level: int = 1,
+    ):
+        if report is None:
+            report = Report.build_default()
+
+        h1 = report.styles.get_header_style(header_level)
+        h2 = report.styles.get_header_style(header_level + 1)
+        report.document.add_paragraph("Hello world", h1)
+        report.document.add_paragraph("Input Dataset", h2)
+        report.document.add_paragraph(add_mpl_figure(report.document, self.summary_figure(), 6))
+        report.document.add_paragraph(
+            add_mpl_figure(report.document, self.tumor_incidence_figure(), 6)
+        )
+        return report.document

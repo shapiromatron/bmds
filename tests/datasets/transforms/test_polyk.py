@@ -48,3 +48,20 @@ def test_calculate(data_path):
         max_day=730,
     )
     assert np.allclose(res.adj_proportion, [0.1404, 0.2821, 0.5673, 0.6616], atol=1e-4)
+
+
+class TestAdjustment:
+    def test_docx(self, data_path, rewrite_data_files):
+        df = pd.read_csv(data_path / "datasets/transforms/polyk.csv")
+
+        tool = polyk.Adjustment(
+            doses=df.dose.tolist(),
+            day=df.day.tolist(),
+            has_tumor=df.has_tumor.tolist(),
+            k=3,
+        )
+
+        # docx
+        docx = tool.to_docx()
+        if rewrite_data_files:
+            docx.save(data_path / "bmds3-polyk.docx")
