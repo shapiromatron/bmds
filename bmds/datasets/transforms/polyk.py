@@ -13,7 +13,7 @@ import matplotlib.ticker as mtick
 import pandas as pd
 
 from ... import plotting
-from ...reporting.styling import Report, add_mpl_figure
+from ...reporting.styling import Report, add_mpl_figure, write_cell
 
 
 def adjust_n(df: pd.DataFrame, k: float | None = 3, max_day: int | None = None) -> pd.DataFrame:
@@ -174,6 +174,56 @@ class Adjustment:
         ax.legend(**plotting.LEGEND_OPTS)
         return fig
 
+    def write_docx_inputs_table(self, report: Report):
+        """Add an input data table to the document."""
+        hdr = report.styles.tbl_header
+        body = report.styles.tbl_body
+        tbl = report.document.add_table(len(self.input_data) + 1, 3)
+
+        write_cell(tbl.cell(0,0), "dose", style=hdr)
+        write_cell(tbl.cell(0,1), "day", style=hdr)
+        write_cell(tbl.cell(0,2), "has_tumor", style=hdr)
+
+        for idx, v in enumerate(
+            zip(self.input_data.dose,
+                self.input_data.day,
+                self.input_data.has_tumor,
+                strict=True)):
+            write_cell(tbl.cell(idx + 1, 0), v[0], style=body)
+            write_cell(tbl.cell(idx + 1, 1), v[1], style=body)
+            write_cell(tbl.cell(idx + 1, 2), v[2], style=body)
+
+    def write_docx_summary_table(self, report: Report):
+        """Add a 'result'' data table with adjusted figures to the document."""
+        hdr = report.styles.tbl_header
+        body = report.styles.tbl_body
+        tbl = report.document.add_table(len(self.summary) + 1, 6)
+
+        write_cell(tbl.cell(0, 0), "dose", style=hdr)
+        write_cell(tbl.cell(0, 1), "n", style=hdr)
+        write_cell(tbl.cell(0, 2), "adj_n", style=hdr)
+        write_cell(tbl.cell(0, 3), "incidence", style=hdr)
+        write_cell(tbl.cell(0, 4), "proportion", style=hdr)
+        write_cell(tbl.cell(0, 5), "adj_proportion", style=hdr)
+
+        for idx, val in enumerate(
+            zip(
+                self.summary.dose,
+                self.summary.n,
+                self.summary.adj_n,
+                self.summary.incidence,
+                self.summary.proportion,
+                self.summary.adj_proportion,
+                strict=True)
+                ):
+            write_cell(tbl.cell(idx + 1, 0), val[0], style=body)
+            write_cell(tbl.cell(idx + 1, 1), val[1], style=body)
+            write_cell(tbl.cell(idx + 1, 2), val[2], style=body)
+            write_cell(tbl.cell(idx + 1, 3), val[3], style=body)
+            write_cell(tbl.cell(idx + 1, 4), val[4], style=body)
+            write_cell(tbl.cell(idx + 1, 5), val[5], style=body)
+
+
     def to_docx(
         self,
         report: Report | None = None,
@@ -184,12 +234,20 @@ class Adjustment:
 
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Hello world", h1)
-        report.document.add_paragraph("Input Dataset", h2)
+
+        report.document.add_paragraph("Poly K Adjustment", h1)
+        report.document.add_paragraph("Summary", h2)
+        report.document.add_paragraph(self.write_docx_summary_table(report))
         report.document.add_paragraph(add_mpl_figure(report.document, self.summary_figure(), 6))
+        report.document.add_paragraph("Plots", h2)
         report.document.add_paragraph(
             add_mpl_figure(report.document, self.tumor_incidence_figure(), 6)
         )
+        report.document.add_paragraph("Table", h2)
+        report.document.add_paragraph(self.write_docx_summary_table(report))
+        report.document.add_paragraph("Data", h2)
+        self.write_docx_inputs_table(report)
+
         return report.document
 
     def to_excel(self) -> BytesIO:
