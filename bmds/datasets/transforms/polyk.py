@@ -106,7 +106,7 @@ class Adjustment:
         day: list[int],
         has_tumor: list[int],
         k: float | None = 3,
-        max_day: int | None = None,
+        max_day: float | None = None,
     ) -> None:
         self.input_data = pd.DataFrame(dict(dose=doses, day=day, has_tumor=has_tumor))
         self.adjusted_data = adjust_n(self.input_data, k, max_day)
@@ -139,7 +139,11 @@ class Adjustment:
             markeredgewidth=1,
             markeredgecolor="white",
         )
-        ax.legend(**plotting.LEGEND_OPTS)
+
+        legend = ax.legend(**plotting.LEGEND_OPTS)
+        for handle in legend.legend_handles:
+            handle.set_markersize(8)
+
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(1))
         return fig
 
@@ -171,24 +175,25 @@ class Adjustment:
                 markeredgecolor="white",
             )
 
-        ax.legend(**plotting.LEGEND_OPTS)
+        legend = ax.legend(**plotting.LEGEND_OPTS)
+        for handle in legend.legend_handles:
+            handle.set_markersize(8)
+
         return fig
 
     def write_docx_inputs_table(self, report: Report):
         """Add an input data table to the document."""
         hdr = report.styles.tbl_header
         body = report.styles.tbl_body
-        tbl = report.document.add_table(len(self.input_data) + 1, 3)
+        tbl = report.document.add_table(len(self.input_data) + 1, 3, style=report.styles.table)
 
-        write_cell(tbl.cell(0,0), "dose", style=hdr)
-        write_cell(tbl.cell(0,1), "day", style=hdr)
-        write_cell(tbl.cell(0,2), "has_tumor", style=hdr)
+        write_cell(tbl.cell(0, 0), "dose", style=hdr)
+        write_cell(tbl.cell(0, 1), "day", style=hdr)
+        write_cell(tbl.cell(0, 2), "has_tumor", style=hdr)
 
         for idx, v in enumerate(
-            zip(self.input_data.dose,
-                self.input_data.day,
-                self.input_data.has_tumor,
-                strict=True)):
+            zip(self.input_data.dose, self.input_data.day, self.input_data.has_tumor, strict=True)
+        ):
             write_cell(tbl.cell(idx + 1, 0), v[0], style=body)
             write_cell(tbl.cell(idx + 1, 1), v[1], style=body)
             write_cell(tbl.cell(idx + 1, 2), v[2], style=body)
@@ -197,7 +202,7 @@ class Adjustment:
         """Add a 'result'' data table with adjusted figures to the document."""
         hdr = report.styles.tbl_header
         body = report.styles.tbl_body
-        tbl = report.document.add_table(len(self.summary) + 1, 6)
+        tbl = report.document.add_table(len(self.summary) + 1, 6, style=report.styles.table)
 
         write_cell(tbl.cell(0, 0), "dose", style=hdr)
         write_cell(tbl.cell(0, 1), "n", style=hdr)
@@ -214,8 +219,9 @@ class Adjustment:
                 self.summary.incidence,
                 self.summary.proportion,
                 self.summary.adj_proportion,
-                strict=True)
-                ):
+                strict=True,
+            )
+        ):
             write_cell(tbl.cell(idx + 1, 0), val[0], style=body)
             write_cell(tbl.cell(idx + 1, 1), val[1], style=body)
             write_cell(tbl.cell(idx + 1, 2), val[2], style=body)
@@ -223,19 +229,20 @@ class Adjustment:
             write_cell(tbl.cell(idx + 1, 4), val[4], style=body)
             write_cell(tbl.cell(idx + 1, 5), val[5], style=body)
 
-
     def to_docx(
         self,
         report: Report | None = None,
         header_level: int = 1,
+        show_title: bool = True,
     ):
         if report is None:
             report = Report.build_default()
 
-        h1 = report.styles.get_header_style(header_level)
-        h2 = report.styles.get_header_style(header_level + 1)
+        if show_title:
+            h1 = report.styles.get_header_style(header_level)
+            report.document.add_paragraph("Poly K Adjustment", h1)
 
-        report.document.add_paragraph("Poly K Adjustment", h1)
+        h2 = report.styles.get_header_style(header_level + 1)
         report.document.add_paragraph("Summary", h2)
         report.document.add_paragraph(self.write_docx_summary_table(report))
         report.document.add_paragraph(add_mpl_figure(report.document, self.summary_figure(), 6))
