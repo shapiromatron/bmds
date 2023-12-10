@@ -441,19 +441,8 @@ def write_model(report: Report, model: BmdModel, bmd_cdf_table: bool, header_lev
 
 
 def write_bmd_cdf_table(report: Report, model: BmdModel):
-    styles = report.styles
-    hdr = report.styles.tbl_header
-    body = report.styles.tbl_body
-
-    dist = model.results.fit.bmd_dist
-    n_dist = dist.shape[1]
-
-    tbl = report.document.add_table(n_dist + 1, 2, style=styles.table)
-    write_cell(tbl.cell(0, 0), "Percentile", style=hdr)
-    write_cell(tbl.cell(0, 1), "BMD", style=hdr)
-    for i in range(n_dist):
-        write_cell(tbl.cell(i + 1, 0), dist[1, i], style=body)
-        write_cell(tbl.cell(i + 1, 1), dist[0, i], style=body)
+    df = pd.DataFrame(data=model.results.fit.bmd_dist.T, columns=["BMD", "Percentile"])
+    df_to_table(report, df[["Percentile", "BMD"]])
 
 
 def write_setting_p(report: Report, title: str, value: str):
@@ -461,3 +450,22 @@ def write_setting_p(report: Report, title: str, value: str):
     p = report.document.add_paragraph()
     p.add_run(title).bold = True
     p.add_run(value)
+
+
+def df_to_table(report: Report, df: pd.DataFrame):
+    """Quickly generate a word table from a pandas data frame.
+
+    Optimized for speed - see https://github.com/python-openxml/python-docx/issues/174
+    """
+    hdr = report.styles.tbl_header
+    body = report.styles.tbl_body
+    n_rows = df.shape[0] + 1
+    n_col = df.shape[1]
+    tbl = report.document.add_table(n_rows, n_col, style=report.styles.table)
+    cells = tbl._cells
+    data = df.to_dict("tight", index=False)
+    for i, header in enumerate(data["columns"]):
+        write_cell(cells[i], header, style=hdr)
+    for i, row in enumerate(data["data"]):
+        for j, value in enumerate(row):
+            write_cell(cells[(i + 1) * n_col + j], value, style=body)

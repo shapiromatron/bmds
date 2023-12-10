@@ -14,8 +14,8 @@ import pandas as pd
 from matplotlib.figure import Figure
 
 from ... import plotting
-from ...bmds3.reporting import write_setting_p
-from ...reporting.styling import Report, add_mpl_figure, write_cell
+from ...bmds3.reporting import df_to_table, write_setting_p
+from ...reporting.styling import Report, add_mpl_figure
 
 
 class PolyKAdjustment:
@@ -146,45 +146,11 @@ class PolyKAdjustment:
 
     def write_docx_adjustment_table(self, report: Report):
         """Add adjusted input data table to the document."""
-        hdr = report.styles.tbl_header
-        body = report.styles.tbl_body
-        tbl = report.document.add_table(len(self.input_data) + 1, 4, style=report.styles.table)
-        df = self.adjusted_data
-
-        for idx, header in enumerate(["dose", "day", "has_tumor", "adj_n"]):
-            write_cell(tbl.cell(0, idx), header, style=hdr)
-
-        for idx, (dose, day, has_tumor, adj_n) in enumerate(
-            zip(df.dose, df.day, df.has_tumor, df.adj_n, strict=True)
-        ):
-            write_cell(tbl.cell(idx + 1, 0), dose, style=body)
-            write_cell(tbl.cell(idx + 1, 1), day, style=body)
-            write_cell(tbl.cell(idx + 1, 2), has_tumor, style=body)
-            write_cell(tbl.cell(idx + 1, 3), adj_n, style=body)
+        df_to_table(report, self.adjusted_data)
 
     def write_docx_summary_table(self, report: Report):
         """Add a 'result'' data table with adjusted figures to the document."""
-        hdr = report.styles.tbl_header
-        body = report.styles.tbl_body
-        tbl = report.document.add_table(len(self.summary) + 1, 6, style=report.styles.table)
-        df = self.summary
-
-        for idx, header in enumerate(
-            ["dose", "n", "adj_n", "incidence", "proportion", "adj_proportion"]
-        ):
-            write_cell(tbl.cell(0, idx), header, style=hdr)
-
-        for idx, (dose, n, adj_n, incidence, proportion, adj_proportion) in enumerate(
-            zip(
-                df.dose, df.n, df.adj_n, df.incidence, df.proportion, df.adj_proportion, strict=True
-            )
-        ):
-            write_cell(tbl.cell(idx + 1, 0), dose, style=body)
-            write_cell(tbl.cell(idx + 1, 1), n, style=body)
-            write_cell(tbl.cell(idx + 1, 2), adj_n, style=body)
-            write_cell(tbl.cell(idx + 1, 3), incidence, style=body)
-            write_cell(tbl.cell(idx + 1, 4), proportion, style=body)
-            write_cell(tbl.cell(idx + 1, 5), adj_proportion, style=body)
+        df_to_table(report, self.summary)
 
     def to_docx(
         self,
