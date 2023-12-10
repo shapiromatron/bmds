@@ -127,16 +127,15 @@ class BmdsSession:
             self.model_average.execute_job()
 
     @property
-    def recommendation_enabled(self):
+    def recommendation_enabled(self) -> bool:
         if self.recommender is None:
             self.recommender = Recommender(settings=self.recommendation_settings)
         return self.recommender.settings.enabled
 
     def recommend(self):
-        if self.recommendation_enabled:
-            self.recommender.recommend(self.dataset, self.models)
-        else:
+        if not self.recommendation_enabled or self.recommender is None:
             raise ValueError("Recommendation not enabled.")
+        self.recommender.recommend(self.dataset, self.models)
 
     def select(self, model: BmdModel | None, notes: str = ""):
         self.selected.select(model, notes)
@@ -203,6 +202,16 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().model_dump(by_alias=True)
 
+    def session_title(self) -> str:
+        if self.id and self.name:
+            return f"${self.id}: {self.name}"
+        elif self.name:
+            return self.name
+        elif self.id:
+            return f"Session #{self.id}"
+        else:
+            return "Modeling Session"
+
     def to_df(self, extras: dict | None = None, clean: bool = True) -> pd.DataFrame:
         """Export an executed session to a pandas dataframe.
 
@@ -259,7 +268,7 @@ class BmdsSession:
 
     def to_docx(
         self,
-        report: Report = None,
+        report: Report | None = None,
         header_level: int = 1,
         citation: bool = True,
         dataset_format_long: bool = True,
@@ -288,7 +297,11 @@ class BmdsSession:
 
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Session Results", h1)
+
+        report.document.add_paragraph(self.session_title(), h1)
+        if self.description:
+            report.document.add_paragraph(self.description)
+
         report.document.add_paragraph("Input Dataset", h2)
         reporting.write_dataset_table(report, self.dataset, dataset_format_long)
 

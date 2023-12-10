@@ -432,6 +432,16 @@ class MultitumorBase:
             data.extend(dataset.rows(extras))
         return pd.DataFrame(data)
 
+    def session_title(self) -> str:
+        if self.id and self.name:
+            return f"${self.id}: {self.name}"
+        elif self.name:
+            return self.name
+        elif self.id:
+            return f"Session #{self.id}"
+        else:
+            return "Modeling Session"
+
     def to_docx(
         self,
         report: Report | None = None,
@@ -463,7 +473,11 @@ class MultitumorBase:
 
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Session Results", h1)
+        report.document.add_paragraph(self.session_title(), h1)
+
+        if self.description:
+            report.document.add_paragraph(self.description)
+
         for dataset in self.datasets:
             report.document.add_paragraph("Input Dataset", h2)
             reporting.write_dataset_table(report, dataset, dataset_format_long)
