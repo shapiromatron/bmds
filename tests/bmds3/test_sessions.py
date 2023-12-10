@@ -8,7 +8,7 @@ from bmds.bmds3 import BmdsSession
 class TestSession:
     def test_dichotomous(self, ddataset2, rewrite_data_files):
         # make sure serialize looks correct
-        session1 = bmds.session.Bmds330(dataset=ddataset2)
+        session1 = bmds.session.Bmds330(id=1, name="test", description="hello", dataset=ddataset2)
         session1.add_default_models()
         session1.execute_and_recommend()
         d = session1.to_dict()

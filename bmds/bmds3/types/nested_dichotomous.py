@@ -56,6 +56,7 @@ class NestedDichotomousModelSettings(BaseModel):
     restricted: bool = True
     bootstrap_iterations: int = Field(default=1000, gt=10, lt=10000)
     bootstrap_seed: int = 0
+    name: str = ""  # override model name
 
     @property
     def bmr_text(self) -> str:

@@ -34,7 +34,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             settings=self.settings, model_indexes=model_indexes, results=self.results
         )
 
-    def plot(self, colorize: bool = False):
+    def plot(self, figsize: tuple[float, float] | None = None, colorize: bool = False):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
         """
@@ -42,7 +42,7 @@ class BmdModelAveragingDichotomous(BmdModelAveraging):
             raise ValueError("Cannot plot if results are unavailable")
         dataset = self.session.dataset
         results = self.results
-        fig = dataset.plot()
+        fig = dataset.plot(figsize=figsize)
         ax = fig.gca()
         ax.set_ylim(-0.05, 1.05)
         title = f"{dataset._get_dataset_name()}\nModel average, {self.settings.bmr_text}"

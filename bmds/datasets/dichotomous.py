@@ -135,7 +135,7 @@ class DichotomousDataset(DatasetBase):
             )
         return self._plot_data
 
-    def plot(self) -> Figure:
+    def plot(self, figsize: tuple[float, float] | None = None) -> Figure:
         """
         Return a matplotlib figure of the dose-response dataset.
 
@@ -154,7 +154,7 @@ class DichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        ax = self.setup_plot()
+        ax = self.setup_plot(figsize=figsize)
         plot_data = self.plot_data()
         ax.errorbar(
             self.doses,

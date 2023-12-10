@@ -38,6 +38,7 @@ class DichotomousModelSettings(BaseModel):
     samples: Annotated[int, Field(ge=10, le=1000)] = 100
     burnin: Annotated[int, Field(ge=5, le=1000)] = 20
     priors: PriorClass | ModelPriors | None = None  # if None; default used
+    name: str = ""  # override model name
 
     @property
     def bmr_text(self) -> str:

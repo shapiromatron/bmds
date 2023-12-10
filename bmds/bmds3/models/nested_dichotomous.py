@@ -24,7 +24,10 @@ class BmdModelNestedDichotomous(BmdModel):
     model_version: str = "BMDS330"
 
     def name(self) -> str:
-        return f"{super().name()} ({self.settings.litter_specific_covariate.text}{self.settings.intralitter_correlation.text})"
+        return (
+            self.settings.name
+            or f"{super().name()} ({self.settings.litter_specific_covariate.text}{self.settings.intralitter_correlation.text})"
+        )
 
     def get_model_settings(
         self, dataset: NestedDichotomousDataset, settings: InputModelSettings
