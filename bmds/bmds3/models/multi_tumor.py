@@ -200,12 +200,16 @@ class MultitumorBase:
         datasets: list[DichotomousDataset],
         degrees: list[int] | None = None,
         model_settings: DichotomousModelSettings | dict | None = None,
-        id: int | str | None = None,
+        id: int | None = None,
+        name: str = "",
+        description: str = "",
         results: MultitumorResult | None = None,
     ):
         if len(datasets) == 0:
             raise ValueError("Must provide at least one dataset")
         self.id = id
+        self.name = name
+        self.description = description
         self.datasets = datasets
         for i, dataset in enumerate(datasets, start=1):
             if dataset.metadata.id is None:
@@ -499,6 +503,8 @@ class Multitumor330(MultitumorBase):
             version=self._serialize_version(),
             datasets=[ds.serialize() for ds in self.datasets],
             id=self.id,
+            name=self.name,
+            description=self.description,
             settings=self._serialize_settings(),
             results=self.results,
         )
@@ -517,6 +523,8 @@ class Multitumor330Schema(MultitumorSchema):
             degrees=self.settings.degrees,
             model_settings=settings,
             id=self.id,
+            name=self.name,
+            description=self.description,
             results=self.results,
         )
         # hydrate models
