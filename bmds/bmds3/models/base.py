@@ -95,7 +95,7 @@ class BmdModel(abc.ABC):
 
     def name(self) -> str:
         # return name of model; may be setting-specific
-        return self.bmd_model_class.verbose
+        return self.settings.name or self.bmd_model_class.verbose
 
     @classmethod
     def get_dll(cls) -> ctypes.CDLL:
@@ -138,14 +138,13 @@ class BmdModel(abc.ABC):
         )
 
     def model_settings_text(self) -> str:
-        input_tbl = self.settings.tbl(self.degree_required)
         return multi_lstrip(
             f"""
         Input Summary:
-        {input_tbl}
+        {self.settings.tbl(self.degree_required)}
 
         Parameter Settings:
-        {self.settings.tbl(self.settings)}
+        {self.priors_tbl()}
         """
         )
 
@@ -154,14 +153,14 @@ class BmdModel(abc.ABC):
             ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
         )
 
-    def plot(self):
+    def plot(self, figsize: tuple[float, float] | None = None):
         """
         After model execution, print the dataset, curve-fit, BMD, and BMDL.
         """
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
 
-        fig = self.dataset.plot()
+        fig = self.dataset.plot(figsize=figsize)
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
@@ -193,10 +192,10 @@ class BmdModel(abc.ABC):
 
         return fig
 
-    def cdf_plot(self):
+    def cdf_plot(self, figsize: tuple[float, float] | None = None):
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
-        fig = plotting.create_empty_figure()
+        fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
         ax.set_xlabel(self.dataset.get_xlabel())
         ax.set_ylabel("Percentile")
@@ -285,7 +284,7 @@ class BmdModelAveraging(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def plot(self):
+    def plot(self, figsize: tuple[float, float] | None = None):
         ...
 
     def to_dict(self) -> dict:

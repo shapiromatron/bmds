@@ -35,7 +35,15 @@ class BmdsSessionBatch(BatchBase):
 
     def df_summary(self) -> pd.DataFrame:
         dfs = [
-            session.to_df(extras=dict(session_index=idx), clean=False)
+            session.to_df(
+                extras=dict(
+                    session_index=idx,
+                    session_id=session.id,
+                    session_name=session.name,
+                    session_description=session.description,
+                ),
+                clean=False,
+            )
             for idx, session in enumerate(self.sessions)
         ]
         return pd.concat(dfs).dropna(axis=1, how="all").fillna("")
@@ -43,7 +51,16 @@ class BmdsSessionBatch(BatchBase):
     def df_dataset(self) -> pd.DataFrame:
         data: list[dict] = []
         for idx, session in enumerate(self.sessions):
-            data.extend(session.dataset.rows(extras=dict(session_index=idx)))
+            data.extend(
+                session.dataset.rows(
+                    extras=dict(
+                        session_index=idx,
+                        session_id=session.id,
+                        session_name=session.name,
+                        session_description=session.description,
+                    )
+                )
+            )
         return pd.DataFrame(data=data)
 
     def df_params(self) -> pd.DataFrame:
@@ -55,6 +72,9 @@ class BmdsSessionBatch(BatchBase):
                         model.results.parameters.rows(
                             extras=dict(
                                 session_index=idx,
+                                session_id=session.id,
+                                session_name=session.name,
+                                session_description=session.description,
                                 model_index=model_index,
                                 model_name=model.name(),
                             )

@@ -90,7 +90,7 @@ class NestedDichotomousDataset(DatasetBase):
     def as_dfile(self):
         raise ValueError("N/A; requires BMDS3+ which doesn't use dfiles")
 
-    def plot(self):
+    def plot(self, figsize: tuple[float, float] | None = None):
         """
         Return a matplotlib figure of the dose-response dataset.
 
@@ -109,7 +109,7 @@ class NestedDichotomousDataset(DatasetBase):
         out : matplotlib.figure.Figure
             A matplotlib figure representation of the dataset.
         """
-        ax = self.setup_plot()
+        ax = self.setup_plot(figsize=figsize)
         ys = np.array(self.incidences) / np.array(self.litter_ns)
         ax.scatter(
             self.doses,

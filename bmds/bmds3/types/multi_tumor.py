@@ -104,7 +104,9 @@ class MultitumorResult(BaseModel):
 
 class MultitumorSchema(BaseModel):
     version: VersionSchema
-    id: int | str | None
+    id: int | None
+    name: str = ""
+    description: str = ""
     datasets: list[DichotomousDatasetSchema]
     settings: MultitumorSettings
     results: MultitumorResult | None

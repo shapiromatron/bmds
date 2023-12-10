@@ -184,7 +184,7 @@ class Polynomial(BmdModelContinuous):
     degree_required: bool = True
 
     def name(self) -> str:
-        return f"Polynomial {self.settings.degree}°"
+        return self.settings.name or f"Polynomial {self.settings.degree}°"
 
     def get_model_settings(
         self, dataset: ContinuousDatasets, settings: InputModelSettings
@@ -240,7 +240,7 @@ class Linear(Polynomial):
     degree_required: bool = False
 
     def name(self) -> str:
-        return "Linear"
+        return self.settings.name or "Linear"
 
     def get_default_model_degree(self, dataset) -> int:
         return 1

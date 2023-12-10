@@ -45,7 +45,13 @@ class BmdsSession:
         self,
         dataset: DatasetType,
         recommendation_settings: RecommenderSettings | None = None,
+        id: int | None = None,
+        name: str = "",
+        description: str = "",
     ):
+        self.id = id
+        self.name = name
+        self.description = description
         self.dataset = dataset
         self.models: list[BmdModel] = []
         self.ma_weights: npt.NDArray | None = None
@@ -121,16 +127,15 @@ class BmdsSession:
             self.model_average.execute_job()
 
     @property
-    def recommendation_enabled(self):
+    def recommendation_enabled(self) -> bool:
         if self.recommender is None:
             self.recommender = Recommender(settings=self.recommendation_settings)
         return self.recommender.settings.enabled
 
     def recommend(self):
-        if self.recommendation_enabled:
-            self.recommender.recommend(self.dataset, self.models)
-        else:
+        if not self.recommendation_enabled or self.recommender is None:
             raise ValueError("Recommendation not enabled.")
+        self.recommender.recommend(self.dataset, self.models)
 
     def select(self, model: BmdModel | None, notes: str = ""):
         self.selected.select(model, notes)
@@ -197,6 +202,16 @@ class BmdsSession:
     def to_dict(self):
         return self.serialize().model_dump(by_alias=True)
 
+    def session_title(self) -> str:
+        if self.id and self.name:
+            return f"${self.id}: {self.name}"
+        elif self.name:
+            return self.name
+        elif self.id:
+            return f"Session #{self.id}"
+        else:
+            return "Modeling Session"
+
     def to_df(self, extras: dict | None = None, clean: bool = True) -> pd.DataFrame:
         """Export an executed session to a pandas dataframe.
 
@@ -253,7 +268,7 @@ class BmdsSession:
 
     def to_docx(
         self,
-        report: Report = None,
+        report: Report | None = None,
         header_level: int = 1,
         citation: bool = True,
         dataset_format_long: bool = True,
@@ -282,7 +297,11 @@ class BmdsSession:
 
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Session Results", h1)
+
+        report.document.add_paragraph(self.session_title(), h1)
+        if self.description:
+            report.document.add_paragraph(self.description)
+
         report.document.add_paragraph("Input Dataset", h2)
         reporting.write_dataset_table(report, self.dataset, dataset_format_long)
 
@@ -363,6 +382,9 @@ class Bmds330(BmdsSession):
 
     def serialize(self) -> Bmds330Schema:
         schema = Bmds330Schema(
+            id=self.id,
+            name=self.name,
+            description=self.description,
             version=dict(
                 string=self.version_str,
                 pretty=self.version_pretty,
@@ -385,7 +407,12 @@ class Bmds330(BmdsSession):
 
 class Bmds330Schema(schema.SessionSchemaBase):
     def deserialize(self) -> Bmds330:
-        session = Bmds330(dataset=self.dataset.deserialize())
+        session = Bmds330(
+            dataset=self.dataset.deserialize(),
+            id=self.id,
+            name=self.name,
+            description=self.description,
+        )
         session.models = [model.deserialize(session.dataset) for model in self.models]
         session.selected = self.selected.deserialize(session)
         if self.bmds_model_average is not None:

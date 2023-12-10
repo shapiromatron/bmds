@@ -15,6 +15,9 @@ class VersionSchema(BaseModel):
 
 
 class SessionSchemaBase(BaseModel):
+    id: int | None = None
+    name: str = ""
+    description: str = ""
     version: VersionSchema
     dataset: SerializeAsAny[DatasetSchemaBase]
     models: list[SerializeAsAny[BmdModelSchema]]

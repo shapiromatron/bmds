@@ -3,6 +3,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 
 from ... import bmdscore, plotting
 from ...constants import Version
@@ -101,8 +102,8 @@ def write_docx_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
-def create_summary_figure(report: Report, session):
-    fig = plotting.create_empty_figure()
+def create_summary_figure(session, figsize: tuple[float, float] | None = None) -> Figure:
+    fig = plotting.create_empty_figure(figsize=figsize)
     ax = fig.axes[0]
 
     # add individual model fits
@@ -199,12 +200,16 @@ class MultitumorBase:
         datasets: list[DichotomousDataset],
         degrees: list[int] | None = None,
         model_settings: DichotomousModelSettings | dict | None = None,
-        id: int | str | None = None,
+        id: int | None = None,
+        name: str = "",
+        description: str = "",
         results: MultitumorResult | None = None,
     ):
         if len(datasets) == 0:
             raise ValueError("Must provide at least one dataset")
         self.id = id
+        self.name = name
+        self.description = description
         self.datasets = datasets
         for i, dataset in enumerate(datasets, start=1):
             if dataset.metadata.id is None:
@@ -427,6 +432,16 @@ class MultitumorBase:
             data.extend(dataset.rows(extras))
         return pd.DataFrame(data)
 
+    def session_title(self) -> str:
+        if self.id and self.name:
+            return f"${self.id}: {self.name}"
+        elif self.name:
+            return self.name
+        elif self.id:
+            return f"Session #{self.id}"
+        else:
+            return "Modeling Session"
+
     def to_docx(
         self,
         report: Report | None = None,
@@ -458,7 +473,11 @@ class MultitumorBase:
 
         h1 = report.styles.get_header_style(header_level)
         h2 = report.styles.get_header_style(header_level + 1)
-        report.document.add_paragraph("Session Results", h1)
+        report.document.add_paragraph(self.session_title(), h1)
+
+        if self.description:
+            report.document.add_paragraph(self.description)
+
         for dataset in self.datasets:
             report.document.add_paragraph("Input Dataset", h2)
             reporting.write_dataset_table(report, dataset, dataset_format_long)
@@ -469,7 +488,7 @@ class MultitumorBase:
         report.document.add_paragraph("Frequentist Summary", h2)
         write_docx_frequentist_table(report, self)
         report.document.add_paragraph(
-            add_mpl_figure(report.document, create_summary_figure(report, self), 6)
+            add_mpl_figure(report.document, create_summary_figure(self), 6)
         )
         report.document.add_paragraph("Individual Model Results", h2)
 
@@ -498,6 +517,8 @@ class Multitumor330(MultitumorBase):
             version=self._serialize_version(),
             datasets=[ds.serialize() for ds in self.datasets],
             id=self.id,
+            name=self.name,
+            description=self.description,
             settings=self._serialize_settings(),
             results=self.results,
         )
@@ -516,6 +537,8 @@ class Multitumor330Schema(MultitumorSchema):
             degrees=self.settings.degrees,
             model_settings=settings,
             id=self.id,
+            name=self.name,
+            description=self.description,
             results=self.results,
         )
         # hydrate models

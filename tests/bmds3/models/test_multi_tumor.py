@@ -27,7 +27,7 @@ class TestMultitumor:
         )
         datasets = [ds1, ds2, ds3]
         degrees = [3, 0, 0]
-        session = Multitumor(datasets, degrees=degrees)
+        session = Multitumor(datasets, degrees=degrees, id=1, name="test", description="hello")
         session.execute()
 
         # check text report
