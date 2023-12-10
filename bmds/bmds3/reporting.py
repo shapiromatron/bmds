@@ -454,3 +454,10 @@ def write_bmd_cdf_table(report: Report, model: BmdModel):
     for i in range(n_dist):
         write_cell(tbl.cell(i + 1, 0), dist[1, i], style=body)
         write_cell(tbl.cell(i + 1, 1), dist[0, i], style=body)
+
+
+def write_setting_p(report: Report, title: str, value: str):
+    """Write a paragraph with a bolded title string followed by a value."""
+    p = report.document.add_paragraph()
+    p.add_run(title).bold = True
+    p.add_run(value)

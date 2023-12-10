@@ -1,71 +1,64 @@
 import numpy as np
 import pandas as pd
+import pytest
 
-from bmds.datasets.transforms import polyk
-
-
-def test_poly(data_path):
-    df = pd.read_csv(data_path / "datasets/transforms/polyk.csv")
-    assert df.shape == (200, 3)
-    assert df.columns.values.tolist() == ["dose", "day", "has_tumor"]
-
-    df2 = polyk.adjust_n(df)
-    assert df2.shape == (200, 4)
-    assert df2.columns.values.tolist() == ["dose", "day", "has_tumor", "adj_n"]
-
-    df3 = polyk.summary_stats(df2)
-    assert df3.shape == (4, 6)
-    assert df3.columns.values.tolist() == [
-        "dose",
-        "n",
-        "adj_n",
-        "incidence",
-        "proportion",
-        "adj_proportion",
-    ]
-    assert np.allclose(df3.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
+from bmds.datasets.transforms.polyk import PolyKAdjustment
 
 
-def test_calculate(data_path):
-    df = pd.read_csv(data_path / "datasets/transforms/polyk.csv")
-
-    # using no max day; derived from data
-    _, res = polyk.calculate(
-        doses=df.dose.tolist(),
-        day=df.day.tolist(),
-        has_tumor=df.has_tumor.tolist(),
-        k=3,
-    )
-    assert df.day.max() == 734
-    assert np.allclose(res.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
-
-    # fixing max_day to a 2 yr cancer bioassay duration
-    _, res = polyk.calculate(
-        doses=df.dose.tolist(),
-        day=df.day.tolist(),
-        has_tumor=df.has_tumor.tolist(),
-        k=3,
-        max_day=730,
-    )
-    assert np.allclose(res.adj_proportion, [0.1404, 0.2821, 0.5673, 0.6616], atol=1e-4)
+@pytest.fixture
+def polyk_data(data_path) -> pd.DataFrame:
+    return pd.read_csv(data_path / "datasets/transforms/polyk.csv")
 
 
 class TestAdjustment:
-    def test_docx(self, data_path, rewrite_data_files):
-        df = pd.read_csv(data_path / "datasets/transforms/polyk.csv")
+    def test_calculations(self, polyk_data):
+        analysis = PolyKAdjustment(
+            doses=polyk_data.dose.tolist(),
+            day=polyk_data.day.tolist(),
+            has_tumor=polyk_data.has_tumor.tolist(),
+        )
 
-        tool = polyk.Adjustment(
-            doses=df.dose.tolist(),
-            day=df.day.tolist(),
-            has_tumor=df.has_tumor.tolist(),
-            k=3,
+        adj_df = analysis.adjusted_data
+        assert adj_df.day.max() == 734
+        assert adj_df.shape == (200, 4)
+        assert adj_df.columns.values.tolist() == ["dose", "day", "has_tumor", "adj_n"]
+
+        sum_df = analysis.summary
+        assert sum_df.shape == (4, 6)
+        assert sum_df.columns.values.tolist() == [
+            "dose",
+            "n",
+            "adj_n",
+            "incidence",
+            "proportion",
+            "adj_proportion",
+        ]
+        assert np.allclose(sum_df.adj_proportion, [0.1414, 0.2836, 0.5700, 0.6643], atol=1e-4)
+
+    def test_calc_duration_change(self, polyk_data):
+        # fixing max_day to a 2 yr cancer bioassay duration
+        analysis = PolyKAdjustment(
+            doses=polyk_data.dose.tolist(),
+            day=polyk_data.day.tolist(),
+            has_tumor=polyk_data.has_tumor.tolist(),
+            max_day=730,
+        )
+        assert np.allclose(
+            analysis.summary.adj_proportion, [0.1404, 0.2821, 0.5673, 0.6616], atol=1e-4
+        )
+
+    def test_reporting(self, polyk_data, data_path, rewrite_data_files):
+        analysis = PolyKAdjustment(
+            doses=polyk_data.dose.tolist(),
+            day=polyk_data.day.tolist(),
+            has_tumor=polyk_data.has_tumor.tolist(),
         )
 
         # excel
-        xlsx = tool.to_excel()
+        xlsx = analysis.to_excel()
 
         # docx
-        docx = tool.to_docx()
+        docx = analysis.to_docx()
         if rewrite_data_files:
             (data_path / "bmds3-polyk.xlsx").write_bytes(xlsx.getvalue())
             docx.save(data_path / "bmds3-polyk.docx")
