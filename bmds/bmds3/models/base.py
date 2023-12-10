@@ -160,7 +160,7 @@ class BmdModel(abc.ABC):
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
 
-        fig = self.dataset.plot()
+        fig = self.dataset.plot(figsize=figsize)
         ax = fig.gca()
         if self.dataset.dtype in DICHOTOMOUS_DTYPES:
             ax.set_ylim(-0.05, 1.05)
@@ -190,15 +190,12 @@ class BmdModel(abc.ABC):
             [handles[idx] for idx in order], [labels[idx] for idx in order], **plotting.LEGEND_OPTS
         )
 
-        if figsize:
-            fig.set_size_inches(figsize)
-
         return fig
 
-    def cdf_plot(self):
+    def cdf_plot(self, figsize: tuple[float, float] | None = None):
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
-        fig = plotting.create_empty_figure()
+        fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
         ax.set_xlabel(self.dataset.get_xlabel())
         ax.set_ylabel("Percentile")
@@ -287,7 +284,7 @@ class BmdModelAveraging(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def plot(self):
+    def plot(self, figsize: tuple[float, float] | None = None):
         ...
 
     def to_dict(self) -> dict:

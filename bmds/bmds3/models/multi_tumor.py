@@ -3,6 +3,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 
 from ... import bmdscore, plotting
 from ...constants import Version
@@ -101,8 +102,8 @@ def write_docx_inputs_table(report: Report, session):
         write_cell(tbl.cell(idx, 1), value, style=hdr if idx == 0 else body)
 
 
-def create_summary_figure(report: Report, session):
-    fig = plotting.create_empty_figure()
+def create_summary_figure(session, figsize: tuple[float, float] | None = None) -> Figure:
+    fig = plotting.create_empty_figure(figsize=figsize)
     ax = fig.axes[0]
 
     # add individual model fits
@@ -469,7 +470,7 @@ class MultitumorBase:
         report.document.add_paragraph("Frequentist Summary", h2)
         write_docx_frequentist_table(report, self)
         report.document.add_paragraph(
-            add_mpl_figure(report.document, create_summary_figure(report, self), 6)
+            add_mpl_figure(report.document, create_summary_figure(self), 6)
         )
         report.document.add_paragraph("Individual Model Results", h2)
 

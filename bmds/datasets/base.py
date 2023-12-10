@@ -48,11 +48,11 @@ class DatasetBase(abc.ABC):
     def plot(self) -> Figure:
         ...
 
-    def setup_plot(self) -> Axes:
+    def setup_plot(self, figsize: tuple[float, float] | None = None) -> Axes:
         """
         Return a matplotlib Axes of the dose-response dataset.
         """
-        fig = plotting.create_empty_figure()  # TODO - pass figsize here
+        fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
         ax.set_xlabel(self.get_xlabel())
         ax.set_ylabel(self.get_ylabel())
