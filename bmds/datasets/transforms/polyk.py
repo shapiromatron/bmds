@@ -26,6 +26,9 @@ class PolyKAdjustment:
         has_tumor: list[int],
         k: float = 3,
         max_day: float | None = None,
+        dose_units: str = "",
+        dose_name: str = "Dose",
+        time_units: str = "days",
     ) -> None:
         """Adjust tumor data via poly K adjustment.
 
@@ -35,10 +38,16 @@ class PolyKAdjustment:
             has_tumor (list[int]): integer, 0 or 1, where 1 is has_tumor is True
             k (float | None, optional): The adjustment term to apply. Defaults to 3.
             max_day (float | None, optional): The maximum data. If specific, the value is used,
-                otherwise, it is calculated from the maximum reported day in the dataset
+                otherwise, it is calculated from the maximum reported day in the dataset.
+            dose_units (str): Dose Units, for graphing
+            dose_name (str): the term for the dose axis. Defaults to "Dose".
+            time_units (str): the time units, defaults to "days".
         """
         self.k = k
         self.max_day = max_day
+        self.dose_units = dose_units
+        self.dose_name = dose_name
+        self.time_units = time_units
         self.input_data = pd.DataFrame(dict(dose=doses, day=day, has_tumor=has_tumor))
         self.adjusted_data = self.calc_adjusted_n()
         self.summary = self.calc_summary_stats()
@@ -73,13 +82,17 @@ class PolyKAdjustment:
         df2.loc[:, "adj_proportion"] = df2.incidence / df2.adj_n
         return df2
 
-    def summary_figure(self, figsize: tuple[float, float] | None = None, units: str = "") -> Figure:
+    def summary_figure(self, figsize: tuple[float, float] | None = None) -> Figure:
         fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
-        ax.set_xlabel(f"Dose ({units})" if units else "Dose")
+
+        ax.set_title("Adjusted Proportion vs Original Proportion")
+        ax.set_xlabel(
+            f"{self.dose_name} ({self.dose_units})" if self.dose_units else self.dose_name
+        )
         ax.set_ylabel("Proportion (%)")
         ax.margins(plotting.PLOT_MARGINS)
-        ax.set_title("Adjusted Proportion vs Original Proportion")
+
         ax.plot(
             self.summary.dose,
             self.summary.proportion,
@@ -108,9 +121,7 @@ class PolyKAdjustment:
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(1))
         return fig
 
-    def tumor_incidence_figure(
-        self, figsize: tuple[float, float] | None = None, xunits: str = "", yunits: str = ""
-    ) -> Figure:
+    def tumor_incidence_figure(self, figsize: tuple[float, float] | None = None) -> Figure:
         markers = "o^svDP"
         df = self.input_data.copy()
         df.loc[:, "cummulative_tumor"] = df.groupby("dose").has_tumor.cumsum()
@@ -119,20 +130,19 @@ class PolyKAdjustment:
 
         fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
-        ax.set_xlabel(f"Study duration ({xunits})" if xunits else "Study duration")
+        ax.set_xlabel(f"Study duration ({self.time_units})")
         ax.set_ylabel("Cumulative tumor incidence")
         ax.margins(plotting.PLOT_MARGINS)
         ax.set_title("Tumor incidence over study duration")
 
-        if yunits:
-            yunits = f" {yunits}"
+        dose_units = f" {self.dose_units}" if self.dose_units else ""
 
         for value, d in df.groupby("dose"):
             ax.plot(
                 d.day,
                 d.cummulative_tumor,
                 f"{next(marker)}-",
-                label=str(value) + yunits,
+                label=str(value) + dose_units,
                 markersize=8,
                 markeredgewidth=1,
                 markeredgecolor="white",
