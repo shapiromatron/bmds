@@ -237,8 +237,6 @@ class Polynomial(BmdModelContinuous):
 
 
 class Linear(Polynomial):
-    degree_required: bool = False
-
     def name(self) -> str:
         return self.settings.name or "Linear"
 
