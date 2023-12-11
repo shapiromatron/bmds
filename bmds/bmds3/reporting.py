@@ -254,6 +254,7 @@ def write_frequentist_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
     write_pvalue_header(tbl.cell(0, 4), style=hdr)
     write_cell(tbl.cell(0, 5), "AIC", style=hdr)
+    # zzz #6
     write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
     write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)

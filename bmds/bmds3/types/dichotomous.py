@@ -345,7 +345,7 @@ class DichotomousAnalysisOfDeviance(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Model|Log Likelihood|# Params|Deviance|Test DOF|P-Value".split("|")
+        headers = "Model|Log Likelihood|# Params|Deviance|Test d.f.|P-Value".split("|")
         data = []
         for i in range(len(self.names)):
             # manually format columns b/c tabulate won't format if first row text is str

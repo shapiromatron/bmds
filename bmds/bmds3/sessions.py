@@ -319,7 +319,7 @@ class BmdsSession:
                 reporting.write_models(report, self, bmd_cdf_table, header_level + 2)
 
         else:
-            report.document.add_paragraph("Frequentist Summary", h2)
+            report.document.add_paragraph("Maximum Likelihood Approach Summary", h2)
             reporting.write_base_frequentist_table(report, self)
             if all_models:
                 report.document.add_paragraph("Individual Model Results", h2)

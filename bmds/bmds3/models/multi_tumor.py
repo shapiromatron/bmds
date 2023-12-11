@@ -47,6 +47,7 @@ def write_docx_frequentist_table(report: Report, session):
     write_cell(tbl.cell(0, 4), "CSF", style=hdr)
     write_pvalue_header(tbl.cell(0, 5), style=hdr)
     write_cell(tbl.cell(0, 6), "AIC", style=hdr)
+    # zzz #6
     write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 
@@ -485,7 +486,7 @@ class MultitumorBase:
         report.document.add_paragraph("Input Settings", h2)
         write_docx_inputs_table(report, self)
 
-        report.document.add_paragraph("Frequentist Summary", h2)
+        report.document.add_paragraph("Maximum Likelihood Approach Summary", h2)
         write_docx_frequentist_table(report, self)
         report.document.add_paragraph(
             add_mpl_figure(report.document, create_summary_figure(self), 6)

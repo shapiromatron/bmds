@@ -75,7 +75,7 @@ class ContinuousModelSettings(BaseModel):
         data = [
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
-            ["Modeling Direction", self.direction],
+            ["Adverse Direction", self.direction],
             ["Confidence Level", self.confidence_level],
             ["Tail Probability", self.tail_prob],
             ["Modeling Approach", self.priors.prior_class.name],
@@ -94,7 +94,7 @@ class ContinuousModelSettings(BaseModel):
             ["Setting", "Value"],
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
-            ["Modeling Direction", self.direction],
+            ["Adverse Direction", self.direction],
             ["Maximum Polynomial Degree", self.degree],
             ["Confidence Level", self.confidence_level],
             ["Tail Probability", self.tail_prob],
@@ -478,7 +478,7 @@ class ContinuousTests(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Name|Loglikelihood Ratio|Test DOF|P-Value".split("|")
+        headers = "Name|Loglikelihood Ratio|Test d.f.|P-Value".split("|")
         data = []
         for name, ll_ratio, df, p_value in zip(
             self.names, self.ll_ratios, self.dfs, self.p_values, strict=True
