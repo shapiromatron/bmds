@@ -65,13 +65,14 @@ class BmdModelNestedDichotomous(BmdModel):
         self.results = NestedDichotomousResult.from_model(self)
         return self.results
 
-    def _plot_bmr_lines(self, ax):
+    def _plot_bmr_lines(self, ax, axlines: bool):
         plotting.add_bmr_lines(
             ax,
             self.results.summary.bmd,
             self.results.plotting.bmd_y,
             self.results.summary.bmdl,
             self.results.summary.bmdu,
+            axlines=axlines,
         )
 
     def serialize(self) -> "BmdModelNestedDichotomousSchema":

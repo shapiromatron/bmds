@@ -67,7 +67,13 @@ class TestBmdModelDichotomous:
     def test_bmds3_dichotomous_plot(self, ddataset2):
         model = dichotomous.Logistic(dataset=ddataset2)
         model.execute()
-        return model.plot()
+        return model.plot(figsize=(5, 4))
+
+    @pytest.mark.mpl_image_compare
+    def test_bmds3_dichotomous_plot_axlines(self, ddataset2):
+        model = dichotomous.Logistic(dataset=ddataset2)
+        model.execute()
+        return model.plot(figsize=(5, 4), axlines=True)
 
 
 def test_bmds3_dichotomous_models(ddataset2):

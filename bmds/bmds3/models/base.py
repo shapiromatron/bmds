@@ -148,14 +148,23 @@ class BmdModel(abc.ABC):
         """
         )
 
-    def _plot_bmr_lines(self, ax):
+    def _plot_bmr_lines(self, ax, axlines: bool):
         plotting.add_bmr_lines(
-            ax, self.results.bmd, self.results.plotting.bmd_y, self.results.bmdl, self.results.bmdu
+            ax,
+            self.results.bmd,
+            self.results.plotting.bmd_y,
+            self.results.bmdl,
+            self.results.bmdu,
+            axlines=axlines,
         )
 
-    def plot(self, figsize: tuple[float, float] | None = None):
-        """
-        After model execution, print the dataset, curve-fit, BMD, and BMDL.
+    def plot(self, figsize: tuple[float, float] | None = None, axlines: bool = False):
+        """After model execution, print the dataset, curve-fit, BMD, and BMDL.
+
+        Args:
+            figsize (tuple[float, float], optional): Specify an alternative figure size (w, h).
+            axlines (bool, optional): Draw the axlines for BMD and BMDL, like legacy BMD plots.
+                By default the diamond-based line w/ BMDL and BMDU are used instead.
         """
         if not self.has_results:
             raise ValueError("Cannot plot if results are unavailable")
@@ -166,13 +175,14 @@ class BmdModel(abc.ABC):
             ax.set_ylim(-0.05, 1.05)
         title = f"{self.dataset._get_dataset_name()}\n{self.name()}, {self.settings.bmr_text}"
         ax.set_title(title)
+        label = self.name() + ("" if axlines else " (BMD, BMDL, BMDU)")
         ax.plot(
             self.results.plotting.dr_x,
             self.results.plotting.dr_y,
-            label=f"{self.name()} (BMD, BMDL, BMDU)",
+            label=label,
             **plotting.LINE_FORMAT,
         )
-        self._plot_bmr_lines(ax)
+        self._plot_bmr_lines(ax, axlines=axlines)
         slope_factor = getattr(self.results, "slope_factor", None)
         if slope_factor and slope_factor > 0:
             ax.plot(
@@ -185,7 +195,7 @@ class BmdModel(abc.ABC):
 
         # reorder handles and labels
         handles, labels = ax.get_legend_handles_labels()
-        order = [1, 0]
+        order = [2, 0, 1] if axlines else [1, 0]
         ax.legend(
             [handles[idx] for idx in order], [labels[idx] for idx in order], **plotting.LEGEND_OPTS
         )
