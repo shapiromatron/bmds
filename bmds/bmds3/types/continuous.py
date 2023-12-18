@@ -75,8 +75,8 @@ class ContinuousModelSettings(BaseModel):
         data = [
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
-            ["Adverse Direction", self.direction],
-            ["Confidence Level", self.confidence_level],
+            ["Modeling Direction", self.direction],
+            ["Confidence Level (one-sided)", self.confidence_level],
             ["Tail Probability", self.tail_prob],
             ["Modeling Approach", self.priors.prior_class.name],
         ]
@@ -96,7 +96,7 @@ class ContinuousModelSettings(BaseModel):
             ["Distribution", self.distribution],
             ["Adverse Direction", self.direction],
             ["Maximum Polynomial Degree", self.degree],
-            ["Confidence Level", self.confidence_level],
+            ["Confidence Level (one-sided)", self.confidence_level],
             ["Tail Probability", self.tail_prob],
         ]
 

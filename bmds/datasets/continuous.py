@@ -175,7 +175,7 @@ class ContinuousDataset(ContinuousSummaryDataMixin, DatasetBase):
             self.doses,
             self.means,
             yerr=self.errorbars(),
-            label="Mean ± 95% CI",
+            label="Observed Mean ± 95% CI",
             **plotting.DATASET_POINT_FORMAT,
         )
         ax.legend(**plotting.LEGEND_OPTS)
