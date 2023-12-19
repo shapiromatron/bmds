@@ -96,7 +96,7 @@ class AnovaTests(BaseModel):
 
         outputs = [
             "                     Tests of Interest    ",
-            "   Test    -2*log(Likelihood Ratio)  Test df        p-value    ",
+            "   Test    -2*log(Likelihood Ratio)  Test df        P-Value    ",
         ]
         for i, test in enumerate([tests.test1, tests.test2, tests.test3]):
             outputs.append("   Test %d %20.6g %10d %16.4g" % (i + 1, test.MSE, test.CDF, test.TEST))

@@ -442,8 +442,8 @@ def write_model(report: Report, model: BmdModel, bmd_cdf_table: bool, header_lev
 
 
 def write_bmd_cdf_table(report: Report, model: BmdModel):
-    df = pd.DataFrame(data=model.results.fit.bmd_dist.T, columns=["BMD", "Percentile"])
-    df_to_table(report, df[["Percentile", "BMD"]])
+    df = pd.DataFrame(data=model.results.fit.bmd_dist.T, columns=["BMD", "Cumulative Probability"])
+    df_to_table(report, df[["Cumulative Probability", "BMD"]])
 
 
 def write_setting_p(report: Report, title: str, value: str):

@@ -398,7 +398,7 @@ class ContinuousGof(BaseModel):
 
     def tbl(self, disttype: constants.DistType) -> str:
         mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
-        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD"
+        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD" # 32
         if disttype == constants.DistType.log_normal:
             mean_headers = mean_headers.replace("ted Mean", "ted Median")
             sd_headers = sd_headers.replace("ted SD", "ted GSD")
@@ -420,7 +420,7 @@ class ContinuousGof(BaseModel):
                     self.dose[idx],
                     self.size[idx],
                     self.obs_sd[idx],
-                    self.calc_sd[idx],
+                    self.calc_sd[idx], # 32
                     self.est_sd[idx],
                 ]
             )
@@ -529,9 +529,9 @@ class ContinuousResult(BaseModel):
             ["BMDL", self.bmdl],
             ["BMDU", self.bmdu],
             ["AIC", self.fit.aic],
-            ["Log Likelihood", self.fit.loglikelihood],
+            ["-2* Log(Likelihood Ratio)", self.fit.loglikelihood],
             ["P-Value", self.tests.p_values[3]],
-            ["Model DOF", self.tests.dfs[3]],
+            ["Model d.f.", self.tests.dfs[3]],
         ]
         return pretty_table(data, "")
 

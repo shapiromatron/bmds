@@ -188,7 +188,7 @@ def multistage_cancer_prior() -> ModelPriors:
 
 def _model_name(result) -> str:
     degree = result.parameters.names[-1][-1]
-    return f"Multistage {degree}°"
+    return f"Multistage {degree}"
 
 
 class MultitumorBase:

@@ -198,7 +198,7 @@ class BmdModel(abc.ABC):
         fig = plotting.create_empty_figure(figsize=figsize)
         ax = fig.gca()
         ax.set_xlabel(self.dataset.get_xlabel())
-        ax.set_ylabel("Percentile")
+        ax.set_ylabel("Cumulative Probability")
         ax.plot(
             self.results.fit.bmd_dist[0],
             self.results.fit.bmd_dist[1],
