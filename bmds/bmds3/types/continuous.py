@@ -82,8 +82,12 @@ class ContinuousModelSettings(BaseModel):
             ["Distribution", self.distribution],
             ["Modeling Direction", self.direction],
             ["Confidence Level (one-sided)", self.confidence_level],
-            ["Modeling Approach", self.priors.prior_class.name],
         ]
+
+        if self.priors.prior_class.name in ["frequentist_restricted","frequentist_unrestricted"]:
+            data.append(["Modeling Approach", "MLE"],)
+        else:
+            data.append(["Modeling Approach", "Bayesian"],)
 
         if self.is_hybrid:
             data.append(["Tail Probability", self.tail_prob])
@@ -259,8 +263,6 @@ class ContinuousParameters(BaseModel):
     names: list[str]
     values: NumpyFloatArray
     se: NumpyFloatArray
-    lower_ci: NumpyFloatArray
-    upper_ci: NumpyFloatArray
     bounded: NumpyFloatArray
     cov: NumpyFloatArray
     prior_type: NumpyIntArray
@@ -304,8 +306,6 @@ class ContinuousParameters(BaseModel):
             values=result.parms,
             bounded=summary.bounded,
             se=summary.stdErr[:slice],
-            lower_ci=summary.lowerConf[:slice],
-            upper_ci=summary.upperConf[:slice],
             cov=cov,
             prior_type=priors[0],
             prior_initial_value=priors[1],
@@ -315,15 +315,13 @@ class ContinuousParameters(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Variable|Estimate|Bounded|Std Error|Lower CI|Upper CI".split("|")
+        headers = "Variable|Estimate|On Bound|Std Error".split("|")
         data = []
-        for name, value, bounded, se, lower_ci, upper_ci in zip(
+        for name, value, bounded, se in zip(
             self.names,
             self.values,
             self.bounded,
             self.se,
-            self.lower_ci,
-            self.upper_ci,
             strict=True,
         ):
             data.append(
@@ -332,8 +330,6 @@ class ContinuousParameters(BaseModel):
                     value,
                     BOOL_ICON[bounded],
                     "NA" if bounded else f"{se:g}",
-                    "NA" if bounded else f"{lower_ci:g}",
-                    "NA" if bounded else f"{upper_ci:g}",
                 )
             )
         return pretty_table(data, headers)
@@ -353,8 +349,6 @@ class ContinuousParameters(BaseModel):
                         name=self.names[i],
                         value=self.values[i],
                         se=self.se[i],
-                        lower_ci=self.lower_ci[i],
-                        upper_ci=self.upper_ci[i],
                         bounded=bool(self.bounded[i]),
                         initial_distribution=PriorType(self.prior_type[i]).name,
                         initial_value=self.prior_initial_value[i],
@@ -544,6 +538,14 @@ class ContinuousResult(BaseModel):
         ]
         return pretty_table(data, "")
 
+    def bound_footnote(self) -> str:
+        if any(self.parameters.bounded):
+            return """
+                Standard errors estimates are not generated for parameters estimated on corresponding bounds,
+                although sampling error is present for all parameters, as a rule. Standard error estimates may not be
+                reliable as a basis for confidence intervals or tests when one or more parameters are on bounds
+                """
+
     def text(self, dataset: ContinuousDatasets, settings: ContinuousModelSettings) -> str:
         return multi_lstrip(
             f"""
@@ -552,6 +554,7 @@ class ContinuousResult(BaseModel):
 
         Model Parameters:
         {self.parameters.tbl()}
+        {self.bound_footnote()}
 
         Goodness of Fit:
         {self.gof.tbl(disttype=settings.disttype)}
