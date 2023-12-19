@@ -71,15 +71,22 @@ class ContinuousModelSettings(BaseModel):
     def distribution(self) -> str:
         return f"{self.disttype.distribution_type} + {self.disttype.variance_model}"
 
+    @property
+    def is_hybrid(self) -> bool:
+        if self.bmr_type in [ContinuousRiskType.HybridExtra, ContinuousRiskType.HybridAdded]:
+            return True
+
     def tbl(self, show_degree: bool = True) -> str:
         data = [
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
             ["Modeling Direction", self.direction],
             ["Confidence Level (one-sided)", self.confidence_level],
-            ["Tail Probability", self.tail_prob],
             ["Modeling Approach", self.priors.prior_class.name],
         ]
+
+        if self.is_hybrid:
+            data.append(["Tail Probability", self.tail_prob])
 
         if show_degree:
             data.append(["Degree", self.degree])
@@ -90,15 +97,17 @@ class ContinuousModelSettings(BaseModel):
         return pretty_table(data, "")
 
     def docx_table_data(self) -> list:
-        return [
+        data =  [
             ["Setting", "Value"],
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
             ["Adverse Direction", self.direction],
             ["Maximum Polynomial Degree", self.degree],
             ["Confidence Level (one-sided)", self.confidence_level],
-            ["Tail Probability", self.tail_prob],
         ]
+        if self.is_hybrid:
+            data.append(["Tail Probability", self.tail_prob])
+        return data
 
     def update_record(self, d: dict) -> None:
         """Update data record for a tabular-friendly export"""
@@ -397,7 +406,7 @@ class ContinuousGof(BaseModel):
         )
 
     def tbl(self, disttype: constants.DistType) -> str:
-        mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual"
+        mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual" # 31
         sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD" # 32
         if disttype == constants.DistType.log_normal:
             mean_headers = mean_headers.replace("ted Mean", "ted Median")

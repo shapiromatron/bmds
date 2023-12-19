@@ -254,9 +254,8 @@ def write_frequentist_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 3), "BMDU", style=hdr)
     write_pvalue_header(tbl.cell(0, 4), style=hdr)
     write_cell(tbl.cell(0, 5), "AIC", style=hdr)
-    # zzz #6
-    write_cell(tbl.cell(0, 6), "Scaled Residual for Dose Group near BMD", style=hdr)
-    write_cell(tbl.cell(0, 7), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 6), "Scaled Residual near BMD", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual at Control", style=hdr)
     write_cell(tbl.cell(0, 8), "Recommendation and Notes", style=hdr)
 
     # write body
@@ -383,8 +382,8 @@ def write_bayesian_table(report: Report, session: BmdsSession):
     write_cell(tbl.cell(0, 4), "BMD", style=hdr)
     write_cell(tbl.cell(0, 5), "BMDU", style=hdr)
     write_cell(tbl.cell(0, 6), "Unnormalized Log Posterior Probability", style=hdr)
-    write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
-    write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
+    write_cell(tbl.cell(0, 7), "Scaled Residual near BMD", style=hdr)
+    write_cell(tbl.cell(0, 8), "Scaled Residual at Control", style=hdr)
 
     ma = session.model_average
     for idx, model in enumerate(session.models, start=1):

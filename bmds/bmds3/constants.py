@@ -127,14 +127,14 @@ class ContinuousModelChoices(Enum):
     )
     c_exp_m3 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m3.value,
-        verbose="ExponentialM3", # zzz #7?
+        verbose="Exponential 3",
         params=("a", "b", "c", "d"),
         variance_params=("rho", "log-alpha"),
         model_form_str="P[dose] = a * exp(±1 * (b * dose) ^ d)",
     )
     c_exp_m5 = ContinuousModel(
         id=ContinuousModelIds.c_exp_m5.value,
-        verbose="ExponentialM5", # zzz #7?
+        verbose="Exponential 5",
         params=("a", "b", "c", "d"),
         variance_params=("rho", "log-alpha"),
         model_form_str="P[dose] = a * (c - (c - 1) * exp(-(b * dose) ^ d)",
