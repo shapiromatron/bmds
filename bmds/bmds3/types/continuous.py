@@ -329,7 +329,7 @@ class ContinuousParameters(BaseModel):
                     name,
                     value,
                     BOOL_ICON[bounded],
-                    "NA" if bounded else f"{se:g}",
+                    "Not Reported" if bounded else f"{se:g}",
                 )
             )
         return pretty_table(data, headers)
