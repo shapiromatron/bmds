@@ -547,7 +547,7 @@ class ContinuousResult(BaseModel):
     def text(self, dataset: ContinuousDatasets, settings: ContinuousModelSettings) -> str:
         return multi_lstrip(
             f"""
-        Summary:
+        Modeling Summary:
         {self.tbl()}
 
         Model Parameters:
