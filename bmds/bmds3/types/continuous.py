@@ -400,8 +400,8 @@ class ContinuousGof(BaseModel):
         )
 
     def tbl(self, disttype: constants.DistType) -> str:
-        mean_headers = "Dose|Size|Observed Mean|Calculated Mean|Estimated Mean|Scaled Residual" # 31
-        sd_headers = "Dose|Size|Observed SD|Calculated SD|Estimated SD" # 32
+        mean_headers = "Dose|N|Sample Mean|Model fitted Mean|Scaled Residual"
+        sd_headers = "Dose|N|Sample SD|Model fitted SD"
         if disttype == constants.DistType.log_normal:
             mean_headers = mean_headers.replace("ted Mean", "ted Median")
             sd_headers = sd_headers.replace("ted SD", "ted GSD")
@@ -413,7 +413,6 @@ class ContinuousGof(BaseModel):
                     self.dose[idx],
                     self.size[idx],
                     self.obs_mean[idx],
-                    self.calc_mean[idx],
                     self.est_mean[idx],
                     self.residual[idx],
                 ]
@@ -423,7 +422,6 @@ class ContinuousGof(BaseModel):
                     self.dose[idx],
                     self.size[idx],
                     self.obs_sd[idx],
-                    self.calc_sd[idx], # 32
                     self.est_sd[idx],
                 ]
             )
@@ -481,7 +479,7 @@ class ContinuousTests(BaseModel):
         )
 
     def tbl(self) -> str:
-        headers = "Name|Loglikelihood Ratio|Test d.f.|P-Value".split("|")
+        headers = "Name|-2* Log(Likelihood Ratio)|Test d.f.|P-Value".split("|")
         data = []
         for name, ll_ratio, df, p_value in zip(
             self.names, self.ll_ratios, self.dfs, self.p_values, strict=True
@@ -559,10 +557,10 @@ class ContinuousResult(BaseModel):
         Goodness of Fit:
         {self.gof.tbl(disttype=settings.disttype)}
 
-        Likelihoods of Interest:
+        Likelihoods:
         {self.deviance.tbl()}
 
-        Tests of Interest:
+        Tests of Mean and Variance Fits:
         {self.tests.tbl()}
         """
         )
