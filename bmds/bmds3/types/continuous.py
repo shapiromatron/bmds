@@ -84,10 +84,14 @@ class ContinuousModelSettings(BaseModel):
             ["Confidence Level (one-sided)", self.confidence_level],
         ]
 
-        if self.priors.prior_class.name in ["frequentist_restricted","frequentist_unrestricted"]:
-            data.append(["Modeling Approach", "MLE"],)
+        if self.priors.prior_class.name in ["frequentist_restricted", "frequentist_unrestricted"]:
+            data.append(
+                ["Modeling Approach", "MLE"],
+            )
         else:
-            data.append(["Modeling Approach", "Bayesian"],)
+            data.append(
+                ["Modeling Approach", "Bayesian"],
+            )
 
         if self.is_hybrid:
             data.append(["Tail Probability", self.tail_prob])
@@ -101,7 +105,7 @@ class ContinuousModelSettings(BaseModel):
         return pretty_table(data, "")
 
     def docx_table_data(self) -> list:
-        data =  [
+        data = [
             ["Setting", "Value"],
             ["BMR", self.bmr_text],
             ["Distribution", self.distribution],
