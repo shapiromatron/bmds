@@ -95,7 +95,7 @@ class AnovaTests(BaseModel):
             return "ANOVA cannot be calculated for this dataset."
 
         outputs = [
-            "                     Tests of Interest    ",
+            "                     Tests of Mean and Variance Fits    ",
             "   Test    -2*log(Likelihood Ratio)  Test df        P-Value    ",
         ]
         for i, test in enumerate([tests.test1, tests.test2, tests.test3]):

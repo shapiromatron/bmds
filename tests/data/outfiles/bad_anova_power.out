@@ -100,7 +100,7 @@ Try again from another starting point.
             Var{e(i)} = Sigma^2
 
 
-                       Likelihoods of Interest
+                       Likelihoods
 
             Model      Log(likelihood)   # Param's      AIC
              A1           19.727238            5     -29.454477
@@ -119,9 +119,9 @@ Try again from another starting point.
  Test 4:  Does the Model for the Mean Fit? (A3 vs. fitted)
  (Note:  When rho=0 the results of Test 3 and Test 2 will be the same.)
 
-                     Tests of Interest    
+                     Tests of Mean and Variance Fits    
 
-   Test    -2*log(Likelihood Ratio)  Test df        p-value    
+   Test    -2*log(Likelihood Ratio)  Test df        P-Value    
 
    Test 1               1.#INF          6          <.0001
    Test 2               1.#INF          3          <.0001

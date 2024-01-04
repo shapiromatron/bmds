@@ -48,8 +48,6 @@ class TestContinuousParameters:
         for field in [
             "values",
             "se",
-            "lower_ci",
-            "upper_ci",
             "bounded",
             "prior_type",
             "prior_initial_value",

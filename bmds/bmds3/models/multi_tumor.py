@@ -47,7 +47,6 @@ def write_docx_frequentist_table(report: Report, session):
     write_cell(tbl.cell(0, 4), "CSF", style=hdr)
     write_pvalue_header(tbl.cell(0, 5), style=hdr)
     write_cell(tbl.cell(0, 6), "AIC", style=hdr)
-    # zzz #6
     write_cell(tbl.cell(0, 7), "Scaled Residual for Dose Group near BMD", style=hdr)
     write_cell(tbl.cell(0, 8), "Scaled Residual for Control Dose Group", style=hdr)
 

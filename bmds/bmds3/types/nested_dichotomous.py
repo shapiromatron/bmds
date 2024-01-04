@@ -328,7 +328,7 @@ class NestedDichotomousResult(BaseModel):
             ["BMDL", self.summary.bmdl],
             ["BMDU", self.summary.bmdu],
             ["AIC", self.summary.aic],
-            ["P-value", self.combined_pvalue],
+            ["P-Value", self.combined_pvalue],
             ["D.O.F", self.dof],
             ["Chi²", self.summary.chi_squared],
             ["Log-likelihood", self.ll],
