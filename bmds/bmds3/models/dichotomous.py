@@ -201,7 +201,7 @@ class Multistage(BmdModelDichotomous):
         return model_settings
 
     def name(self) -> str:
-        return self.settings.name or f"Multistage {self.settings.degree}"
+        return self.settings.name or f"Multistage {self.settings.degree}°"
 
     def dr_curve(self, doses, params) -> np.ndarray:
         g = params[0]

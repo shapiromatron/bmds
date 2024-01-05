@@ -187,7 +187,7 @@ def multistage_cancer_prior() -> ModelPriors:
 
 def _model_name(result) -> str:
     degree = result.parameters.names[-1][-1]
-    return f"Multistage {degree}"
+    return f"Multistage {degree}°"
 
 
 class MultitumorBase:
@@ -485,7 +485,7 @@ class MultitumorBase:
         report.document.add_paragraph("Input Settings", h2)
         write_docx_inputs_table(report, self)
 
-        report.document.add_paragraph("Maximum Likelihood Approach Summary", h2)
+        report.document.add_paragraph("Frequentist Summary", h2)
         write_docx_frequentist_table(report, self)
         report.document.add_paragraph(
             add_mpl_figure(report.document, create_summary_figure(self), 6)
