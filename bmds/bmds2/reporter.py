@@ -398,7 +398,7 @@ class Reporter:
     def _write_model_name(self, p, model_group, footnotes):
         def pretty(name):
             name = name.replace("-", " ")
-            return re.sub(r"( \d+)", r"\g<1>", name)
+            return re.sub(r"( \d+)", r"\g<1>°", name)
 
         def collapse_names(models):
             names = [model.name for model in models]
