@@ -5,6 +5,8 @@
 *  Mark package as archived and recommend use of [pybmds](https://pypi.org/project/pybmds/) instead
 *  No code changes with this release; final release to pypi
 
+Released on 2025-01-21.
+
 ## Version 23.4
 
 * Require Pydantic > 2
