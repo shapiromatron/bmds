@@ -1,10 +1,9 @@
 BMDS Python interface
 =====================
 
-This package has been deprecated and is no longer actively maintained; please use **pybmds_** instead.
+This package has been deprecated and is no longer actively maintained; please use pybmds_ instead.
 
-.. _`pybmds`: https://pypi.org/project/pybmds/
-
+.. _pybmds: https://pypi.org/project/pybmds/
 
 .. image:: https://img.shields.io/pypi/v/bmds.svg
         :target: https://pypi.python.org/pypi/bmds
