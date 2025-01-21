@@ -3,7 +3,7 @@
 ## Version 25.1
 
 *  Mark package as archived and recommend use of [pybmds](https://pypi.org/project/pybmds/) instead
-*  *[No code changes]*
+*  No code changes with this release; final release to pypi
 
 ## Version 23.4
 
