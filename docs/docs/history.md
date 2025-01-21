@@ -1,5 +1,10 @@
 # History
 
+## Version 25.1
+
+*  Mark package as archived and recommend use of [pybmds](https://pypi.org/project/pybmds/) instead
+*  *[No code changes]*
+
 ## Version 23.4
 
 * Require Pydantic > 2
